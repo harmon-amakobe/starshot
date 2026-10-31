@@ -1,0 +1,18 @@
+node_modules/
+dist/
+!third_party/**/dist/
+*.tsbuildinfo
+.vite/
+coverage/
+playwright-report/
+test-results/
+.DS_Store
+# local secrets never belong in this public repo
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+firebase-debug.log
+.firebaserc
