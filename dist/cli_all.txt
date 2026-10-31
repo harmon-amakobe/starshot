@@ -1,0 +1,253 @@
+# Astlo
+# version = v13.0.51101_Full
+# Required by astlohorizons, solsynder, valley, r/kenyaspacenerds
+# Astlo Space Systems, r/kenyaspacenerds, NASA, NASA-JPL, ESA, Venera-missions. credit For the images and videos.
+
+
+
+ASTLO
+=====
+
+Astlo is a CLI and SDK. This file shows the CLI part for astlo and everything related to astlo, how to navigate it/them and what the commands/other packages relying on aslto do
+
+Note that the current version is v13.0.51101. unreleased. The file therefore contains information about he current version.
+
+CLI = Command Line Interface
+
+CLI: The current setting of the CLI is just basic stuff. having plans to make it more appealing to the user
+
+continous updates to the main engine are always taking place.
+
+
+
+	Part ONE: The Solar system.
+	===========================
+
+
+NEOs = Near Earth Objects
+SSB = Solar System Barycenter
+
+
+Module astlotalk in Astlo-environment = This module allows using astlohorizons to help astlo be kore precise. use the talk() method.
+
+The current supoorted objects by astlotalk are [Sun,Mercury,Venus,Earth and Moon]. Astlo can track any object. Astlohorizons is just a helper -robin- to astlo -The Batman-
+
+
+a CLI has options. Eg option name. option name can have two identities: the short name and the long name. short name starts with a single negative sign while a long name starts with double negative signs --
+
+
+Solar system COMMAND rtime:
+===========================
+
+. This command allows viewing various solar system objects states in a human readable format. it uses SSB, Heliocentric, EMB frames accordingly to the object name passed.
+
+. It also includes a 4th order intergration rk4 Rungekutta 4rth order that can timestep to any day X. if the time step required is of seconds or hours or years, convert them into days firs before passing the days value.
+
+It has options...
+	option name: 
+	Long name = --name, Short name = -n. The name of the target object. The current supported objects are [Sol, Mercury, Venus, Earth, Moon-Luna, Apophis, Eros, Bennu, Mars, Vesta, Ceres, Pallas, Hygiea, Jupiter, Saturn, Uranus, Neptune, Pluto, Haumea, Makemake, Eris, Halley, 67PChuruyov] ¦astlo rtime -n object¦ For luna as thebtarget object the best practice is to use the astlotalk module method talk('moon') or talk('luna')
+
+	option lp: 
+	-lp, --lp. This is an old functionality that allows tracking the target object second by second in real-time. Local time, UTC time and Unix time. all objects supported except Sol that requires the rk4 option. Hence Sol/Sun cannot be passed barely as ¦astlo rtime -n sun -lp y¦ an Error message will be triggered. ¦astlo rtime -n objects -lp y¦. use astlotalk.talk in astlotalk module if target object is Luna.
+	
+	option rk4-rungekutta: 
+	-rk4, --rk4. the 4th order accuracy. Rungekutta¦for astlo. use this together with name of object for 4th order accuracy with a delta t of one hour. ¦astlo rtime -n object -rk4 y¦. Do not use this option together with option -lp. All objects supported including Sol except Luna. Use astlotalk.talk in astlotalk module if target objects Luna.
+
+	option days:
+	-d, --days. This option allows time stepping to any day X or second X or Year X or Hour X. just convert the values into days first b4 passing the number value to days option. ¦|astlo rtime -n object -rk4 y -d int/float¦| This option should striclty be used together with option -rk4. ¦astlo rtime -n object -rk4 y -d int/float¦
+
+
+
+Solar system COMMAND details:
+============================
+
+updates are always taking place
+
+. This command will automatically work if run on a PC.  If the device is a lowpower processor device like smart-phones l, more setup like installing termux-X11 is required to allow rendering the multimedia.
+
+. Just as the name of the command, this command houses the details and multimedia for the supported objects.
+. credits go to: NASA,NASA-JPL,ESA,Venera-missions,r/kenyaspacenerds,Astlo space systems. For the images and videos.
+
+. in the main README file in the main github repository, https://github.com/iamnothimbutwe/astlopublic.git, you can find a CALL to the public. Astlo Highly recommends it.
+
+it has options...
+	option name: 
+	-n, --name. The name of the Solar system object. 
+	usage: ¦astlo details -n object¦ A random image of the tafget object will also be generated/shown
+
+	option moons: 
+	-mns, --moons. This option allows accessing details of the full system if the target object has moons orbiting it as the primary mass. The primary mass to the Moon is the Earth but the primary mass to the Earth-Moon-System is the Sun/Sol. 
+	usage: ¦astlo details -n object -mns y¦ if the taret object has no known moons, an error message will be shown.
+
+	option comets:
+	-cmts, --comets. This option shows the details of known comets.
+	usage: works solely |astlo details -cmts y|
+
+
+
+
+Solar system COMMAND anmte:
+===========================
+
+- This command mostly shows 2D renders. 2D and 3D renders can be accessed via the SDK part. i should add the 3D generation to CLI part.
+- Best practice is to ignore long name options: --rt, --real and baryc because they contain old logic.
+
+it has options...
+
+	option name:
+	-n, --name the name of the Solar system object. The methods used in this anmte command are shallow in terms of depth of understanding. There are newer methods that are better and more efficient. 
+	For example this method only supports the major objects excluding the Asteroids and Comets of the Solar system. The newer methods -that support the major Asteroids including NEOs and comets- are also accessible via the SDK part. These newer methods support time stepping. This method is better for visualizing individual planets/dwarfs
+	type: any
+	usage: ¦astlo anmte -n object¦
+	
+	option jupview:
+	-jv, --jupview. This option renders a 2D real-time positions of planet Jupiter and The inner objects.
+	The inner objects list = [SSB,SOL,MERCURY,VENUS,EARTH,APOPHIS,BENNU,EROS,MARS,VESTA,CERES,PALLAS,HYGIEA] + JUPITER and optional 1P/HALLEY because its final perihelion distance is about 0.6AU inside planet Venus orbit. This method works solely.
+	type: any
+	usage: ¦astlo anmte -jv y¦
+
+	option days:
+	-d, --days. give this a value if you want to visualize the state of the jupiter and inner objects system after time t. passed value should strictly be in days. Eg if timestep required is of 20 hours, then convert that 20 hours into days and pass it to this option. astlo can timestep for any object but the logic was only applied to jupview option 2D and comesteroids method that tracks NEOs.
+	This option can only be used with -jv and --neo option.
+	type: int/float
+	usage: ¦astlo anmte -jv y -d int/float¦ or ¦astlo anmte -n NEO --neo y -d int/float¦
+
+	option near earth object |neo|:
+	--neo. give this a value if you want to visualize any NEO in real time or with a time step t. use it together with the name of the NEO. cannot be used together with -jv option.
+	type: any
+	usage: ¦astlo anmte -n NEO --neo y¦ or with a time step of t days: ¦astlo anmte -n NEO --neo y -d t (int/float)¦
+
+
+
+
+Solar System COMMAND true-anomaly-visual:
+=========================================
+
+- This command allows viewing the current true-anomalies of all the objects of the Solar System in a single terminal plot using plotext
+usage: ¦astlo true-anomaly-visual¦
+
+
+
+Solar System COMMAND energy-visual:
+===================================
+
+- This command plots a single plot containing the energy values against distance from the Hsliocenter using plotext.
+
+
+
+Solar System COMMAND velocity-visual:
+====================================
+
+- plots a velocity plot against distance from heliocenter
+
+
+
+Solar System COMMAND angular-momentum-visual
+============================================
+
+- plots an angular_momentum plot against distance from the heliocenter.
+
+
+Solar System COMMAND inclination-visual:
+=======================================
+
+- plots an inclination-visual against distance from the Heliocenter
+
+
+
+Solar System COMMAND topocentric:
+=================================
+
+- This command allows viewing with an explanation for any Solar System object relative your local sky in real-time. All objects are supporte
+- shows the topocentric states of object X
+
+it has options...
+The final usage for this Command will be showed at the final option.
+
+	option name:
+	############
+	-n, --name. The name of the solar system object.
+	type: string
+
+	option latitude:
+	################
+	-lat, --longitude. North or South of the Equator. The passed value should be in terms of degrees. 
+	Usea negative sign to indicate South.
+	type: int/float
+
+	option longitude:
+	#################
+	-long, --longitude. East or West of the Equator. The passed value should be in degrees.
+	Use a negative sign to indicate West.
+	type: int/float
+
+	option altitude:
+	################
+	-alt, --altitude. above or below sea level. The passed value should be in meters.
+	Use a negative sign to indicate below sea level
+	type: int/float
+
+	option days:
+	############
+	-d, --days. if you want to time step to a certain second, minute, hour, day, year, millions and billions of years forwad or backwards, give this option an interger value in terms of days. IN TERMS OF DAYS.
+	Example knowing where a Solar System object will be in your local sky after time X.
+	type: int/float
+
+
+	option tt:
+	##########
+	-tt, --rktt. default is one hour for the internal rungekutta 4th order accuracy. How long do you want the runge kutta logic to time-step.? If unrequired, do not touch this option.
+	type: int/float
+
+
+	option visible or not:
+	######################
+	-visnot, --visible_or_not. if you want to know which solar system object is visible or not relative your location on Earths surface, give this option any value
+	type: any
+
+	option explain:
+	###############
+	-expl, --explain. if you want astlo to explain to you in raw-text whatever is happening in your local sky. Solar System Object.
+	This option requires a time delay of one minute to allow your location to rotate 0.25° East to allow astlo determine the state of the object and actual explanation.
+	type: any
+
+
+	option ephemeris:
+	#################
+	This option is redundant and therefore a similar Topocentric command in package Valley -a package requiring astlo- is available.
+	-eph, --ephem. if you want to use de440.bsp from NASA JPL to track the object. This file only supportes Sun, Venus, Mercury and moon-luna. astlo has an internal ephemeris powered by its internal rungekutta for all the objects.
+	The external file is only for precision. If visnot option is given a value, astlo will only read Luna topocentric states externally and the other objects topocentric states will be internal. ephem option is best used with a single object /Sun,Venus,Mercury.
+	Best practice is to use Valley CLI for topocentric COMMAND.
+	The reason being that importing astlotalk module into astlo would generate a circular import error. 
+	Valley also includes other funcionalities that require astlo so this is not new.
+	If you are using astlo CLI for the topocentric command and object is Luna, this option should not be used.
+
+
+	USAGE:
+	=#=#=#=#=#=#=#=#=#=#=#=#=#
+
+	astlo internal ephemeris without explanation |instant with no time delay| = ¦astlo topocentric -n object -lat value in degrees -long value in degrees -alt value in meters¦
+	
+	astlo internal ephemeris with exolanation |1 minute time delay| = ¦astlo topocentric -n object -lat value in degrees -long value in degrees -alt value in meters -expl y¦
+
+	astlo for precise topocentric states without explaination |instant without time delay| = ¦astlo topocentric -n object -lat value in degrees -long value in degrees -alt value in meters -eph y¦
+	Remember to initialize talk method in astlotalk module if eph option is to be used. If object is Luna, eph option is not used.
+
+	astlo for precise topocentric states with explanation |1 minute time delay| = ¦astlo topocentric -n object -lat value in degrees -long value in degrees -alt value in meters -expl y -eph y¦
+
+	=#=#=#=#=#=#=#
+	Use Valley if the above explanation is confusing. A better version of this topocentric method is available there. Take notes while you stargaze
+	=#=#=#=#=#=#=#
+
+
+
+
+Now entering Earth orbiting satellites except Luna-moon
+
+	Part Two: Earth Orbiting Satellites
+	===================================
+EO = Earth Orbiting
+
+EO satellite COMMAND satellite
+
+
