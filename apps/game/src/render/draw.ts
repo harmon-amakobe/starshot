@@ -139,13 +139,22 @@ export interface SceneInput {
   readonly shake: readonly [number, number];
 }
 
-interface Rect {
+export interface Rect {
   x: number;
   y: number;
   w: number;
   h: number;
 }
-const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+/** Where drawScene put things the DOM overlays must not cover [CSS px]. */
+export interface SceneLayout {
+  /** The closest-approach / arrival label ("Miss 1.2 million km"). */
+  readonly ghostLabel: Readonly<Rect> | null;
+  /** The target, its label and its closest-approach marker, Earth and the aim arrow: best left uncovered too. */
+  readonly keepClear: ReadonlyArray<Readonly<Rect>>;
+}
+
+export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (r: Rect, area: Rect) => r.x >= area.x && r.y >= area.y && r.x + r.w <= area.x + area.w && r.y + r.h <= area.y + area.h;
 /** Move a rectangle the least distance that puts it inside `area` (top-left wins if it cannot fit). */
 const clampInto = (r: Rect, area: Rect): Rect => ({
@@ -290,8 +299,10 @@ export function tensionColor(t: number): string {
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 
-export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
+export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): SceneLayout {
   const { vp, cam, eph, dpr } = s;
+  let ghostLabel: Rect | null = null;
+  const keepClear: Rect[] = [];
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, vp.width, vp.height);
@@ -314,6 +325,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     planets.push({ id, x, y, r });
     const pad = id === s.target ? 10 : 1;
     occupied.push({ x: x - r - pad, y: y - r - pad, w: 2 * (r + pad), h: 2 * (r + pad) });
+    if (id === s.target || id === "earth") keepClear.push(occupied[occupied.length - 1]!);
   }
 
   // Sun and its glow.
@@ -453,6 +465,8 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     ctx.fillStyle = g.hit ? COLORS.probe : COLORS.warn;
     ctx.fillText(g.label, at.x + 4, at.y + 13);
     occupied.push(at);
+    ghostLabel = at;
+    keepClear.push({ x: gx - 8, y: gy - 8, w: 16, h: 16 });
     ctx.restore();
   }
 
@@ -487,6 +501,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     if (!spot && l.priority > 1) continue;
     const at = spot ?? candidates[0]!;
     occupied.push(at);
+    if (isTarget) keepClear.push(at);
     ctx.fillStyle = isTarget ? BODIES[l.id].color : rgba(COLORS.text, l.priority <= 2 ? 0.92 : 0.62);
     ctx.fillText(text, at.x, at.y + h - 3);
   }
@@ -501,7 +516,11 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     if (s.drag) drawBand(ctx, ex, ey, s.drag);
     if (s.aim) {
       const t = s.drag ? Math.min(1, Math.hypot(s.drag.pullX, s.drag.pullY) / s.drag.maxPull) : s.aim.speedKmS / s.aim.vMax;
-      drawArrow(ctx, ex, ey, s.aim.angleDeg, arrowLengthPx(s.aim.speedKmS, s.aim.vMax), s.drag ? tensionColor(t) : COLORS.probe, 3);
+      const len = arrowLengthPx(s.aim.speedKmS, s.aim.vMax);
+      drawArrow(ctx, ex, ey, s.aim.angleDeg, len, s.drag ? tensionColor(t) : COLORS.probe, 3);
+      const tx = ex + Math.cos((s.aim.angleDeg * Math.PI) / 180) * len;
+      const ty = ey - Math.sin((s.aim.angleDeg * Math.PI) / 180) * len;
+      keepClear.push({ x: Math.min(ex, tx) - 6, y: Math.min(ey, ty) - 6, w: Math.abs(tx - ex) + 12, h: Math.abs(ty - ey) + 12 });
     }
   }
 
@@ -535,6 +554,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     ctx.fill();
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  return { ghostLabel, keepClear };
 }
 
 function drawCaptureZone(ctx: CanvasRenderingContext2D, s: SceneInput, x: number, y: number, r: number) {

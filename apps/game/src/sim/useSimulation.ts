@@ -7,6 +7,10 @@
  * only when it matches (see preview.ts), and then launches that preview's own
  * request, which the deterministic worker simulates bit for bit the same.
  * Launches and hints are awaited individually.
+ *
+ * Requesting a preview sets no React state; only the worker's answer does. The
+ * request is made from an effect after every aim change, so a state update
+ * there would add a second, nested render to every key press.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { HintQuery } from "./hint.js";
@@ -22,7 +26,11 @@ type Pending = { resolve: (r: SimResponse) => void; reject: (e: Error) => void }
 export interface SimulationApi {
   /** Latest finished preview (may lag the aim by one request while dragging; check its shot). */
   readonly preview: ShotResponse | null;
-  readonly previewBusy: boolean;
+  /**
+   * shotKey of the last preview request the worker answered, with a path or an
+   * error. When it names a shot that `preview` does not, that shot failed.
+   */
+  readonly answeredKey: string;
   requestPreview(shot: ShotRequest): void;
   launch(shot: ShotRequest): Promise<ShotResponse>;
   hint(query: HintQuery): Promise<HintResponse>;
@@ -32,13 +40,17 @@ export function useSimulation(): SimulationApi {
   const workerRef = useRef<Worker | null>(null);
   const nextId = useRef(1);
   const inFlight = useRef<number | null>(null);
-  const queued = useRef<ShotRequest | null>(null);
+  const inFlightKey = useRef("");
+  const queued = useRef<{ readonly shot: ShotRequest; readonly key: string } | null>(null);
   const lastKey = useRef<string>("");
   const lastPost = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef(new Map<number, Pending>());
-  const [preview, setPreview] = useState<ShotResponse | null>(null);
-  const [previewBusy, setPreviewBusy] = useState(false);
+  // One state for both, so an answer re-renders once.
+  const [answered, setAnswered] = useState<{ readonly preview: ShotResponse | null; readonly key: string }>({
+    preview: null,
+    key: "",
+  });
 
   const pump = useCallback(() => {
     const worker = workerRef.current;
@@ -53,10 +65,11 @@ export function useSimulation(): SimulationApi {
       }
       return;
     }
-    const shot = queued.current;
+    const { shot, key } = queued.current;
     queued.current = null;
     const id = nextId.current++;
     inFlight.current = id;
+    inFlightKey.current = key;
     lastPost.current = performance.now();
     const req: SimRequest = { kind: "shot", id, purpose: "preview", shot };
     worker.postMessage(req);
@@ -70,8 +83,8 @@ export function useSimulation(): SimulationApi {
       const res = event.data;
       if (res.id === inFlight.current) {
         inFlight.current = null;
-        if (res.kind === "shot") setPreview(res);
-        if (!queued.current) setPreviewBusy(false);
+        const key = inFlightKey.current;
+        setAnswered((prev) => ({ preview: res.kind === "shot" ? res : prev.preview, key }));
         pump();
         return;
       }
@@ -85,7 +98,9 @@ export function useSimulation(): SimulationApi {
       for (const p of waiting.values()) p.reject(new Error(event.message || "physics worker failed"));
       waiting.clear();
       inFlight.current = null;
-      setPreviewBusy(false);
+      // Nothing requested so far will be answered: a launch waiting on it must give up.
+      const key = lastKey.current;
+      setAnswered((prev) => ({ preview: prev.preview, key }));
     };
     // A request made before the worker existed (first render) is sent now.
     pump();
@@ -106,8 +121,7 @@ export function useSimulation(): SimulationApi {
       const key = shotKey(shot);
       if (key === lastKey.current) return;
       lastKey.current = key;
-      queued.current = shot;
-      setPreviewBusy(true);
+      queued.current = { shot, key };
       pump();
     },
     [pump],
@@ -129,5 +143,5 @@ export function useSimulation(): SimulationApi {
   );
   const hint = useCallback((query: HintQuery) => call<HintResponse>((id) => ({ kind: "hint", id, query })), [call]);
 
-  return { preview, previewBusy, requestPreview, launch, hint };
+  return { preview: answered.preview, answeredKey: answered.key, requestPreview, launch, hint };
 }

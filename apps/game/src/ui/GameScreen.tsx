@@ -12,7 +12,17 @@ import {
 } from "../levels.js";
 import { aimFromPull, useSlingshot, type Pull } from "../input/useSlingshot.js";
 import { fitCamera, focusPoint, panBy, project, zoomAt, type Camera, type Viewport } from "../render/camera.js";
-import { buildPath, drawScene, visibleMapRect, type Ghost, type Marker, type PathData } from "../render/draw.js";
+import {
+  buildPath,
+  drawScene,
+  overlaps,
+  visibleMapRect,
+  type Ghost,
+  type Marker,
+  type PathData,
+  type Rect,
+  type SceneLayout,
+} from "../render/draw.js";
 import { renderStarfield } from "../render/starfield.js";
 import { maxStars, scoreShot, type Score, type ScoringRules } from "../scoring.js";
 import type { Hint } from "../sim/hint.js";
@@ -185,15 +195,56 @@ function buildGhost(res: ShotResponse): Ghost | null {
   return { x: target[0], y: target[1], probeX: probe[0], probeY: probe[1], label, hit: a.hit };
 }
 
-/** Where the coach mark sits: just below Earth, kept inside the uncovered map. */
-function placeCoach(el: HTMLElement, vp: Viewport, x: number, y: number) {
+const overlapArea = (a: Rect, b: Readonly<Rect>) =>
+  Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+
+/**
+ * Where the coach mark sits: next to Earth (below it when there is room),
+ * inside the uncovered map, never on the closest-approach label and covering as
+ * little as possible of the target, Earth and the aim arrow. The coach mark is
+ * DOM over the canvas, and on a short landscape map the spot below Earth is
+ * often where "Miss ..." is drawn.
+ */
+function placeCoach(el: HTMLElement, vp: Viewport, x: number, y: number, layout: SceneLayout) {
   const map = visibleMapRect(vp, 8);
   const w = el.offsetWidth;
   const h = el.offsetHeight;
-  const left = Math.max(map.x, Math.min(x - w / 2, map.x + map.w - w));
+  const clampX = (left: number) => Math.max(map.x, Math.min(left, map.x + map.w - w));
+  const clampY = (top: number) => Math.max(map.y, Math.min(top, map.y + map.h - h));
   const below = y + 18;
-  const top = below + h <= map.y + map.h ? below : Math.max(map.y, y - 18 - h);
-  el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+  const above = y - 18 - h;
+  const spots: Rect[] = [
+    { x: clampX(x - w / 2), y: below, w, h },
+    { x: clampX(x - w / 2), y: above, w, h },
+    { x: x - 18 - w, y: clampY(y - h / 2), w, h },
+    { x: x + 18, y: clampY(y - h / 2), w, h },
+    { x: x - 18 - w, y: below, w, h },
+    { x: x + 18, y: below, w, h },
+    { x: x - 18 - w, y: above, w, h },
+    { x: x + 18, y: above, w, h },
+  ];
+  const fits = (r: Rect) => r.x >= map.x && r.y >= map.y && r.x + r.w <= map.x + map.w && r.y + r.h <= map.y + map.h;
+  // On a map strip too short to hold it (small landscape phones), the status line says
+  // the same thing, so the coach mark stays hidden rather than covering the map.
+  el.style.visibility = map.h < 3 * h ? "hidden" : "";
+  const label = layout.ghostLabel;
+  const host = el.offsetParent as HTMLElement | null;
+  const toolsEl = host?.querySelector<HTMLElement>(".map-tools") ?? null;
+  let tools: Rect | null = null;
+  if (host && toolsEl) {
+    const a = host.getBoundingClientRect();
+    const b = toolsEl.getBoundingClientRect();
+    tools = { x: b.left - a.left, y: b.top - a.top, w: b.width, h: b.height };
+  }
+  const usable = spots.filter(
+    (r) => fits(r) && (label === null || !overlaps(r, label)) && (tools === null || !overlaps(r, tools)),
+  );
+  const cost = (r: Rect) => layout.keepClear.reduce((sum, k) => sum + overlapArea(r, k), 0);
+  // Earlier spots win ties, so an unobstructed "below Earth" is always the choice.
+  let at: Rect | null = null;
+  for (const r of usable) if (at === null || cost(r) < cost(at)) at = r;
+  at ??= spots.find(fits) ?? { x: clampX(x - w / 2), y: clampY(below), w, h };
+  el.style.transform = `translate(${Math.round(at.x)}px, ${Math.round(at.y)}px)`;
 }
 
 export function GameScreen(props: GameScreenProps) {
@@ -212,7 +263,14 @@ export function GameScreen(props: GameScreenProps) {
   const launchEt = useMemo(() => launchEtForDay(level.window.startIso, day), [level, day]);
   const [aim, setAim] = useState<Aim>(() => defaultAim(level, launchEt));
   const [fine, setFine] = useState(false);
-  const [phase, setPhase] = useState<Phase>("aim");
+  const [phase, setPhaseState] = useState<Phase>("aim");
+  // Input handlers check this, not the rendered phase, so nothing can change the aim,
+  // the date or the hint between Launch and the re-render that disables the controls.
+  const phaseRef = useRef<Phase>("aim");
+  const setPhase = useCallback((next: Phase) => {
+    phaseRef.current = next;
+    setPhaseState(next);
+  }, []);
   const [hint, setHint] = useState<Hint | null>(null);
   const [hintState, setHintState] = useState<HintState>("idle");
   const [hintUsed, setHintUsed] = useState(false);
@@ -348,7 +406,7 @@ export function GameScreen(props: GameScreenProps) {
       }
     }
     const pull = pullRef.current;
-    drawScene(ctx, {
+    const layout = drawScene(ctx, {
       vp: vpRef.current,
       cam: camRef.current,
       dpr: dprRef.current,
@@ -379,8 +437,12 @@ export function GameScreen(props: GameScreenProps) {
     if (coachEl && L.coach && L.phase === "aim") {
       const e = eph.state("earth", et).r;
       const [x, y] = project(camRef.current, vpRef.current, e[0], e[1]);
-      placeCoach(coachEl, vpRef.current, x, y);
+      placeCoach(coachEl, vpRef.current, x, y, layout);
     }
+    // The browser checks (verify-game) read the canvas-drawn label's box from here.
+    const g = layout.ghostLabel;
+    const tag = g ? [g.x, g.y, g.w, g.h].map(Math.round).join(",") : "";
+    if (canvas.dataset.ghostLabel !== tag) canvas.dataset.ghostLabel = tag;
   }, [orbits]);
 
   const stepFlight = useCallback((now: number): boolean => {
@@ -516,9 +578,18 @@ export function GameScreen(props: GameScreenProps) {
   const aimBeforeDrag = useRef<Aim | null>(null);
   const maxTensionBuzzed = useRef(false);
   const zoomLimits = () => ({ minScale: fitScaleRef.current / 8, maxScale: fitScaleRef.current * 60000 });
+  const endDrag = useCallback(() => {
+    pullRef.current = null;
+    aimBeforeDrag.current = null;
+    setDragging(false);
+  }, []);
   useSlingshot(canvasRef, phase === "aim", {
     onPull(pull, final) {
-      if (latest.current.phase !== "aim") return;
+      if (phaseRef.current !== "aim") {
+        // A keyboard launch during a drag: the aim is fixed, the band just goes away.
+        if (final) endDrag();
+        return;
+      }
       dismissCoach();
       pullRef.current = final ? null : pull;
       if (!aimBeforeDrag.current) aimBeforeDrag.current = latest.current.aim;
@@ -533,10 +604,8 @@ export function GameScreen(props: GameScreenProps) {
       poke(2500);
     },
     onPullCancel() {
-      pullRef.current = null;
-      if (aimBeforeDrag.current) setAim(aimBeforeDrag.current);
-      aimBeforeDrag.current = null;
-      setDragging(false);
+      if (phaseRef.current === "aim" && aimBeforeDrag.current) setAim(aimBeforeDrag.current);
+      endDrag();
       requestDraw();
     },
     onZoom(sx, sy, factor) {
@@ -558,9 +627,10 @@ export function GameScreen(props: GameScreenProps) {
     requestDraw();
   };
 
-  // ----- actions
+  // ----- actions (aim, date and hint act only while aiming: after Launch the shot is fixed)
   const nudgeAngle = useCallback(
     (d: number) => {
+      if (phaseRef.current !== "aim") return;
       dismissCoach();
       setAim((a) => ({ ...a, angleDeg: normalizeDeg(round(a.angleDeg + d, 0.001)) }));
     },
@@ -568,13 +638,22 @@ export function GameScreen(props: GameScreenProps) {
   );
   const nudgeSpeed = useCallback(
     (d: number) => {
+      if (phaseRef.current !== "aim") return;
       dismissCoach();
       setAim((a) => ({ ...a, speedKmS: Math.max(0, Math.min(level.vInfMaxKmS, round(a.speedKmS + d, 0.0001))) }));
     },
     [level, dismissCoach],
   );
+  const pickDay = useCallback(
+    (next: number | ((d: number) => number)) => {
+      if (phaseRef.current !== "aim") return;
+      setDay((d) => clampDay(typeof next === "function" ? next(d) : next));
+    },
+    [clampDay],
+  );
 
   const showHint = useCallback(() => {
+    if (phaseRef.current !== "aim") return;
     setHintState("busy");
     sim
       .hint(hintQueryFor(level))
@@ -599,7 +678,7 @@ export function GameScreen(props: GameScreenProps) {
   }, [sim, level, poke]);
 
   const applyHint = useCallback(() => {
-    if (!hint) return;
+    if (!hint || phaseRef.current !== "aim") return;
     // Only applying the hint caps the stars; looking at it does not.
     setHintUsed(true);
     dismissCoach();
@@ -677,8 +756,9 @@ export function GameScreen(props: GameScreenProps) {
 
   const launch = useCallback(() => {
     const L = latest.current;
-    if (L.phase !== "aim") return;
+    if (phaseRef.current !== "aim") return;
     dismissCoach();
+    endDrag();
     if (L.gate.ready && L.preview) {
       fire(L.preview);
       return;
@@ -689,18 +769,19 @@ export function GameScreen(props: GameScreenProps) {
     pendingLaunch.current = shotKey(L.shot);
     requestPreview(L.shot);
     setPhase("launching");
-  }, [fire, requestPreview, dismissCoach]);
+  }, [fire, requestPreview, dismissCoach, endDrag, setPhase]);
 
   useEffect(() => {
     const key = pendingLaunch.current;
     if (phase !== "launching" || key === null) return;
     if (preview && shotKey(preview.shot) === key) fire(preview);
-    else if (!sim.previewBusy) {
+    else if (sim.answeredKey === key) {
+      // The worker answered exactly this shot without a path: it failed.
       pendingLaunch.current = null;
       setPhase("aim");
       setAnnouncement("Launch cancelled: the path for this aim could not be computed.");
     }
-  }, [phase, preview, sim.previewBusy, fire]);
+  }, [phase, preview, sim.answeredKey, fire, setPhase]);
 
   const skip = useCallback(() => {
     const f = flightRef.current;
@@ -730,8 +811,8 @@ export function GameScreen(props: GameScreenProps) {
   }, [status.text, phase, dragging]);
 
   // ----- keyboard
-  const keyHandlers = useRef({ nudgeAngle, nudgeSpeed, launch, showHint, applyHint, refit, zoomButton, setDay, clampDay, day, phase, hintState, skip });
-  keyHandlers.current = { nudgeAngle, nudgeSpeed, launch, showHint, applyHint, refit, zoomButton, setDay, clampDay, day, phase, hintState, skip };
+  const keyHandlers = useRef({ nudgeAngle, nudgeSpeed, launch, showHint, applyHint, refit, zoomButton, pickDay, phase, hintState, skip });
+  keyHandlers.current = { nudgeAngle, nudgeSpeed, launch, showHint, applyHint, refit, zoomButton, pickDay, phase, hintState, skip };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const h = keyHandlers.current;
@@ -769,10 +850,10 @@ export function GameScreen(props: GameScreenProps) {
           h.launch();
           break;
         case "[":
-          h.setDay((d: number) => h.clampDay(d - 1));
+          h.pickDay((d: number) => d - 1);
           break;
         case "]":
-          h.setDay((d: number) => h.clampDay(d + 1));
+          h.pickDay((d: number) => d + 1);
           break;
         case "h":
         case "H":
@@ -904,8 +985,8 @@ export function GameScreen(props: GameScreenProps) {
             launchReady={gate.ready}
             onAngle={nudgeAngle}
             onSpeed={nudgeSpeed}
-            onFine={() => setFine((v) => !v)}
-            onDay={(d) => setDay(clampDay(d))}
+            onFine={() => phaseRef.current === "aim" && setFine((v) => !v)}
+            onDay={pickDay}
             onHint={showHint}
             onApplyHint={applyHint}
             onLaunch={launch}

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { SimulationResult } from "@starshot/physics";
 import { launchGate, previewForShot, shotKey } from "./preview.js";
 import type { ShotResponse } from "./protocol.js";
-import { SIM_SETTINGS, type ShotAnalysis, type ShotRequest } from "./shot.js";
+import { SIM_SETTINGS, type ShotAnalysis, type ShotRequest, type SimSettings } from "./shot.js";
 
 const shot: ShotRequest = {
   target: "mars",
@@ -41,6 +41,16 @@ describe("launch gate: only the preview of the shot on screen can be launched", 
     expect(shotKey({ ...shot, captureZoneScale: 1 })).not.toBe(shotKey(shot));
     expect(shotKey({ ...shot, sim: { ...SIM_SETTINGS, maxStep: 1 } })).not.toBe(shotKey(shot));
     expect(shotKey({ ...shot, requiredFlyby: "jupiter" })).not.toBe(shotKey(shot));
+    expect(shotKey({ ...shot, attractors: ["mars", "earth", "jupiter"] })).not.toBe(shotKey(shot));
+    expect(shotKey({ ...shot, requiredFlyby: undefined })).toBe(shotKey(shot));
+  });
+
+  it("covers every field, including ones added to the request or its settings later", () => {
+    const extended = { ...shot, midCourseBurn: [0.1, 0, 0] } as ShotRequest;
+    expect(shotKey(extended)).not.toBe(shotKey(shot));
+    const settings = { ...SIM_SETTINGS, minStep: 1 } as SimSettings;
+    expect(shotKey({ ...shot, sim: settings })).not.toBe(shotKey(shot));
+    expect(previewForShot(responseFor(shot), extended)).toBeNull();
   });
 
   it("is closed and busy until the matching preview arrives", () => {

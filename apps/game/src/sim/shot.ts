@@ -93,7 +93,9 @@ export interface ShotRequest {
   readonly sim: SimSettings;
   /**
    * Capture-zone radius as a multiple of the target's real sphere of influence.
-   * 1 (the default) everywhere except the training level.
+   * 1 (the default) everywhere except the training level. Must be at least 1:
+   * the integrator stops at the real sphere, so a smaller zone would be scored
+   * as a hit the probe never reached; simulateShot throws a RangeError instead.
    */
   readonly captureZoneScale?: number;
 }
@@ -135,6 +137,12 @@ export const captureZoneKm = (ephemeris: Ephemeris, shot: ShotRequest): number =
 
 /** Run the flight exactly as the game does. */
 export function simulateShot(ephemeris: Ephemeris, shot: ShotRequest): SimulationResult {
+  const scale = shot.captureZoneScale ?? 1;
+  if (!(scale >= 1)) {
+    throw new RangeError(
+      `captureZoneScale must be at least 1 (got ${scale}): the flight stops at the target's real sphere of influence, so a smaller capture zone cannot be scored`,
+    );
+  }
   const attractors = shot.attractors.includes(shot.target) ? shot.attractors : [...shot.attractors, shot.target];
   const start = departureState(ephemeris, shot.launchEt, shot.vInf);
   const result = simulate({
@@ -151,7 +159,6 @@ export function simulateShot(ephemeris: Ephemeris, shot: ShotRequest): Simulatio
     maxStep: shot.sim.maxStep,
     maxSteps: shot.sim.maxSteps,
   });
-  const scale = shot.captureZoneScale ?? 1;
   return scale > 1 ? stopAtCaptureZone(ephemeris, result, shot.target, captureZoneKm(ephemeris, shot)) : result;
 }
 

@@ -130,8 +130,10 @@ button:disabled {
   transform: scale(0.97);
 }
 
-.ghost-btn:disabled {
+.ghost-btn:disabled,
+.toggle-btn:disabled {
   opacity: 0.55;
+  transition: opacity 0.15s ease 0.15s;
 }
 
 .toggle-btn.is-on {
@@ -145,9 +147,10 @@ button:disabled {
   border-color: rgba(196, 181, 253, 0.45);
 }
 
+/* Every control is at least 44 x 44 CSS px (AGENTS.md rule 7). */
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex: none;
   display: grid;
   place-items: center;
@@ -294,6 +297,10 @@ button:disabled {
   font-weight: 800;
   color: var(--planet);
   padding: 2px 0;
+  /* A 44 px tall target inside the 30 px chip: the negative margins keep the chip compact. */
+  min-width: 44px;
+  min-height: 44px;
+  margin: -10px 0;
 }
 
 .target-chip select option {
@@ -524,14 +531,15 @@ button:disabled {
 
 .date-row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   gap: 6px;
   align-items: center;
 }
 
 .date-slider input {
   width: 100%;
-  height: 36px;
+  /* The whole input is the touch target: a tap anywhere on it moves the thumb there. */
+  height: 44px;
   margin: 0;
   accent-color: var(--probe);
 }
@@ -545,8 +553,8 @@ button:disabled {
 }
 
 .step-btn {
-  min-width: 0;
-  height: 36px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 4px;
   border-radius: 10px;
   border: 1px solid var(--line);
@@ -569,6 +577,8 @@ button:disabled {
 
 .step-btn:disabled {
   opacity: 0.35;
+  /* Launch disables every step for the few ms the launch takes: dim only if it lasts. */
+  transition: opacity 0.15s ease 0.15s;
 }
 
 .date-row .step-btn {
@@ -624,7 +634,7 @@ button:disabled {
     grid-template-columns: 1fr 1fr;
   }
   .date-row {
-    grid-template-columns: 40px minmax(0, 1fr) 40px auto;
+    grid-template-columns: 44px minmax(0, 1fr) 44px auto;
   }
   .date-out {
     display: block;
@@ -775,6 +785,18 @@ button:disabled {
   color: #cfd7f3;
 }
 
+/* Neutral on purpose: using the hint is allowed, it only caps the stars. */
+.hint-used {
+  width: fit-content;
+  margin: -4px auto 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
 .checks {
   list-style: none;
   margin: 0 0 10px;
@@ -874,6 +896,11 @@ button:disabled {
     font-size: 12.5px;
     line-height: 1.35;
   }
+  .hint-used {
+    margin: -2px auto 6px;
+    padding: 1px 10px;
+    font-size: 12px;
+  }
   .checks {
     margin-bottom: 6px;
     gap: 2px;
@@ -965,23 +992,35 @@ button:disabled {
 }
 
 /*
- * The orbit art rises from below the menu like a horizon, so it never crosses
- * the STARSHOT logo (rings scale with the short side of the screen).
+ * The orbit art rises from below the menu like a horizon and never crosses the
+ * logo, the buttons or the star count. The three rings scale together from one
+ * radius, --art-r: at most the room under the centred menu, which is never
+ * taller than about 360 px (50vh - 180px), less the sun's offset and a margin.
  */
 .title-art {
+  --art-r: min(280px, 59vmin, 50vh - 216px);
   position: fixed;
   left: 50%;
-  top: calc(100% - 56px);
+  top: calc(100% - 24px);
   width: 0;
   height: 0;
   z-index: 0;
   pointer-events: none;
 }
 
-@media (orientation: landscape) and (max-height: 500px) {
+/*
+ * Landscape screens too short for that horizon: the sun moves to the bottom-left
+ * corner and the rings stay inside the gutter beside the 320 px button column.
+ */
+@media (orientation: landscape) and (max-height: 827px) {
   .title-art {
-    top: calc(100% - 20px);
+    --art-r: min(280px, 59vmin, 50vw - 200px - (var(--safe-l) + var(--safe-r)) / 2);
+    left: calc(var(--safe-l) + 28px);
+    top: calc(100% - 28px);
   }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
   .orbit.o3 {
     display: none;
   }
@@ -1006,7 +1045,7 @@ button:disabled {
 }
 
 .orbit.o1 {
-  --d: min(220px, 48vmin);
+  --d: calc(var(--art-r) * 0.79);
   width: var(--d);
   height: var(--d);
   left: calc(var(--d) / -2);
@@ -1015,7 +1054,7 @@ button:disabled {
 }
 
 .orbit.o2 {
-  --d: min(360px, 78vmin);
+  --d: calc(var(--art-r) * 1.29);
   width: var(--d);
   height: var(--d);
   left: calc(var(--d) / -2);
@@ -1024,7 +1063,7 @@ button:disabled {
 }
 
 .orbit.o3 {
-  --d: min(560px, 118vmin);
+  --d: calc(var(--art-r) * 2);
   width: var(--d);
   height: var(--d);
   left: calc(var(--d) / -2);

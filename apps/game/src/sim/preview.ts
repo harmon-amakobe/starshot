@@ -9,24 +9,29 @@ import type { ShotResponse } from "./protocol.js";
 import type { ShotRequest } from "./shot.js";
 
 /**
- * Canonical identity of a shot: every field that changes the flight, in a fixed
- * order (so key order in the object does not matter). Numbers print as their
- * shortest round-trip form, so equal keys mean bit-identical inputs.
+ * Canonical identity of a shot: the whole request as JSON with the keys of
+ * every object sorted, so key order does not matter, and a field added to
+ * ShotRequest or SimSettings later joins the launch gate without anyone having
+ * to list it here. Numbers print as their shortest round-trip form, so equal
+ * keys mean bit-identical inputs. An absent optional field and an explicit
+ * default give different keys, which can only keep Launch closed, never open it
+ * for a different shot.
  */
 export function shotKey(s: ShotRequest): string {
-  return [
-    s.target,
-    s.attractors.join(","),
-    s.launchEt,
-    s.vInf.join(","),
-    s.maxFlightDays,
-    s.requiredFlyby ?? "",
-    s.sim.rtol,
-    s.sim.atolKm,
-    s.sim.maxStep,
-    s.sim.maxSteps,
-    s.captureZoneScale ?? 1,
-  ].join("|");
+  return stableJson(s);
+}
+
+function stableJson(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(stableJson).join(",")}]`;
+  if (v !== null && typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    const keys = Object.keys(o)
+      .filter((k) => o[k] !== undefined)
+      .sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${stableJson(o[k])}`).join(",")}}`;
+  }
+  // undefined inside an array prints as JSON does it there.
+  return JSON.stringify(v) ?? "null";
 }
 
 /** The finished preview if it is for exactly this shot, otherwise null (still computing). */

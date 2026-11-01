@@ -1,6 +1,6 @@
 # @starshot/game
 
-The Starshot game prototype: an "Angry Birds in orbit" slingshot across the real
+The Starshot game prototype: a slingshot game in orbit across the real
 Solar System. Vite + React 19 + TypeScript, Canvas 2D, physics in a Web Worker.
 Fully static: no network requests, no external fonts or CDNs, no backend.
 
@@ -72,9 +72,12 @@ Jupiter's capture zone is 48 million km in radius.
 
 For the Grand Tour the cheapest direct (Lambert) transfer to Saturn in the
 window needs 15.12 km/s (1977-09-09, 1,498 days), far above the 10.5 km/s cap.
-The cheapest Jupiter-assisted hit found is 9.10 km/s: 1977-09-02, 68.43 degrees,
-a band 0.07 degrees wide, Jupiter on 1979-11-04, Saturn on 1982-04-04 (search
-and grid in `GRAND_TOUR_PAR_SHOT`). Without Jupiter, a full 10.5 km/s pull never
+The par is the cheapest Jupiter-assisted hit found on the search grid, within
+~0.01 km/s of the floor in delta-v: v-infinity 9.10 km/s (delta-v 6.50),
+1977-09-02, 68.43 degrees, in a band about 0.14 degrees wide, Jupiter on
+1979-11-04, Saturn on 1982-04-04. A finer probe finds hits down to 9.085 km/s
+(delta-v 6.49) and none at 9.080 km/s (search, grid and probe in
+`GRAND_TOUR_PAR_SHOT`). Without Jupiter, a full 10.5 km/s pull never
 comes closer to Saturn than 7.5 Saturn spheres of influence (closest on the
 window's last day, aimed 95-110 degrees); the test asserts more than 5. The
 curated Grand Tour hint (1977-08-20, 75.93 degrees, 9.800 km/s) flies by
@@ -125,7 +128,7 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
   maps to v-infinity with a u^1.5 curve (fine control at small pulls); aims snap to
   0.1 degree and 0.01 km/s, then the step buttons (and the Fine toggle, 10x
   smaller) refine them. The Grand Tour needs that precision: its solutions are
-  0.02-0.3 degrees wide (the par shot's band is 0.07 degrees).
+  0.02-0.3 degrees wide (the par shot's band is about 0.14 degrees).
 - **First Light trains.** Its capture zone is three times Mars's real sphere of
   influence, and the HUD, the status line and the result card say "Training
   capture zone (3× real)"; every other level is real size. Until the first drag
@@ -136,6 +139,15 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
   pixel ratio is capped at 2.
 - **Honest numbers.** The HUD shows v-infinity, delta-v from a 200 km LEO, C3 and
   flight time; misses report the closest approach against the capture-zone radius.
+
+## Known issues
+
+- Landscape phones narrower than 700 CSS px (667 x 375, 640 x 360) keep the
+  controls along the bottom, because the right-hand column starts at 700 px, and
+  that leaves almost no map between the HUD and the panel: 40 px tall at
+  667 x 375 with the earlier 36 px step buttons, 20 px with today's 44 px touch
+  targets (Playwright, Chromium). 740 x 360 and wider get the column and a
+  390 x 222 px map.
 
 ## Extension points
 

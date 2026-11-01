@@ -122,6 +122,12 @@ describe("First Light's training capture zone", () => {
     expect(scoreShot({ parDeltaVKmS: level.par!.deltaVKmS }, { ...a, hintUsed: false }).hit).toBe(true);
   });
 
+  it("a zone smaller than the real sphere of influence is refused, not mis-scored", () => {
+    for (const captureZoneScale of [0.5, 0, Number.NaN]) {
+      expect(() => simulateShot(eph, { ...nearMiss, captureZoneScale })).toThrow(/captureZoneScale must be at least 1/);
+    }
+  });
+
   it("the same shot misses the real-size zone", () => {
     const a = fly({ ...nearMiss, captureZoneScale: 1 });
     expect(a.hit).toBe(false);

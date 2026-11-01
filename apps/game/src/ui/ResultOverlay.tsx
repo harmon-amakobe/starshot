@@ -134,7 +134,7 @@ export function ResultOverlay(p: ResultOverlayProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="result-title"
-      aria-describedby="result-summary"
+      aria-describedby={p.hintUsed ? "result-summary result-hint" : "result-summary"}
       onKeyDown={trapTab}
     >
       <div ref={cardRef} className={`result-card ${a.hit ? "is-hit" : "is-miss"}`}>
@@ -154,11 +154,17 @@ export function ResultOverlay(p: ResultOverlayProps) {
               ? `Entered ${zone} on ${formatDate(a.endEt)} after ${formatDays(a.flightDays)}.`
               : `Entered ${name}'s sphere of influence on ${formatDate(a.endEt)} after ${formatDays(a.flightDays)}.`
             : `Closest approach ${formatKm(a.closestKm)} on ${formatDate(a.closestEt)}; ${zone} reaches ${formatKm(a.captureZoneKm)} from its centre.`}
-          {score.hintCapped ? " Hint used: capped at 2 stars." : ""}
+          {score.hintCapped ? " The hint capped this shot at 2 stars." : ""}
           {a.beyondEphemerisRange
             ? ` The flight runs past ${EPHEMERIS_VALID_UNTIL_ISO.slice(0, 4)}, the end of the JPL table: planet positions there are extrapolated.`
             : ""}
         </p>
+        {/* Said whenever the hint was applied, even when it cost no star (a miss, or two stars anyway). */}
+        {p.hintUsed ? (
+          <p id="result-hint" className="hint-used">
+            Hint used
+          </p>
+        ) : null}
         <ul className="checks">
           {checks.map(([ok, text]) => (
             <li key={text} className={ok ? "ok" : "no"}>

@@ -28,6 +28,7 @@ export interface AimControlsProps {
   readonly statusTwoLines?: boolean;
   readonly hintState: HintState;
   readonly hintLabel: string | null;
+  /** Launch pressed: the shot is fixed, so every aim, date and hint control is disabled. */
   readonly launching: boolean;
   /** The finished preview is for exactly this aim, so Launch would fly what is on screen. */
   readonly launchReady: boolean;
@@ -124,7 +125,7 @@ export function AimControls(p: AimControlsProps) {
           type="button"
           className="step-btn"
           aria-label="Launch one day earlier"
-          disabled={p.day <= 0}
+          disabled={p.launching || p.day <= 0}
           onClick={(e) => {
             p.onDay(p.day - 1);
             releaseFocusAfterPointer(e);
@@ -140,6 +141,7 @@ export function AimControls(p: AimControlsProps) {
             max={p.level.window.days}
             step={1}
             value={p.day}
+            disabled={p.launching}
             aria-valuetext={p.launchDateLabel}
             onChange={(e) => p.onDay(Number(e.target.value))}
             onPointerUp={(e) => e.currentTarget.blur()}
@@ -149,7 +151,7 @@ export function AimControls(p: AimControlsProps) {
           type="button"
           className="step-btn"
           aria-label="Launch one day later"
-          disabled={p.day >= p.level.window.days}
+          disabled={p.launching || p.day >= p.level.window.days}
           onClick={(e) => {
             p.onDay(p.day + 1);
             releaseFocusAfterPointer(e);
@@ -165,19 +167,19 @@ export function AimControls(p: AimControlsProps) {
           <span className="tune-label">
             Angle <strong>{formatAimAngle(p.aim.angleDeg, p.fine)}&#xB0;</strong>
           </span>
-          <Step text={`\u2212${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} clockwise`} onStep={() => p.onAngle(-a[0]!)} />
-          <Step text={`\u2212${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} clockwise`} onStep={() => p.onAngle(-a[1]!)} />
-          <Step text={`+${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} counter-clockwise`} onStep={() => p.onAngle(a[1]!)} />
-          <Step text={`+${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} counter-clockwise`} onStep={() => p.onAngle(a[0]!)} />
+          <Step text={`\u2212${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} clockwise`} onStep={() => p.onAngle(-a[0]!)} disabled={p.launching} />
+          <Step text={`\u2212${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} clockwise`} onStep={() => p.onAngle(-a[1]!)} disabled={p.launching} />
+          <Step text={`+${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} counter-clockwise`} onStep={() => p.onAngle(a[1]!)} disabled={p.launching} />
+          <Step text={`+${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} counter-clockwise`} onStep={() => p.onAngle(a[0]!)} disabled={p.launching} />
         </div>
         <div className="tune-row" role="group" aria-label="Fine-tune launch speed">
           <span className="tune-label">
             Speed <strong>{formatAimSpeed(p.aim.speedKmS, p.fine)}</strong>
           </span>
-          <Step text={`\u2212${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s slower`} onStep={() => p.onSpeed(-s[0]!)} />
-          <Step text={`\u2212${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s slower`} onStep={() => p.onSpeed(-s[1]!)} />
-          <Step text={`+${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s faster`} onStep={() => p.onSpeed(s[1]!)} />
-          <Step text={`+${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s faster`} onStep={() => p.onSpeed(s[0]!)} />
+          <Step text={`\u2212${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s slower`} onStep={() => p.onSpeed(-s[0]!)} disabled={p.launching} />
+          <Step text={`\u2212${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s slower`} onStep={() => p.onSpeed(-s[1]!)} disabled={p.launching} />
+          <Step text={`+${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s faster`} onStep={() => p.onSpeed(s[1]!)} disabled={p.launching} />
+          <Step text={`+${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s faster`} onStep={() => p.onSpeed(s[0]!)} disabled={p.launching} />
         </div>
       </div>
 
@@ -187,6 +189,7 @@ export function AimControls(p: AimControlsProps) {
           className={`toggle-btn${p.fine ? " is-on" : ""}`}
           aria-pressed={p.fine}
           aria-label="Fine steps: divide angle and speed steps by ten"
+          disabled={p.launching}
           onClick={(e) => {
             p.onFine();
             releaseFocusAfterPointer(e);
@@ -195,15 +198,30 @@ export function AimControls(p: AimControlsProps) {
           Fine
         </button>
         {p.hintState === "shown" && p.hintLabel ? (
-          <button type="button" className="ghost-btn hint-btn" onClick={p.onApplyHint} aria-label={`Use hint: ${p.hintLabel} (caps this level at two stars)`}>
+          <button
+            type="button"
+            className="ghost-btn hint-btn"
+            disabled={p.launching}
+            onClick={(e) => {
+              p.onApplyHint();
+              releaseFocusAfterPointer(e);
+            }}
+            aria-label={`Use hint: ${p.hintLabel} (caps this level at two stars)`}
+          >
             Use hint
           </button>
         ) : (
           <button
             type="button"
             className="ghost-btn hint-btn"
-            onClick={p.onHint}
-            disabled={p.hintState === "busy"}
+            onClick={(e) => {
+              if (p.hintState === "busy") return;
+              p.onHint();
+              releaseFocusAfterPointer(e);
+            }}
+            // aria-disabled, not disabled, while busy: a disabled button drops keyboard focus.
+            disabled={p.launching}
+            aria-disabled={p.hintState === "busy" || undefined}
             aria-label={p.hintState === "busy" ? "Finding a hint" : "Hint: show a suggested launch (using it caps this level at two stars)"}
           >
             {p.hintState === "busy" ? "Finding…" : "Hint"}

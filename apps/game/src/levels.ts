@@ -55,7 +55,8 @@ export interface Level {
   readonly parTolerance?: number;
   /**
    * Capture-zone radius as a multiple of the target's real sphere of influence.
-   * Default 1 (real size); only the first, training level is larger.
+   * Default 1 (real size); only the first, training level is larger. Never below
+   * 1: the flight stops at the real sphere, so simulateShot rejects a smaller zone.
    */
   readonly captureZoneScale?: number;
   /** Integrator settings: the same for this level's preview and launch (D6). */
@@ -117,13 +118,16 @@ export const GRAND_TOUR_HINT: KnownShot = {
 };
 
 /**
- * The Grand Tour's par shot: the cheapest Jupiter-assisted hit found by a search
- * of every launch day at 0.1 km/s steps (8.8-10.5 km/s), then 0.01 km/s steps
- * (9.00-9.12 km/s) on 1977-08-26 to 09-09, at 0.01 degree steps around every
- * close Jupiter pass. No hit exists below 9.10 km/s on that grid: slower shots
- * run out of the 1,700-day flight time. 68.43 degrees at 9.100 km/s on
- * 1977-09-02 (a 0.07 degree wide band) passes Jupiter on 1979-11-04 and reaches
- * Saturn on 1982-04-04, after 1,676 days. Flown in levels.test.ts.
+ * The Grand Tour's par shot: the cheapest Jupiter-assisted hit found on the
+ * search grid (every launch day at 0.1 km/s steps from 8.8 to 10.5 km/s, then
+ * 0.01 km/s steps from 9.00 to 9.12 km/s on 1977-08-26 to 09-09, at 0.01 degree
+ * steps around every close Jupiter pass), within ~0.01 km/s of the floor in
+ * delta-v. A finer probe (0.005 km/s and 0.002 degree steps, 1977-08-29 to
+ * 09-03) finds hits down to 9.085 km/s (delta-v 6.489 km/s, on 09-01 and 09-02)
+ * and none at 9.080 km/s; this shot needs 6.499 km/s. 68.43 degrees at
+ * 9.100 km/s on 1977-09-02 sits in a band about 0.14 degrees wide (hits from
+ * 68.331 to 68.468 degrees at 0.001 degree steps), passes Jupiter on 1979-11-04
+ * and reaches Saturn on 1982-04-04, after 1,676 days. Flown in levels.test.ts.
  */
 export const GRAND_TOUR_PAR_SHOT: KnownShot = {
   launchIso: "1977-09-02",
@@ -193,11 +197,11 @@ export const CAMPAIGN: readonly Level[] = [
     requiredFlyby: "jupiter",
     sim: SIM_SETTINGS,
     parTolerance: 1.05,
-    // Cheapest assisted hit found (see GRAND_TOUR_PAR_SHOT). 105% of it allows v-infinity up to
+    // Cheapest assisted hit found on the search grid (see GRAND_TOUR_PAR_SHOT). 105% of it allows v-infinity up to
     // 9.60 km/s for the efficiency star; 110% would allow 10.09, nearly the 10.5 km/s cap.
     par: par(
       9.1,
-      "Cheapest Jupiter-assisted hit found: launch 1977-09-02, 68.43 degrees, v-infinity 9.10 km/s, Saturn after 1,676 days.",
+      "Cheapest Jupiter-assisted hit found on the search grid (within ~0.01 km/s of the floor in delta-v): launch 1977-09-02, 68.43 degrees, v-infinity 9.10 km/s, Saturn after 1,676 days.",
     ),
     hint: GRAND_TOUR_HINT,
   },
