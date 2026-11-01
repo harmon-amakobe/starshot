@@ -1,7 +1,8 @@
 import { BODIES, cross, dot, norm, sub, type BodyId, type Ephemeris, type Vec3 } from "@starshot/ephemeris";
 
 function stumpffC(z: number): number {
-  if (z > 1e-6) return (1 - Math.cos(Math.sqrt(z))) / z;
+  // 2 sin^2(x/2) instead of 1 - cos x: no cancellation as z -> 4 pi^2.
+  if (z > 1e-6) { const h = Math.sin(Math.sqrt(z) / 2); return (2 * h * h) / z; }
   if (z < -1e-6) return (Math.cosh(Math.sqrt(-z)) - 1) / -z;
   return 1 / 2 - z / 24 + (z * z) / 720;
 }
@@ -24,7 +25,8 @@ export function lambert(r1: Vec3, r2: Vec3, tof: number, mu = BODIES.sun.gm, pro
   const cz = cross(r1, r2)[2];
   if ((prograde && cz < 0) || (!prograde && cz >= 0)) dnu = 2 * Math.PI - dnu;
   const A = Math.sin(dnu) * Math.sqrt((n1 * n2) / (1 - Math.cos(dnu)));
-  if (!Number.isFinite(A) || Math.abs(A) < 1e-9) return null;
+  // A is in km; near a 180-degree transfer the plane is undefined, so give up.
+  if (!Number.isFinite(A) || Math.abs(A) < 1e-6 * Math.sqrt(n1 * n2)) return null;
 
   const y = (z: number) => n1 + n2 + (A * (z * stumpffS(z) - 1)) / Math.sqrt(stumpffC(z));
   const F = (z: number) => {
@@ -34,11 +36,17 @@ export function lambert(r1: Vec3, r2: Vec3, tof: number, mu = BODIES.sun.gm, pro
     return Math.pow(yz / C, 1.5) * stumpffS(z) + A * Math.sqrt(yz) - Math.sqrt(mu) * tof;
   };
   let lo = -4 * Math.PI * Math.PI;
-  let hi = 4 * Math.PI * Math.PI - 1e-9;
+  let hi = 4 * Math.PI * Math.PI * (1 - 1e-9);
   // Move the lower bound until y(z) > 0 (needed when A > 0).
   for (let k = 0; k < 200 && y(lo) < 0; k++) lo = (lo + hi) / 2;
   let flo = F(lo);
-  const fhi = F(hi);
+  let fhi = F(hi);
+  // The time of flight tends to infinity as z -> 4 pi^2; step back if the
+  // upper end is not finite (single revolution only).
+  for (let k = 0; k < 60 && !(Number.isFinite(fhi) && fhi > 0); k++) {
+    hi = lo + (hi - lo) * 0.999;
+    fhi = F(hi);
+  }
   if (!(flo <= 0 && fhi >= 0)) {
     // Extend into the hyperbolic range for very short flights.
     for (let k = 0; k < 60 && flo > 0; k++) { lo *= 2; flo = F(lo); }

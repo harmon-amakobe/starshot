@@ -178,9 +178,24 @@ export function simulate(cfg: SimulationConfig): SimulationResult {
     // Closest approaches: distance rate turns from negative to positive.
     let stop: { at: number; why: Termination; body?: BodyId } | undefined;
     const nextRate = new Map<BodyId, number>();
+    // Knot that restarts the arc after the home planet's gravity switches on.
+    let kick: TrajectorySample | undefined;
     if (departing && cfg.departFrom) {
-      const rel = relative(eph, cfg.departFrom, tNew, b.r, b.v);
-      if (rel.d > 2 * soi.get(cfg.departFrom)!) {
+      const home = eph.state(cfg.departFrom, tNew);
+      const d = Math.hypot(b.r[0] - home.r[0], b.r[1] - home.r[1], b.r[2] - home.r[2]);
+      if (d > 2 * soi.get(cfg.departFrom)!) {
+        // Switch the home planet's gravity on, energy-consistently: from here
+        // outward it will take back 2*mu/d of (relative speed)^2, so add that
+        // now. The probe then still leaves with the vInf the player chose,
+        // which keeps the aim consistent with a Lambert solution. The bump is a
+        // second knot at the same instant, so the integrated arc that ends at
+        // `b` keeps its own velocity for interpolation.
+        const dv: Vec3 = [b.v[0] - home.v[0], b.v[1] - home.v[1], b.v[2] - home.v[2]];
+        const u = Math.hypot(dv[0], dv[1], dv[2]);
+        const k = u > 0 ? Math.sqrt(u * u + (2 * BODIES[cfg.departFrom].gm) / d) / u : 1;
+        const v: Vec3 = [home.v[0] + dv[0] * k, home.v[1] + dv[1] * k, home.v[2] + dv[2] * k];
+        kick = { t: tNew, r: b.r, v };
+        y[3] = v[0]; y[4] = v[1]; y[5] = v[2];
         departing = false;
         active = attractors;
         solver.reset();
@@ -211,6 +226,7 @@ export function simulate(cfg: SimulationConfig): SimulationResult {
       break;
     }
     samples.push(b);
+    if (kick) samples.push(kick);
     const dist = Math.hypot(b.r[0], b.r[1], b.r[2]);
     if (dist < sunDive) { termination = "sun"; terminatedBy = "sun"; break; }
     if (dist > escape) { termination = "escape"; break; }

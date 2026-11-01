@@ -44,7 +44,8 @@ export function dateFromEt(et: number): Date {
   // One fixed-point step is exact except within a second of a leap second.
   let unix = (et / SECONDS_PER_DAY + J2000_JD - UNIX_EPOCH_JD) * SECONDS_PER_DAY;
   unix -= ttMinusUtc(unix);
-  return new Date(unix * 1000);
+  // Round to the millisecond so exact UTC midnights do not print as 23:59:59.999.
+  return new Date(Math.round(unix * 1000));
 }
 
 export const etFromJdTdb = (jdTdb: number): number => (jdTdb - J2000_JD) * SECONDS_PER_DAY;

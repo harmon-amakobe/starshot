@@ -56,6 +56,11 @@ describe("time scales", () => {
     const d = new Date("2026-10-31T20:52:00Z");
     expect(dateFromEt(etFromDate(d)).getTime()).toBe(d.getTime());
   });
+  it("round-trips every UTC midnight from 1800 to 2050 to the millisecond", () => {
+    for (let t = Date.UTC(1800, 0, 1); t <= Date.UTC(2050, 0, 1); t += 86400000 * 7) {
+      expect(dateFromEt(etFromDate(new Date(t))).getTime()).toBe(t);
+    }
+  });
   it("applies 37 leap seconds in 2026 (TT-UTC = 69.184 s)", () => {
     const et = etFromIso("2026-10-31T00:00:00Z");
     expect(et - etFromJdTdb(2461344.5)).toBeCloseTo(69.184, 3);
