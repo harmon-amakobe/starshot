@@ -20,9 +20,10 @@ commit message, PR body, screenshot and log you produce.
   list from a local, never-committed file (`.git/info/private-names`) or the
   `STARSHOT_PRIVATE_NAMES` variable (in CI, an optional repository secret mapped into
   the scan step alone), because even hashes of short names can be guessed.
-- **Firebase or GCP configuration:** none today. A future leaderboard uses a separate,
-  Starshot-only project whose config is injected at build time from repository
-  Variables (D7), never committed and never borrowed from another project.
+- **Firebase or GCP credentials:** service-account keys, Admin SDK credentials, `.env`
+  files and App Check debug tokens, never. The production web configuration (D13) may
+  live in one allow-listed file once it exists, and nowhere else; it is never borrowed
+  from another project.
 
 ## Allowed
 
@@ -35,6 +36,18 @@ commit message, PR body, screenshot and log you produce.
   `python/astlo/astlo-*.dist-info/` (D10). The secrets gate skips only its email rule
   there; an address anywhere else in `python/astlo/` is still a finding.
 
+## Text that leaves the machine
+
+Commit messages, pull request and issue bodies and comments follow the copy standard
+(`docs/copy-standard.md`, D27) as files do. The `copy` gate checks files and, in CI,
+the pull request's commits; the `copy-lint` workflow checks text typed into GitHub.
+Check a body or a range before it is published:
+
+```bash
+node scripts/check-copy-tells.mjs --stdin --kind pr < <PR body file>
+node scripts/check-copy-tells.mjs --commits main..HEAD
+```
+
 ## Screenshots and logs
 
 - Capture headless, at fixed viewports, with no desktop, browser chrome, bookmarks or
@@ -44,11 +57,14 @@ commit message, PR body, screenshot and log you produce.
 
 ## Licence hygiene
 
-- Starshot's own files are MIT (D3). Mark's astlo files keep his notice and are never
-  relabelled, excerpted or summarised into our code (D2).
+- Starshot's own files are Apache-2.0, original media CC BY 4.0, and the name, logo and
+  icon all rights reserved (D12). `REUSE.toml` labels every path; the `licence` gate
+  fails a file it does not cover and an art or audio file missing from `CREDITS.md`.
+- Mark's astlo files keep his notice and are never relabelled, excerpted or summarised
+  into our code (D2).
 - `python/astlo/astlo/**` is Mark's code with our fixes (D10): his headers stay, it is
-  never labelled MIT, and nothing in `packages/` or `apps/` copies or imports it.
-  Starshot's scripts beside it carry an MIT SPDX header. A draft message to Mark never
+  never labelled Apache-2.0, and nothing in `packages/` or `apps/` copies or imports it.
+  Starshot's scripts beside it carry an SPDX header naming Starshot's licence. A draft message to Mark never
   enters the repository, and no text claims the fixes were sent to him until the owner
   says so.
 - Third-party data (JPL elements, Horizons vectors) carries its source citation where
@@ -59,6 +75,7 @@ commit message, PR body, screenshot and log you produce.
 ```bash
 node scripts/check-secrets.mjs                         # every tracked and untracked file
 git log --format='%an <%ae> %cn <%ce>%n%B' main..HEAD | node scripts/check-secrets.mjs --stdin
+node scripts/check-copy-tells.mjs --commits main..HEAD # dashes and stock phrases in messages
 git diff --name-only main...HEAD                       # what will be published
 git ls-files -o --exclude-standard                     # what you forgot, or should not add
 ```

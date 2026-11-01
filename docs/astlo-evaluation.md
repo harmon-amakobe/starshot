@@ -43,7 +43,7 @@ from its true direction. Everything that depends on Earth inherits that error: t
 view, a launch from Earth, the Sun's direction. The "RK4 N-body" time stepping also does
 not yet do what its description says.
 
-The good news: the biggest bug is a mix-up in one data table. Putting the original
+The biggest bug is a mix-up in one data table. Putting the original
 numbers back brings Earth, Venus and Mars close to NASA's positions. We tested this,
 and the fixed build in [`python/astlo/`](../python/astlo/README.md) now puts Earth
 within about 0.2 arcminutes of NASA's direction
@@ -119,9 +119,9 @@ would give launch velocities.
 **Performance on a laptop-class CPU** (measured):
 
 - `import astlo`: 0.76 s.
-- `barycentric(body)`: 2–4 ms.
+- `barycentric(body)`: 2 to 4 ms.
 - `rungekutta()`: 0.8 s, the same whether you ask for 1 year or 1 billion years.
-- `Topocentric.topo()`: 0.7–0.9 s.
+- `Topocentric.topo()`: 0.7 to 0.9 s.
 
 ---
 
@@ -144,14 +144,14 @@ far off the body's direction is as seen from the Sun; 60′ = 1°.
 | Neptune | 74.6 million km | 1.0° |
 | Pluto | 204 million km | 2.2° |
 | **Ceres** | **536 million km (3.6 AU)** | **87°** |
-| Vesta / Pallas / Hygiea | 200–290 million km | 25–43° |
+| Vesta / Pallas / Hygiea | 200 to 290 million km | 25 to 43° |
 
 The same errors appear at J2000 (the date the tables are supposed to describe), in
 1986, 2029 and 2126. That means they come from **input data, not slow drift**. Full
 tables: [`tools/astlo-bench/results/compare_shipped.txt`](../tools/astlo-bench/results/compare_shipped.txt).
 
 **Why "it holds up clean against JPL" still sounded true.** The **distance from the
-Sun** (the vector magnitude, which Mark said he checked) matches JPL to about 0.01–1%
+Sun** (the vector magnitude, which Mark said he checked) matches JPL to about 0.01 to 1%
 for the planets. The **direction** is what's wrong. Checking magnitudes alone can't
 catch it, which is why Starshot's own tests and any future data gate check direction.
 
@@ -183,7 +183,7 @@ changed) and re-ran the real engine:
 The remaining drift has two causes. The periods are rounded: Mercury's `0.2408 yr` is
 enough to drift 12° in 27 years. And there are no per-century correction terms. Using
 JPL's standard "approximate positions" element set, which includes those terms, would
-bring all the planets to within about 1° or better over 1800–2050 (Starshot's own
+bring all the planets to within about 1° or better over 1800 to 2050 (Starshot's own
 ephemeris uses that set and stays within 9 arcminutes; see the
 [README](../README.md#how-accurate-is-it)). Ceres needs a new mean anomaly:
 `Ceres_MO = 80.39` is actually Ceres' node value, a copy error. Full table:
@@ -246,7 +246,7 @@ public code does not show yet, not things that cannot be done.
 |---|---|
 | Core engine under 100 KB | **Only the zipped wheel** (93.5 KB). The installed source is 411 KB, and numpy and matplotlib are required |
 | No ephemeris tables; RK4 N-body from raw osculating elements, accounting for drift | **Not in the public code.** It's fixed-element two-body Kepler; RK4 is a single 0.04 s step |
-| Cross-validated vs JPL .bsp, "holds up clean" | Magnitudes, yes; directions are 24–87° off. There's no validation code in the package |
+| Cross-validated vs JPL .bsp, "holds up clean" | Magnitudes, yes; directions are 24 to 87° off. There's no validation code in the package |
 | 100% local and offline | True for the 16 bodies. Satellites need internet; the Moon and `--ephem` need an external `import_states.json` from an unreleased helper |
 | 21 bodies | Public v12 has 16 plus the Sun; the 21 is the unreleased v13 |
 | Any object, asteroid, satellite | Satellites: yes. Arbitrary asteroids and comets: no. Unknown names call `sys.exit` |
@@ -299,14 +299,14 @@ The evaluation shaped several of Starshot's decisions:
 
 - **Positions from NASA/JPL, checked by direction.** Starshot uses JPL's "approximate
   positions" element set with per-century terms, and its tests compare *directions*
-  with Horizons, not just distances (D4).
+  with Horizons as well as distances (D4).
 - **Physics on the device, in TypeScript.** A 60 fps slingshot cannot wait for a server
   on every frame, so the simulator runs in the browser in a Web Worker (D5). Running
-  astlo itself in the browser through Pyodide was ruled out: it is a 6–21 MB download,
+  astlo itself in the browser through Pyodide was ruled out: it is a 6 to 21 MB download,
   roughly 13× slower than JavaScript for this work, and shipping the wheel would count
   as distribution under its licence.
 - **A real, looped integrator.** Starshot's simulator integrates the whole flight with
-  an adaptive Dormand–Prince method, so gravity assists happen naturally.
+  an adaptive Dormand-Prince method, so gravity assists happen naturally.
 - **A data gate for astlo.** If Mark licenses astlo's output, it can replace JPL data
   body by body, once each body passes the same direction check. The contract for that
   is in [architecture.md](architecture.md#future-the-astlo-data-gate).
@@ -377,7 +377,7 @@ published and the fixed builds side by side, at a frozen instant, use the newer 
 
 The scripts are in [`tools/astlo-bench/scripts/`](../tools/astlo-bench/scripts/) and the
 comparison outputs in [`tools/astlo-bench/results/`](../tools/astlo-bench/results/). The
-scripts are Starshot's own code (MIT). They call astlo's public API and the public JPL
+scripts are Starshot's own code (Apache-2.0). They call astlo's public API and the public JPL
 Horizons API; none of astlo's code is included. Step-by-step instructions are in
 [`tools/astlo-bench/README.md`](../tools/astlo-bench/README.md). In short:
 

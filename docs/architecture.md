@@ -166,7 +166,7 @@ Lambert solutions used to build levels.
   (`Level.sim`, either `SIM_SETTINGS` or `OUTER_SIM_SETTINGS` from
   `apps/game/src/sim/shot.ts`) inside every `ShotRequest`, and the aiming preview and
   the real launch both call `simulateShot()` with that request (decision D6). The launch
-  simply re-runs the preview's calculation, so the flight matches the dotted line.
+  re-runs the preview's calculation, so the flight matches the dotted line.
 - **Tests fly the same code.** `apps/game/src/levels.test.ts` flies every level's known
   solution, par shot and hint through `simulateShot()` with the level's own settings,
   so a change that breaks a level fails the build.
@@ -280,7 +280,7 @@ added, the design is:
   write only their own score, in the expected shape, and **App Check**, so only the real
   Starshot site can call the backend.
 - **No trust in the client.** A submitted score carries the shot (level, launch date
-  and aim), not just the result. A server function re-simulates it with the same
+  and aim) as well as the result. A server function re-simulates it with the same
   `@starshot/physics` code and the level's own frozen settings, and records the score only if the
   re-simulated flight earns it (within the small cross-device tolerance described under
   Determinism).

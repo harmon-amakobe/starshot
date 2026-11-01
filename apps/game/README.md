@@ -167,4 +167,4 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 
 2D mode: orbits flattened onto the ecliptic. Planet positions: NASA/JPL
 approximate elements (1800-2050). Inspired by astlo by Mark Macharia; no astlo
-code or data is used by the game. Starshot's code is MIT licensed.
+code or data is used by the game. Starshot's code is licensed Apache-2.0 (D12).

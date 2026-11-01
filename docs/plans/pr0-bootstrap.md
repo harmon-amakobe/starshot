@@ -170,7 +170,7 @@ Deviations are logged here, never absorbed (AGENTS.md).
 | Option | Why not |
 |---|---|
 | Use astlo as the runtime engine | Licence reserves all rights (D2), and the public build's directions are off by up to 87° (see [../astlo-evaluation.md](../astlo-evaluation.md)) |
-| Run astlo in the browser with Pyodide | 6–21 MB download, about 13× slower, and shipping the wheel is distribution |
+| Run astlo in the browser with Pyodide | 6 to 21 MB download, about 13× slower, and shipping the wheel is distribution |
 | Server-side physics | A 60 fps aiming preview cannot wait for the network; static hosting needs no server (D5, D7) |
 | A Firebase backend now | Nothing needs it yet; D7 keeps the site fully static, and any future backend is a separate Starshot-only project |
 | A 3D game view | A flat screen cannot aim up or down; the game is 2D (D6); 3D waits for the orrery (D5) |

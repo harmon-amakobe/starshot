@@ -1,6 +1,6 @@
 ---
 name: public-hygiene
-description: Use when anything is about to leave the machine for this public repository, such as a push, a commit message, a pull-request title or body, an issue comment, a screenshot or a pasted log, or when a task mentions secrets, tokens, emails, personal paths, private project names, Firebase config or the check-secrets gate.
+description: Use when anything is about to leave the machine for this public repository, such as a push, a commit message, a pull-request title or body, an issue comment, a screenshot or a pasted log, or when a task mentions secrets, tokens, emails, personal paths, private project names, Firebase config, the check-secrets gate or the copy gate.
 ---
 
 # The pre-push hygiene pass
@@ -14,6 +14,8 @@ The rubric is `.claude/rubrics/public-repo-hygiene.md`.
 node scripts/check-secrets.mjs                       # tracked and untracked files
 git log --format='%an <%ae> %cn <%ce>%n%B' main..HEAD | node scripts/check-secrets.mjs --stdin
 node scripts/check-secrets.mjs --stdin < <PR body file>
+node scripts/check-copy-tells.mjs --commits main..HEAD           # commit messages (D27)
+node scripts/check-copy-tells.mjs --stdin --kind pr < <PR body file>
 git diff --name-only main...HEAD                     # exactly what will be published
 git ls-files -o --exclude-standard                   # strays: screenshots, scratch tests
 ```
@@ -25,7 +27,15 @@ below.
 
 Commit author and committer emails are published with the commit. Use the GitHub
 noreply address (`<id>+<user>@users.noreply.github.com`) in `git config user.email` for
-this clone; the secrets scan of `git log` above catches a personal one.
+this clone; the secrets scan of `git log` above catches a personal one. Agent commits
+are authored as the owner with a sign-off and a `Co-Authored-By:` trailer (D24); the
+recipe is in the `stacked-pr` skill.
+
+## Copy
+
+Every message, title and body follows `docs/copy-standard.md` (D27): no em dash, en
+dash or horizontal bar, no emoji, none of the stock phrases. A failing line is
+rewritten, not marked `copy-ok`, unless it quotes a rule.
 
 ## If something leaked
 

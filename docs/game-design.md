@@ -1,7 +1,7 @@
 # Game design
 
 Starshot is a slingshot game in orbit: pull back a slingshot on Earth, let go, and try
-to reach another planet. The twist is that everything is real: the planets are where NASA
+to reach another planet. Everything in the flight is real: the planets are where NASA
 says they were (or will be) on that date, and your probe is pulled by the Sun and the
 planets all the way.
 
@@ -23,7 +23,7 @@ planets all the way.
 
 The fun comes from a real orbital puzzle: you cannot aim straight at Mars, because Mars
 will have moved by the time you arrive. You aim ahead of it, and the Sun's gravity
-curves your path into an arc. Get the timing right and it looks effortless.
+curves your path into an arc. Get the timing right and the trip needs less launch speed.
 
 ## Controls
 
@@ -102,7 +102,7 @@ The campaign at the time of writing:
 | 2 | Morning Star | Venus | early 2028 |
 | 3 | Big Game | Jupiter | late 2028 |
 | 4 | Grand Tour | Saturn, via Jupiter | August 1977, like Voyager 2 |
-| — | Sandbox | any planet | from today's date |
+| none | Sandbox | any planet | from today's date |
 
 How to add one: [CONTRIBUTING.md](../CONTRIBUTING.md#how-to-add-a-level).
 

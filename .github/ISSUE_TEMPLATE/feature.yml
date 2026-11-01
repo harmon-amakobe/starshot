@@ -1,0 +1,44 @@
+name: Feature request
+description: A change to how the game plays, looks or sounds, or to the packages.
+title: "Feature: "
+labels: ["kind:feature", "status:triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is hard or missing today? Describe it before the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like to happen
+    validations:
+      required: true
+  - type: textarea
+    id: who
+    attributes:
+      label: Who it helps
+      placeholder: "Players on small phones who aim with one thumb"
+    validations:
+      required: true
+  - type: textarea
+    id: a11y
+    attributes:
+      label: Accessibility
+      description: How would this work with a keyboard, a screen reader and reduced motion? Write "not sure" if you do not know.
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      description: Tick this only if an AI tool helped. Requests are welcome either way.
+      options:
+        - label: An AI tool helped with this request, and I checked it says what I mean.
+  - type: input
+    id: ai-tool
+    attributes:
+      label: AI tool
+      description: Optional. Name the tool if you ticked the box above.

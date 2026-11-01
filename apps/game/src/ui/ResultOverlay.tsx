@@ -23,7 +23,7 @@ export interface ResultOverlayProps {
 
 function headline(level: Level, a: ShotAnalysis): string {
   const name = BODIES[level.target].name;
-  if (a.hit) return a.termination === "impact" ? `Impact on ${name}!` : `Captured by ${name}!`;
+  if (a.hit) return a.termination === "impact" ? `Impact on ${name}` : `Captured by ${name}`;
   switch (a.termination) {
     case "sun":
       return "Lost to the Sun";
@@ -88,7 +88,7 @@ export function ResultOverlay(p: ResultOverlayProps) {
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title: "Starshot", text, url });
-        setShared("Shared!");
+        setShared("Shared");
         return;
       }
     } catch (err) {

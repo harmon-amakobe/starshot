@@ -1,6 +1,6 @@
 ---
 name: stacked-pr
-description: Use when starting a branch that depends on an unmerged Starshot branch, choosing a PR base, pushing, restacking after the branch below changed, sweeping before a push, or when a diff shows a mass change nobody expected, or a task mentions stacking, rebasing, the stack base or opening a pull request.
+description: Use when starting a branch that depends on an unmerged Starshot branch, choosing a PR base, committing agent work, signing off, pushing, restacking after the branch below changed, sweeping before a push, or when a diff shows a mass change nobody expected, or a task mentions stacking, rebasing, the stack base, the DCO, commit authorship or opening a pull request.
 ---
 
 # Stacked pull requests
@@ -19,6 +19,27 @@ gh pr list --state open --json number,headRefName,baseRefName \
 
 Only the orchestrator pushes and opens PRs; builders never do.
 
+## Commit agent work as the owner (D24)
+
+The orchestrator makes every commit, at its publish step; builders never commit. Each
+commit is authored by the owner, carries the owner's `Signed-off-by:` (the DCO check
+compares it with the author) and names the agent in a `Co-Authored-By:` trailer with the
+session link. Write the message to a file outside the repository, then:
+
+```bash
+git -c user.name="Harmon Amakobe" -c user.email="73005556+harmon-amakobe@users.noreply.github.com" \
+  commit -s -F <message file>
+git log -1 --format='%an <%ae>%n%(trailers)'   # author, Signed-off-by, Co-Authored-By
+```
+
+The message file ends with the trailers the session's attribution names, for example
+`Co-Authored-By: <agent> <noreply@anthropic.com>` and `Claude-Session: <link>`; `-s`
+adds the sign-off from the author identity above. Never add a `Signed-off-by:` for
+anyone but the owner, and only under that standing instruction. A commit without one
+gets a follow-up remediation commit from the owner, never a third-party sign-off
+(`.github/dco.yml`). Check the messages before the push:
+`node scripts/check-copy-tells.mjs --commits <below>..HEAD`.
+
 ## Branch and publish
 
 ```bash
@@ -26,6 +47,9 @@ git switch -c starshot/<topic> <branch below>      # never from a stale worktree
 git push -u origin starshot/<topic>                # by name; never --all, --mirror, --prune
 gh pr create --base <branch below> --title "<title>" --body-file <file outside the repo>
 ```
+
+The body names its issue: `Part of #n` inside the stack, `Closes #n` only in the pull
+request that reaches `main` (D23, the `track-work` skill).
 
 ## Restack after the branch below changed
 

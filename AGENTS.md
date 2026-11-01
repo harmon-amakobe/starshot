@@ -9,7 +9,8 @@ Every agent surface loads this file. Adapters (`CLAUDE.md`,
 A slingshot game in orbit, across the real Solar System, plus the open
 orbital-mechanics packages behind it. Planet positions come from NASA/JPL's Keplerian
 elements, validated against JPL Horizons; flights are integrated, not faked. Public
-repository, MIT licence (D3), a fork of Mark Macharia's astlo history (D1).
+repository, a fork of Mark Macharia's astlo history (D1). Code is Apache-2.0, original
+media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 
 | Path | What lives there |
 |---|---|
@@ -18,7 +19,9 @@ repository, MIT licence (D3), a fork of Mark Macharia's astlo history (D1).
 | `packages/physics` | Integrator, patched-conic launch, encounters, Lambert |
 | `tools/horizons` | Stdlib Python that refreshes the Horizons test fixtures |
 | `third_party/astlo` | Mark's original files, unchanged and all rights reserved (D2) |
-| `python/astlo` | `astlo/` and its dist-info: Mark's v12 source plus our fixes, one commit each, his rights, not MIT (D10); the build, bench and tests beside them are ours (MIT) |
+| `python/astlo` | `astlo/` and its dist-info: Mark's v12 source plus our fixes, one commit each, under his rights and not Starshot's licence (D10); the build, bench and tests beside them are ours (Apache-2.0) |
+| `crates/` (planned) | The Rust core: maths, ephemeris, physics, game rules, wasm and FFI bindings (D16) |
+| `tools/ephem` (planned) | Python that builds DE440 rails and their validation report (D17) |
 | `docs/` | Decisions, plans, hosting, architecture |
 | `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Pages |
 
@@ -40,15 +43,16 @@ Each states its reason, so it applies to cases it does not list.
    `third_party/astlo` is the pristine upstream: never modified; a hook denies edits
    there and `check-third-party-untouched.mjs` verifies the hashes. `python/astlo/astlo/**`
    holds his v12 source with our fixes, one reviewable commit per topic, shared in good
-   faith pending his written permission: it keeps his headers and is not MIT; nothing
+   faith pending his written permission: it keeps his headers and stays outside Starshot's licence; nothing
    in `packages/` or `apps/` copies or depends on it (the third-party gate checks).
    Only the owner talks to Mark about it. astlo data enters only after a
    direction-error gate against JPL (D4).
    *Why:* the fork exists by his goodwill; one copied line breaks that and his licence.
 4. **This repository is public.** No secrets, tokens, personal emails, personal
    absolute paths, or names of the owner's private projects, in files, commit messages
-   or PR text. Firebase never appears here, except a future Starshot-only project whose
-   config is injected at build time from repository Variables (D7). `check-secrets.mjs`
+   or PR text. Firebase configuration appears only in the one allow-listed production
+   web config that D13 permits (not created yet); service-account keys, Admin SDK
+   credentials, `.env` files and App Check debug tokens never. `check-secrets.mjs`
    scans every file. *Why:* a push is publication, and history keeps what a later
    commit deletes.
 5. **Preview equals launch (D6).** Each level freezes its own integrator settings
@@ -81,9 +85,15 @@ Each states its reason, so it applies to cases it does not list.
     and keep going. A deviation that contradicts a numbered decision stops instead:
     only the owner reopens a decision. *Why:* the next session learns only from what
     was written down.
-12. **LF endings, surgical edits above 300 lines, comments that explain why.**
-    *Why:* rewritten endings and regenerated files bury the real diff and drop
+12. **LF endings, surgical edits above 300 lines, comments that explain why.** The
+    `size` gate fails a file over 500 code lines unless it is on the shrinking baseline
+    (D28). *Why:* rewritten endings and regenerated files bury the real diff and drop
     behaviour nobody was looking at.
+13. **Text follows the copy standard (D27).** No em dash, en dash or horizontal bar
+    anywhere; sentence case, short sentences, real numbers, none of the stock phrases
+    in `docs/copy-standard.md`. The `copy` gate checks files and commit messages, and the
+    `copy-lint` workflow checks issues and pull requests. *Why:* readers, and screen
+    readers, trust plain text, and generated phrasing reads as unchecked.
 
 ## Think before you touch
 
@@ -126,6 +136,12 @@ the verifiers; pushes and opens the PR; updates the plan and logs.
   are not promoted into plans or diffs. A gate reported without its exit code was not
   run.
 - Fan out only read-only research and review; building is sequential.
+- **Commits are the owner's (D24).** The orchestrator commits agent work with the owner
+  as author, adds the owner's `Signed-off-by:` at its publish step, and names the agent
+  and session in a `Co-Authored-By:` trailer. Builders never commit or sign off.
+- **Work is tracked as issues (D23).** Every PR names its issue (`Part of #n` in a
+  stack, `Closes #n` where it reaches `main`); agents take only `agent-ready` issues; the
+  orchestrator keeps them current with `scripts/sync-work.mjs` (`track-work` skill).
 
 ## Skills
 
@@ -143,6 +159,7 @@ Load a skill when its trigger appears; the index is how agents know they exist.
 | `stacked-pr` | basing, pushing, restacking a chain of PRs | `.claude/skills/stacked-pr/` |
 | `plan-pr0` | turning research into a plan that lands as PR0 | `.claude/skills/plan-pr0/` |
 | `handoff-prompt` | closing a session with work left | `.claude/skills/handoff-prompt/` |
+| `track-work` | issues, epics, labels, `work.yaml`, the sync script, Part of or Closes | `.claude/skills/track-work/` |
 
 ## Definition of Done
 
@@ -160,7 +177,9 @@ shorter DoD.
 
 | Document | Read when |
 |---|---|
+| `docs/README.md` | Finding any document: the index |
 | `docs/decisions.md` | Before questioning a settled choice; decisions are cited as D1, D2, ... and not re-litigated |
+| `docs/copy-standard.md` | Writing anything a person reads: docs, UI text, issues, pull requests, commits |
 | `docs/plans/` | Building any PR of a program: specs, acceptance criteria, deviations |
 | `docs/architecture.md` | Changing how packages, worker and game fit together |
 | `docs/hosting.md` | Pages, Actions on the fork, branch protection, future build-time config |

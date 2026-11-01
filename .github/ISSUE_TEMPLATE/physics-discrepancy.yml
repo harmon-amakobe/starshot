@@ -1,0 +1,62 @@
+name: Physics discrepancy
+description: Starshot disagrees with NASA/JPL on a position, a speed or a time.
+title: "Physics: "
+labels: ["kind:physics", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A physics number counts once it is compared with NASA/JPL. These fields hold that comparison, so it can become a test.
+  - type: input
+    id: quantity
+    attributes:
+      label: Body or quantity
+      placeholder: "Mars heliocentric longitude"
+    validations:
+      required: true
+  - type: input
+    id: epoch
+    attributes:
+      label: Date, time and time scale
+      placeholder: "2026-11-02 00:00 TDB"
+    validations:
+      required: true
+  - type: textarea
+    id: starshot
+    attributes:
+      label: Starshot's value and how you got it
+      description: The function or screen you read it from, with the inputs.
+    validations:
+      required: true
+  - type: textarea
+    id: jpl
+    attributes:
+      label: NASA/JPL Horizons value
+      description: The value, with the Horizons query or a link to it.
+    validations:
+      required: true
+  - type: input
+    id: difference
+    attributes:
+      label: Difference, with units
+      placeholder: "3.1 arcminutes"
+    validations:
+      required: true
+  - type: input
+    id: budget
+    attributes:
+      label: Budget it breaks
+      description: Optional. The test budget this exceeds, if you know it.
+      placeholder: "Mars, 2 arcminutes, in packages/ephemeris/test/ephemeris.test.ts"
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      description: Tick this only if an AI tool helped. Reports are welcome either way.
+      options:
+        - label: An AI tool helped find this, and I checked the numbers myself.
+  - type: input
+    id: ai-tool
+    attributes:
+      label: AI tool
+      description: Optional. Name the tool if you ticked the box above.

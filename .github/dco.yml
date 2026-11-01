@@ -1,0 +1,8 @@
+# The DCO app (https://github.com/apps/dco) checks that every commit in a pull request
+# carries a Signed-off-by line matching its author (D12, D24). Members are checked too,
+# and only the author may sign off a commit after the fact.
+require:
+  members: true
+allowRemediationCommits:
+  individual: true
+  thirdParty: false

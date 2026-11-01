@@ -5,13 +5,13 @@
 Pull back the slingshot, let go, and watch your probe fly to Mars, Venus, Jupiter or
 Saturn, using the real positions of the planets on real launch dates. Miss, and the
 Sun's gravity bends your path into a long loop. Swing close to Jupiter, and its gravity
-flings you onward, just as it did for Voyager 2.
+flings you onward, as it did for Voyager 2.
 
 Starshot is two things in one repository:
 
 1. **A browser game** that works on phones and desktops, with no install and no account.
 2. **Open orbital-mechanics packages** (planet positions and flight simulation) that
-   anyone can reuse under the MIT licence.
+   anyone can reuse under the Apache-2.0 licence.
 
 ## Play it
 
@@ -44,8 +44,7 @@ Other useful commands:
 - **Where the planets are.** NASA/JPL publishes a small table of numbers that describe
   each planet's orbit and how that orbit slowly changes. From it you can work out where
   a planet was or will be on any date from 1800 to 2050. Starshot does exactly that
-  (`packages/ephemeris`). An *ephemeris* is simply a table or formula of positions over
-  time.
+  (`packages/ephemeris`). An *ephemeris* is a table or formula of positions over time.
 - **How your probe flies.** Once you let go, the probe is pulled by the Sun and the
   planets at every moment. Starshot works out its path in small time steps, taking
   smaller steps near planets so nothing is missed (`packages/physics`). Gravity assists
@@ -144,23 +143,36 @@ history is kept.
 
 ## Licence
 
-- Starshot's own code and documentation: [MIT](LICENSE). You may use, copy, change and
-  share it, including commercially, as long as you keep the copyright notice.
-- `third_party/astlo/`, `python/astlo/astlo/` and `python/astlo/astlo-*.dist-info/`:
-  copyright Mark Macharia, all rights reserved. **Not** covered by the MIT licence.
-- Details, including NASA/JPL data credits: [NOTICE.md](NOTICE.md).
+Copyright 2026 Harmon Amakobe and Starshot contributors.
+
+- **Code and documentation:** [Apache-2.0](LICENSE) (D12). You may use, copy, change and
+  share it, including commercially. Keep the licence and the notices in
+  [NOTICE.md](NOTICE.md), and say what you changed. The licence includes a patent grant
+  from every contributor.
+- **Original art, audio and screenshots:** [CC BY 4.0](LICENSES/CC-BY-4.0.txt), with the
+  credit listed in [CREDITS.md](CREDITS.md). Assets from elsewhere keep their own
+  licences, also listed there.
+- **The name, logo and icon:** not licensed with the code. A fork is welcome, but it
+  needs its own name and logo before it ships as an app. See [TRADEMARK.md](TRADEMARK.md).
+- **Mark Macharia's files** (`third_party/astlo/`, `python/astlo/astlo/` and
+  `python/astlo/astlo-*.dist-info/`): copyright Mark Macharia, all rights reserved.
+  **Not** covered by Starshot's licences.
+- [REUSE.toml](REUSE.toml) records the licence of every path. Details, including the
+  NASA/JPL data credits: [NOTICE.md](NOTICE.md).
 
 ## Credits
 
+- **Mark Macharia** for astlo, the project that started this one. Starshot began as a
+  fork of astlo.
 - **NASA/JPL Solar System Dynamics** for the approximate planetary elements and the
   Horizons system.
-- **Mark Macharia** for astlo, the project that started this one.
 - The open-source projects Starshot is built on: TypeScript, React, Vite and Vitest.
+- Art, audio and data sources for anything the game ships: [CREDITS.md](CREDITS.md).
 
 Starshot is an independent fan project, not endorsed by NASA, JPL or anyone named
 above.
 
-## Contributing
+## Governance and contributing
 
 Contributions are welcome, from people and from AI coding agents alike.
 
@@ -170,4 +182,9 @@ Contributions are welcome, from people and from AI coding agents alike.
   [AGENTS.md](AGENTS.md). It is the core of the "Kobe loop": a small set of rules,
   checks and review steps that keep changes honest and the repository safe to publish.
 - Settled choices are recorded in [docs/decisions.md](docs/decisions.md).
+- Text in the repository, issues and pull requests follows the
+  [copy standard](docs/copy-standard.md).
+- Who decides what: [GOVERNANCE.md](GOVERNANCE.md). Where to ask: [SUPPORT.md](SUPPORT.md).
+  How we treat each other: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- Commits carry a DCO sign-off (`git commit -s`); see [CONTRIBUTING.md](CONTRIBUTING.md).
 - Found a security problem? Please report it privately: see [SECURITY.md](SECURITY.md).

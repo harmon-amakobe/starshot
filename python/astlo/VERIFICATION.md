@@ -5,7 +5,7 @@ measured against NASA/JPL Horizons. The code under test is
 [Mark's astlo v12 source with the fixes](README.md) (his code, all rights reserved,
 shared here in good faith pending his permission: see the README's
 [licence section](README.md#licence-and-status)). The scripts that produced every table
-are Starshot's own (MIT) and live in [`bench/`](bench/); they contain no astlo code.
+are Starshot's own (Apache-2.0) and live in [`bench/`](bench/); they contain no astlo code.
 
 ## What was tested
 
@@ -121,8 +121,8 @@ are Starshot's own (MIT) and live in [`bench/`](bench/); they contain no astlo c
 How to read these numbers:
 
 - The "now" values of **0.00′ for the eight small bodies are true by construction**. Their elements are Horizons' osculating elements at 2026-11-01 00:00 TDB, three hours after the test instant. The 2029 column is the fairer test for them.
-- Earth in astlo is the Earth–Moon barycentre (JPL Table 1 lists it that way). This explains most of the ~9,600 km offset from the Earth's centre: about 0.1′ as seen from the Sun.
-- 2126 is outside the 1800–2050 range for which JPL Table 1 is valid. Jupiter (8.75′) and Saturn (24′) drift there. Before the fix, Jupiter happened to be close at that date.
+- Earth in astlo is the Earth-Moon barycentre (JPL Table 1 lists it that way). This explains most of the ~9,600 km offset from the Earth's centre: about 0.1′ as seen from the Sun.
+- 2126 is outside the 1800 to 2050 range for which JPL Table 1 is valid. Jupiter (8.75′) and Saturn (24′) drift there. Before the fix, Jupiter happened to be close at that date.
 
 **Velocities, now (vs JPL):**
 
@@ -182,8 +182,8 @@ So the fix keeps P from the osculating a.
 
 Breaking down the steps:
 
-- With `data` to `barycentric` but without the frame fix, the separations were still 1.2°–21°.
-- With the first `topocentric` commit but not the second, they were 0.32°–0.39°. That residual is the J2000-to-date precession.
+- With `data` to `barycentric` but without the frame fix, the separations were still 1.2° to 21°.
+- With the first `topocentric` commit but not the second, they were 0.32° to 0.39°. That residual is the J2000-to-date precession.
 - With `days=10`, after the fix: Sun 0.045°, Mars 0.003°. Before the fix: Sun 20.9°, Mars 14.5°, because GMST was computed for "now" and not for the requested date.
 
 ## 4. RK4 (`rk4` and `rk4steps`)
@@ -197,7 +197,7 @@ Breaking down the steps:
 | How far Earth moved in the step | 1.25 km | 108,020 km (JPL motion in 1 h: 107,986 km) |
 | Run time | 0.89 s | 0.81 s |
 
-`rk4steps(r, v, tt, days)`, the new looped integrator. It was seeded with Horizons SSB states at 2026-10-31 21:00 UTC (EMB for the Earth slot, the Pluto–Charon barycentre for Pluto) and run for **365 days** with tt = 0.5 d (730 steps, 2.1 s). Position error vs Horizons one year later:
+`rk4steps(r, v, tt, days)`, the new looped integrator. It was seeded with Horizons SSB states at 2026-10-31 21:00 UTC (EMB for the Earth slot, the Pluto-Charon barycentre for Pluto) and run for **365 days** with tt = 0.5 d (730 steps, 2.1 s). Position error vs Horizons one year later:
 
 | Sun | Mercury | Venus | Earth (EMB) | Mars | Jupiter | Saturn | Uranus | Neptune | Pluto | Ceres | Vesta | Pallas | Hygiea |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -225,7 +225,7 @@ Breaking down the steps:
 1 to 5 offline, against [`tests/fixtures/horizons.json`](tests/fixtures/horizons.json)
 (fetched once by `bench/fetch_fixtures.py`). Each budget leaves a margin of 30% or more
 over the worst value measured above for the fixed build over 1986 to 2029 (inside JPL
-Table 1's 1800–2050 range; never below 1′), and sits far below the published build's
+Table 1's 1800 to 2050 range; never below 1′), and sits far below the published build's
 error, so the test passes on the fixed build and fails on every row for the published
 one.
 
@@ -235,11 +235,11 @@ one.
 | Mars / Jupiter / Saturn | 1.37′ / 5.15′ / 8.61′ | 2.5′ / 8′ / 12′ | 1.72° / 26′ / 40′ |
 | Uranus / Neptune | 1.18′ / 0.75′ | 2′ / 1.5′ | 32′ / 58′ |
 | Pluto / Haumea / Makemake / Eris | 4.43′ / 4.26′ / 5.70′ / 1.41′ | 6′ / 6′ / 8′ / 2′ | 2.2° / 1.0° / 1.5° / 49′ |
-| Ceres / Vesta / Pallas / Hygiea, 2026 and 2029 | 11.2′ / 0.81′ / 0.65′ / 7.21′ | 15′ each | 66°–87° / 43°–54° / 25°–43° / 25°–26° |
+| Ceres / Vesta / Pallas / Hygiea, 2026 and 2029 | 11.2′ / 0.81′ / 0.65′ / 7.21′ | 15′ each | 66° to 87° / 43° to 54° / 25° to 43° / 25° to 26° |
 | Ceres / Vesta / Pallas / Hygiea, 2000 and 1986 | 2.25° / 1.65° / 8.19° / 11.5° | 3° / 2.5° / 10° / 14° | 84° / 53° / 63° / 29° |
 | Planet distances from the Sun, now | 0.04% | 1% | Mercury 2.9% (the others within 0.3%) |
 | Moon direction, 10 dates over a month | 2.32° | 3° | 120° |
-| Sky position from Nairobi, 7 bodies | 0.055° | 0.1° | 1.4°–26° |
+| Sky position from Nairobi, 7 bodies | 0.055° | 0.1° | 1.4° to 26° |
 | Sun after one `rungekutta()` step, vs JPL at +1 h | 545 km | 1,500 km | Sun X = −0.22 m |
 | Unknown body (`APOPHIS`, `HALLEY`) | `ValueError` | `ValueError` | `SystemExit: 0` |
 | `import astlo` output; backend with no display | nothing; Agg | nothing; Agg | `Using TkAgg backend.`; TkAgg |
@@ -254,7 +254,7 @@ other checks.
 
 1. **Planet periods are sidereal** (360°/L rate), not anomalistic
    (360°/(L rate − ϖ rate)). The measurements are in section 1.
-2. **Pluto's elements come from the Pluto–Charon barycentre** (Horizons `9`), not from
+2. **Pluto's elements come from the Pluto-Charon barycentre** (Horizons `9`), not from
    Pluto's centre (`999`). Charon swings Pluto's centre around by about 2,000 km and
    about 20 m/s, which would bias the osculating period. The comparison is still made
    against `999`.
@@ -282,9 +282,9 @@ other checks.
 
 ## 7. What is still imperfect
 
-- **Fixed elements (no century rates for a, e, i, Ω, ϖ).** Over 1986–2029 the planets stay within 1.4′, except Jupiter (up to 5.2′) and Saturn (up to 8.6′, at J2000). Out to 2126 the errors grow: Saturn 24′, Jupiter 8.8′, Mars 6′. Adding JPL Table 1's rate columns would hold everything within JPL's stated accuracy over 1800–2050.
-- **Main-belt asteroids:** exact around 2026, but they drift by 1°–11.5° by 2000/1986 and by up to 20° by 2126, because Jupiter changes their mean motion. Better options are to refresh elements from Horizons per epoch, or to integrate with `rk4steps` from real states.
-- **TNOs:** 0.6′–5.7′ in 1986/2000, and 5′–40′ in 2126.
+- **Fixed elements (no century rates for a, e, i, Ω, ϖ).** Over 1986 to 2029 the planets stay within 1.4′, except Jupiter (up to 5.2′) and Saturn (up to 8.6′, at J2000). Out to 2126 the errors grow: Saturn 24′, Jupiter 8.8′, Mars 6′. Adding JPL Table 1's rate columns would hold everything within JPL's stated accuracy over 1800 to 2050.
+- **Main-belt asteroids:** exact around 2026, but they drift by 1° to 11.5° by 2000/1986 and by up to 20° by 2126, because Jupiter changes their mean motion. Better options are to refresh elements from Horizons per epoch, or to integrate with `rk4steps` from real states.
+- **TNOs:** 0.6′ to 5.7′ in 1986/2000, and 5′ to 40′ in 2126.
 - **Moon:** an ellipse with mean rates gives about 1° typical error and 2.3° worst case. Better needs the main solar perturbation terms (evection, variation, annual equation; Meeus ch. 47).
 - **Topocentric:**
   - Nutation (≤17″), annual aberration (20″), light time and refraction are not modelled.

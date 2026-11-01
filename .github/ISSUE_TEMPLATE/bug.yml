@@ -1,0 +1,67 @@
+name: Bug report
+description: Something in the game or the packages does not work as documented.
+title: "Bug: "
+labels: ["kind:bug", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting this. A security problem goes through the private form in `SECURITY.md`, never a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw. Paste the exact text of any error.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the game and choose First Light.
+        2. Drag back from Earth to aim, then launch.
+        3. The probe stops at Mars and the result does not appear.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: "Pixel 7, Chrome 142"
+    validations:
+      required: true
+  - type: input
+    id: level
+    attributes:
+      label: Level
+      placeholder: "Grand Tour, or the sandbox aimed at Neptune"
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Optional. Drag an image here, and check that nothing personal is in frame.
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Optional. Errors from the browser's developer console.
+      render: text
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      description: Tick this only if an AI tool helped. Reports are welcome either way.
+      options:
+        - label: An AI tool helped with this report, and I reproduced the problem myself.
+  - type: input
+    id: ai-tool
+    attributes:
+      label: AI tool
+      description: Optional. Name the tool if you ticked the box above.

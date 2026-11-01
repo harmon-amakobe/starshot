@@ -11,13 +11,15 @@ two different rules:
 | Folder | What it is | Rule |
 |---|---|---|
 | `third_party/astlo` | Mark's repository files, mirrored byte for byte (D1) | Never edited (D2). Pinned by `third_party/astlo.sha256`; a hook denies edits; only the sync below changes it |
-| `python/astlo` | Mark's v12 wheel source, imported unmodified, then Starshot's fixes, one commit per topic (D10) | Fix commits only. His code keeps his headers and his rights: not MIT, shared in good faith pending his written permission. Removed if he objects |
+| `python/astlo` | Mark's v12 wheel source, imported unmodified, then Starshot's fixes, one commit per topic (D10) | Fix commits only. His code keeps his headers and his rights: not Apache-2.0, shared in good faith pending his written permission. Removed if he objects |
 
 Both rules share three limits: astlo code is never copied into `packages/` or `apps/`,
 nothing there imports or depends on astlo, and astlo data is used only after the D4
 direction gate and a licence from Mark that allows it. Starshot's own files beside
 `python/astlo/astlo` (README, `VERIFICATION.md`, `build_wheel.py`, `bench/`, `tests/`)
-are MIT; its Python scripts carry an SPDX header.
+are Apache-2.0 (D12); its Python scripts carry an SPDX header, and new ones say
+`Apache-2.0`. Older headers that still say MIT are listed by the `licence` gate as
+warnings until they are updated.
 
 ## Sync upstream (mirror, never edit)
 

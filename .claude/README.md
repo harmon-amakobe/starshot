@@ -18,7 +18,10 @@ what it does not. Change it in the same pull request as the mechanism it describ
 | `PLANS_DIR` | `docs/plans/`; binding decisions in `docs/decisions.md`. |
 | `PR_SIZE_CAP` | About 400 contentful lines or 20 files per PR, excluding lockfiles and fixture JSON. |
 | `LARGE_FILE_CAP` | 300 lines: above it, anchored edits only. |
-| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. |
+| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, copy, size, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
+| `COPY_STANDARD` | `docs/copy-standard.md` (D27), catalogue `scripts/copy-tells.json`; text typed into GitHub goes through `.github/workflows/copy-lint.yml`. |
+| `WORK_TRACKING` | `docs/plans/<program>/work.yaml` and `work.lock.json`, synced by `scripts/sync-work.mjs` from the orchestrator only (D23, `track-work` skill). |
+| `COMMIT_AUTHOR` | The owner, with a `Signed-off-by:` and the agent in a `Co-Authored-By:` trailer (D24); recipe in the `stacked-pr` skill. |
 | `RELEASE_CHECKLIST` | `CHANGELOG.md` `[Unreleased]` entry for anything a player or package user notices; Pages workflow green; `scripts/verify-game.mjs` clean against the built site with `--base /<repo>/`; third-party manifest green. |
 | Model tier map | originator = `fable` · top = `opus` · mid = `sonnet` · fast = `haiku`. Agent files name the tier alias; update only this row when models change. |
 
@@ -59,6 +62,21 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - CI enforcement on `main` depends on the owner enabling Actions on the fork and branch
   protection with the CI check required (documented in `docs/hosting.md`).
 - Singleton and tier rules in the roster are advisory: nothing enforces them.
+- CI runs the `secrets` gate without the private-name list unless the owner sets the
+  `STARSHOT_PRIVATE_NAMES` secret, and a pull request from a fork never gets it.
+- The copy gate cannot see text typed straight into GitHub. The `copy-lint` workflow
+  checks issues, comments and pull request descriptions after they are posted; until
+  Actions and Issues are on for this repository, nothing checks them. Review comments
+  and release notes are not checked at all.
+- The copy gate's `warn` rules and the size gate's god-component signs are heuristics
+  with estimated limits (D27, D28). They print and pass; only review acts on them.
+- The size gate compares its baseline with the base branch in CI only when the checkout
+  has full history (`fetch-depth: 0` in `ci.yml`); without it, the baseline is checked
+  against the file sizes alone.
+- The DCO check needs the owner to install the DCO app; until then `.github/dco.yml` is
+  inert and only review sees a missing sign-off.
+- `scripts/sync-work.mjs` sets project board fields only with a token that can read the
+  owner's project; the default Actions token cannot.
 - The private-name rule of the `secrets` gate is only as good as its list, which is
   never committed: `.git/info/private-names` locally, and the optional repository secret
   `STARSHOT_PRIVATE_NAMES` (comma-separated) in CI only (Pages stays secret-free, D7), mapped into one scan step

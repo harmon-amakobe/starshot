@@ -1,0 +1,56 @@
+name: Level idea
+description: A level built on a real launch window.
+title: "Level: "
+labels: ["kind:level", "area:levels", "status:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every Starshot level is a real launch window, and every campaign level has a known solution that the tests fly. "How to add a level" in `CONTRIBUTING.md` shows how a window becomes a level.
+  - type: input
+    id: target
+    attributes:
+      label: Target body
+      placeholder: "Mars"
+    validations:
+      required: true
+  - type: input
+    id: window
+    attributes:
+      label: Launch window
+      description: The real dates, written as a range.
+      placeholder: "2031-01-10 to 2031-03-20"
+    validations:
+      required: true
+  - type: input
+    id: flyby
+    attributes:
+      label: Required flyby
+      description: Optional. A body the probe must pass on the way.
+      placeholder: "Venus"
+  - type: textarea
+    id: fun
+    attributes:
+      label: Why it is fun
+      description: What the player learns or has to get right.
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source for the window
+      description: A mission, a paper, a NASA/JPL page or a Horizons query that shows the window is real.
+    validations:
+      required: true
+  - type: checkboxes
+    id: ai
+    attributes:
+      label: AI assistance
+      description: Tick this only if an AI tool helped. Ideas are welcome either way.
+      options:
+        - label: An AI tool helped find this window, and I checked the dates against the source myself.
+  - type: input
+    id: ai-tool
+    attributes:
+      label: AI tool
+      description: Optional. Name the tool if you ticked the box above.

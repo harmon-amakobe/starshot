@@ -131,12 +131,12 @@ function statusFor(level: Level, a: ShotAnalysis | null): { text: string; tone: 
   const range = a.beyondEphemerisRange ? " · after 2050: planet positions extrapolated" : "";
   if (a.hit) {
     if (a.termination === "impact") return { text: `Impact on ${name} on ${formatDate(a.endEt)}${via}${range}`, tone: "hit" };
-    const bull = a.bullseye ? " · bullseye!" : "";
+    const bull = a.bullseye ? " · bullseye!" : ""; // copy-ok: the one celebration on the game screen (D27)
     if (training) {
-      return { text: `Hit! ${training} on ${formatDate(a.endEt)}${bull}${via}${range}`, tone: "hit" };
+      return { text: `Hit. ${training} on ${formatDate(a.endEt)}${bull}${via}${range}`, tone: "hit" };
     }
     return {
-      text: `Hit! Capture ${formatDate(a.endEt)} · periapsis ${formatKm(a.closestKm)}${bull}${via}${range}`,
+      text: `Hit. Capture ${formatDate(a.endEt)} · periapsis ${formatKm(a.closestKm)}${bull}${via}${range}`,
       tone: "hit",
     };
   }
@@ -949,7 +949,7 @@ export function GameScreen(props: GameScreenProps) {
         />
         {hintState === "shown" && hintLabel && hint && phase === "aim" ? (
           <p className={`hint-tag${hint.hits ? "" : " is-miss"}`}>
-            <span>{hint.hits ? "Hint" : "No exact hint found \u2014 closest miss shown"}</span> {hintLabel}
+            <span>{hint.hits ? "Hint" : "No exact hint found: closest miss shown"}</span> {hintLabel}
           </p>
         ) : null}
       </div>

@@ -72,8 +72,40 @@ numbers will be added by an automated release step (planned), never by hand.
   the Pages workflow pass to the `secrets` scan alone, before `npm ci`; forks run
   without it. Setup in `docs/hosting.md`.
 - Decision D10 (the owner's call), which revises D2 for `python/astlo`.
+- Licence records in the REUSE layout: `LICENSES/` with the Apache-2.0 and CC BY 4.0
+  texts and two `LicenseRef` notices (Mark Macharia's astlo, and the Starshot brand),
+  and `REUSE.toml`, which labels every path (D12).
+- Governance files: `TRADEMARK.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 3.0),
+  `GOVERNANCE.md`, `SUPPORT.md` and `CREDITS.md`. `CONTRIBUTING.md` now covers the
+  DCO sign-off, issue claims and labels, the copy standard and AI-assisted
+  contributions.
+- Issue forms for bugs, features, level ideas and physics discrepancies; a label
+  taxonomy in `.github/labels.yml`; the DCO app's configuration in `.github/dco.yml`;
+  and a pull request template that names the issue and the AI tool used.
+- The copy standard (`docs/copy-standard.md`, D27) and its `copy` gate
+  (`scripts/check-copy-tells.mjs`). The gate reads Markdown, UI strings through the
+  TypeScript parser, issue forms and commit messages. It fails on the em dash, the en
+  dash and a short list of stock phrases, and warns on the rest.
+- A `copy-lint` workflow that checks issue, comment and pull request text on GitHub and
+  keeps one comment per thread up to date.
+- A `size` gate (`scripts/check-file-size.mjs`, D28): no file over 500 code lines
+  unless it is on a baseline that may only shrink, warnings for large components, and a
+  layering check that keeps `packages/` from importing the game.
+- A `licence` gate (`scripts/check-licence.mjs`) that fails when a file has no licence
+  record, `LICENSE` is not Apache-2.0, a `package.json` names another licence, or an
+  art or audio file is missing from `CREDITS.md`.
+- `scripts/sync-work.mjs`: creates and updates a program's labels, milestone, issues and
+  sub-issues on GitHub from `docs/plans/<program>/work.yaml`, over REST, as a dry run
+  unless told to apply (D23). The `track-work` skill explains its use.
 
 ### Changed
+
+- Starshot's own code and documentation are now licensed Apache-2.0 instead of MIT
+  (D12). The four `package.json` files say so; Mark Macharia's files keep his terms.
+- Game: result messages are statements ("Captured by Mars", "Hit."), with one
+  exclamation mark left for a bullseye, and the hint tag no longer uses a dash.
+- Documentation: ranges use "to" instead of the en dash, and a few stock phrases were
+  rewritten, so the tree passes the copy gate.
 
 - Mark Macharia's original astlo files moved, unmodified, into `third_party/astlo/`.
 - The `secrets` gate skips its email rule, and only that rule, in Mark's own files under
@@ -97,7 +129,8 @@ numbers will be added by an automated release step (planned), never by hand.
 ### Fixed
 
 - `@starshot/physics`: `lambert()` now solves long transfers (more than 180°), with a
-  numerically stable Stumpff C function and a robust upper bracket.
+  numerically stable Stumpff C function and an upper bracket that steps back from the
+  single-revolution limit until the flight time is finite.
 - `@starshot/physics`: the departure from Earth is energy-consistent. When Earth's
   gravity switches on at twice its sphere of influence, the probe's Earth-relative
   speed is raised so that it still leaves with the v∞ the player chose.
