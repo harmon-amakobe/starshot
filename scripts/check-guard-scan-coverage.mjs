@@ -22,6 +22,9 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const COVERAGE = {
   secrets: ["AGENTS.md", "packages", "scripts", ".claude"],
   "third-party": ["third_party/astlo", "third_party/astlo.sha256", "third_party/astlo/LICENSE"],
+  licence: ["REUSE.toml", "LICENSE", "LICENSES", "CREDITS.md", "package.json"],
+  copy: ["scripts/copy-tells.json", "scripts/fixtures/copy/expect.json", "docs/copy-standard.md", "README.md", "apps/game/src", ".github/ISSUE_TEMPLATE", ".github/labels.yml"],
+  size: ["scripts/size-baseline.json", "apps/game/src", "packages", "scripts"],
   "instruction-dedup": ["AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"],
   "agent-frontmatter": [".claude/agents", ".claude/skills", "AGENTS.md"],
   "guard-scan-coverage": [".claude/settings.json", ".github/workflows/ci.yml"],

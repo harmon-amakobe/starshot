@@ -70,7 +70,8 @@ const PRIVATE_NAME_HASHES = loadPrivateNameHashes();
 const CANARY_HASH = "33b18f41a75a816c0ff56568ec0348220f8090f12b48a5cbb4a6ca1cef11e2d8";
 
 const ALLOWED_EMAILS = new Set(["noreply@anthropic.com", "noreply@github.com", "git@github.com"]);
-const ALLOWED_EMAIL_SUFFIXES = ["@users.noreply.github.com", "@example.com", "@example.org", "@example.net"];
+// The project's own domains (D20) carry role addresses such as conduct@, never a person's.
+const ALLOWED_EMAIL_SUFFIXES = ["@users.noreply.github.com", "@example.com", "@example.org", "@example.net", "@playstarshot.com", "@playstarshot.app"];
 const ALLOWED_EMAIL_LOCALS = new Set(["noreply", "no-reply"]);
 
 /** Content rules. `sample` builds a positive example at runtime for the self-test. */

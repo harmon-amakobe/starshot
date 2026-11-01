@@ -1,0 +1,26 @@
+{
+  "fail.md": {
+    "kind": "md",
+    "as": "docs/fixture.md",
+    "expect": [
+      "em-dash", "en-dash", "horizontal-bar", "delve", "seamless", "leverage", "worth-noting", "in-todays",
+      "stock-metaphor", "empower", "setup-reveal", "lets-dive", "chatbot-residue", "emoji", "exclaim-prose",
+      "robust", "hype-adjective", "filler-adverb", "connective-pile", "not-just", "journey", "whether-youre",
+      "landscape-figure", "navigate-figure", "unlock-figure", "smart-quote-md", "short-triplet", "long-sentence",
+      "title-case-heading"
+    ]
+  },
+  "pass.md": { "kind": "md", "as": "docs/fixture.md", "expect": [] },
+  "fail.ui.tsx": {
+    "kind": "ui",
+    "as": "apps/game/src/ui/Fixture.tsx",
+    "expect": ["exclaim-ui", "en-dash", "seamless", "em-dash", "leverage", "hype-adjective"]
+  },
+  "pass.ui.tsx": { "kind": "ui", "as": "apps/game/src/ui/Fixture.tsx", "expect": [] },
+  "fail.form.yml": { "kind": "yaml", "as": ".github/ISSUE_TEMPLATE/fixture.yml", "expect": ["emoji", "exclaim-prose", "em-dash", "delve", "seamless"] },
+  "pass.form.yml": { "kind": "yaml", "as": ".github/ISSUE_TEMPLATE/fixture.yml", "expect": [] },
+  "fail.commit.txt": { "kind": "commit", "expect": ["empower", "exclaim-prose", "en-dash"] },
+  "pass.commit.txt": { "kind": "commit", "expect": [] },
+  "fail.issue.md": { "kind": "issue", "expect": ["exclaim-talk", "emoji", "chatbot-residue"] },
+  "pass.pr.md": { "kind": "pr", "expect": [] }
+}

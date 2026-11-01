@@ -30,6 +30,9 @@ const NODE = process.execPath;
 export const GATES = [
   { id: "secrets", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-secrets.mjs"], why: "public repo: no secrets, emails, personal paths or private names" },
   { id: "third-party", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-third-party-untouched.mjs"], why: "third_party/astlo stays byte-identical (D2)" },
+  { id: "licence", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-licence.mjs"], why: "every file has a licence record; LICENSE is Apache-2.0; media are credited (D12)" },
+  { id: "copy", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-copy-tells.mjs"], why: "the copy standard: no dashes, no AI tells, in prose, UI strings and commits (D27)" },
+  { id: "size", group: "code", fast: true, cmd: [NODE, "scripts/check-file-size.mjs"], why: "no file over 500 code lines off the baseline; packages never import apps (D28)" },
   { id: "instruction-dedup", group: "agent-context", fast: true, cmd: [NODE, "scripts/check-instruction-dedup.mjs"], why: "adapters point at AGENTS.md, never restate it" },
   { id: "agent-frontmatter", group: "agent-context", fast: true, cmd: [NODE, "scripts/check-agent-frontmatter.mjs"], why: "agents and skills load, and the skills index is complete" },
   { id: "guard-scan-coverage", group: "agent-context", fast: true, cmd: [NODE, "scripts/check-guard-scan-coverage.mjs"], why: "no gate scans a path that moved; no check is unregistered" },

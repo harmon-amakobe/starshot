@@ -1,0 +1,305 @@
+[
+  {
+    "id": "em-dash",
+    "severity": "fail",
+    "pattern": "\\u2014",
+    "flags": "g",
+    "why": "The em dash (U+2014) is banned in every text (D27).",
+    "fix": "Use a full stop, a comma, a colon or brackets."
+  },
+  {
+    "id": "en-dash",
+    "severity": "fail",
+    "pattern": "\\u2013",
+    "flags": "g",
+    "why": "The en dash (U+2013) is banned in every text (D27); on a phone it looks like an em dash.",
+    "fix": "Write ranges as \"2 to 3\" and joined names with a hyphen."
+  },
+  {
+    "id": "horizontal-bar",
+    "severity": "fail",
+    "pattern": "\\u2015",
+    "flags": "g",
+    "why": "The horizontal bar (U+2015) is banned in every text (D27).",
+    "fix": "Use a full stop, a comma, a colon or brackets."
+  },
+  {
+    "id": "delve",
+    "severity": "fail",
+    "pattern": "\\bdelv(?:e|es|ed|ing)\\b",
+    "flags": "gi",
+    "why": "A verb people rarely write and generated text often does.",
+    "fix": "Say \"look at\", \"study\" or \"read\"."
+  },
+  {
+    "id": "seamless",
+    "severity": "fail",
+    "pattern": "\\bseamless(?:ly)?\\b",
+    "flags": "gi",
+    "why": "Claims smoothness instead of describing what happens.",
+    "fix": "Say what happens, with a number if there is one."
+  },
+  {
+    "id": "leverage",
+    "severity": "fail",
+    "pattern": "\\bleverag(?:e|es|ed|ing)\\b",
+    "flags": "gi",
+    "why": "A longer word for \"use\".",
+    "fix": "Say \"use\"."
+  },
+  {
+    "id": "worth-noting",
+    "severity": "fail",
+    "pattern": "\\b(?:it'?s|it is) worth (?:noting|mentioning|pointing out)\\b",
+    "flags": "gi",
+    "why": "Announces a fact instead of stating it.",
+    "fix": "Delete the phrase and state the fact."
+  },
+  {
+    "id": "in-todays",
+    "severity": "fail",
+    "pattern": "\\bin today'?s (?:world|age|era|fast-paced|digital|modern)\\b",
+    "flags": "gi",
+    "why": "A stock opener that says nothing about the subject.",
+    "fix": "Delete it and start with the subject."
+  },
+  {
+    "id": "stock-metaphor",
+    "severity": "fail",
+    "pattern": "\\b(?:tapestry|testament to|the realm of|ever-evolving|game[- ]changer|game-changing)\\b",
+    "flags": "gi",
+    "why": "A worn figure of speech in place of a concrete claim.",
+    "fix": "Name the thing and what it does."
+  },
+  {
+    "id": "empower",
+    "severity": "fail",
+    "pattern": "\\b(?:empower|supercharg)(?:e|es|ed|ing|s|ment)?\\b",
+    "flags": "gi",
+    "why": "Marketing verbs that promise without saying how.",
+    "fix": "Use a plain verb: \"lets\", \"helps\", \"speeds up\"."
+  },
+  {
+    "id": "setup-reveal",
+    "severity": "fail",
+    "pattern": "\\b(?:here'?s (?:the thing|why|what|how)|the (?:good|bad) news|the twist\\b|the (?:result|catch|kicker|answer)\\?)",
+    "flags": "gi",
+    "why": "A rhetorical setup that delays the point.",
+    "fix": "State the point plainly."
+  },
+  {
+    "id": "lets-dive",
+    "severity": "fail",
+    "pattern": "\\blet'?s (?:dive|explore|unpack|take a (?:closer )?look)\\b|\\bdeep[- ]dive\\b",
+    "flags": "gi",
+    "why": "Tour-guide filler before the content.",
+    "fix": "Delete it and give the content."
+  },
+  {
+    "id": "chatbot-residue",
+    "severity": "fail",
+    "pattern": "\\b(?:as an ai\\b|i hope this helps|great question|happy to help|feel free to)|\\b(?:certainly|absolutely)!",
+    "flags": "gi",
+    "why": "Phrases left over from a chat reply.",
+    "fix": "Delete them."
+  },
+  {
+    "id": "emoji",
+    "severity": "fail",
+    "pattern": "(?![\\u00A9\\u00AE\\u2122])\\p{Extended_Pictographic}",
+    "flags": "gu",
+    "scopes": [
+      "md",
+      "yaml",
+      "pr",
+      "issue",
+      "comment",
+      "commit"
+    ],
+    "why": "No emoji in docs, forms, issues, pull requests or commits; a screen reader reads each one aloud by name.",
+    "fix": "Use words."
+  },
+  {
+    "id": "exclaim-prose",
+    "severity": "fail",
+    "pattern": "!(?=\\s|$)",
+    "flags": "g",
+    "scopes": [
+      "md",
+      "yaml",
+      "pr",
+      "commit"
+    ],
+    "why": "No exclamation marks in docs, forms, pull requests or commits.",
+    "fix": "End with a full stop."
+  },
+  {
+    "id": "exclaim-ui",
+    "severity": "warn",
+    "pattern": "!(?=\\s|$)",
+    "flags": "g",
+    "scopes": [
+      "ui"
+    ],
+    "why": "The game may celebrate a result, at most once per screen.",
+    "fix": "Make it a statement, or mark the one celebration with copy-ok."
+  },
+  {
+    "id": "exclaim-talk",
+    "severity": "warn",
+    "pattern": "!(?=\\s|$)",
+    "flags": "g",
+    "scopes": [
+      "issue",
+      "comment"
+    ],
+    "why": "Issues and comments read better without exclamation marks.",
+    "fix": "End with a full stop."
+  },
+  {
+    "id": "robust",
+    "severity": "warn",
+    "pattern": "\\brobust(?:ly|ness)?\\b",
+    "flags": "gi",
+    "why": "Vague praise; it does not say what the thing survives.",
+    "fix": "Say what it handles: the input, the failure, the range."
+  },
+  {
+    "id": "hype-adjective",
+    "severity": "warn",
+    "pattern": "\\b(?:cutting-edge|state-of-the-art|world-class|best-in-class|powerful|innovative|revolutionary|groundbreaking|effortless(?:ly)?|comprehensive|crucial|pivotal|vital|stunning|breathtaking|elevat(?:e|es|ing))\\b",
+    "flags": "gi",
+    "why": "An adjective that praises instead of measuring.",
+    "fix": "Delete it, or replace it with a number."
+  },
+  {
+    "id": "filler-adverb",
+    "severity": "warn",
+    "pattern": "\\b(?:simply|just|really|very|truly|incredibly|essentially|basically|actually|literally)\\b",
+    "flags": "gi",
+    "scopes": [
+      "md",
+      "yaml",
+      "pr",
+      "issue",
+      "comment",
+      "commit"
+    ],
+    "why": "A word that adds length and no meaning.",
+    "fix": "Delete it and reread the sentence."
+  },
+  {
+    "id": "connective-pile",
+    "severity": "warn",
+    "pattern": "(?:^|[.!?]\\s+)(?:Furthermore|Moreover|Additionally|In conclusion|Overall|Ultimately|Notably),",
+    "flags": "gm",
+    "why": "A connective that pads the start of a sentence.",
+    "fix": "Delete it; the order of sentences already connects them."
+  },
+  {
+    "id": "not-just",
+    "severity": "warn",
+    "pattern": "\\bnot (?:just|merely)\\b|\\bnot only\\b[^.]{1,80}\\bbut\\b|\\bisn'?t (?:just|merely)\\b|\\bmore than just\\b",
+    "flags": "gi",
+    "why": "A contrast set up to sound bigger than the claim.",
+    "fix": "State the main claim directly."
+  },
+  {
+    "id": "journey",
+    "severity": "warn",
+    "pattern": "\\b(?:journey|embark(?:s|ed|ing)?)\\b",
+    "flags": "gi",
+    "why": "A metaphor for a process; in this game a flight is a flight.",
+    "fix": "Name the trip or the steps."
+  },
+  {
+    "id": "whether-youre",
+    "severity": "warn",
+    "pattern": "\\bwhether you'?re\\b",
+    "flags": "gi",
+    "why": "Addresses an imagined crowd instead of the reader.",
+    "fix": "Name who the text is for."
+  },
+  {
+    "id": "landscape-figure",
+    "severity": "warn",
+    "pattern": "\\b(?:the|this|today'?s) (?:\\w+ )?landscape\\b(?! (?:phones?|mode|orientation|layout|screens?|view))",
+    "flags": "gi",
+    "why": "Landscape as a figure of speech for a field or a market.",
+    "fix": "Name the thing."
+  },
+  {
+    "id": "navigate-figure",
+    "severity": "warn",
+    "pattern": "\\bnavigat(?:e|es|ing) (?:the )?(?:complexit|challenges|intricacies|world of|landscape)",
+    "flags": "gi",
+    "why": "Navigate as a figure of speech; keep the word for real paths.",
+    "fix": "Use a concrete verb: handle, choose, follow."
+  },
+  {
+    "id": "unlock-figure",
+    "severity": "warn",
+    "pattern": "\\bunlock(?:s|ing)? (?:the|new|your) (?:power|potential|possibilit|full)",
+    "flags": "gi",
+    "why": "Unlock as a promise; unlocking a level stays fine.",
+    "fix": "Say what becomes possible."
+  },
+  {
+    "id": "smart-quote-md",
+    "severity": "warn",
+    "pattern": "[\\u2018\\u2019\\u201C\\u201D]",
+    "flags": "g",
+    "scopes": [
+      "md"
+    ],
+    "exempt": [
+      "CODE_OF_CONDUCT.md"
+    ],
+    "why": "Markdown source uses ASCII quotes; curly quotes belong in UI strings only.",
+    "fix": "Use ' and \"."
+  },
+  {
+    "id": "long-sentence",
+    "severity": "warn",
+    "check": "long-sentence",
+    "max": 35,
+    "exempt": [
+      "CODE_OF_CONDUCT.md"
+    ],
+    "why": "A sentence over 35 words is hard to follow, and harder through a screen reader.",
+    "fix": "Split it."
+  },
+  {
+    "id": "short-triplet",
+    "severity": "warn",
+    "check": "short-triplet",
+    "max": 15,
+    "scopes": [
+      "md",
+      "pr",
+      "issue",
+      "comment",
+      "commit"
+    ],
+    "exempt": [
+      "CODE_OF_CONDUCT.md"
+    ],
+    "why": "A list of three in a short sentence is often there for rhythm, not content.",
+    "fix": "Check each item is real; use two, or four, when there are two or four."
+  },
+  {
+    "id": "title-case-heading",
+    "severity": "warn",
+    "check": "title-case-heading",
+    "scopes": [
+      "md",
+      "pr",
+      "issue"
+    ],
+    "exempt": [
+      "CODE_OF_CONDUCT.md"
+    ],
+    "why": "Headings use sentence case.",
+    "fix": "Capitalise the first word and proper nouns only."
+  }
+]
