@@ -3,8 +3,8 @@
  * check-third-party-untouched.mjs: third_party/astlo must stay byte-identical to the
  * upstream originals recorded in third_party/astlo.sha256.
  *
- * Mark Macharia's astlo is "All rights reserved" (D2): it is never modified, copied into
- * our packages, or relicensed here. The edit-tool guard (guard-protected-paths) stops the
+ * Mark Macharia's astlo is "All rights reserved" (D2): this pristine copy is never
+ * modified or relicensed; fixes live in python/astlo under his terms (D10). The edit-tool guard (guard-protected-paths) stops the
  * common path; this check is the backstop that also sees shell rewrites, line-ending
  * churn from a misconfigured editor, added files and deletions.
  *
@@ -24,7 +24,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIR = "third_party/astlo";
 const MANIFEST = "third_party/astlo.sha256";
 const D2 =
-  "third_party/astlo is Mark Macharia's all-rights-reserved code (D2): never modified, copied or relicensed here.";
+  "third_party/astlo is Mark Macharia's all-rights-reserved code (D2): never modified, relicensed, or copied into Starshot's code. The fixed copy lives in python/astlo under his terms (D10).";
 
 function files() {
   try {
@@ -98,4 +98,21 @@ if (problems.length) {
   console.error("A deliberate upstream sync follows .claude/skills/astlo-upstream/SKILL.md, which re-hashes with --write.");
   process.exit(1);
 }
-console.log(`third-party: ${expected.size} file(s) in ${DIR} match ${MANIFEST}`);
+// AGENTS.md rule 3: nothing in Starshot's own TypeScript (packages/, apps/) depends on
+// or points into Mark's code, in either copy.
+const leaks = [];
+const ownFiles = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "packages", "apps"], { cwd: ROOT, encoding: "utf8" })
+  .split("\0")
+  .filter((f) => f && /\.(?:[cm]?[jt]sx?|json)$/.test(f) && !f.endsWith("package-lock.json") && existsSync(resolve(ROOT, f)));
+for (const f of ownFiles) {
+  const text = readFileSync(resolve(ROOT, f), "utf8");
+  if (/(?:third_party|python)\/astlo\b/.test(text)) leaks.push(`${f}: points into an astlo copy`);
+  if (f.endsWith("package.json") && /"astlo"\s*:/.test(text)) leaks.push(`${f}: lists astlo as a dependency`);
+}
+if (leaks.length) {
+  console.error(`third-party: FAILED, Starshot's own code reaches into astlo (AGENTS.md rule 3):`);
+  for (const l of leaks) console.error(`  ✗ ${l}`);
+  console.error(D2);
+  process.exit(1);
+}
+console.log(`third-party: ${expected.size} file(s) in ${DIR} match ${MANIFEST}; ${ownFiles.length} file(s) in packages/ and apps/ stay clear of astlo`);

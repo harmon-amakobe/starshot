@@ -9,7 +9,7 @@
  *   node scripts/gates.mjs --list
  *   add --verbose to print every gate's full output
  *
- * Rules the registry keeps (Kobe loop A.3):
+ * Rules the registry keeps (AGENTS.md "Definition of Done"; GATE_COMMANDS in .claude/README.md):
  *  - Every obligation that can be a script is one, registered here. A check that exists
  *    but is not registered is a gate everyone believes is running; check-guard-scan-
  *    coverage fails on that.

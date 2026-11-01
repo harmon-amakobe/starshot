@@ -26,8 +26,8 @@ Stop and hand back, with the decision framed as options, when the task needs any
 API, layout or behaviour choice you were not given, when two readings of the
 instruction produce different diffs, or when a site falls in the think-before-you-touch
 list of `AGENTS.md` (ephemeris constants, time scales, integrator settings,
-`SIM_SETTINGS`, level solutions, `third_party/**`, workflows, the harness). A guess
-buried in a routine-looking diff is worse than no change.
+`SIM_SETTINGS` and `OUTER_SIM_SETTINGS`, level solutions, `third_party/**`, workflows,
+the harness). A guess buried in a routine-looking diff is worse than no change.
 
 ## Completeness is a re-run that finds zero
 

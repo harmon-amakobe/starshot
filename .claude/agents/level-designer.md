@@ -30,8 +30,8 @@ Follow `.claude/skills/add-level/SKILL.md`. In short:
 1. Pick the story (a real mission, a real window) and the target.
 2. Search the window with `bestDirectTransfer` over the flattened ephemeris; record the
    launch date, time of flight, departure v-infinity and arrival v-infinity.
-3. Fly that aim through the game's own `simulateShot` with `SIM_SETTINGS` (D6) and
-   confirm the win condition (SOI reached or flyby made) without tuning anything.
+3. Fly that aim through the game's own `simulateShot`, built with `shotRequestFor` so
+   it carries the level's own frozen `sim` settings (D6), and confirm the win condition (SOI reached or flyby made) without tuning anything.
 4. Set the slingshot cap and par from the measured numbers, with headroom stated.
 5. Add the known solution to the test, so every future physics change re-proves it.
 

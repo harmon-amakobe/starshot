@@ -6,7 +6,7 @@ Every agent surface loads this file. Adapters (`CLAUDE.md`,
 
 ## What Starshot is
 
-An "Angry Birds in orbit" slingshot game across the real Solar System, plus the open
+A slingshot game in orbit, across the real Solar System, plus the open
 orbital-mechanics packages behind it. Planet positions come from NASA/JPL's Keplerian
 elements, validated against JPL Horizons; flights are integrated, not faked. Public
 repository, MIT licence (D3), a fork of Mark Macharia's astlo history (D1).
@@ -18,6 +18,7 @@ repository, MIT licence (D3), a fork of Mark Macharia's astlo history (D1).
 | `packages/physics` | Integrator, patched-conic launch, encounters, Lambert |
 | `tools/horizons` | Stdlib Python that refreshes the Horizons test fixtures |
 | `third_party/astlo` | Mark's original files, unchanged and all rights reserved (D2) |
+| `python/astlo` | `astlo/` and its dist-info: Mark's v12 source plus our fixes, one commit each, his rights, not MIT (D10); the build, bench and tests beside them are ours (MIT) |
 | `docs/` | Decisions, plans, hosting, architecture |
 | `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Pages |
 
@@ -35,10 +36,14 @@ Each states its reason, so it applies to cases it does not list.
    tests in `packages/physics/test`. Loosening a budget needs a decision entry.
    *Why:* the game's promise is the real Solar System; an unmeasured number is a guess
    that ships.
-3. **`third_party/astlo` is never modified, copied into our code, or relicensed (D2).**
-   Mark's licence reserves all rights. Fixes go to him privately as a patch; astlo data
-   enters only after it passes a direction-error gate against JPL (D4). A hook denies
-   edits there and `check-third-party-untouched.mjs` verifies the hashes.
+3. **Mark's astlo is never relicensed or copied into our code (D2, D10).**
+   `third_party/astlo` is the pristine upstream: never modified; a hook denies edits
+   there and `check-third-party-untouched.mjs` verifies the hashes. `python/astlo/astlo/**`
+   holds his v12 source with our fixes, one reviewable commit per topic, shared in good
+   faith pending his written permission: it keeps his headers and is not MIT; nothing
+   in `packages/` or `apps/` copies or depends on it (the third-party gate checks).
+   Only the owner talks to Mark about it. astlo data enters only after a
+   direction-error gate against JPL (D4).
    *Why:* the fork exists by his goodwill; one copied line breaks that and his licence.
 4. **This repository is public.** No secrets, tokens, personal emails, personal
    absolute paths, or names of the owner's private projects, in files, commit messages
@@ -46,9 +51,12 @@ Each states its reason, so it applies to cases it does not list.
    config is injected at build time from repository Variables (D7). `check-secrets.mjs`
    scans every file. *Why:* a push is publication, and history keeps what a later
    commit deletes.
-5. **Preview equals launch (D6).** The aiming preview and the real launch call
-   `simulate` with identical settings (`SIM_SETTINGS` in `apps/game/src/sim/shot.ts`).
-   Changing one changes both. *Why:* "what you see is what you get" is the game.
+5. **Preview equals launch (D6).** Each level freezes its own integrator settings
+   (`Level.sim`: `SIM_SETTINGS` or `OUTER_SIM_SETTINGS` in `apps/game/src/sim/shot.ts`),
+   carried in every `ShotRequest`. The aiming preview, the real launch, the hint search
+   and the level tests all fly that request through `simulateShot`, so changing a
+   level's settings changes all of them. *Why:* "what you see is what you get" is the
+   game.
 6. **Phones are the target.** Shot physics stays off the main thread; the main thread
    never blocks longer than one frame; 60 fps on a mid-range phone; the aiming preview
    answers within 100 ms there. The physics preview test enforces its CI budget; the
@@ -84,9 +92,13 @@ A wrong change in these is expensive or silent; plan first and say what you chec
 - `packages/ephemeris/src/elements.ts`: JPL Table 1 constants, copied digit for digit.
 - `packages/ephemeris/src/time.ts`: the leap-second table and TT/TDB handling.
 - `packages/physics/src/dopri5.ts`, `simulate.ts`: integrator, tolerances, encounter
-  and impact thresholds; `apps/game/src/sim/shot.ts` `SIM_SETTINGS`.
-- `apps/game/src/levels.ts` and the known solutions in `apps/game/src/levels.test.ts`.
+  and impact thresholds; `apps/game/src/sim/shot.ts`: `SIM_SETTINGS`,
+  `OUTER_SIM_SETTINGS` and `simulateShot`.
+- `apps/game/src/levels.ts` (each level's `sim`, par, tolerance and capture zone) and
+  the known solutions in `apps/game/src/levels.test.ts`.
 - `packages/ephemeris/test/fixtures/horizons.json` (regenerate, never hand-edit).
+- `python/astlo/astlo/**` (D10): Mark's code; change it only by one-topic fix commits,
+  per the `astlo-upstream` skill.
 - `third_party/**` (D2), `.github/workflows/**`, `.claude/settings.json`,
   `scripts/agent/**`, `scripts/gates.mjs` and `scripts/check-*.mjs`: the harness
   itself. A hook fails open; a gate fails closed and says how to fix it.
@@ -126,7 +138,7 @@ Load a skill when its trigger appears; the index is how agents know they exist.
 | `verify-physics` | ephemeris, physics, fixtures, tolerances, adding a body | `.claude/skills/verify-physics/` |
 | `verify-game` | proving the game works on phone and desktop | `.claude/skills/verify-game/` |
 | `add-level` | designing a level on a real launch window | `.claude/skills/add-level/` |
-| `astlo-upstream` | syncing, benchmarking or patching Mark's astlo | `.claude/skills/astlo-upstream/` |
+| `astlo-upstream` | syncing, benchmarking or fixing Mark's astlo; rebasing `python/astlo` | `.claude/skills/astlo-upstream/` |
 | `public-hygiene` | before any push, PR body or screenshot leaves the machine | `.claude/skills/public-hygiene/` |
 | `stacked-pr` | basing, pushing, restacking a chain of PRs | `.claude/skills/stacked-pr/` |
 | `plan-pr0` | turning research into a plan that lands as PR0 | `.claude/skills/plan-pr0/` |

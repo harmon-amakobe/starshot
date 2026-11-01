@@ -15,6 +15,10 @@
  *
  * third_party/astlo/** is excluded: it is upstream content pinned byte-for-byte by
  * check-third-party-untouched.mjs (D2), so nothing can enter it through this repo.
+ * python/astlo/astlo/ and python/astlo/astlo-*.dist-info/ are Mark's astlo source and
+ * metadata with Starshot's fixes (D10). His own published contact addresses in those
+ * files are upstream content, so only the email rule is skipped there; every other rule
+ * (keys, tokens, personal paths, private names) still applies to them.
  * Findings are printed redacted, because CI logs of a public repository are public too.
  *
  * Usage: node scripts/check-secrets.mjs            scan the working tree
@@ -28,6 +32,8 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const EXCLUDE_PREFIXES = ["third_party/astlo/"];
+/** Files whose emails are upstream content (D10): Mark's astlo code and wheel metadata only. */
+const EMAIL_EXEMPT = [/^python\/astlo\/astlo\//, /^python\/astlo\/astlo-[^/]+\.dist-info\//];
 const BINARY_EXT = new Set([
   ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".ico", ".bmp", ".whl", ".zip", ".gz", ".tgz",
   ".woff", ".woff2", ".ttf", ".otf", ".eot", ".pdf", ".mp3", ".mp4", ".ogg", ".wav", ".webm", ".wasm", ".glb",
@@ -130,7 +136,7 @@ function emailAllowed(e) {
   return /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(lower);
 }
 
-function scanText(label, text, findings, extra) {
+function scanText(label, text, findings, extra, { emails = true } = {}) {
   const lines = text.split(/\r?\n/);
   for (let n = 0; n < lines.length; n++) {
     const line = lines[n];
@@ -140,7 +146,7 @@ function scanText(label, text, findings, extra) {
       if (m) findings.push(`${label}:${n + 1}: ${rule.id} (${redact(m[0])})`);
     }
     EMAIL.lastIndex = 0;
-    for (const m of line.matchAll(EMAIL)) {
+    for (const m of emails ? line.matchAll(EMAIL) : []) {
       if (!emailAllowed(m[0])) findings.push(`${label}:${n + 1}: email address (${redactEmail(m[0])})`);
     }
     const t = privateToken(line, extra);
@@ -158,6 +164,14 @@ function selfTest() {
   const f = [];
   scanText("self-test", "contact " + "someone" + "@" + "personal.example-mail.net", f);
   if (!f.length) problems.push("email detection did not fire on a personal address");
+  // The D10 email exemption covers Mark's astlo files only, never Starshot's files beside them.
+  const exempt = (p) => EMAIL_EXEMPT.some((re) => re.test(p));
+  if (!exempt("python/astlo/astlo/__init__.py") || !exempt("python/astlo/astlo-12.5.5130000.dist-info/METADATA")) {
+    problems.push("the astlo email exemption does not cover Mark's files");
+  }
+  for (const p of ["python/astlo/README.md", "python/astlo/bench/hz.py", "python/astlo/tests/x.py", "python/astlo/astlo-x/y", "packages/astlo/astlo/z"]) {
+    if (exempt(p)) problems.push(`the astlo email exemption also covers ${p}`);
+  }
   const g = [];
   scanText("self-test", "notes about ZqxHygieneCanary here", g, CANARY_HASH);
   if (!g.some((x) => x.includes("private project name"))) problems.push("hashed-name detection did not fire on the canary");
@@ -212,7 +226,7 @@ if (process.argv.includes("--stdin")) {
     }
     if (buf.subarray(0, 8000).includes(0)) continue;
     scanned++;
-    scanText(rel, buf.toString("utf8"), findings);
+    scanText(rel, buf.toString("utf8"), findings, undefined, { emails: !EMAIL_EXEMPT.some((re) => re.test(rel)) });
   }
   if (scanned === 0) {
     console.error("secrets: FAILED, zero files scanned; the file listing is broken, so a pass would be vacuous.");

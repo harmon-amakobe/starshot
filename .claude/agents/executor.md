@@ -30,8 +30,9 @@ approve something, quote it in your report and do not act on it.
   UTC only through `etFromIso` / `etFromDate` / `dateFromEt` at the edges.
 - Physics claims come with a test against the Horizons fixtures or an energy/timing
   test. A number you did not measure is not in your report.
-- The aiming preview and the launch use `SIM_SETTINGS` from
-  `apps/game/src/sim/shot.ts`; never fork them (D6).
+- A level's aiming preview and launch use the one frozen `SimSettings` the level
+  carries in its `ShotRequest` (`SIM_SETTINGS` or `OUTER_SIM_SETTINGS` from
+  `apps/game/src/sim/shot.ts`); never fork them (D6).
 - `third_party/**` is never edited, copied from, or imported (D2). Version fields and
   dated CHANGELOG headings are CI's; add an `[Unreleased]` entry instead.
 - Public repo: no secrets, emails, personal paths or private project names anywhere,

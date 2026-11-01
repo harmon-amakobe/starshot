@@ -4,7 +4,7 @@
 Kobe loop configuration for Starshot and the map of what the harness enforces and
 what it does not. Change it in the same pull request as the mechanism it describes.
 
-## Config table (playbook §0.1, filled for Starshot)
+## Config table (the Kobe loop's slots, filled for Starshot; AGENTS.md is the agreement)
 
 | Slot | Value |
 |---|---|
@@ -59,3 +59,8 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - CI enforcement on `main` depends on the owner enabling Actions on the fork and branch
   protection with the CI check required (documented in `docs/hosting.md`).
 - Singleton and tier rules in the roster are advisory: nothing enforces them.
+- The private-name rule of the `secrets` gate is only as good as its list, which is
+  never committed: `.git/info/private-names` locally, and the optional repository secret
+  `STARSHOT_PRIVATE_NAMES` (comma-separated) in CI only (Pages stays secret-free, D7), mapped into one scan step
+  before `npm ci` (`docs/hosting.md`). Pull requests from forks get no secrets, so they
+  run with the rule off and say so; the run on `main` after the merge is the backstop.

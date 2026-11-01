@@ -10,7 +10,11 @@ barycentre for "earth", system barycentres for the giant planets), same frame
 ## Isolation
 
 The wheel is Mark's code. Install it only into a throwaway virtualenv outside the
-repository, and never copy its source, outputs-as-code, or excerpts into Starshot.
+repository, and never copy its source, outputs-as-code, or excerpts into Starshot's
+packages or apps. (`python/astlo`, D10, is the one place his code is changed, and only
+by fix commits.) The fixed build is benchmarked the same way, from
+`python3 python/astlo/build_wheel.py`; its own before/after record is
+`python/astlo/VERIFICATION.md`.
 
 ```bash
 python3 -m venv <scratch>/astlo-venv
@@ -37,6 +41,6 @@ plus the wheel file name and its sha256 from `third_party/astlo.sha256`.
 - All within budget: record the result and the conditions in `docs/decisions.md`
   (wheel, epochs, frame conversion). Using the data still needs a licence from Mark
   that permits it (D2).
-- Any outside budget: it is a finding for Mark, sent privately with the inputs and the
-  Horizons values, as in the skill's patch section. Starshot keeps the JPL Table 1
-  ephemeris.
+- Any outside budget: it is a finding for Mark. Record it with the inputs and the
+  Horizons values, or fix it in `python/astlo` as a new topic commit (D10), as in the
+  skill's sections on fixes. Starshot keeps the JPL Table 1 ephemeris.

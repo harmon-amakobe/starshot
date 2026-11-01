@@ -26,7 +26,7 @@ const deny = (reason) => {
 };
 
 const THIRD_PARTY_REASON =
-  "third_party/** holds Mark Macharia's all-rights-reserved astlo files and the manifest that pins them (D2); nothing under it is edited in this repository. A fix for astlo goes to Mark privately as a patch, and a deliberate upstream sync follows .claude/skills/astlo-upstream/SKILL.md, which regenerates the manifest with node scripts/check-third-party-untouched.mjs --write.";
+  "third_party/** holds Mark Macharia's all-rights-reserved astlo files and the manifest that pins them (D2); nothing under it is edited in this repository. A fix for astlo goes into python/astlo as a one-topic commit (D10, .claude/skills/astlo-upstream/SKILL.md), and only the owner talks to Mark about it. A deliberate upstream sync follows the same skill, which regenerates the manifest with node scripts/check-third-party-untouched.mjs --write.";
 const VERSION_REASON =
   "Version fields belong to CI (AGENTS.md, CI owns versions). Describe the change under ## [Unreleased] in CHANGELOG.md instead; the release lane derives the bump from it. Dependency ranges are not version fields and remain editable.";
 const CHANGELOG_REASON =

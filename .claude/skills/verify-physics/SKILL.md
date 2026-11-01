@@ -1,6 +1,6 @@
 ---
 name: verify-physics
-description: Use when a change touches Starshot's ephemeris or physics packages, the Horizons fixtures, integrator tolerances, SIM_SETTINGS or time scales, when refreshing fixtures from NASA/JPL Horizons, when adding a planet or body, or when a task mentions accuracy budgets, arcminutes, energy drift, JPL, Horizons, ET or TDB.
+description: Use when a change touches Starshot's ephemeris or physics packages, the Horizons fixtures, integrator tolerances, the game's frozen simulator settings (SIM_SETTINGS, OUTER_SIM_SETTINGS, a level's sim) or time scales, when refreshing fixtures from NASA/JPL Horizons, when adding a planet or body, or when a task mentions accuracy budgets, arcminutes, energy drift, JPL, Horizons, ET or TDB.
 ---
 
 # Verifying the physics
@@ -49,7 +49,10 @@ refreshed fixture that moves a result is a finding to explain, not a budget to r
 4. Budget: an `ARCMIN_BUDGET` entry justified by JPL's stated accuracy for that table.
 5. Prove it: the new test fails before step 1 and passes after.
 
-## Changing tolerances or SIM_SETTINGS
+## Changing tolerances, SIM_SETTINGS or OUTER_SIM_SETTINGS
 
 Before and after numbers for closure, energy drift and preview timing, plus every level
-test still green. Preview and launch keep one shared setting object (D6).
+test still green. Settings are frozen per level (`Level.sim` in `apps/game/src/levels.ts`)
+and carried in the `ShotRequest`, so a level's preview, launch, hint and tests share one
+object (D6). Changing `OUTER_SIM_SETTINGS` (sandbox targets beyond Mars) also needs the
+hit/miss comparison its docblock in `apps/game/src/sim/shot.ts` records.

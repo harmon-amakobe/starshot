@@ -31,7 +31,9 @@ it draws a believable orbit in the wrong place. So the bar is evidence, not plau
 ## Integrator and tolerances
 
 - Defaults live in `simulate.ts` (`rtol`, `atolKm`, `maxStep`, `maxSteps`); the game's
-  shot uses `SIM_SETTINGS` in `apps/game/src/sim/shot.ts`, for preview and launch alike.
+  shot uses the level's frozen `sim` (`SIM_SETTINGS` or `OUTER_SIM_SETTINGS` in
+  `apps/game/src/sim/shot.ts`), carried in the `ShotRequest`, for preview and launch
+  alike.
 - Any tolerance change ships with before/after numbers: two-body closure error and
   relative energy drift (the circular 1 au test), the preview timing test, and every
   level's known solution still winning.
@@ -45,7 +47,7 @@ it draws a believable orbit in the wrong place. So the bar is evidence, not plau
 | Planet position accuracy | arcminute budgets against Horizons fixtures in `packages/ephemeris/test` |
 | Integrator accuracy | closure and energy tests in `packages/physics/test` |
 | A transfer is possible | `bestDirectTransfer` output, then the shot flown by `simulate` reaching SOI |
-| A level is winnable | a known-solution test flown with `SIM_SETTINGS` |
+| A level is winnable | a known-solution test flown with the level's own `sim` settings |
 | astlo data is usable (D4) | direction error vs Horizons at the fixture epochs, per planet, within the Table 1 budgets |
 
 A number in prose, a comment or a PR description without one of these is not a claim.

@@ -1,4 +1,5 @@
-# CI: the gate registry on every pull request and on main. It needs no secrets.
+# CI: the gate registry on every pull request and on main. It needs no secrets; one
+# optional secret only widens the hygiene scan.
 # Actions are disabled by default on forks; docs/hosting.md says how to enable them and
 # how to make this check required on main.
 name: CI
@@ -29,5 +30,12 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      # Optional: the owner's private-name list, comma-separated (docs/hosting.md). Run
+      # before npm ci, so no third-party package shares a step with it. Forks and pull
+      # requests from forks get no secrets; the scan then says its name rule is off.
+      - name: Secrets gate with the private-name list
+        run: node scripts/gates.mjs --only secrets
+        env:
+          STARSHOT_PRIVATE_NAMES: ${{ secrets.STARSHOT_PRIVATE_NAMES }}
       - run: npm ci
       - run: npm run gates

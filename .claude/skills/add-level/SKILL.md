@@ -1,6 +1,6 @@
 ---
 name: add-level
-description: Use when designing or changing a Starshot level, picking a real launch window, setting a target planet, attractors, a required flyby, the slingshot cap or par, or when a task mentions a new mission, Hohmann transfer, gravity assist, C3, delta-v, bestDirectTransfer or a known-solution test.
+description: Use when designing or changing a Starshot level, picking a real launch window, setting a target planet, attractors, a required flyby, the slingshot cap, par or par tolerance, a level's simulator settings or capture zone, or when a task mentions a new mission, Hohmann transfer, gravity assist, C3, delta-v, bestDirectTransfer or a known-solution test.
 ---
 
 # Adding a level on a real launch window
@@ -31,15 +31,24 @@ search the first leg to the flyby planet, then fly it and inspect `encounters`.
 
 ## 2. Fly it exactly as the player would
 
-Use the game's own `simulateShot` and `SIM_SETTINGS` from `apps/game/src/sim/shot.ts`,
-never a hand-built `simulate` call. Two-body Lambert aims land close but not exact once
-all planets pull; adjust the aim within the window and record the final vector. The
-level is winnable only if that flight meets its win condition untouched.
+Use the game's own `simulateShot` from `apps/game/src/sim/shot.ts` on a request built
+by `shotRequestFor(level, launchEt, vInf)` from `apps/game/src/levels.ts`, never a
+hand-built `simulate` call. The request carries the level's frozen `sim` settings, so
+the test flies exactly what the preview and the launch fly (D6): `SIM_SETTINGS` for
+campaign levels, `OUTER_SIM_SETTINGS` only for sandbox targets beyond Mars. Two-body
+Lambert aims land close but not exact once all planets pull; adjust the aim within the
+window and record the final vector. The level is winnable only if that flight meets its
+win condition untouched.
 
 ## 3. Set the numbers from measurements
 
 - `vInfMaxKmS` (full pull) above the solution's v-infinity with stated headroom.
 - `par` from the measured delta-v, with its source written in `par.source`.
+- `parTolerance` only when the default (`DEFAULT_PAR_TOLERANCE`, 1.10) would hand the
+  efficiency star to nearly every hit under the speed cap; the Grand Tour uses 1.05
+  for that reason. Say why in a comment beside it.
+- `captureZoneScale` stays at its default of 1 (the real sphere of influence). Only
+  the first, training level (First Light, 3) is larger, and the HUD says so.
 - `maxFlightDays` above the solution's flight time.
 - `attractors` and `requiredFlyby` only as the mission needs.
 
