@@ -12,7 +12,8 @@ Starshot never depends on astlo at runtime and never copies its code into Starsh
 own packages ([D2](../decisions.md#d2-marks-code-is-all-rights-reserved-never-modified-copied-or-relicensed-here),
 [D10](../decisions.md#d10-astlo-fixes-are-made-here-first-in-pythonastlo-shared-pending-marks-permission),
 [D26](../decisions.md#d26-mark-macharia-hears-from-the-owner-now-astlo-is-a-partner-not-a-dependency)).
-If Mark objects to `python/astlo/`, it is removed.
+If Mark objects to `python/astlo/`, it is removed. How changes would reach him, and come
+back once he adopts them, is the subject of the last section (D29).
 
 ## What was checked and fixed
 
@@ -78,9 +79,10 @@ grants terms that allow it:
 - **A sky-position reference.** astlo's topocentric code is now within 0.055 degrees of
   JPL from Nairobi. A future "where is it in my sky tonight" panel in Starshot could be
   tested against it.
-- **Small bodies.** `rk4steps()` seeded from DE440 or Horizons states could propagate
-  asteroids and comets that Horizons covers poorly, once each body passes the same
-  direction check Starshot applies to every data source (D4, D17).
+- **Small bodies.** Starshot fits per-level rails for asteroids and comets to Horizons
+  vectors (D17). `rk4steps()`, seeded from DE440 or Horizons states, could propagate
+  those bodies between the fixture dates and cross-check the rails there, once each
+  body passes the same direction check Starshot applies to every data source (D4, D17).
 - **Planet content.** The educational "details" command is commented out in the public
   v12 (`python/astlo/astlo/interface.py:372-392`), so it could not be assessed. If it
   becomes available, it could feed the game's planet cards with credit.
@@ -90,8 +92,8 @@ grants terms that allow it:
 ## The shared formats
 
 Two JSON formats are the interface between the projects (D26). Starshot's ephemeris tool
-writes them from 2026 on; astlo could write the validation report for its own outputs and
-read the pack as a reference. Both use ET (TDB seconds past J2000), the ecliptic and
+will write them from PR8 of its current program on. astlo could write the validation
+report for its own outputs and read the pack as a reference. Both use ET (TDB seconds past J2000), the ecliptic and
 equinox of J2000 (`ECLIPJ2000`), kilometres and kilometres per second.
 
 ### `ephem.pack/1`: an ephemeris pack
@@ -112,11 +114,12 @@ example shows one body; values are illustrative.
     {
       "id": "MOON", "naif_id": 301, "center": "EARTH", "center_naif_id": 399,
       "source": { "kind": "spk", "file": "de440s.bsp", "md5": "3917ee56769db332790c751e2168843d", "producer": "NASA/JPL" },
-      "coverage_et": [-1577880000.0, 4733395200.0],
+      "coverage_et": [-1577880000.0, 4733553600.0],
       "encoding": { "kind": "chebyshev", "segment_s": 2764800, "degree": 15, "c0": "f64", "rest": "f32" },
       "validation": "validation/MOON.json"
     }
-  ]
+  ],
+  "constants": { "emrat": 81.30057 }
 }
 ```
 
@@ -125,6 +128,8 @@ example shows one body; values are illustrative.
 - `last_modifier` is the project that derived the file. NAIF's rules ask that a modified
   kernel name whoever made the last modification
   (<https://naif.jpl.nasa.gov/naif/rules.html>); a derived pack does the same.
+- `constants.emrat` is the Earth-Moon mass ratio, from DE440's own GM values; Earth's
+  centre is derived from the Earth-Moon barycentre and the Moon with it.
 - In Starshot's packs the coefficients sit in one little-endian binary file per decade;
   the manifest's `decades` list gives each file's name, coverage and SHA-256.
 
@@ -137,7 +142,7 @@ One report per body, per pack or per program output, comparing it with a referen
   "schema": "ephem.validation/1",
   "subject": { "pack": "starshot-de440s-1950-2150-100km", "body": "MOON", "producer": "starshot | astlo <version>" },
   "reference": { "name": "JPL DE440", "via": "local kernel | Horizons API", "api_signature": "1.2", "ephemeris_source": "DE441" },
-  "sampling": { "from_et": -1577880000.0, "to_et": 4733395200.0, "step_s": 432000, "points": 14610 },
+  "sampling": { "from_et": -1577880000.0, "to_et": 4733553600.0, "step_s": 432000, "points": 14610 },
   "metrics": { "max_position_km": 54.3, "max_direction_arcmin": null, "rms_position_km": null },
   "budget": { "max_position_km": 150 },
   "pass": true
@@ -161,3 +166,20 @@ One report per body, per pack or per program output, comparing it with a referen
 - `python/astlo/` keeps his headers and metadata as he wrote them, and its files stay
   under his terms, not Starshot's licence (D10, D12).
 - Starshot never publishes contact details for him in its own files.
+
+## How we would like to work with you
+
+- **Changes come to you as pull requests.** Every fix is made in `python/astlo/` first,
+  one topic per commit, and checked against NASA/JPL. When a set is ready, at the latest
+  when Starshot's first chapter is done, it is offered to you as pull requests against
+  your repository: astlo changes only, nothing of Starshot, each with its numbers.
+- **You choose.** Take any of them, none, or all. If you adopt a change, Starshot pulls
+  astlo from your repository or your PyPI release and drops its own copy of that
+  change. The copy here then shrinks to a pinned version plus tests, instead of becoming
+  a permanent fork.
+- **You keep the Python.** You do not have to write Rust, ever. Starshot maintains the
+  tests, the shared formats and, if you want it, a small Rust crate beside your code
+  with Python bindings, so astlo's Python stays the version people learn from and read.
+  All of this works from a phone: a pull request can be reviewed and merged there.
+- **Nothing waits on you.** Starshot's plan does not depend on any of these choices, and
+  the game never needs astlo at runtime (D26, D29).

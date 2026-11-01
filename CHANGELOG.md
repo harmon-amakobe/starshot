@@ -97,6 +97,11 @@ numbers will be added by an automated release step (planned), never by hand.
 - `scripts/sync-work.mjs`: creates and updates a program's labels, milestone, issues and
   sub-issues on GitHub from `docs/plans/<program>/work.yaml`, over REST, as a dry run
   unless told to apply (D23). The `track-work` skill explains its use.
+- The v1-starshot program plan in `docs/plans/v1-starshot/` (the plan with its 40
+  pull-request specs, the research, the disagreement register, the issues as code, the
+  owner's checklist and the deviation log), decisions D12 to D29 in `docs/decisions.md`,
+  and `docs/astlo/directions.md`, the technical note for Mark Macharia on where astlo
+  could grow beside Starshot (D26, D29).
 
 ### Changed
 

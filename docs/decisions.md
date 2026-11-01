@@ -290,6 +290,8 @@ public repository to be made private.
 
 ## D11. The Mars-window physics test asserts a near miss of the two-body aim
 
+**Clarified 2026-11-01 ([register row R29](plans/v1-starshot/02-disagreement-register.md), [deviation row 9](plans/v1-starshot/05-deviation-log.md)): the 326 days below is the node of the test's 3-day grid; on a 1-day grid the Lambert minimum is 323 days at the same 2.982 km/s. The threshold and the test are unchanged.**
+
 *Date:* 2026-11-01. *Source:* orchestrator (judgment), under the owner's standing
 instruction not to block on small calls. Revisit if the owner disagrees.
 
@@ -663,3 +665,29 @@ props, cross-area imports) warn. A layering check keeps `packages/` from importi
 `apps/`, and anything from importing `python/` or `third_party/`. A dependency licence
 allow-list runs over the lockfiles. Splitting `GameScreen.tsx` is an early pull request
 of the program.
+
+---
+
+## D29. astlo changes are made here first, offered upstream, and pulled back from upstream once adopted
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** Every change to astlo is made in `python/astlo` in this repository first,
+one topic per commit, verified against NASA/JPL. When a set of changes is ready (at the
+latest when chapter one is done), a report and a patch series derived from those commits
+are offered to Mark Macharia as pull requests against his repository, containing astlo
+changes only and nothing of Starshot. If Mark adopts a change, Starshot consumes astlo
+from his repository or his PyPI release and drops its own copy of that change, so
+`python/astlo` shrinks towards a pin plus tests rather than a permanent fork. Mark
+develops on a phone and, as far as his public history shows, without AI assistance, so
+nothing in the plan assumes he will rewrite anything in Rust. The Rust core stays
+Starshot's; its ephemeris and topocentric parts are kept dependency-free with a stable
+interface so that Starshot can maintain them as a crate beside his Python, with Python
+bindings as an option, if he wants that. Build-time tooling may depend on astlo once it
+is licensed and validated; the game's runtime never does (D26).
+
+**Why.** The owner's call: avoid a permanent fork of astlo, give Mark changes he can take
+piecemeal, and let both projects grow together.
+
+**How it is enforced.** The `astlo-upstream` skill, the upstream kit of PR40, and the
+licence gate keeping `python/astlo/astlo` under `LicenseRef-astlo`.

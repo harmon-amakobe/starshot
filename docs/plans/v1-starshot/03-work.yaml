@@ -21,13 +21,13 @@ epics:
     title: "Foundations and governance"
     labels: [kind:epic, area:harness, priority:p1]
     body: |
-      The program plan, the decisions D12 to D28, the governance files and gates (PR0),
+      The program plan, the decisions D12 to D29, the governance files and gates (PR0),
       and the one-time steps only the owner can take. Done when PR0 has merged and every
       owner task below is closed or explicitly deferred.
       Plan: docs/plans/v1-starshot/00-plan.md. Owner steps: docs/plans/v1-starshot/04-ops-checklist.md.
     tasks:
       - id: v1-pr0-plan
-        title: "PR0: program plan, decisions D12 to D28, governance files and gates"
+        title: "PR0: program plan, decisions D12 to D29, governance files and gates"
         labels: [kind:docs, area:docs, priority:p1, status:claimed]
         size: XL
         priority: p1
@@ -99,6 +99,7 @@ epics:
         depends_on: [v1-pr0-plan]
         body: |
           Step K1 (D26). The message stays outside the repository; record only the date.
+          Later upstream pull requests follow D29 (step K2).
       - id: v1-ops-playtests
         title: "Owner: run the feel prototypes with five to ten testers"
         labels: [kind:chore, area:game, priority:p2, status:ready]
@@ -159,7 +160,7 @@ epics:
         body: |
           GameScreen.tsx leaves the size baseline (D28).
       - id: v1-process-checks
-        title: "PR4: check PR text, commit messages and PR size, and register the work gate"
+        title: "PR4: Process checks: PR size, commit scan and the work gate"
         labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
@@ -167,9 +168,10 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr4-process-checks
         depends_on: [v1-ci-hardening]
         body: |
-          The copy gate reaches text that lives outside the tree (D27, D23).
+          The size cap becomes a check, commit messages get the secrets scan, and the
+          issues file becomes a gate (D23, D24).
       - id: v1-licence-assets
-        title: "PR5: add the licence gate, the dependency allow-list and the assets manifest"
+        title: "PR5: Assets manifest and the dependency licence gate"
         labels: [kind:chore, area:harness, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
@@ -177,7 +179,8 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr5-licence-and-assets-gates
         depends_on: [v1-ci-hardening]
         body: |
-          Every shipped file has a licence record; CREDITS.md is generated (D12, D15, D28).
+          Every dependency has an allowed licence and every asset a manifest entry;
+          CREDITS.md is generated from the manifest (D12, D15, D28).
 
   - id: v1-band-b
     title: "Band B: the Rust core"
@@ -502,8 +505,8 @@ epics:
     labels: [kind:epic, area:levels, priority:p2]
     body: |
       Chapter one's levels from Earth orbit to a close solar orbit, each with a known
-      solution test; the credits; the release lane; the store notes. Outlines until the
-      Band F planning session.
+      solution test; the credits; the release lane; the store notes; the astlo upstream
+      kit (D29). Outlines until the Band F planning session.
     tasks:
       - id: v1-levels-moon
         title: "PR34: add the Earth orbit and Moon levels with known solutions"
@@ -536,7 +539,7 @@ epics:
         body: |
           Blocked on the Band F planning session.
       - id: v1-credits
-        title: "PR37: add the credits screen and generate CREDITS.md from the manifest"
+        title: "PR37: Credits screen from the manifest"
         labels: [kind:feature, area:docs, priority:p2, status:blocked]
         size: S
         priority: p2
@@ -565,3 +568,14 @@ epics:
         depends_on: [v1-hosting, v1-credits]
         body: |
           Blocked on the Band F planning session.
+      - id: v1-astlo-upstream-kit
+        title: "PR40: astlo upstream kit with the patch series, the report and draft PR bodies"
+        labels: [kind:chore, area:astlo, priority:p2, status:blocked]
+        size: S
+        priority: p2
+        actor: Either
+        spec: docs/plans/v1-starshot/00-plan.md#pr40-astlo-upstream-kit
+        depends_on: [v1-ephem-rails]
+        body: |
+          Regenerates what D29 offers Mark from the python/astlo commits. Blocked on the
+          Band F planning session.

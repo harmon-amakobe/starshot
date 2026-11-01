@@ -5,7 +5,7 @@ were written on 2026-11-01: gameplay and physics, shared-core architecture, visu
 audio, licence and governance, CI and hosting, ephemeris and astlo, and domains. They are
 merged here by axis with the orchestrator's own blind-spot pass. For each axis: the facts
 that matter with their sources, the options considered, the recommendation taken, and
-what would change it. The owner's rulings are the decision entries D12 to D28 in
+what would change it. The owner's rulings are the decision entries D12 to D29 in
 [../../decisions.md](../../decisions.md). Where a source and a ruling disagreed, the row
 is in [02-disagreement-register.md](02-disagreement-register.md).
 
@@ -56,6 +56,7 @@ Rounds 1 and 2 follow the orchestrator's plan skeleton, and round 3 holds the re
 | Audience? | 13 and up | D22 |
 | Personal account or organisation? | Personal for now | D23 |
 | Commit authorship? | The owner as author, the agent as co-author, DCO for all | D24 |
+| How does astlo grow beside Starshot? | Changes made here first, offered to Mark as pull requests, pulled back from his releases once adopted; no plan item assumes he writes Rust | D29 |
 | Standing instructions | No em dashes anywhere, and no en dashes; no AI tells; no god components; no verbose comments; nothing proprietary or private of the owner's in the repository; best open-source practice; strong CI; issues, epics and a board kept current by agents | D27, D28, D23 |
 
 ## 1. The shared core and determinism
@@ -606,8 +607,10 @@ Taken: `playstarshot.com` and `playstarshot.app`, DNS on Cloudflare, forwarding 
   `ephem.pack/1` and `ephem.validation/1` formats.
 
 Taken: Mark hears now, with the fixes, the verification and a directions document
-([../../astlo/directions.md](../../astlo/directions.md)). Astlo is a partner, never a
-runtime dependency (D26).
+([../../astlo/directions.md](../../astlo/directions.md)). astlo is a partner, never a
+runtime dependency (D26). Changes reach him later as pull requests against his
+repository, and Starshot pulls back what he adopts (D29); the growth path is in
+[00-plan.md](00-plan.md#the-astlo-growth-path-d26-d29).
 
 ## Measured numbers the plan relies on
 
@@ -623,6 +626,7 @@ runtime dependency (D26).
 | Rails size at 100 km | 295 KB per century (planets), 528 KB with the Moon | Fitted to `de440s` | PR8 |
 | Moon rail worst error at the 100 km tier | 54 km | Same | PR8 budget 150 km |
 | Evaluation cost | 0.13 microseconds (rails), 0.38 (Table 1) | Node 22 | D17 |
+| Mars 2026 Lambert minimum, 1-day grid, flattened | launch 2026-11-02, 323 days, 2.9817 km/s | TypeScript packages, 2026-11-01 | PR11, R29 |
 | Escape from 200 km | 3.226 km/s | Computed | D18 |
 | Starting budget | 3.55 km/s (1.1 times escape) | Computed | D18 |
 | Literal budget's excess speed | 17.2 km/s | Computed | R7 |

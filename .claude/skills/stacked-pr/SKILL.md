@@ -24,20 +24,29 @@ Only the orchestrator pushes and opens PRs; builders never do.
 The orchestrator makes every commit, at its publish step; builders never commit. Each
 commit is authored by the owner, carries the owner's `Signed-off-by:` (the DCO check
 compares it with the author) and names the agent in a `Co-Authored-By:` trailer with the
-session link. Write the message to a file outside the repository, then:
+session link. The committer stays the session's own identity: the platform signs a
+commit only when the committer is that identity, and a commit whose committer is the
+owner shows as unverified. Write the message to a file outside the repository, with the
+sign-off typed into it, then:
 
 ```bash
-git -c user.name="Harmon Amakobe" -c user.email="73005556+harmon-amakobe@users.noreply.github.com" \
-  commit -s -F <message file>
-git log -1 --format='%an <%ae>%n%(trailers)'   # author, Signed-off-by, Co-Authored-By
+git commit --author="Harmon Amakobe <73005556+harmon-amakobe@users.noreply.github.com>" -F <message file>
+git log -1 --format='%an <%ae>%n%cn <%ce>%n%(trailers)'   # author, committer, the trailers
 ```
 
-The message file ends with the trailers the session's attribution names, for example
-`Co-Authored-By: <agent> <noreply@anthropic.com>` and `Claude-Session: <link>`; `-s`
-adds the sign-off from the author identity above. Never add a `Signed-off-by:` for
-anyone but the owner, and only under that standing instruction. A commit without one
-gets a follow-up remediation commit from the owner, never a third-party sign-off
-(`.github/dco.yml`). Check the messages before the push:
+The message file ends with these trailers, in this order:
+
+```text
+Co-Authored-By: <agent> <noreply@anthropic.com>
+Claude-Session: <link>
+Signed-off-by: Harmon Amakobe <73005556+harmon-amakobe@users.noreply.github.com>
+```
+
+Never pass `-s`: it signs off as the committer, which is the session rather than the
+owner, and the DCO check compares the sign-off with the author. Never add a
+`Signed-off-by:` for anyone but the owner, and only under that standing instruction. A
+commit without one gets a follow-up remediation commit from the owner, never a
+third-party sign-off (`.github/dco.yml`). Check the messages before the push:
 `node scripts/check-copy-tells.mjs --commits <below>..HEAD`.
 
 ## Branch and publish

@@ -19,7 +19,7 @@ Firebase web configuration, D13) go only where a step below says.
 | G3 | Enable Actions on the fork | **Actions** tab: "I understand my workflows, go ahead and enable them" | The Actions tab lists CI, Pages and astlo | Every CI proof from PR0 on |
 | G4 | Read-only default token; no PRs from Actions yet | Settings, Actions, General, Workflow permissions: **Read repository contents and packages permissions**; leave **Allow GitHub Actions to create and approve pull requests** off until PR38 | `gh api repos/harmon-amakobe/starshot/actions/permissions/workflow` shows `"default_workflow_permissions": "read"` | PR1 (the workflows assume it); PR38 turns the second switch on |
 | G5 | Pages source | Settings, Pages, Source: **GitHub Actions** | After PR0 merges, <https://harmon-amakobe.github.io/starshot/> loads (it returned 404 on 2026-11-01) | The Pages mirror (D21) and acceptance criterion AC17 |
-| G6 | Ruleset on `main` | Settings, Rules, Rulesets, **New branch ruleset**: target the default branch; require a pull request; require the status check `gates`; block force pushes; restrict deletions. After PR4 merges, add the check `pr-text` | Open any PR: `gates` shows as **Required** | Enforcement of every gate; nothing fails without it, but nothing is enforced either |
+| G6 | Ruleset on `main` | Settings, Rules, Rulesets, **New branch ruleset**: target the default branch; require a pull request; require the status check `gates`; block force pushes; restrict deletions. The copy-lint workflow's `copy` check may be added to the ruleset once it has run on a pull request | Open any PR: `gates` shows as **Required** | Enforcement of every gate; nothing fails without it, but nothing is enforced either |
 | G7 | Code security | Settings, Code security: push protection **on**; private vulnerability reporting **on**; Dependabot alerts and security updates **on**; CodeQL **default setup** for GitHub Actions, JavaScript and TypeScript, Python. After PR6 merges, add Rust to CodeQL | The Security tab lists CodeQL runs; a test push of a fake key is blocked | PR1's Scorecard job reports these; `SECURITY.md` promises private reporting |
 | G8 | Install the DCO app, after PR0 merges | <https://github.com/apps/dco>: install on this repository only. Wait until PR0 has merged: PR0's earlier commits predate D24 and carry no sign-off | The next PR shows a **DCO** check | D24 enforcement from PR1 on |
 | G9 | Create the project board and link it | Your profile, Projects, **New project**, Table, name "Starshot". Fields: Status (Triage, Ready, In progress, In review, Done, Won't do), Priority (P0, P1, P2, P3), Size (XS, S, M, L, XL), Area (one option per `area:` label), Actor (Human, Agent, Either), Chapter (Chapter 1: web). Views: Board (by Status, open items), Backlog (table grouped by Area, sorted by Priority), Epics (filter `label:kind:epic`), Roadmap (by Chapter), Agent queue (filter `label:agent-ready` and Status Ready). Workflows: keep "closed to Done" and "merged to Done"; turn on "item added sets Triage", auto-archive Done after 30 days, and the one auto-add workflow for `is:issue,pr` in this repository. Then the repository's **Projects** tab, **Link a project** | A new issue appears on the board within a minute | The board views named in D23. `sync-work.mjs` sets project fields only with a token that can reach the project; otherwise it prints what it would have set |
@@ -73,6 +73,7 @@ add a suffix and check it is free.
 | # | Step | Where | How to confirm | Blocks |
 |---|---|---|---|---|
 | K1 | Send Mark the fixes and the directions | Your own channel to Mark. Link `python/astlo/`, `python/astlo/VERIFICATION.md`, [../../astlo/directions.md](../../astlo/directions.md) and the `astlo-fixed-wheel` artifact of the astlo workflow. Ask which name and handle he wants in the credits. The message itself stays outside the repository | Note the date (not the content) in the governance epic's issue | PR37 uses the name and handle he chooses; if he objects to `python/astlo/`, the `astlo-upstream` skill describes its removal (D10) |
+| K2 | Open the upstream pull requests (D29) | Mark's repository on GitHub, when PR40's kit has produced the patch series, the report and a draft body per topic (at the latest when chapter one is done). One pull request per topic, astlo changes only. When he adopts one, the orchestrator pins his release and drops Starshot's copy of that change | Each pull request is listed in the governance epic's issue | Nothing in Starshot waits on his answer |
 
 ## Playtests for the prototypes
 
@@ -92,10 +93,12 @@ add a suffix and check it is free.
 
 | PR | Waits on |
 |---|---|
-| PR0 merge and the board | G1, G3, G5; G9 for the board views |
+| PR0 merge | G3 (CI runs) |
+| The board views | G9 |
+| The Pages proof (AC17) | G5 |
 | PR1 | G3, G4; G6 makes `gates` binding; G7 feeds Scorecard |
 | PR1 onward (DCO) | G8 |
-| PR4 | G6 gains `pr-text` after it merges |
+| PR4 | G1 (the first sync writes the lock the `work` gate reads) |
 | PR6 | G7 adds Rust to CodeQL after it merges |
 | PR28 | P2 |
 | Band C build | P1 |
@@ -104,4 +107,5 @@ add a suffix and check it is free.
 | PR32 | F4 |
 | PR33 | M1 to M6, F10, F11, G10 (`production`, `preview`) |
 | PR37 | K1 (the name and handle) |
+| After PR40 | K2 |
 | PR38 | G4's second switch, G10 (`release`) |

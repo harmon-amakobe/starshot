@@ -12,9 +12,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | PR0 on `starshot/pr0-bootstrap`, then `main` |
-| Shape | PR0, then 39 stacked pull requests in six bands (A to F) |
+| Shape | PR0, then 40 stacked pull requests in six bands (A to F) |
 | Date | 2026-11-01 |
-| Decisions | D12 to D28 in [../../decisions.md](../../decisions.md), on top of D1 to D11 |
+| Decisions | D12 to D29 in [../../decisions.md](../../decisions.md), on top of D1 to D11 |
 | Turnkey specs | Bands A and B. Bands C to F are outlines until their band planning sessions |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -72,6 +72,7 @@ interstellar chapter are later programs.
 | D26 | Mark hears now, with the fixes and [../../astlo/directions.md](../../astlo/directions.md); astlo is a partner, never a runtime dependency |
 | D27 | The copy standard and its gate, with the em dash, the en dash and the horizontal bar as hard failures |
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
+| D29 | astlo changes are made here first, offered to Mark as pull requests (astlo changes only), and pulled back from his releases once adopted; the Rust core stays Starshot's, with dependency-free ephemeris and topocentric parts he may use as a crate; tooling may depend on a licensed, validated astlo, the game never does |
 
 Still binding from before: D1 and D2 (Mark's files untouched), D6 (2D physics; a level's
 preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
@@ -88,19 +89,19 @@ criterion without a recorded result in the PR body is not proven.
 | AC3 | Planets stay within today's Horizons budgets at the fixture dates, from Rust, for Table 1 and for the rails | `cargo test -p starshot-ephemeris --locked --test horizons` | PR9, PR10 |
 | AC4 | Every rail is within 150 km of DE440 every 5 days from 1950 to 2150, the Moon included | `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` (every `ephem.validation/1` report has `pass: true`) and `cargo test -p starshot-ephemeris --locked --test rails` | PR8, PR10 |
 | AC5 | Table 1 stays within its arcminute budgets every 5 days from 1950 to 2050 | `cargo test -p starshot-ephemeris --locked --test dense_table1` | PR10 |
-| AC6 | The core gives identical bits in V8, JavaScriptCore, native x86_64 and native arm64 | `npx vitest run packages/core-wasm` (V8), `bun packages/core-wasm/scripts/bits-jsc.mjs` (JavaScriptCore), `cargo test --workspace --locked golden` on x86_64 and in the `rust-arm64` CI job | PR6 (maths), PR15 (replays) |
+| AC6 | The core gives identical bits in V8, JavaScriptCore, native x86_64 and native arm64 | `npx vitest run packages/core-wasm` (V8), `bun packages/core-wasm/scripts/bits-jsc.mjs` (JavaScriptCore), `cargo test -p starshot-math --locked --test golden` and `cargo test -p starshot-game --locked --test golden_replays` on x86_64 and in the `rust-arm64` CI job | PR6 (maths), PR15 (replays) |
 | AC7 | Energy and timing hold: a Sun-only 1 AU orbit closes within 10 km after one period; Earth's gravity switches on energy-consistently once; a 3-year preview takes under 400 ms in CI | `cargo test -p starshot-physics --locked` | PR11, PR12 |
 | AC8 | Every level's known solution reaches its target through the shipped core with the level's frozen settings, and every hint is deterministic | `cargo test -p starshot-game --locked --test levels` and `npx vitest run apps/game` | PR14, PR16; re-derived in PR18 and PR34 to PR36 |
 | AC9 | Size budgets hold: wasm under 64 KB gzip; first-load JavaScript under 300 KB gzip before textures; level 1's 1k textures under 300 KB | `node scripts/check-bundle-size.mjs` (gate `bundle-size`) | PR15 (wasm), PR25 (first load), PR26 (textures) |
 | AC10 | The game plays through on a phone, a desktop and a phone with reduced motion: a result, zero console errors, zero unnamed controls, zero targets under 44 px, and level 1 replayed offline | `npm run build && node scripts/verify-game.mjs` (CI job `verify-game`), with `--steps scripts/verify-steps/chapter-one.mjs` from PR34 | PR1 (in CI); PR31 (offline); PR34 to PR36 (the chapter) |
-| AC11 | The copy standard holds everywhere it applies | `node scripts/check-copy-tells.mjs` exits 0, and ``git grep -nP '[\x{2013}\x{2014}\x{2015}]' -- . ':!third_party' ':!python/astlo/astlo'`` prints nothing | PR0; every PR |
+| AC11 | The copy standard holds everywhere it applies | `node scripts/check-copy-tells.mjs` exits 0, and ``LC_ALL=C.UTF-8 git grep -nP '[\x{2013}\x{2014}\x{2015}]' -- . ':!third_party' ':!python/astlo/astlo' ':!python/astlo/astlo-*.dist-info'; test $? -eq 1`` exits 0 | PR0; every PR |
 | AC12 | Every shipped file and dependency has an allowed licence and every asset is credited | `node scripts/check-licence.mjs && node scripts/check-dependency-licences.mjs && node scripts/check-assets.mjs && node scripts/gen-credits.mjs --check` | PR0 (files), PR5 (the rest) |
 | AC13 | Nothing private or secret in files, commit messages or PR bodies | `node scripts/check-secrets.mjs` with the local private-name list; the `commits` gate; the PR body through `node scripts/check-secrets.mjs --stdin` | Every PR; the `commits` gate from PR4 |
 | AC14 | The TypeScript core is gone and nothing refers to it | `test ! -e packages/ephemeris && test ! -e packages/physics && ! git grep -n -e @starshot/ephemeris -e @starshot/physics -- apps crates packages scripts tools` | PR17 |
 | AC15 | Security Rules deny by default and allow only the documented writes | `npx firebase-tools emulators:exec --only firestore,storage --project demo-starshot "npx vitest run tests/rules"` exits 0 | PR30, PR31 |
 | AC16 | The server accepts every golden replay and rejects tampered ones, running the same `.wasm` bytes the web ships | The function's test command, fixed in the Band E planning session; it compares the wasm's SHA-256 with `packages/core-wasm/pkg` | PR32 |
 | AC17 | Both sites load, and hashed assets are cached as immutable | `curl -sSfI https://playstarshot.com/` and `curl -sSfI https://harmon-amakobe.github.io/starshot/` return 200; a hashed asset's response carries `cache-control: public, max-age=31536000, immutable` | PR33 (and owner step G5) |
-| AC18 | The issues agree with the plan | `node scripts/sync-work.mjs --check` exits 0 (gate `work`) | PR4 |
+| AC18 | The issues agree with the plan | `node scripts/sync-work.mjs --program v1-starshot --check` exits 0 (gate `work`) | PR4 |
 | AC19 | The workflows lint clean | `pipx run zizmor==1.31.1 --offline .github/` exits 0 (CI job `workflow-lint`) | PR1 |
 
 ## The bands
@@ -112,7 +113,7 @@ criterion without a recorded result in the PR body is not proven.
 | C, flight model | PR18 to PR24 | Rails as the game's source; fuel, capture, lock states, time map, launch windows, progression | Band C planning first; `verify-game` and `verify-physics`; handoff |
 | D, senses | PR25 to PR29 | three.js presenting as 2D, textures, sky, sound and haptics, settings | Band D planning first; `verify-game`; handoff |
 | E, online | PR30 to PR33 | Firebase, accounts, verified leaderboard, Hosting | Band E planning first; rules tests; handoff |
-| F, content and release | PR34 to PR39 | Chapter one's levels, credits, release lane, store notes | Band F planning first; full sweep; trunk merge readiness |
+| F, content and release | PR34 to PR40 | Chapter one's levels, credits, release lane, store notes, the astlo upstream kit | Band F planning first; full sweep; trunk merge readiness |
 
 ## The pull requests
 
@@ -125,7 +126,7 @@ in their planning sessions.
 
 | PR | Slug | Title | Band | Size estimate | Depends on |
 |---|---|---|---|---|---|
-| PR0 | `v1-pr0-plan` | Plan, decisions D12 to D28, governance files and gates | trunk | well over the cap (deviation 1) | none |
+| PR0 | `v1-pr0-plan` | Plan, decisions D12 to D29, governance files and gates | trunk | well over the cap (deviation 1) | none |
 | PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: inside | PR0 |
 | PR2 | `v1-screen-split-render` | GameScreen split, render loop | A | about 500 lines (about 440 moved), 8 files: over, warns | PR1 |
 | PR3 | `v1-screen-split-state` | GameScreen split, state hooks | A | about 480 lines (about 400 moved), 9 files: over, warns | PR2 |
@@ -165,6 +166,7 @@ in their planning sessions.
 | PR37 | `v1-credits` | Credits | F | outline | PR26, PR27, PR28 |
 | PR38 | `v1-release-lane` | Release lane | F | outline | PR1 |
 | PR39 | `v1-store-prep` | Store preparation | F | outline | PR33, PR37 |
+| PR40 | `v1-astlo-upstream-kit` | astlo upstream kit | F | outline | PR8 |
 
 The stack is linear in this order. A PR that depends on an earlier one that is not
 directly below it (PR16 on PR3, for example) is satisfied because everything below it is
@@ -179,7 +181,7 @@ D8). The list below matches the PR0 commits; the PR1 builder confirms each path 
 matches: copy and work tracking go to PR4, licences and credits to PR5, size to PR3.
 
 - **The plan and the decisions:** `docs/plans/v1-starshot/` (these six files),
-  `docs/decisions.md` D12 to D28 with the supersession notes on D3, D4, D5 and D7, and
+  `docs/decisions.md` D12 to D29 with the supersession notes on D3, D4, D5, D7 and D10, and
   `docs/astlo/directions.md`.
 - **The licence switch (D12):** `LICENSE` (Apache-2.0), `LICENSES/` (`Apache-2.0`,
   `CC-BY-4.0`, `LicenseRef-astlo`, `LicenseRef-starshot-brand`), `REUSE.toml`, the
@@ -198,7 +200,10 @@ matches: copy and work tracking go to PR4, licences and credits to PR5, size to 
 - **Copy fixes** across the docs, `python/astlo/VERIFICATION.md` (Starshot's file) and
   the UI strings, so the copy gate starts green.
 - **Issues as code** (D23): `scripts/sync-work.mjs`, `scripts/lib/yaml-lite.mjs`, `scripts/lib/github-rest.mjs`, the fixture under `scripts/fixtures/work/`, the `track-work` skill and `docs/README.md`.
-- **Commits:** the licence switch, the gates and the governance files landed as three signed-off commits authored by the owner (D24); the plan and decisions follow in two more.
+- **Commits:** the licence switch, the gates and the governance files landed as three
+  signed-off commits authored by the owner (D24). The decisions, the plan, the
+  directions document, a licence-label correction and the review fix pass follow in
+  five more.
 
 PR0's commits after D24 follow it; the earlier bootstrap commits predate it, which is why
 the owner installs the DCO app only after PR0 merges ([04-ops-checklist.md](04-ops-checklist.md#github), G8).
@@ -341,17 +346,19 @@ New jobs in `ci.yml` (sketch):
 | `apps/game/src/ui/screen/status.ts` | New: `COACH_TEXT`, `trainingZoneLabel`, `scoringRulesFor`, `flightSummary`, `statusFor`, moved unchanged and exported |
 | `apps/game/src/ui/screen/markers.ts` | New: `buildMarkers`, `buildGhost` |
 | `apps/game/src/ui/screen/layout.ts` | New: `measureInsets`, `overlapArea`, `placeCoach` |
-| `apps/game/src/ui/screen/defaultAim.ts` | New: `defaultAim` and the `round` helper if nothing else uses it |
+| `apps/game/src/ui/screen/defaultAim.ts` | New: `defaultAim`, importing `round` from `apps/game/src/util/round.ts` |
+| `apps/game/src/util/round.ts` | New: `round(x, step)`, moved from GameScreen.tsx. Both call sites import it: `defaultAim.ts`, and GameScreen.tsx's drag and nudge handlers (PR3 moves them into `useAimState`) |
+| `apps/game/src/flight/useFlightPlayback.ts` | New hook that owns flight playback: the `FlightAnim` type, `flightRef`, `stepFlight`, `FAST_FORWARD`, and `beginFlight(res: ShotResponse): { et: number; slowedBy: PlanetId \| null }`, which is the block in `fire` that builds the `FlightAnim` (flight seconds from the flight days, 0.6 of them with reduced motion) and returns the starting clock. `fire` passes that clock to `setClock` |
 | `apps/game/src/ui/screen/usePrefersReducedMotion.ts` | New: `usePrefersReducedMotion` |
 | `apps/game/src/ui/screen/useSceneRenderer.ts` | New hook that owns the canvas loop (sketch below) |
-| `apps/game/src/ui/GameScreen.tsx` | Imports the above; keeps state, handlers and JSX |
+| `apps/game/src/ui/GameScreen.tsx` | Imports the above; keeps state, handlers and JSX; `fire` calls `beginFlight` |
 | `scripts/size-baseline.json` | Lowered with `node scripts/check-file-size.mjs --update` (it only lowers) |
 
 `useSceneRenderer` takes over, unchanged in logic: the refs `canvasRef`, `camRef`,
 `vpRef`, `dprRef`, `starRef`, `userMovedRef`, `frameRef`, `animUntilRef`, `burstRef`,
-`flightRef`, `fitScaleRef` and `insetsDirty`; the callbacks `draw`, `stepFlight`,
-`requestDraw`, `poke` and `refit`; `maxPull`; the resize, redraw and teardown effects; the
-constants `DPR_CAP` and `FAST_FORWARD`. It reads the per-render inputs through the same
+`fitScaleRef` and `insetsDirty`; the callbacks `draw`, `requestDraw`, `poke` and `refit`;
+`maxPull`; the resize, redraw and teardown effects; the constant `DPR_CAP`. It advances a
+flight by calling the `stepFlight` of the `useFlightPlayback` object it receives. It reads the per-render inputs through the same
 `latest` ref pattern the file uses today (the `snapshot` object).
 
 ```ts
@@ -363,14 +370,19 @@ export interface SceneRendererInput {
   readonly hudRef: RefObject<HTMLDivElement | null>;
   readonly controlsRef: RefObject<HTMLDivElement | null>;
   readonly coachRef: RefObject<HTMLDivElement | null>;
-  readonly fast: boolean;
-  readonly onClock: (clock: { et: number; slowedBy: PlanetId | null }) => void;
-  readonly onFlightEnd: (f: FlightAnim) => void;
+  readonly playback: FlightPlayback; // from useFlightPlayback: flightRef, stepFlight
 }
 export function useSceneRenderer(input: SceneRendererInput): SceneRenderer;
 // SceneRenderer returns exactly what GameScreen still calls (canvasRef, pullRef,
-// requestDraw, poke, refit, maxPull, startFlight, and the camera operations the zoom
-// buttons and gestures use); derive the list from the call sites.
+// requestDraw, poke, refit, maxPull, and the camera operations the zoom buttons and
+// gestures use); derive the list from the call sites.
+// apps/game/src/flight/useFlightPlayback.ts
+export function useFlightPlayback(input: {
+  readonly reducedMotion: boolean;
+  readonly fast: boolean;
+  readonly onClock: (clock: { et: number; slowedBy: PlanetId | null }) => void;
+  readonly onFlightEnd: (f: FlightAnim) => void;
+}): FlightPlayback; // { flightRef, stepFlight, beginFlight }
 ```
 
 - **Edge cases.** The coach mark's placement reads layout after paint
@@ -436,12 +448,14 @@ export function useSceneRenderer(input: SceneRendererInput): SceneRenderer;
 |---|---|
 | `scripts/check-pr-size.mjs` | New. Runs `git diff --numstat <base>...HEAD`; excludes `package-lock.json`, `Cargo.lock`, `**/uv.lock`, `**/fixtures/**/*.json`, `data/ephem/**`, `packages/core-wasm/pkg/**`, binary files (numstat `-`); counts added lines and changed files; prints both; warns (`::warning::` in Actions) above 400 lines or 20 files; exits 1 above 800 lines or 40 files. Base: `--base <ref>`, else `GITHUB_BASE_REF`, else `origin/main` |
 | `scripts/check-commits.mjs` | New gate `commits` (group `hygiene`, fast). For each commit in `<base>..HEAD` (base as above): pipes `%an <%ae>%n%B` through `node scripts/check-secrets.mjs --stdin` and fails on any finding; warns when a commit has no `Signed-off-by:` (the DCO app is the enforcement) |
-| `scripts/gates.mjs` | Register `commits`; register `work` (`node scripts/sync-work.mjs --check`, group `hygiene`, fast) unless an entry that runs `scripts/sync-work.mjs` already exists |
+| `scripts/gates.mjs` | Register `commits`; register `work` (`node scripts/sync-work.mjs --program v1-starshot --check`, group `hygiene`, fast) unless an entry that runs `scripts/sync-work.mjs` already exists |
+| `scripts/sync-work.mjs` | (PR0's.) `--check` with no `--program` checks every folder under `docs/plans/` that holds a `*work.yaml`, prints one line per program, and exits 1 if any disagrees with its lock. A new `--plans-dir <path>` (default `docs/plans`) lets the self-test point it elsewhere |
+| `scripts/fixtures/work/plans/` | Two fixture programs: `agrees/` (a `work.yaml` and a matching `work.lock.json`) and `drifts/` (a lock that names a slug the YAML lacks). `--self-test` asserts that `--check --program agrees --plans-dir scripts/fixtures/work/plans` passes, and that `--check --plans-dir scripts/fixtures/work/plans` exits 1 naming `drifts` |
 | `.github/workflows/ci.yml` | New job `pr-size` (`pull_request` only; `contents: read`; full-history checkout; `node scripts/check-pr-size.mjs --base "origin/${GITHUB_BASE_REF}"`) added to the aggregator's `needs` |
 | `CONTRIBUTING.md` | New section "Claiming work, the board and status comments": `agent-ready` issues are for agents through the orchestrator; outside contributors claim by comment; `Part of #n` inside a stack and `Closes #n` where the work reaches `main`; the two status comment templates below |
 | `.claude/skills/stacked-pr/SKILL.md` | New section "Commit authorship (D24)" with the publish recipe below, unless the skill already carries it |
 | `.claude/README.md` | `GATE_COMMANDS` row lists `commits` and `work` |
-| `docs/hosting.md` | The ruleset step: nothing new is required beyond `gates` (copy-lint's check stays advisory, because `pull_request_target` reports on the base branch) |
+| `docs/hosting.md` | The ruleset step: `gates` stays the one required check. The copy-lint workflow's `copy` check may be added once it has run on a pull request (owner step G6) |
 | `CHANGELOG.md` | `[Unreleased]` entry |
 
 Status comments (D23), posted by the orchestrator:
@@ -454,9 +468,11 @@ Done in #<pr>. Gates: <n>/<n> passed, exit 0. Evidence: <one line per proof comm
 The publish recipe (D24), run by the orchestrator only:
 
 ```bash
-git -c user.name="Harmon Amakobe" \
-    -c user.email="73005556+harmon-amakobe@users.noreply.github.com" \
-    commit -s -F <message-file>   # message ends with Co-Authored-By and the session link
+# Author: the owner. Committer: the session identity, the one the platform signs for.
+# The message file ends with Co-Authored-By, the session link and the owner's
+# Signed-off-by line, typed in. Never -s: it would sign off as the committer.
+git commit --author="Harmon Amakobe <73005556+harmon-amakobe@users.noreply.github.com>" -F <message-file>
+git log -1 --format='%an <%ae>%n%cn <%ce>%n%(trailers)'
 node scripts/check-secrets.mjs --stdin < <message-file>
 node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 ```
@@ -465,6 +481,8 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
   the base ref first. Pure renames count zero added lines. `check-commits.mjs` on `main`
   with no base finds no range and passes, saying so.
 - **Proof.** `npm run gates` exits 0 with `commits` and `work` listed.
+  `node scripts/sync-work.mjs --self-test` passes, the two-program case included, and
+  `node scripts/sync-work.mjs --check` (no program) checks every program under `docs/plans/`.
   `node scripts/check-pr-size.mjs --base starshot/v1-pr03-screen-split-state` prints
   this PR's counts. A scratch commit whose message contains a planted `ghp_` token makes
   `node scripts/check-commits.mjs` exit 1 (then drop the commit). The `pr-size` job is
@@ -490,7 +508,7 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 | `scripts/licence-allow.json` | New: `allowed` (`MIT`, `ISC`, `BSD-2-Clause`, `BSD-3-Clause`, `Apache-2.0`, `0BSD`, `CC0-1.0`, `BlueOak-1.0.0`, `Unlicense`, `CC-BY-4.0`) and `exceptions` (an array of `{ package, version, licence, reason }`, empty at first) |
 | `scripts/check-dependency-licences.mjs` | New gate `dependency-licences` (hygiene, fast). Reads `package-lock.json` `packages`, skips the workspace's own entries, evaluates each `license` as an SPDX expression (`OR` passes when one side is allowed, `AND` when both are, parentheses respected); a missing or disallowed licence fails unless listed in `exceptions`. A `cargo` part arrives in PR6 |
 | `apps/game/assets/manifest.json` | New, schema `assets.manifest/1`: `{ "schema", "assets": [ ... ] }`. Entry fields: `id`, `kind` (`texture`, `image`, `audio`, `font`, `data`), `title`, `files` (repository paths), `source` (`{ "kind": "original" }` or `{ "kind": "url", "url", "retrieved", "sha256" }`), `licence` (SPDX id or `LicenseRef-`), `attribution`, `modifications`, `aiGenerated` (must be `false`, D15), optional `tiers` and `separateDataFile`. First entry: `apps/game/public/icon.svg` as `LicenseRef-starshot-brand`, original |
-| `scripts/check-assets.mjs` | New gate `assets` (hygiene, fast): every file under `apps/game/public/` except `sw.js` and `manifest.webmanifest`, and every file a manifest entry names, is listed exactly once with a matching SHA-256 of its bytes; licences must be in `CC-BY-4.0`, `CC0-1.0`, `LicenseRef-NASA-Media`, `LicenseRef-starshot-brand`, `Apache-2.0`, `OFL-1.1`, or `CC-BY-SA-4.0` only with `separateDataFile: true`; any `-NC` or `-ND` licence fails; `aiGenerated: true` fails |
+| `scripts/check-assets.mjs` | New gate `assets` (hygiene, fast): every file under `apps/game/public/` except `sw.js`, `manifest.webmanifest` and `*.md` (notes such as `brand/README.md` are not assets), and every file a manifest entry names, is listed exactly once with a matching SHA-256 of its bytes; licences must be in `CC-BY-4.0`, `CC0-1.0`, `LicenseRef-NASA-Media`, `LicenseRef-starshot-brand`, `Apache-2.0`, `OFL-1.1`, or `CC-BY-SA-4.0` only with `separateDataFile: true`; any `-NC` or `-ND` licence fails; `aiGenerated: true` fails |
 | `scripts/gen-credits.mjs` | New: writes the asset sections of `CREDITS.md` between `<!-- assets:start -->` and `<!-- assets:end -->` (grouped by `kind`, one line per entry with title, attribution and licence); `--check` exits 1 when the file would change. Registered as gate `credits` (hygiene, fast) |
 | `scripts/check-licence.mjs` | (PR0's.) Remove its "media credited in CREDITS.md" rule (re-locate by the string `CREDITS.md`), which `check-assets.mjs` now owns; nothing else changes |
 | `CREDITS.md` | Gains the two markers around today's asset sections; content regenerated |
@@ -529,8 +547,8 @@ Rules for every Band B PR, from D16:
 ### PR6: Rust workspace and starshot-math
 
 - **Branch** `starshot/v1-pr06-rust-workspace`, based on PR5's.
-  **Issue** `v1-rust-workspace`. **Decisions** D16, D28. **Size** about 360 lines,
-  15 files, plus the generated golden file.
+  **Issue** `v1-rust-workspace`. **Decisions** D16, D28. **Size** about 380 lines,
+  16 files, plus the generated golden file.
 - **Goal.** A Cargo workspace with a pinned toolchain and one maths crate, the only place
   transcendental functions live. A golden file of its exact results is checked on x86_64
   and arm64, and the Rust gates join the registry.
@@ -547,7 +565,8 @@ Rules for every Band B PR, from D16:
 | `scripts/gates.mjs` | Gates `rust-fmt` (`cargo fmt --all --check`), `rust-clippy` (`cargo clippy --workspace --all-targets --locked -- -D warnings`), `rust-test` (`cargo test --workspace --locked`), group `rust`, `needsCargo: true`. When `cargo --version` fails: if `STARSHOT_REQUIRE_RUST` is `1` the gate fails; otherwise it reports `skip` with "cargo not found; set STARSHOT_REQUIRE_RUST=1 to fail instead", and the last line reads `gates: P/N passed, S skipped`. A skip never counts as a pass in that line |
 | `scripts/check-dependency-licences.mjs` | Cargo part: `cargo metadata --format-version 1 --locked`, each package's `license` through the same allow-list, with the same skip rule |
 | `scripts/check-file-size.mjs` | (PR0's.) Layering also scans `crates/`: an `include_str!`, `include_bytes!` or `#[path]` that resolves under `python/` or `third_party/` fails |
-| `.github/workflows/ci.yml` | `checks`: env `STARSHOT_REQUIRE_RUST: "1"`, a `rustup show` step (installs the pinned toolchain) and `Swatinem/rust-cache` (pinned) before `npm run gates`. New job `rust-arm64` on `ubuntu-24.04-arm`: checkout, `rustup show` (install rustup first with the official script if the image lacks it), `cargo test --workspace --locked`; added to the aggregator's `needs` |
+| `.github/workflows/ci.yml` | `checks`: env `STARSHOT_REQUIRE_RUST: "1"` and the `setup-rust-wasm` action before `npm run gates`. New job `rust-arm64` on `ubuntu-24.04-arm`: checkout, the action with `wasm-bindgen: "false"`, `cargo test --workspace --locked`; added to the aggregator's `needs` |
+| `.github/actions/setup-rust-wasm/action.yml` | New composite action, the one way CI gets Rust: installs rustup with the official script if the runner lacks it; `rustup show` (installs the toolchain, `rustfmt`, `clippy` and the `wasm32-unknown-unknown` target named in `rust-toolchain.toml`); `Swatinem/rust-cache` pinned by SHA (it also caches `~/.cargo/bin`); then, unless the input `wasm-bindgen` is `"false"`, `cargo install --locked wasm-bindgen-cli --version 0.2.130` when that version is not already installed. PR15 pins the `wasm-bindgen` crate to the same version |
 | `.github/dependabot.yml` | `cargo` ecosystem, monthly, cooldown 7 days |
 | `.gitignore` | `/target/` |
 | `CONTRIBUTING.md`, `docs/architecture.md`, `CHANGELOG.md` | The Rust toolchain is needed to change physics (D16); the crate layout; `[Unreleased]` |
@@ -571,7 +590,8 @@ special values `0`, `-0`, `1` and `-1` where valid.
 - `cbrt`: -1e9 to 1e9. `sinh`, `cosh`, `tanh`: -20 to 20. `hypot`: a 16 by 16 grid.
 
 - **Edge cases.** A contributor without Rust runs `npm run gates` and sees three skips,
-  not a failure and not a silent pass. `cargo clippy` must reject a planted `x.sin()` in
+  not a failure and not a silent pass. That promise lasts until PR15: from PR15 Rust is
+  required to build from source, and a missing toolchain fails (PR15's spec). `cargo clippy` must reject a planted `x.sin()` in
   a scratch crate. Nothing in `starshot-math` calls an `f64` transcendental method.
 - **Proof.** AC2 commands exit 0. `cargo test -p starshot-math --locked` passes on x86_64
   and in the `rust-arm64` job: that run is the first measurement of arm64 bits (register
@@ -593,15 +613,16 @@ special values `0`, `-0`, `1` and `-1` where valid.
 
 | File | Change |
 |---|---|
-| `tools/ephem/pyproject.toml` | New. Created with `uv init --lib --build-backend uv --name starshot-ephem tools/ephem`, then: `requires-python = ">=3.12"`, dependencies `jplephem==2.24` and `numpy` pinned to the version `uv lock` resolves, dev group `pytest`, script `starshot-ephem = "starshot_ephem.cli:main"` |
+| `tools/ephem/pyproject.toml` | New. Created with `uv init --lib --build-backend uv --name starshot-ephem tools/ephem`, then: `requires-python = ">=3.12"`, dependencies `jplephem==2.24` and `numpy` pinned to the version `uv lock` resolves, dev group `pytest`, script `starshot-ephem = "ephem.cli:main"`. The import package is `ephem` (`[tool.uv.build-backend] module-name = "ephem"`, code in `tools/ephem/src/ephem/`); PyEphem uses the same import name, and this project never installs PyEphem |
 | `tools/ephem/uv.lock` | Generated by `uv lock --project tools/ephem` |
-| `tools/ephem/src/starshot_ephem/horizons.py` | `fetch_vectors(command: str, center: str, epochs_jd_tdb: list[float], *, cache_dir: Path) -> dict` using `urllib` only; the request parameters of today's `tools/horizons/fetch_fixtures.py` (`fetch`); on-disk cache keyed by the SHA-256 of the query; retries on HTTP 429 and 503 with backoff (1, 2, 4, 8, 16 s); returns `{ "rows", "api_signature" (the JSON `signature.version`), "ephemeris_source" (the `{source: ...}` text in the result header), "fetched_utc", "query" }` |
-| `tools/ephem/src/starshot_ephem/kernel.py` | `ensure_kernel(path: Path) -> Path`: downloads `https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp` if absent and checks MD5 `3917ee56769db332790c751e2168843d`, else raises |
-| `tools/ephem/src/starshot_ephem/fixtures.py` | `write_horizons_fixture(out: Path)`: today's eight heliocentric targets at today's five epochs, unchanged in shape under `states`; plus `geocentric.moon` (target `301`, center `500@399`) and `heliocentric_extra.earth` (target `399`, center `500@10`) at the same epochs; top-level `fetched_utc`, `api_signature`, `ephemeris_source`, `queries` |
-| `tools/ephem/src/starshot_ephem/cli.py` | `main()` with subcommands `fixtures --out PATH` and `kernel --path PATH` |
+| `tools/ephem/src/ephem/horizons.py` | `fetch_vectors(command: str, center: str, epochs_jd_tdb: list[float], *, cache_dir: Path) -> dict` using `urllib` only; the request parameters of today's `tools/horizons/fetch_fixtures.py` (`fetch`); on-disk cache keyed by the SHA-256 of the query; retries on HTTP 429 and 503 with backoff (1, 2, 4, 8, 16 s); returns `{ "rows", "api_signature" (the JSON `signature.version`), "ephemeris_source" (the `{source: ...}` text in the result header), "fetched_utc", "query" }` |
+| `tools/ephem/src/ephem/kernel.py` | `ensure_kernel(path: Path) -> Path`: downloads `https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp` if absent and checks MD5 `3917ee56769db332790c751e2168843d`, else raises |
+| `tools/ephem/src/ephem/fixtures.py` | `write_horizons_fixture(out: Path)`: today's eight heliocentric targets at today's five epochs, unchanged in shape under `states`; plus `geocentric.moon` (target `301`, center `500@399`) and `heliocentric_extra.earth` (target `399`, center `500@10`) at the same epochs; top-level `fetched_utc`, `api_signature`, `ephemeris_source`, `queries` |
+| `tools/ephem/src/ephem/cli.py` | `main()` with subcommands `fixtures --out PATH` and `kernel --path PATH` |
 | `tools/ephem/tests/test_horizons.py`, `tests/data/horizons_sample.json` | Parses a small committed sample response: rows, signature, source |
 | `tools/ephem/tests/test_fixture.py` | The committed fixture has every target and the metadata keys, and its epochs equal the five in `fixtures.py` |
-| `tools/ephem/README.md` | What the tool does, the commands, the dependency licences (jplephem MIT, numpy BSD-3-Clause), the fair-use rule (never at runtime) |
+| `tools/ephem/README.md` | What the tool does, the commands, the dependency licences (jplephem MIT, numpy BSD-3-Clause), the fair-use rule (never at runtime), and the interface of the growth path (D29): `generate(kernel, bodies, window, tolerance) -> Pack` and `validate(pack, reference) -> Report` in `tools/ephem/src/ephem/generate.py` and `validate.py`, which PR8 implements; the CLI stays a thin layer over them |
+| `tools/ephem/src/ephem/__init__.py` | Exports the public functions only. Tests import from `ephem`, never from a private module, and test behaviour and file formats, not internals, so another implementation could satisfy them (D29) |
 | `packages/ephemeris/test/fixtures/horizons.json` | Regenerated in place with `uv run --project tools/ephem --locked starshot-ephem fixtures --out packages/ephemeris/test/fixtures/horizons.json` (PR9 moves it) |
 | `tools/horizons/fetch_fixtures.py` | Deleted, with every reference updated (`git grep -n fetch_fixtures`) |
 | `.github/workflows/ephem.yml` | New, path-filtered on `tools/ephem/**`, `data/ephem/**` and itself (so never a required check): `permissions: {}`, job `contents: read`, `astral-sh/setup-uv` pinned, `uv sync --project tools/ephem --locked`, `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` |
@@ -624,7 +645,7 @@ special values `0`, `-0`, `1` and `-1` where valid.
 ### PR8: DE440 rails pack
 
 - **Branch** `starshot/v1-pr08-ephem-rails`, based on PR7's.
-  **Issue** `v1-ephem-rails`. **Decisions** D17. **Size** about 400 lines, 12 files,
+  **Issue** `v1-ephem-rails`. **Decisions** D17, D29. **Size** about 450 lines, 17 files,
   plus 31 generated data files.
 - **Goal.** Fit Chebyshev rails from `de440s.bsp` for 1950 to 2150, write them as an
   `ephem.pack/1` pack of self-describing decade files, validate every body every 5 days
@@ -670,30 +691,36 @@ lists the bodies with their source and encoding and a `decades` array of
 
 | File | Change |
 |---|---|
-| `tools/ephem/src/starshot_ephem/chebyshev.py` | `fit(fn, t0, t1, degree)` on Chebyshev nodes with `numpy.polynomial.chebyshev`; `quantise(coeffs)` keeps c0 as float64 and rounds the rest to float32; `evaluate(coeffs, t0, t1, t)` |
-| `tools/ephem/src/starshot_ephem/bodies.py` | The table above |
-| `tools/ephem/src/starshot_ephem/pack.py` | `write_pack(out_dir, kernel, from_year, to_year)`: fits, checks each quantised segment at 24 points (more than 100 km is an error naming body and segment), writes the decade files and `pack.json` |
-| `tools/ephem/src/starshot_ephem/validate.py` | `validate_pack(pack_dir, kernel)`: every 432,000 s over each body's coverage, position error against the kernel; writes `validation/<BODY>.json` (`ephem.validation/1`, budget 150 km, `pass`) and `VALIDATION.md` (a table of max and RMS error per body) |
-| `tools/ephem/src/starshot_ephem/cli.py` | Subcommands `build --kernel PATH --out DIR` and `validate --kernel PATH --pack DIR` |
+| `tools/ephem/src/ephem/chebyshev.py` | `fit(fn, t0, t1, degree)` on Chebyshev nodes with `numpy.polynomial.chebyshev`; `quantise(coeffs)` keeps c0 as float64 and rounds the rest to float32; `evaluate(coeffs, t0, t1, t)` |
+| `tools/ephem/src/ephem/bodies.py` | The table above |
+| `tools/ephem/src/ephem/generate.py` | `generate(kernel: PositionSource, bodies: list[BodySpec], window: tuple[int, int], tolerance_km: float) -> Pack`. `PositionSource` is a protocol (`position(target, center, et) -> (x, y, z)`); `KernelSource(path)` wraps jplephem. It fits each body over the decades of `window` (years), checks each quantised segment at 24 points (more than `tolerance_km` is an error naming body and segment) and returns the in-memory `Pack`. No file I/O |
+| `tools/ephem/src/ephem/pack.py` | The `Pack` type (manifest plus decade bytes), `write(pack, out_dir)` and `read(pack_dir) -> Pack` for the binary layout above and `pack.json` |
+| `tools/ephem/src/ephem/validate.py` | `validate(pack: Pack, reference: Reference) -> Report`. `Reference` is a `PositionSource` (every 432,000 s over each body's coverage) or a Horizons fixture (every fixture epoch). The `Report` holds one `ephem.validation/1` record per body (budget 150 km, `pass`); `write_report(report, out_dir)` writes `validation/<BODY>.json` and `VALIDATION.md`. `generate` and `validate` are the interface of the growth path (D29) |
+| `tools/ephem/src/ephem/constants.py` | `emrat()`: the Earth-Moon mass ratio from DE440's own GM values, `BODY399_GM / BODY301_GM` in NAIF's `gm_de440.tpc`, the GM kernel published for the DE440 ephemerides (the builder confirms its name in the NAIF listing and pins its MD5 like the SPK's). `pack.json` records it as `constants.emrat` |
+| `tools/ephem/tests/test_constants.py` | `emrat()` equals the Earth-Moon mass ratio JPL publishes for DE440 (the builder copies the value and its URL into the test) within 1e-9 relative; the repository's own GMs give 81.30057 to five decimals (computed from `bodies.ts` and `launch.ts`) |
+| `tools/ephem/src/ephem/cli.py` | A thin layer over the interface: `build --kernel PATH --from-year 1950 --to-year 2150 --out DIR` (years on decade boundaries) and `validate --kernel PATH --pack DIR`; no logic of its own |
 | `tools/ephem/tests/test_chebyshev.py` | A cubic is fitted exactly (1e-9); quantisation error stays under the float32 bound |
-| `tools/ephem/tests/test_pack.py` | A synthetic pack round-trips: header, offsets, segment lookup at decade edges |
+| `tools/ephem/tests/test_pack.py` | A synthetic pack round-trips through `pack.write` and `pack.read`: header, offsets, segment lookup at decade edges |
+| `tools/ephem/tests/test_interface.py` | `generate` on an analytic `PositionSource` (circular orbits), then `validate` against the same source: the result passes within the tolerance. The test depends on the two signatures and the pack format only |
 | `tools/ephem/tests/test_committed_pack.py` | The committed `pack.json` hashes match the decade files; every report has `pass: true` and `max_position_km <= 150`; the Moon's parameters are 32 days and degree 15 |
 | `data/ephem/de440s-100km/` | Generated: `pack.json`, `1950.bin` to `2140.bin`, `validation/*.json` (9), `VALIDATION.md` |
 | `data/ephem/README.md` | Provenance: derived from NASA/JPL DE440 (`de440s.bsp`), last modified by Starshot (NAIF's rule), how to rebuild |
 | `REUSE.toml`, `LICENSES/LicenseRef-NASA-JPL-Data.txt` | Annotate `data/ephem/**` with `LicenseRef-NASA-JPL-Data`; the text states the source, NAIF's rules (<https://naif.jpl.nasa.gov/naif/rules.html>) and the last-modifier line |
 | `.github/workflows/ephem.yml` | New `workflow_dispatch` job `regenerate`: kernel from cache (key `de440s-3917ee56769db332790c751e2168843d`) or download, `build`, `validate`, upload artifact `ephem-pack` (7 days) for a person to commit |
+| `docs/architecture.md` | Under "Future: the astlo data gate", the `ephem.snapshot/1` sketch is replaced by a pointer to `ephem.pack/1` and `ephem.validation/1` (`docs/astlo/directions.md`, `data/ephem/README.md`) |
+| `CHANGELOG.md` | `[Unreleased]` entry |
 
-`constants.emrat` is the Earth-Moon mass ratio from the repository's own GMs:
-`GM_earth / (GM_earth_moon_system - GM_earth)` with 398600.435507
-(`packages/physics/src/launch.ts`, `EARTH_GM`) and 403503.235502
-(`packages/ephemeris/src/bodies.ts`, Earth's system GM); a test checks it equals
-81.30057 to five decimals.
+`constants.emrat` comes from `constants.emrat()`, that is from DE440's own GM values. The
+repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.ts`,
+403503.235502 for the Earth-Moon system in `packages/ephemeris/src/bodies.ts`) give
+81.300570, which agrees to five decimals; the Rust core uses the pack's value (PR10).
 
 - **Edge cases.** NAIF's kernel ends 2150-01-22, so the last decade is fully covered. A
   rebuild on another machine may differ in the last bits of a coefficient. The committed
   pack is the source of truth and the tests read it, not the kernel.
 - **Proof.** `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` passes
-  offline. With the kernel present, `starshot-ephem build` twice on one machine gives
+  offline. With the kernel present, `starshot-ephem build --kernel <path> --from-year 1950
+  --to-year 2150 --out <dir>` twice on one machine gives
   identical bytes, and `starshot-ephem validate` reproduces the committed reports. The PR
   body carries `VALIDATION.md`'s table and the pack's total size (expected about 1.06 MB
   for 200 years).
@@ -734,7 +761,8 @@ lists the bodies with their source and encoding and a `decades` array of
 - **Proof.** `cargo test -p starshot-ephemeris --locked` passes (AC3 for Table 1).
   `npx vitest run packages/ephemeris` passes, including the conformance test without the
   write flag. `npm run gates` exits 0.
-- **Adversary checks.** Table 1 digits equal the TypeScript file's (diff the two lists).
+- **Adversary checks.** `starshot-ephemeris` depends on nothing but `starshot-math` (D29,
+  stage 3 of the growth path). Table 1 digits equal the TypeScript file's (diff the two lists).
   Budgets equal today's. No transcendental call bypasses `starshot-math`. The moved
   fixture is byte-identical (`git diff -M --stat` shows a pure rename).
 - **Out of scope.** Rails and the Moon (PR10).
@@ -751,7 +779,7 @@ lists the bodies with their source and encoding and a `decades` array of
 |---|---|
 | `crates/starshot-ephemeris/src/rails.rs` | `RailPack::new()`; `load_decade(&mut self, bytes: &[u8]) -> Result<(), PackError>` validating magic, version, the body table and every offset; `pack_build(&self) -> Option<u64>` (equal across loaded decades, else `PackError::MixedBuilds`); `position(body, et) -> Option<Vec3>` and `state(body, et) -> Option<State>` by Clenshaw's recurrence and its derivative scaled by `2 / span`; `coverage() -> (f64, f64)` |
 | `src/bodies.rs` | `BodyId::Moon`; `RailBody` codes 1 to 8 and 301 |
-| `src/ephemeris.rs` | `RailEphemeris { pack, flatten, table1 }` implementing `Ephemeris`. Inside pack coverage the decade holding `et` must be loaded, else a panic "decade <year> not loaded" (the caller loads before simulating; a silent fallback would make preview and server differ). Outside coverage, planets come from Table 1 and the Moon panics. `BodyId::Earth` stays the barycentre; `earth_centre(et)` and the heliocentric Moon use `emrat` from the bodies' GMs. `soi_km` uses Table 1's semi-major axis for every source, so spheres of influence do not depend on the source |
+| `src/ephemeris.rs` | `RailEphemeris { pack, flatten, table1 }` implementing `Ephemeris`. Inside pack coverage the decade holding `et` must be loaded, else a panic "decade <year> not loaded" (the caller loads before simulating; a silent fallback would make preview and server differ). Outside coverage, planets come from Table 1 and the Moon panics. `BodyId::Earth` stays the barycentre; `earth_centre(et)` and the heliocentric Moon use `EMRAT`, a constant in `bodies.rs` equal to `constants.emrat` in `pack.json` (a test reads the JSON and compares). `soi_km` uses Table 1's semi-major axis for every source, so spheres of influence do not depend on the source |
 | `tests/rails.rs` | Loads all decade files with `include_bytes!`: planets within 150 km of `fixtures/horizons/horizons.json`, the geocentric Moon within 150 km of `geocentric.moon`, Earth's centre within 150 km of `heliocentric_extra.earth`, at every epoch inside coverage; corrupt headers are rejected |
 | `tests/dense_table1.rs` | Every 432,000 s from 1950-01-01 to 2050-01-01: Table 1's direction against the rails' within today's per-planet arcminute budgets |
 | `tests/clenshaw.rs` | Clenshaw against a direct sum of `T_k` on random coefficients within 1e-9 relative; the derivative against a central difference |
@@ -771,7 +799,7 @@ lists the bodies with their source and encoding and a `decades` array of
 ### PR11: Physics crate, integrator and Lambert
 
 - **Branch** `starshot/v1-pr11-physics-core`, based on PR10's.
-  **Issue** `v1-physics-core`. **Decisions** D16. **Size** about 420 lines, 11 files.
+  **Issue** `v1-physics-core`. **Decisions** D16, D11. **Size** about 450 lines, 13 files.
 - **Goal.** Port `dopri5`, `gravity`, `hermite`, `launch` and `lambert` from
   `packages/physics/src/` to `crates/starshot-physics`, with today's tests and a
   conformance fixture whose arithmetic-only cases must match bit for bit.
@@ -783,7 +811,9 @@ lists the bodies with their source and encoding and a `decades` array of
 | `src/hermite.rs` | `Knot`, `hermite(a, b, t)` |
 | `src/launch.rs` | `LEO_RADIUS_KM = 6371.0 + 200.0` (today's value), `departure_state`, `delta_v_from_leo`, `c3`; Earth's GM from `starshot_ephemeris::EARTH_ONLY_GM` |
 | `src/lambert.rs` | `stumpff_c`, `stumpff_s`, `lambert(r1, r2, tof, mu, prograde) -> Option<(Vec3, Vec3)>`, `best_direct_transfer` and `DirectTransfer` |
-| `tests/lambert.rs` | Today's three Lambert tests: the round trip hits the target point; Earth to Saturn in 1977 (a long transfer) solves; the late-2026 Mars window is found (launch 2026-11-02, 326 days, excess speed 2.982 km/s within 0.001, D11) |
+| `tests/lambert.rs` | Today's three Lambert tests with today's assertions: the round trip hits the target point; Earth to Saturn in 1977 (a long transfer) solves; on today's grid (unflattened ephemeris, 30 launches every 4 days from 2026-10-01, flights of 150 + 10k days for k = 0 to 24) the best direct Mars transfer has an excess speed between 2.6 and 4.0 km/s. Measured with the TypeScript packages on 2026-11-01: 3.0257 km/s, launch 2026-10-29, 300 days. This is the conformance test |
+| `tests/lambert_fine.rs` | **New**, not a port: on the flattened ephemeris, launch days 2026-11-02 plus or minus 10 and flights of 300 to 340 days, both at 1-day steps, the minimum is launch 2026-11-02, 323 days, excess speed 2.982 km/s within 0.001. Measured with the TypeScript packages on 2026-11-01: 2026-11-02, 323 days, 2.9817 km/s (deviation 9, register R29) |
+| `apps/game/src/levels.ts` | Comment only, in First Light's `par`: "(323 days)" is the Lambert time of flight of the 1-day-grid minimum, which `tests/lambert_fine.rs` proves; the comment gains the words "Lambert time of flight, 1-day grid". D11's "326 days" is the best node of the 8-day grid of the simulate test (PR12), and the known solution's simulated flight is a third quantity (302.7 days to the training zone, 308.3 days to the real sphere, measured 2026-11-01) |
 | `tests/launch.rs` | About 3.2 km/s from LEO to escape; the departure state is Earth's velocity plus the excess |
 | `tests/dopri5.rs` | A Sun-only circular 1 AU orbit integrated with `Dopri5` directly closes within 10 km after one period |
 | `tests/conformance_physics.rs` | Against `fixtures/conformance/physics.json`: `hermite`, `delta_v_from_leo`, Sun-only `acceleration` and one Sun-only `Dopri5::attempt` per listed state equal bit for bit; `lambert` within 1e-9 relative; `next_step` within 1e-15 relative |
@@ -810,7 +840,7 @@ lists the bodies with their source and encoding and a `decades` array of
 | File | Change |
 |---|---|
 | `crates/starshot-physics/src/simulate.rs` | `SimulationConfig` (today's fields; `ephemeris: &dyn Ephemeris`), `Encounter`, `Termination` (`Duration`, `Impact`, `Sun`, `Escape`, `SoiReached`, `MaxSteps`), `SimulationResult` (`samples: Vec<Knot>`, `encounters`, `closest` as one `Option<Encounter>` per body, `termination`, `terminated_by`, `end_time`, `steps`), `simulate(&cfg)`, `sample_at(&result, t)`, the private `relative` and `refine_minimum` (golden section, 40 iterations, 1 s) with today's order |
-| `tests/simulate.rs` | Today's tests: the circular orbit closes within 10 km; sampling between samples is smooth; the Mars 2026 Lambert aim passes within 1.25 Mars spheres of influence (D11); Earth's gravity switches on energy-consistently exactly once; a Jupiter flyby is detected with its energy gain; aiming at a planet stops on impact; a 3-year preview takes under 400 ms (`std::time::Instant`, test profile optimised) |
+| `tests/simulate.rs` | Today's tests: the circular orbit closes within 10 km; sampling between samples is smooth; the Mars 2026 Lambert aim, found on today's grid (20 launches every 3 days from 2026-10-15, flights of 150 + 8k days), passes within 1.25 Mars spheres of influence (D11); Earth's gravity switches on energy-consistently exactly once; a Jupiter flyby is detected with its energy gain; aiming at a planet stops on impact; a 3-year preview takes under 400 ms (`std::time::Instant`, test profile optimised) |
 | `tests/conformance_simulate.rs` | Against `fixtures/conformance/simulate.json`: for each of 24 flights (the campaign's known solutions and par shots, misses, an impact, an escape and two outer-sandbox flights), the same termination and terminating body, the same step count, end position within 1 km, and closest approach per body within 1 km |
 | `packages/physics/test/conformance-simulate.test.ts` | New, write-or-compare; stores each flight's inputs with the excess-speed vector as exact bits (16 hex digits per component) and the outputs |
 | `fixtures/conformance/simulate.json` | Generated |
@@ -882,8 +912,8 @@ lists the bodies with their source and encoding and a `decades` array of
 ### PR15: core-wasm package and bit identity
 
 - **Branch** `starshot/v1-pr15-core-wasm`, based on PR14's.
-  **Issue** `v1-core-wasm`. **Decisions** D16. **Size** about 480 lines plus the
-  generated package, 16 files; warns.
+  **Issue** `v1-core-wasm`. **Decisions** D16. **Size** about 520 lines, 19 files;
+  warns.
 - **Goal.** Compile the core to wasm, wrap it in a typed TypeScript package, and prove
   that golden replays give identical bits in V8, JavaScriptCore, native x86_64 and native
   arm64.
@@ -896,19 +926,26 @@ lists the bodies with their source and encoding and a `decades` array of
 | `crates/starshot-game/tests/golden_replays.rs` | Native: every golden replay's bits match |
 | `packages/core-wasm/package.json` | `@starshot/core-wasm`, private, `Apache-2.0`, `type: module`, `exports: ./src/index.ts`, script `build` |
 | `packages/core-wasm/build.mjs` | `cargo build -p starshot-wasm --target wasm32-unknown-unknown --release` with `RUSTFLAGS=--remap-path-prefix=<repo>=.`, then `wasm-bindgen --target web --out-dir packages/core-wasm/pkg` (the CLI at exactly 0.2.130) |
-| `packages/core-wasm/pkg/` | Build output, listed in `.gitignore`; `npm run build` and CI produce it through `build.mjs` before the web build, so no generated file enters git (register R27). A contributor without Rust installs the toolchain (one documented command) or runs `node packages/core-wasm/fetch.mjs` to take the artifact of the latest `main` run; the fetch script is written in PR16 |
+| `packages/core-wasm/pkg/` | Build output, listed in `.gitignore`; `npm run build` and CI produce it through `build.mjs` before the web build, so no generated file enters git (register R27). A contributor without Rust installs it with the three commands `CONTRIBUTING.md` lists (PR16) |
 | `packages/core-wasm/src/abi.ts`, `src/types.ts`, `src/index.ts` | The TypeScript mirror of the layouts; types mirroring today's `ShotRequest`, `SimulationResult`, `ShotAnalysis`, `Hint`, `HintQuery`; `initCore(source?)` and wrapper functions with today's names (`simulateShot`, `analyzeShot`, `findHint`) |
 | `packages/core-wasm/test/abi.test.ts`, `test/bits.test.ts` | Encode and decode the conformance shots; run `fixtures/math/golden.json` (through an exported `math_eval(code: u32, x: f64, y: f64) -> f64`) and every golden replay in V8 and compare bits |
 | `packages/core-wasm/scripts/bits-jsc.mjs` | The same comparison, runnable by Bun (JavaScriptCore) with no test runner |
 | `scripts/check-bundle-size.mjs` | New gate `bundle-size` (code, fast): gzip size of `packages/core-wasm/pkg/*.wasm` under 64 KB; prints the measured size |
-| `.github/workflows/ci.yml` | `checks` installs `wasm-bindgen-cli` 0.2.130 (`cargo install --locked`, cached); new job `bits-jsc` (`oven-sh/setup-bun` pinned; `bun packages/core-wasm/scripts/bits-jsc.mjs`) in the aggregator's `needs`; `rust-arm64` already runs the golden replays |
+| `package.json` (root) | `build` becomes `npm run build -w @starshot/core-wasm && npm run build -w @starshot/game`; `dev` runs the core build first too; `typecheck` and `test` keep their commands and run after the core build in the gates |
+| `scripts/gates.mjs` | New gate `core-wasm` (group `code`: `npm run build -w @starshot/core-wasm`) registered before `typecheck`; `typecheck`, `test` and `build` (now the root `build`) follow it; registers `bundle-size`. From this PR Rust is required to build from source: PR6's skip ends and `STARSHOT_REQUIRE_RUST` becomes a no-op. When `cargo`, the `wasm32-unknown-unknown` target or `wasm-bindgen` is missing, `core-wasm`, `typecheck`, `test` and `build` fail with one message naming the three install commands: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh`, `rustup target add wasm32-unknown-unknown`, `cargo install --locked wasm-bindgen-cli --version 0.2.130` |
+| `.github/workflows/ci.yml` | `checks`, `verify-game` and the new job `bits-jsc` run `.github/actions/setup-rust-wasm` (PR6) before any npm build. `bits-jsc`: `oven-sh/setup-bun` pinned, `npm ci`, `npm run build -w @starshot/core-wasm`, `bun packages/core-wasm/scripts/bits-jsc.mjs`; it joins the aggregator's `needs`. `rust-arm64` runs the golden tests |
+| `.github/workflows/pages.yml` | The `build` job runs `.github/actions/setup-rust-wasm` before `npm run gates` and `npm run build`, so the published bundle carries the wasm the gates tested |
 | `CHANGELOG.md` | `[Unreleased]` |
 
-- **Edge cases.** Panics abort in wasm. The wrapper turns a trap into an `Error` with
-  the request echoed, so a worker failure is reported, not hung. The ABI carries no
+- **Edge cases.** PR6's promise of skips for contributors without Rust ends here, and
+  the error says how to install it. Panics abort in wasm. The wrapper turns a trap into
+  an `Error` with the request echoed, so a worker failure is reported, not hung. The ABI carries no
   strings except the catalogue and the version.
 - **Proof.** AC6: `npx vitest run packages/core-wasm`, `bun packages/core-wasm/scripts/bits-jsc.mjs`,
-  `cargo test --workspace --locked golden` and the `rust-arm64` job all pass. AC9 (wasm
+  `cargo test -p starshot-math --locked --test golden`,
+  `cargo test -p starshot-game --locked --test golden_replays` and the `rust-arm64` job
+  all pass. With `cargo` removed from `PATH`, `npm run gates` fails at `core-wasm`,
+  `typecheck`, `test` and `build` and prints the three install commands. AC9 (wasm
   part): `node scripts/check-bundle-size.mjs` prints the size, under 64 KB gzip (the
   research measured a 15 KB kernel). The CI job records the sha256 of the built `.wasm` in its summary, and the deploy (PR33) ships that same file to the server function (PR32).
 - **Adversary checks.** No `serde` in the wasm. `pkg/` is ignored by git and absent from the tree.
@@ -919,20 +956,24 @@ lists the bodies with their source and encoding and a `decades` array of
 ### PR16: Worker cut-over
 
 - **Branch** `starshot/v1-pr16-worker-cutover`, based on PR15's.
-  **Issue** `v1-worker-cutover`. **Decisions** D16, D6. **Size** about 450 lines,
-  14 files; warns.
+  **Issue** `v1-worker-cutover`. **Decisions** D16, D6. **Size** about 520 lines,
+  19 files; warns.
 - **Goal.** The physics worker and the map run on `@starshot/core-wasm`. The worker
   protocol and the UI do not change. Every game test runs through the wasm.
 
 | File | Change |
 |---|---|
 | `apps/game/src/sim/sim.worker.ts` | Instantiates the core once (`new_table1(true)`) and answers `shot` and `hint` requests through it |
-| `apps/game/src/sim/shot.ts` | Keeps its exports and types; `simulateShot`, `analyzeShot`, `vInfFromAim`, `roundAim` and `launchEtForDay` delegate to the core; `addDaysIso` and `daysBetweenIso` stay TypeScript |
+| `apps/game/src/sim/shot.ts` | Keeps its exports and types; `simulateShot`, `analyzeShot`, `vInfFromAim`, `roundAim` and `launchEtForDay` delegate to the core; `addDaysIso` and `daysBetweenIso` stay TypeScript. The `SIM_SETTINGS` and `OUTER_SIM_SETTINGS` literals are deleted; `settingsFor(levelId)` returns a level's frozen settings from the catalogue (they live in `crates/starshot-game/src/settings.rs`, D6). The sandbox, whose settings depend on its target, reads the catalogue's per-target entry in `sandboxLevel(target)` |
 | `apps/game/src/sim/hint.ts`, `apps/game/src/scoring.ts` | Delegate to the core; types unchanged |
 | `apps/game/src/levels.ts` | Becomes `LEVEL_COPY: Record<LevelId, { number, title, blurb }>` plus the physics fields read from `level_catalogue()`; the exported `Level` type and functions keep their names |
 | `apps/game/src/core.ts` | New: loads the wasm once per thread (`?url` import so Vite hashes it) and exposes the ready core to the main thread for drawing (`body_states`, `orbit_path`) |
 | `apps/game/src/ui/GameScreen.tsx` and the `ui/screen/` hooks | The map's planet positions and orbit paths come from `core.ts`; no physics change |
-| `apps/game/src/levels.test.ts`, `src/sim/preview.test.ts`, `src/scoring.test.ts` | Run against the core (loaded from `packages/core-wasm/pkg` in Node); a new test asserts the copy ids equal the catalogue ids |
+| `apps/game/src/levels.test.ts`, `src/sim/preview.test.ts`, `src/scoring.test.ts` | Run against the core; a new test asserts the copy ids equal the catalogue ids |
+| `vitest.setup.ts` (new), `vitest.config.ts` | The setup file reads `packages/core-wasm/pkg/starshot_wasm_bg.wasm` with `readFile` and awaits `initCore(bytes)` once (the `--target web` glue accepts bytes); the config lists it in `setupFiles` |
+| `apps/game/src/App.tsx` | Calls `initCore()` once at start and holds `coreReady`. The title screen renders at once; the level select renders only when the core is ready; a load failure shows the existing error path |
+| `apps/game/src/ui/TitleScreen.tsx` | Takes `coreReady`; until it is true, the start control is disabled and a one-line "Loading physics" status sits in a polite live region |
+| `CONTRIBUTING.md` | Documents the three install commands (rustup, the `wasm32-unknown-unknown` target, `wasm-bindgen-cli` 0.2.130) and that `npm run build` and `npm run gates` need them from PR15 |
 | `apps/game/public/sw.js` | Caches the hashed `.wasm` like other hashed assets |
 | `apps/game/package.json` | Depends on `@starshot/core-wasm` |
 | `docs/architecture.md`, `CHANGELOG.md` | The worker on the core; `[Unreleased]` |
@@ -943,9 +984,11 @@ lists the bodies with their source and encoding and a `decades` array of
 - **Proof.** `npx vitest run apps/game` passes (AC8).
   `npm run build && node scripts/verify-game.mjs` passes with the same report counts as
   PR15's branch. The PR body adds the median preview time on the Mars level from the
-  worker's `ms` field, against today's 2 ms. `node scripts/check-bundle-size.mjs`
+  worker's `ms` field, against the median 2 to 8 ms on desktop Node that the TypeScript
+  core measured. `node scripts/check-bundle-size.mjs`
   passes.
-- **Adversary checks.** `ShotRequest`, `SimRequest` and `SimResponse` are unchanged
+- **Adversary checks.** No TypeScript literal of a level's settings remains
+  (`git grep -n 'rtol:' -- apps` prints nothing). `ShotRequest`, `SimRequest` and `SimResponse` are unchanged
   (`git diff` of `protocol.ts` is empty). Preview and launch still go through the same
   call (D6). No level copy moved into Rust.
 - **Out of scope.** Rails in the game (PR18). Deleting the TypeScript packages (PR17).
@@ -963,7 +1006,7 @@ lists the bodies with their source and encoding and a `decades` array of
 | `packages/ephemeris/`, `packages/physics/` | Deleted (the conformance fixtures they wrote stay in `fixtures/conformance/` as frozen references, and the Rust tests keep reading them) |
 | `tsconfig.json`, `vitest.config.ts`, `package.json`, `package-lock.json`, `apps/game/package.json` | References and workspaces updated; `npm install` refreshes the lockfile |
 | `scripts/check-third-party-untouched.mjs`, `scripts/check-guard-scan-coverage.mjs`, `scripts/check-file-size.mjs` | Scan roots: `apps/`, `crates/`, `packages/core-wasm/` instead of the deleted packages |
-| `AGENTS.md` | The "What lives where" rows and "Think before you touch" paths point at `crates/starshot-ephemeris/src/table1.rs`, `src/time.rs`, `crates/starshot-physics/src/dopri5.rs`, `src/simulate.rs`, `crates/starshot-game/src/settings.rs`, `fixtures/horizons/horizons.json` |
+| `AGENTS.md` | The "What lives where" rows and "Think before you touch" paths point at `crates/starshot-ephemeris/src/table1.rs`, `src/time.rs`, `crates/starshot-physics/src/dopri5.rs`, `src/simulate.rs`, `crates/starshot-game/src/settings.rs`, `fixtures/horizons/horizons.json`; non-negotiable 5 names `crates/starshot-game/src/settings.rs` and the level catalogue as where a level's frozen settings live |
 | `.claude/skills/verify-physics/SKILL.md`, `.claude/agents/physics-auditor.md`, `.claude/rubrics/physics.md` | Commands and paths for the crates |
 | `README.md`, `CONTRIBUTING.md` ("How to add a body"), `docs/architecture.md`, `NOTICE.md` | Point at the crates |
 | `CHANGELOG.md` | `[Unreleased]`: the packages are no longer published or used |
@@ -972,8 +1015,8 @@ lists the bodies with their source and encoding and a `decades` array of
   exits 0. `npx vitest run` and `cargo test --workspace --locked` pass. The
   `instruction-dedup`, `agent-frontmatter` and `guard-scan-coverage` gates pass.
 - **Adversary checks.** Nothing references the deleted paths
-  (`git grep -n -e packages/ephemeris -e packages/physics` prints only history in
-  `CHANGELOG.md` and the bootstrap plan). The Horizons budgets still run (now in Rust).
+  (`git grep -n -e packages/ephemeris -e packages/physics -- apps crates packages scripts
+  tools` prints nothing). The Horizons budgets still run (now in Rust).
   The skills tell an agent the right commands.
 - **Out of scope.** Any behaviour change.
 
@@ -1244,6 +1287,23 @@ a script an agent writes and runs against `starshot-game`.
 - **Acceptance.** The copy gate passes. Every claim about a store policy carries its
   URL.
 
+### PR40: astlo upstream kit
+
+- **Goal.** `tools/astlo-upstream/` holds a Python script (standard library only, like
+  `python/astlo/build_wheel.py`) that regenerates what D29 offers Mark from the
+  `python/astlo` commits. First, the patch series: `git format-patch` over the range
+  after the import commit, with Starshot-specific paths stripped so each patch applies to
+  astlo's own tree. Second, the report, built from `python/astlo/VERIFICATION.md` and the
+  `ephem.validation/1` records the bench writes for the fixed astlo (producer
+  `astlo <version>`, through `tools/ephem`'s `validate`). Third, a draft pull request body
+  per topic for Mark's repository. Output goes to an ignored directory, never into git.
+- **Acceptance.** The patches apply cleanly with `git am` to the unpacked wheel source in
+  a temporary directory, and the fixed wheel's offline tests pass there. No patch
+  touches a file outside astlo's tree. Every draft body passes
+  `node scripts/check-copy-tells.mjs --stdin --kind pr` and
+  `node scripts/check-secrets.mjs --stdin`.
+- **Owner steps.** K2: the owner opens the pull requests; no agent does.
+
 ## Maintainability rules every PR obeys
 
 - **Size.** About 400 contentful lines or 20 files per PR (`PR_SIZE_CAP`), checked by
@@ -1267,6 +1327,45 @@ a script an agent writes and runs against `starshot-game`.
 - **Physics numbers come with a test** against Horizons, the DE440 rails, an energy or
   timing check, or a known solution (AGENTS.md, non-negotiable 2).
 - **Accessible from the first commit** (AGENTS.md, non-negotiable 7).
+
+## The astlo growth path (D26, D29)
+
+astlo grows beside Starshot in three stages. No plan item depends on Mark taking any of
+them, and the game's runtime never depends on astlo (D26).
+
+**Stage 1, now.** astlo is an independent cross-check: the bench writes the shared
+`ephem.validation/1` report for the fixed astlo's positions (PR40), so its numbers are
+read with the same file as Starshot's. astlo is also content: the planet "details", once
+Mark makes them available, with credit (PR37). The fixes stay in `python/astlo`, one
+topic per commit (D10, D29). Needs: PR8's formats and PR40's kit.
+
+**Stage 2, after Mark grants a licence and astlo has the pure API.** `tools/ephem` is
+built so astlo can take over its job. The generator and the validator are one module
+with a documented interface, `generate(kernel, bodies, window, tolerance) -> Pack` and
+`validate(pack, reference) -> Report`, and the CLI is thin (PR7, PR8). An astlo
+implementation that produces packs passing the same tests means the game runs on data
+astlo produced, verified against NASA, through the same per-body gate (D4, D17). The
+first jobs astlo can own are the launch-window finder (the table of PR23) and the
+small-body rails. Needs: his licence (D2, D10), the pure API and a Lambert solver that
+returns velocities ([../../astlo/directions.md](../../astlo/directions.md)).
+
+**Stage 3, if Mark wants it.** The dependency-free crates `starshot-ephemeris` (Table 1,
+the rails reader, time scales) and a later `starshot-topocentric` are offered as a Rust
+crate beside his Python, maintained by Starshot, with PyO3 bindings as an option. His
+Python stays the teaching implementation and the crate the production one. Needs: those
+crates depend on nothing but `starshot-math` (PR9's adversary check) and keep a stable
+interface. No plan item depends on him taking it.
+
+**How a change travels.**
+
+1. It lands in `python/astlo` first, one topic per commit, verified against NASA/JPL
+   (the `astlo-upstream` skill).
+2. PR40's kit regenerates the patch series, the report and a pull request body per topic
+   for Mark's repository.
+3. The owner opens the pull requests (owner step K2).
+4. When Mark adopts a change, Starshot pins his release, from his repository or PyPI,
+   and drops its own copy of that change, so `python/astlo` shrinks towards a pin plus
+   tests.
 
 ## Refuted
 
@@ -1303,6 +1402,8 @@ Approaches considered and rejected, so nobody re-derives them.
 | Renovate | Needs an app; Dependabot with SHA pins covers this repository | CI research, section D |
 | Cloudflare as the primary host | Deferred, not refused: it moves only if bandwidth cost or latency in Africa measured in production says so | D21, register R6 |
 | Committing none of the Firebase configuration | The owner chose to commit the production web configuration, which Firebase documents as an identifier | D13, register R5 |
+| A script that fetches the wasm from the latest CI run for contributors without Rust | Needs a token or a public artifact, depends on artifact retention, and lets a local build use bits its own gates did not produce | Orchestrator ruling, register R27 |
+| Publishing `@starshot/core-wasm` to npm so UI-only contributors can skip Rust | Deferred, not refused: it adds a release step and a second source of the wasm bits. Trigger: outside contributors arrive after chapter one (D25) and name the Rust setup as the obstacle; then the release lane (PR38) publishes it at each release | Orchestrator ruling, register R27 |
 
 ## What the program deletes or replaces
 
@@ -1362,27 +1463,36 @@ Every build session follows this order, for the orchestrator and for builders.
 
 ### Handoff template
 
+The fields of the `handoff-prompt` skill, in its order. Read each value fresh at close.
+
 ```text
-Starshot v1-starshot, continuing. Repository: <absolute path on this machine>.
-Read AGENTS.md, docs/plans/v1-starshot/00-plan.md and 05-deviation-log.md first.
-
-State: PR<n> (<slug>) published as #<number> on starshot/v1-pr<NN>-<topic>, based on
-<branch below>. Gates: <N>/<N> passed, exit 0. Open items: <one line each, or "none">.
-Deviations logged this session: <numbers, or "none">.
-
-Next: PR<n+1> (<slug>), spec at docs/plans/v1-starshot/00-plan.md#<anchor>, issue #<number>.
-Base: starshot/v1-pr<NN>-<topic>. Owner steps it waits on: <ids from 04-ops-checklist.md,
-or "none">.
-
+Repo: <abs path>. Stack tip: starshot/v1-pr<NN>-<topic> @ <short sha>.
+Base of the stack: starshot/pr0-bootstrap until PR0 merges, then main.
+Plan: docs/plans/v1-starshot/00-plan.md.
+Decisions: docs/decisions.md (D1..D29 resolved; do not re-litigate).
+Deviations: docs/plans/v1-starshot/05-deviation-log.md.
+Open-gate at close: <the line sh scripts/agent/open-gate.sh prints>.
+Done: PR0 <one line>; PR1 <one line>; ...; PR<k> <one line>.
+Next: PR<k+1> <title>. Spec: docs/plans/v1-starshot/00-plan.md#<anchor>. Issue: #<number>.
+Owner steps it waits on: <ids from 04-ops-checklist.md, or none>.
+Routing: you are the orchestrator (top tier); route by "would anything be lost with the
+cheaper tier?"; roster in .claude/agents/; one builder at a time; adversary per PR
+against .claude/rubrics/; physics-auditor for crates and fixtures; verification-driver
+for the game. Executors never push.
+DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff requires),
+every command with its exit code.
+Stop: when the budget runs low, finish the current PR's publish step, then emit this
+block again.
 First commands:
   git status --short && git branch --show-current && git log --oneline -5
   gh pr list
-  node scripts/sync-work.mjs --check
+  node scripts/sync-work.mjs --program v1-starshot --check
 ```
 
 ## What the owner must do by hand
 
 The settings, accounts, domain, Firebase projects, the message to Mark and the playtests
 are listed, grouped and ordered, with how to confirm each and which PRs wait on them, in
-[04-ops-checklist.md](04-ops-checklist.md). Before PR1: G1, G3 and G5; after PR0 merges:
-G8 (the DCO app); now: M1 to M4 (the domain and the reporting addresses) and K1 (Mark).
+[04-ops-checklist.md](04-ops-checklist.md). PR1 waits on G3 and G4. G1 and G5 are needed
+before PR4 and the Pages proof. After PR0 merges: G8 (the DCO app). Now: M1 to M4 (the
+domain and the reporting addresses) and K1 (Mark).
