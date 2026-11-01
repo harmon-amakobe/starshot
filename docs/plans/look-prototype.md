@@ -3,6 +3,10 @@
 Status: owner-authorized branch publication, followed by a playable lunar study.
 This does not publish a site or replace the V1 program specs.
 
+Update, 2026-11-02: the owner directed that the approved prototype join PR0.
+The earlier branch-isolation scope below is historical. Continue implementation
+from the [main-game handoff](main-game-handoff.md), including Moon-first progression.
+
 ## Repository packaging
 
 Preserve the approved launch-window study in `apps/prototype/public/observatory/`.

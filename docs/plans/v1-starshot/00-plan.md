@@ -176,6 +176,14 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
+The owner incorporated the approved design prototype into PR0 on 2026-11-02.
+The runtime now starts at `apps/game/src/campaign/CampaignApp.tsx`.
+Before the PR2 group, reconcile its legacy `GameScreen` file mapping with this
+active shell while preserving its behavior-only cleanup goal. The
+[main-game handoff](../main-game-handoff.md) records the accepted design,
+Moon-first campaign objective and required proof. This does not mark later
+core, flight, renderer or progression specs complete.
+
 The specs build as the groups below, in this order. A group is one branch, one pull
 request and one review for one to four consecutive specs, named for its first member
 and based on the previous group's branch. Each spec's own Branch line gives way to its

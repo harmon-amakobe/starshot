@@ -12,6 +12,8 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- A main-game handoff for the approved prototype in PR0, with active-shell cleanup,
+  shared architecture and Earth-to-Moon as the first mission in subsequent work.
 - The approved 3D shell integrated into the main game: all four campaign missions,
   seven sandbox destinations, live entry, local pilots, local cloud-profile demo,
   mission deck, paged flight deck, inspection, hangar and result loop.

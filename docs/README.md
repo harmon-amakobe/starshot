@@ -29,6 +29,7 @@ people start from the README at the root.
 | [plans/pr0-bootstrap.md](plans/pr0-bootstrap.md) | The record of the bootstrap pull request (D8) |
 | [plans/entry-experience-prototype.md](plans/entry-experience-prototype.md) | Entry prototype scope, save ownership, camera handoff and verification |
 | [plans/campaign-ux-integration.md](plans/campaign-ux-integration.md) | Integration of the approved shell with all existing campaign missions and sandbox destinations |
+| [plans/main-game-handoff.md](plans/main-game-handoff.md) | Implementation handoff after the prototype joins PR0: active-shell cleanup and a Moon-first main campaign |
 
 ## At the repository root
 

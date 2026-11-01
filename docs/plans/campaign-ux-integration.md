@@ -2,6 +2,11 @@
 
 Status: implemented. Final verification is recorded below.
 
+Follow-up: the owner directed that this prototype join PR0 on 2026-11-02.
+The [main-game handoff](main-game-handoff.md) requests a maintainable main-game
+implementation with Earth to Moon first, then the planetary campaign. That work
+is not implemented by this integration or its incorporation into PR0.
+
 ## Owner direction
 
 Bring the approved live entry, flight deck and 3D play-study presentation into the
