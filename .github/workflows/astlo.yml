@@ -1,0 +1,57 @@
+# astlo: builds the fixed astlo wheel from python/astlo and tests it offline against
+# NASA/JPL Horizons fixtures, whenever that folder changes (D10). python/astlo/astlo is
+# Mark Macharia's code, all rights reserved and not under Starshot's MIT licence; this
+# job only packages and tests it. Nothing in the game or the TypeScript packages uses
+# it. It needs no secrets, and the token is read-only.
+name: astlo
+
+on:
+  pull_request:
+    paths:
+      - "python/astlo/**"
+      - ".github/workflows/astlo.yml"
+  push:
+    branches: [main]
+    paths:
+      - "python/astlo/**"
+      - ".github/workflows/astlo.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: astlo-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  wheel:
+    name: astlo wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Build the wheel (standard library only)
+        run: python -I python/astlo/build_wheel.py --outdir "$RUNNER_TEMP/dist"
+      - name: Print the wheel's sha256
+        run: sha256sum "$RUNNER_TEMP"/dist/astlo-*+starshot.*-py3-none-any.whl
+      # Uploaded before pip fetches anything from PyPI, so no third-party code has run
+      # on this machine when the artifact is sealed; its sha256 is in the step above.
+      # The +starshot local label in the file name marks a patched build PyPI refuses.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: astlo-fixed-wheel
+          path: ${{ runner.temp }}/dist/astlo-*+starshot.*-py3-none-any.whl
+          if-no-files-found: error
+          retention-days: 30
+      - name: Install it in a fresh virtualenv, dependencies from PyPI
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install "$RUNNER_TEMP"/dist/astlo-*+starshot.*-py3-none-any.whl
+      - name: Test against the committed Horizons fixtures (offline)
+        run: '"$RUNNER_TEMP/venv/bin/python" -I -m unittest discover -s python/astlo/tests -v'
