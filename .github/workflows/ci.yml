@@ -2,6 +2,8 @@
 # optional secret only widens the hygiene scan.
 # Actions are disabled by default on forks; docs/hosting.md says how to enable them and
 # how to make this check required on main.
+# The required check is the gates job at the end. It stays one name however many jobs
+# feed it, so branch protection never has to change when CI grows.
 name: CI
 
 on:
@@ -10,26 +12,28 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
+# Nothing by default; each job asks for what its steps need.
+permissions: {}
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  gates:
-    name: gates
+  checks:
+    name: checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # Full history: the copy gate reads the pull request's commit messages and the
           # size gate compares its baseline with the base branch (D27, D28).
           fetch-depth: 0
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -39,6 +43,85 @@ jobs:
       - name: Secrets gate with the private-name list
         run: node scripts/gates.mjs --only secrets
         env:
-          STARSHOT_PRIVATE_NAMES: ${{ secrets.STARSHOT_PRIVATE_NAMES }}
+          STARSHOT_PRIVATE_NAMES: ${{ secrets.STARSHOT_PRIVATE_NAMES }} # zizmor: ignore[secrets-outside-env] one step reads it, before npm ci (see above)
       - run: npm ci
       - run: npm run gates
+
+  workflow-lint:
+    name: workflow-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Offline: the audits that call the GitHub API would need a token, and the pinned
+      # version keeps a new zizmor rule from failing an unrelated pull request.
+      - run: pipx run zizmor==1.31.1 --offline .github/
+
+  dependency-review:
+    name: dependency-review
+    # It compares the pull request's lockfile with its base; a push has no base.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+
+  verify-game:
+    name: verify-game
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      PLAYWRIGHT_VERSION: "1.64.1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Playwright is not a project dependency, so it never enters package.json or the
+      # lockfile. A global install at a pinned version keeps CI reproducible, and
+      # NODE_PATH lets the script's require("playwright") find it.
+      - name: Install Playwright outside the project
+        run: | # zizmor: ignore[adhoc-packages] kept out of the lockfile on purpose, see above
+          npm install --global "playwright@${PLAYWRIGHT_VERSION}"
+          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
+      - run: playwright install --with-deps chromium
+      - run: node scripts/verify-game.mjs --out "$RUNNER_TEMP/verify-game"
+      # Kept on failure too: the screenshots are how a red run gets diagnosed.
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: verify-game-screenshots
+          path: ${{ runner.temp }}/verify-game
+          retention-days: 7
+
+  gates:
+    name: gates
+    # always(): without it a failed need skips this job, and a skipped required check
+    # counts as passing. A skipped need (dependency-review on push) is not a failure.
+    if: always()
+    needs: [checks, workflow-lint, dependency-review, verify-game]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Fail if any needed job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

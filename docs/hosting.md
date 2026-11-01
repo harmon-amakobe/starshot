@@ -56,6 +56,12 @@ request. To make sure nothing reaches `main` without passing them:
    - **Require status checks to pass**, adding the check named **`gates`**;
    - **Block force pushes** and **Restrict deletions**.
 
+The required check stays **`gates`** however many jobs CI grows. It is a small job that
+fails when any of four jobs failed or was cancelled: `checks` (the gate registry),
+`workflow-lint` (zizmor, a security linter for workflow files), `dependency-review` and
+`verify-game` (the play-through in a headless browser). `dependency-review` runs on pull
+requests only; on `main` it is skipped, and a skipped job does not fail `gates`.
+
 A third workflow, **astlo** (`.github/workflows/astlo.yml`), runs only when something
 under `python/astlo/` changes. It builds the fixed astlo wheel
 (`astlo-12.5.5130000+starshot.1-py3-none-any.whl`; the `+starshot` label marks a
@@ -65,6 +71,10 @@ downloadable artifact named `astlo-fixed-wheel` (open the run under **Actions**,
 NASA/JPL data. It needs no secrets. Do not make its
 check required: on a pull request that does not touch `python/astlo/` it never runs,
 and a required check that never runs blocks the merge.
+
+Two more workflows are not required checks either. **Scorecard** scores `main` after a
+merge and once a week, never a pull request. **copy-lint** runs when a description is
+opened or edited, not on each push, so a new commit would wait for it forever.
 
 ### If something goes wrong
 

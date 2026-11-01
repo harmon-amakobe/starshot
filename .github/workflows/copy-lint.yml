@@ -3,18 +3,19 @@
 # up to date. Issues get the needs-copy-edit label and are never blocked; a pull request
 # description that fails gets a failing check.
 #
-# pull_request_target runs with this repository's token even for forks, so the job
-# checks out the base branch only and never runs code from the pull request. The text
-# reaches the checker through environment variables, never through an expression
-# inside a script.
+# pull_request_target and issue_comment run with this repository's token even for
+# forks, so the job checks out the base branch (the default branch for issues and
+# comments) and never runs code from the pull request. The text reaches the checker
+# through environment variables, never through an expression inside a script. zizmor
+# flags both triggers; the inline ignores below rest on these two facts.
 name: copy-lint
 
 on:
   issues:
     types: [opened, edited]
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers] base checkout only, text through env
     types: [created, edited]
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] base checkout only, text through env
     types: [opened, edited]
 
 permissions: {}
@@ -32,8 +33,8 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      issues: write
-      pull-requests: write
+      issues: write # the bot comment and the needs-copy-edit label on an issue
+      pull-requests: write # the bot comment on a pull request
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

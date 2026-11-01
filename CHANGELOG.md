@@ -130,6 +130,12 @@ numbers will be added by an automated release step (planned), never by hand.
   `python/astlo` as one-topic commits (D10), not to Mark privately as patches.
 - Neutral wording ("a slingshot game in orbit") replaces a comparison with another
   game's name in the top-level README, `AGENTS.md` and `docs/`.
+- CI: every workflow starts with no token permissions, and each job asks for what it
+  needs. Every action is pinned to a full commit SHA. A new Scorecard workflow scores
+  the supply chain, and Dependabot waits 7 days before it proposes a new release.
+- CI: the required `gates` check now fails when any of four jobs fails: the gate
+  registry, zizmor on the workflows, dependency review, or the game's play-through in a
+  headless browser. A failed gate shows as an annotation and in the job summary.
 
 ### Fixed
 

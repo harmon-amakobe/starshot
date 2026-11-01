@@ -14,7 +14,7 @@ what it does not. Change it in the same pull request as the mechanism it describ
 | `VCS_AUDIT` | `git status --short && git branch --show-current && git log --oneline -5 && git rev-list --count main..HEAD`; for open work, `gh pr list`. The SessionStart gate prints the same facts. |
 | `CONTEXT_TOOL` | None wired. Restore points come from platform checkpoints plus `refs/snapshots/*`. If a session recorder is added later, it ships with its four open-gate probes (enabled, authenticated, capturing, synced). |
 | `RESEARCH_SURFACE` | A Claude Code session with web access and the repo mounted; NASA/JPL Horizons is reachable for fixtures. |
-| `BROWSER_CHANNEL` | Headless Chromium through Playwright, driven by `scripts/verify-game.mjs` (phone, desktop and reduced-motion contexts). Playwright is not a project dependency. |
+| `BROWSER_CHANNEL` | Headless Chromium through Playwright, driven by `scripts/verify-game.mjs` (phone, desktop and reduced-motion contexts). CI runs the same script in the `verify-game` job of `.github/workflows/ci.yml`, which installs Playwright for that run only. Playwright is not a project dependency. |
 | `PLANS_DIR` | `docs/plans/`; binding decisions in `docs/decisions.md`. |
 | `PR_SIZE_CAP` | About 400 contentful lines or 20 files per PR, excluding lockfiles and fixture JSON. |
 | `LARGE_FILE_CAP` | 300 lines: above it, anchored edits only. |

@@ -17,9 +17,11 @@
  *    two places.
  *  - Exit 0 only when every selected gate passed. The last line names what failed as
  *    "failing: a, b", which is what the Stop hook reads.
+ *  - In GitHub Actions, a failed gate is also an ::error annotation and every run appends
+ *    a table to the job summary, so a red check names its gate without opening the log.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { appendFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -71,6 +73,50 @@ function select(opts) {
     list = list.filter((g) => opts.only.includes(g.id));
   }
   return list;
+}
+
+// GitHub's workflow-command escaping. % goes first, so the other escapes are not escaped
+// again. A property such as the title also escapes the separators of the property list.
+export const escapeData = (s) => String(s).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+export const escapeProperty = (s) => escapeData(s).replace(/:/g, "%3A").replace(/,/g, "%2C");
+export const annotation = (id, summary) => `::error title=${escapeProperty(`gate ${id}`)}::${escapeData(summary)}`;
+
+// A summary is one table row: a pipe or a line break inside it would end the cell or the
+// row. Backslashes are doubled first, so one in the text cannot cancel a pipe's escape.
+export const tableCell = (s) => String(s).replace(/\r\n|\r|\n/g, " ").replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
+
+/** The job-summary section for one run: a heading that names the selection, then the table. */
+export function summaryMarkdown(results, label) {
+  const failed = results.filter(({ r }) => !r.ok).map(({ g }) => g.id);
+  const tally = `${results.length - failed.length}/${results.length} passed`;
+  const lines = [`### gates (${tableCell(label)}): ${tally}${failed.length ? `, failing: ${failed.join(", ")}` : ""}`, ""];
+  lines.push("| Gate | Group | Result | Time | Summary |", "|---|---|---|---:|---|");
+  for (const { g, r } of results) {
+    lines.push(`| ${g.id} | ${g.group} | ${r.ok ? "pass" : "FAIL"} | ${r.ms} ms | ${tableCell(r.summary)} |`);
+  }
+  return `${lines.join("\n")}\n\n`;
+}
+
+function selectionLabel(opts) {
+  const parts = [];
+  if (opts.fast) parts.push("--fast");
+  if (opts.groups) parts.push(`--group ${opts.groups.join(",")}`);
+  if (opts.only) parts.push(`--only ${opts.only.join(",")}`);
+  return parts.join(" ") || "every gate";
+}
+
+/** Annotations and the job summary. Neither changes the exit code: the gates decide that. */
+function reportToActions(results, opts) {
+  if (process.env.GITHUB_ACTIONS !== "true") return;
+  for (const { g, r } of results) if (!r.ok) console.log(annotation(g.id, r.summary || "failed with no output"));
+  const file = process.env.GITHUB_STEP_SUMMARY;
+  if (!file) return;
+  try {
+    // Append: CI runs the registry twice in one job, and the second run must not erase the first.
+    appendFileSync(file, summaryMarkdown(results, selectionLabel(opts)));
+  } catch (e) {
+    console.log(`::warning title=gates::${escapeData(`could not write the job summary: ${e.message}`)}`);
+  }
 }
 
 const tail = (text, n) => text.trimEnd().split("\n").slice(-n).join("\n");
@@ -135,6 +181,7 @@ function main() {
   for (const { g, r } of results) {
     console.log(`${g.id.padEnd(20)} ${g.group.padEnd(14)} ${(r.ok ? "pass" : "FAIL").padEnd(7)} ${String(r.ms).padStart(6)} ms`);
   }
+  reportToActions(results, opts);
   const failed = results.filter(({ r }) => !r.ok).map(({ g }) => g.id);
   const total = results.reduce((s, { r }) => s + r.ms, 0);
   if (failed.length) {

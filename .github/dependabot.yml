@@ -1,10 +1,15 @@
-# Monthly dependency updates. Each update is a pull request that CI gates like any other.
+# Dependency updates: npm monthly, GitHub Actions weekly, because a pinned action's
+# security fix should not wait a month. Each update is a pull request that CI gates like
+# any other. The 7-day cooldown skips releases younger than a week, so a hijacked
+# release has that week to be caught and pulled before it reaches a pull request here.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     groups:
       npm-minor-and-patch:
@@ -12,7 +17,9 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]

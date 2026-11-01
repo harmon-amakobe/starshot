@@ -2,8 +2,9 @@
 /**
  * verify-game.mjs: drive the built game in headless Chromium on a phone and a desktop
  * viewport, screenshot each step, and sweep the console. The harness behind the
- * verify-game skill and the verification-driver agent; it is not a CI gate, because CI
- * installs no browsers.
+ * verify-game skill and the verification-driver agent, and a CI gate: the verify-game job
+ * in .github/workflows/ci.yml installs Playwright globally for that run and feeds the
+ * required gates check. Playwright is still not a project dependency.
  *
  *   npm run build
  *   node scripts/verify-game.mjs                       serve apps/game/dist and drive it
