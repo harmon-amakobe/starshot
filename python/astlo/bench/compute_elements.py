@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Derive the orbital element values that the 'data' fix wrote into astlo.py.
 
-Starshot's own code (MIT, standard library only); it does not import astlo. It shows
+Starshot's own code (Apache-2.0, standard library only); it does not import astlo. It shows
 where every number in that commit (git log -- python/astlo/astlo/astlo.py) comes from:
 
   * Mercury to Neptune: NASA/JPL "Keplerian Elements for Approximate Positions of the

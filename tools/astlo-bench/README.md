@@ -11,7 +11,7 @@ Horizons on 31 October 2026. They are kept as the record of that evaluation.
 > steps are in [`python/astlo/VERIFICATION.md`](../../python/astlo/VERIFICATION.md).
 > Both benches are Starshot's own code; neither contains astlo code.
 
-- **The scripts are Starshot's own code (MIT).** They call astlo's *public* API and the
+- **The scripts are Starshot's own code (Apache-2.0).** They call astlo's *public* API and the
   public JPL Horizons API.
 - **astlo itself is not included here** and is never copied into Starshot's own code
   (decision D2). Its published wheel sits, unmodified, in `third_party/astlo/dist/`; you

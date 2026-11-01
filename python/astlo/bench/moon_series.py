@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """The Moon's geocentric direction error over a month (every 3 days), astlo vs Horizons.
 
-Starshot's own code (MIT); it contains no astlo code. Run it with the Python of a
+Starshot's own code (Apache-2.0); it contains no astlo code. Run it with the Python of a
 virtualenv where one astlo build is installed, from a scratch directory:
 
     <venv>/bin/python -I <repo>/python/astlo/bench/moon_series.py

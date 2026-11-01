@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Sky position 10 days ahead (Topocentric.topo with days=10), astlo vs Horizons.
 
 Checks that Earth's rotation angle (GMST) and the positions are taken at the requested
-date, not at "now". Starshot's own code (MIT); it contains no astlo code. Run it with
+date, not at "now". Starshot's own code (Apache-2.0); it contains no astlo code. Run it with
 the Python of a virtualenv where one astlo build is installed, from a scratch directory:
 
     <venv>/bin/python -I <repo>/python/astlo/bench/topo_days.py

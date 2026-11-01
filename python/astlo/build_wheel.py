@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Build the fixed astlo wheel from python/astlo/ (Python standard library only).
 
-This script is Starshot's own code (MIT). It packages Mark Macharia's astlo source
+This script is Starshot's own code (Apache-2.0). It packages Mark Macharia's astlo source
 in python/astlo/astlo/ (his code, all rights reserved, with Starshot's fixes; see
 python/astlo/README.md) together with his published dist-info, into
 

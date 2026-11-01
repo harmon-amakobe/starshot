@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Run one astlo build through its public API with the wall clock frozen; write JSON.
 
-Starshot's own code (MIT); it contains no astlo code. Run it with the Python of a
+Starshot's own code (Apache-2.0); it contains no astlo code. Run it with the Python of a
 virtualenv where one astlo build is installed (the published wheel, or the fixed one),
 from an empty scratch directory, so the before and after builds are evaluated at
 exactly the same instants:

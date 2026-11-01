@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Starshot: a slingshot game across the real Solar System, plus the open orbital-mechanics packages behind it.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
     "packages/*",

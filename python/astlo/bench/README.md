@@ -1,6 +1,6 @@
 # python/astlo/bench
 
-Starshot's own scripts (MIT, Python standard library plus astlo) that measure astlo
+Starshot's own scripts (Apache-2.0, Python standard library plus astlo) that measure astlo
 against NASA/JPL Horizons. They contain no astlo code. The steps to run them, and the
 results, are in [`../VERIFICATION.md`](../VERIFICATION.md#reproduce).
 

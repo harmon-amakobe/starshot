@@ -1,8 +1,8 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Offline checks of the fixed astlo against NASA/JPL Horizons (standard library unittest).
 
-This test is Starshot's own code (MIT). It imports astlo (Mark Macharia's code with
+This test is Starshot's own code (Apache-2.0). It imports astlo (Mark Macharia's code with
 Starshot's fixes, python/astlo/README.md), freezes the wall clock that astlo reads, and
 compares its answers with python/astlo/tests/fixtures/horizons.json, which
 python/astlo/bench/fetch_fixtures.py fetched once from Horizons. No network is used.

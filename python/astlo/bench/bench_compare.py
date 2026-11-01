@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """Compare one or more bench_run.py outputs with NASA/JPL Horizons; print Markdown tables.
 
-Starshot's own code (MIT, standard library only); it does not import astlo. Horizons
+Starshot's own code (Apache-2.0, standard library only); it does not import astlo. Horizons
 answers are cached (see hz.py), so a re-run makes no new requests. Run it from the
 scratch directory that holds the bench_run.py outputs:
 

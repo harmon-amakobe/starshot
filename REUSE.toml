@@ -1,0 +1,33 @@
+# Licensing record for every file, in the REUSE 3.3 format (https://reuse.software/spec-3.3/).
+# When several annotations match a file, the last one wins, so the catch-all comes first.
+# scripts/check-licence.mjs reads this file (D12).
+version = 1
+
+[[annotations]]
+path = "**"
+SPDX-FileCopyrightText = "2026 Harmon Amakobe and Starshot contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Original art and audio (D12, D15). Each file also needs an entry in CREDITS.md.
+[[annotations]]
+path = ["apps/game/public/art/**", "apps/game/public/audio/**"]
+SPDX-FileCopyrightText = "Starshot contributors; third-party sources as listed in CREDITS.md"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# The name, logo and icon: all rights reserved, uses set out in TRADEMARK.md (D12, D20).
+[[annotations]]
+path = ["apps/game/public/brand/**", "apps/game/public/icon.svg"]
+SPDX-FileCopyrightText = "2026 Harmon Amakobe"
+SPDX-License-Identifier = "LicenseRef-starshot-brand"
+
+[[annotations]]
+path = "apps/game/public/brand/README.md"
+SPDX-FileCopyrightText = "2026 Harmon Amakobe and Starshot contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Mark Macharia's astlo: his terms, never relicensed here (D2, D10). Mark's own headers
+# stay authoritative inside his files, so this table never overrides them.
+[[annotations]]
+path = ["third_party/astlo/**", "python/astlo/astlo/**", "python/astlo/astlo-*.dist-info/**"]
+SPDX-FileCopyrightText = "Mark Macharia"
+SPDX-License-Identifier = "LicenseRef-astlo"

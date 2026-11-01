@@ -2,7 +2,7 @@
   "name": "@starshot/ephemeris",
   "version": "0.1.0",
   "description": "Planet positions and velocities from NASA JPL's Keplerian elements for approximate positions (1800-2050).",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",

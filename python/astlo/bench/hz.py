@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Harmon Amakobe and Starshot contributors
 """A tiny, cached client for the public NASA/JPL Horizons API (standard library only).
 

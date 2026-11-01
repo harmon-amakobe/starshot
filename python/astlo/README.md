@@ -10,12 +10,12 @@ together with a set of fixes that Starshot made while
   build writes afresh), then changed only by the fix commits listed below. His copyright notices stay exactly as he wrote them.
 - Everything else here (this README, [`VERIFICATION.md`](VERIFICATION.md),
   [`build_wheel.py`](build_wheel.py), [`bench/`](bench/) and [`tests/`](tests/)) is
-  Starshot's own work under the [MIT licence](../../LICENSE).
+  Starshot's own work under the [Apache-2.0 licence](../../LICENSE).
 
 ## Licence and status
 
 **astlo is copyright (c) Mark Macharia, all rights reserved.** It is **not** covered by
-Starshot's MIT licence, and nothing in this repository grants any rights over it.
+Starshot's Apache-2.0 licence, and nothing in this repository grants any rights over it.
 
 The fixes are made here first, in the open, so that each one can be read and checked on
 its own. This is the owner's decision

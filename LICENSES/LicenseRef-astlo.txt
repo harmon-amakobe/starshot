@@ -1,0 +1,5 @@
+astlo, copyright Mark Macharia. All rights reserved.
+
+This identifier covers Mark Macharia's astlo files in third_party/astlo/ and
+python/astlo/astlo/ with its .dist-info. No licence is granted for them here;
+see NOTICE.md.
