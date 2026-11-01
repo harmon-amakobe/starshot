@@ -444,15 +444,13 @@ class Astro:
         #name = name.upper()
 
         if name==None:
-            console.print('[bold red]NAME CANNOT BE NONE[/bold red]')
-            sys.exit(0)
+            raise ValueError('NAME CANNOT BE NONE') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         name = name.upper()
         values = ['MERCURY','VENUS','EARTH','MARS','VESTA','CERES','PALLAS','HYGIEA','JUPITER','SATURN','URANUS','NEPTUNE','PLUTO','HAUMEA','MAKEMAKE','ERIS']
 
         if name not in values:
-            console.print('[bold red]NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING[/bold red]')
-            sys.exit(0)
+            raise ValueError(f'NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING: {name}') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         index = 0 if name==values[0] else 1 if name==values[1] else 2 if name==values[2] else 3 if name==values[3] else 4 if name==values[4] else 5 if name==values[5] else 6 if name==values[6] else 7 if name==values[7] else 8 if name==values[8] else 9 if name==values[9] else 10 if name==values[10] else 11 if name==values[11] else 12 if name==values[12] else 13 if name==values[13] else 14 if name==values[14] else 15 if name==values[15] else None
 
@@ -494,15 +492,13 @@ class Astro:
 
 
         if period!=-1 and planet: #if both the period and planet are entered
-            console.print('[bold red]EITHER USE PERIOD OR PLANET OPTIONS. BUT NOT BOTH AT THE SAME TIME.CAUTION PERIOD WAS DISCONTINUED..[/bold red]')
-            sys.exit(0)
+            raise ValueError('EITHER USE PERIOD OR PLANET OPTIONS. BUT NOT BOTH AT THE SAME TIME.CAUTION PERIOD WAS DISCONTINUED..') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         if planet:
             if 1<=planet<=11:
                 print()
             else:
-                print('\nonly supports 11 objects in the solar system.check the table printed after running astlo --tble y orbit. use 1--11.\n')
-                sys.exit(0)
+                raise ValueError('only supports 11 objects in the solar system.check the table printed after running astlo --tble y orbit. use 1--11.') #was print + sys.exit(0)
 
                 # or use .get() to get the values if pkanet==1 ..pmanet==11 and a fallback value = period if period!=-1
 
@@ -606,7 +602,7 @@ class Astro:
 
                 if period not in lis_t and planet==None: #enforcer
                     console.print('\n[bold magenta] invalid name/period use! use::\nMercury\nVenus\nEarth\nMars\nCeres\nJupiter\nSaturn\nUranus\nNeptune\nPluto\nEris\nTHOSE ARE THE CURRENT AVAILABLE OBJECTS FOR PLOTTING. FXN ANMTE CAN PRINT THEM ALL USE anmte --help for assistance.[/bold magenta]\n')#[bold Cyan]Or use the planet number respectively.[/bold Cyan]\n')
-                    sys.exit(0)
+                    raise ValueError('invalid name/period for orbit(). the valid ones are printed above') #was sys.exit(0)
 
                 ##mean_motion = days_elapsed/(values['1'] if planet==1 else values['2'] if planet==2 else values['3'] if planet==3 else values['4'] if planet==4 else values['5'] if planet==5 else values['6'] if planet==6 else values['7'] if planet==7 else values['8'] if planet==8 else values['9'] if planet==9 else values['10'] if planet==10 else values['11'] if planet==11 else period if period!=-1 else values['3'])
 
@@ -662,7 +658,7 @@ class Astro:
                     #console.print('\n[bold magenta] invalid period! use::\nMercury: 88\nVenus: 225\nEarth: 365\nMars: 687\nCeres: 1681\nJupiter: 4333\nSaturn: 10759\nUranus: 30685\nNeptune: 60190\nPluto: 90465\nEris: 204174[/bold magenta]\n[bold green]Or use the planet number respectively.[/bold green]\n')
                     console.print('\n[bold magenta] invalid name/period use! use::\nMercury\nVenus\nEarth\nMars\nCeres\nJupiter\nSaturn\nUranus\nNeptune\nPluto\nEris\nTHOSE ARE THE CURRENT AVAILABLE OBJECTS FOR PLOTTING. FXN ANMTE CAN PRINT THEM ALL USE anmte --help for assistance.[/bold magenta]\n')#[bold Cyan]Or use the planet number respectively.[/bold Cyan]\n')
 
-                    sys.exit(0)
+                    raise ValueError('invalid name/period for orbit(). the valid ones are printed above') #was sys.exit(0)
 
 
                 #index = 0 if period==88 else 1 if period==225 else 2 if period==365 else 3 if period==687 else 4 if period==1681 else 5 if period==4333 else 6 if period==10759 else 7 if period==30685 else 8 if period==60190 else 9 if period==90465 else 10 if period==204174 else None # did not include planet because it is discontinued..using names now.
@@ -827,8 +823,7 @@ class Astro:
 
 
         if name not in values:
-            console.print('[bold red]NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING[/bold red]')
-            sys.exit(0)
+            raise ValueError(f'NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING: {name}') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         
         index = 0 if name==values[0] else 1 if name==values[1] else 2 if name==values[2] else 3 if name==values[3] else 4 if name==values[4] else 5 if name==values[5] else 6 if name==values[6] else 7 if name==values[7] else 8 if name==values[8] else 9 if name==values[9] else 10 if name==values[10] else 11 if name==values[11] else 12 if name==values[12] else 13 if name==values[13] else 14 if name==values[14] else 15 if name==values[15] else None         #handled the if else abit

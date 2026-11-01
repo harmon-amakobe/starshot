@@ -844,8 +844,7 @@ class Contin(Astro):
         values = ['MERCURY','VENUS','EARTH','MARS','VESTA','CERES','PALLAS','HYGIEA','JUPITER','SATURN','URANUS','NEPTUNE','PLUTO','HAUMEA','MAKEMAKE','ERIS']
 
         if name==None:
-            console.print('[bold red]NAME CANNOT BE NONE/EMPTY[/bold red]')
-            sys.exit(0)
+            raise ValueError('NAME CANNOT BE NONE/EMPTY') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         name = name.upper()
 
@@ -997,8 +996,7 @@ class Contin(Astro):
         ##LAMBERTS IS HELIOCENTRIC###
 
         if objname==None and days==None:
-            console.print('[bold red]NAME AND DAYS ADDED/SUBTRACTED CANT BE NONE[/bold red]')
-            sys.exit()
+            raise ValueError('NAME AND DAYS ADDED/SUBTRACTED CANT BE NONE') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         objname = objname.upper()
 
@@ -1085,8 +1083,7 @@ class Contin(Astro):
         #name = name.upper()
 
         if name==None:
-            console.print('[bold red]NAME CANNOT BE NONE[/bold red]')
-            sys.exit(0)
+            raise ValueError('NAME CANNOT BE NONE') #was console.print + sys.exit(0), which also closed the program that called astlo
 
 
         name = name.upper()
@@ -2416,16 +2413,14 @@ class Contin(Astro):
 
 
         if name==None:
-            console.print('[bold red]NAME CANNOT BE NONE/EMPTY[/bold red]')
-            sys.exit(0)
+            raise ValueError('NAME CANNOT BE NONE/EMPTY') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         name = name.upper()
 
         values = ['MERCURY','VENUS','EARTH','MARS','VESTA','CERES','PALLAS','HYGIEA','JUPITER','SATURN','URANUS','NEPTUNE','PLUTO','HAUMEA','MAKEMAKE','ERIS']
 
         if name not in values:
-            console.print('[bold red]NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING[/bold red]')
-            sys.exit(0)
+            raise ValueError(f'NAME NOT LOCALLY RECOGNIZED OR WRONG SPELLING: {name}') #was console.print + sys.exit(0), which also closed the program that called astlo
 
         #name = name.upper()
 
