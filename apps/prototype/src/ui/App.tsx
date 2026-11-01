@@ -8,6 +8,7 @@ import type { CameraMode } from '../render/view-types';
 import type { Inspection } from '../render/vehicle';
 import { useScene, type SceneSeek, type SceneTransport } from './use-scene';
 import { FlightDeck, formatDistance } from './FlightDeck';
+import { MoonMarker } from './MoonMarker';
 import { Hangar } from './Hangar';
 import { PullPose } from './pull-pose';
 import { engineInput } from '../render/engine-geometry';
@@ -15,13 +16,20 @@ import { MissionMarkers } from './MissionMarkers';
 import { LaunchWindow } from './LaunchWindow';
 import type { MapCheckpoint, MapPreferences, Units } from './observatory-session';
 import { EngineDemo } from './engine-demo';
+import { EntryPresentation } from '../entry/presentation';
+import { HomeMenu } from '../entry/HomeMenu';
+import { useProfiles } from '../entry/use-profiles';
+import type { SavedSession } from '../entry/profiles';
+import { useCloudDemo } from '../entry/use-cloud-demo';
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 const flightIdentities = new WeakMap<object, number>();
 let nextFlightIdentity = 0;
 function flightIdentity(value: object | null) { if (!value) return null; if (!flightIdentities.has(value)) flightIdentities.set(value, ++nextFlightIdentity); return flightIdentities.get(value); }
 
 export function App() {
-  const { state, dispatch, model } = useFlight();
+  const { state, dispatch, model, workerIdentity } = useFlight();
+  const [entryPhase, setEntryPhase] = useState<'home' | 'entering' | 'play'>('home');
+  const entry = useRef(new EntryPresentation());
   const canvas = useRef<HTMLCanvasElement>(null), handle = useRef<HTMLButtonElement>(null), menuButton = useRef<HTMLButtonElement>(null);
   const leader = useRef<SVGLineElement>(null), coach = useRef<HTMLDivElement>(null);
   const resultAction = useRef<HTMLButtonElement>(null), pose = useRef(new PullPose()), gestureOrigin = useRef<ShotRequest | null>(null);
@@ -44,7 +52,8 @@ export function App() {
   const followHeight = useRef(2200);
   const drag = useRef<{ id: number; anchor: [number, number]; grip: [number, number]; start: [number, number]; travel: number; prograde: number; sign: number } | null>(null);
   const mapDrag = useRef<{ id: number; x: number; y: number; pan: [number, number]; orbit: [number, number] } | null>(null);
-  const { readout, et, snapshot } = useScene(canvas, model, { state, paused, menu, inspection, reduced, mode,
+  const { readout, et, snapshot, rendererIdentity } = useScene(canvas, model, { state, paused, menu, inspection, reduced, mode,
+    entry, entryPhase, enterComplete: () => { setEntryPhase('play'); requestAnimationFrame(() => canvas.current?.focus()); },
     height, pan, orbit, pulling: !!pull, autoZoom, finish: () => dispatch({ type: 'finish' }),
     pose, deckHeight, simplified: !worldSize.trueSize, suspended: mapOpen, seek, transport, demo, snapComplete: () => dispatch({ type: 'complete-snap' }), onFrame: frame => {
       if (handle.current) { handle.current.style.left = `${frame.engineGrip[0]}px`; handle.current.style.top = `${frame.engineGrip[1]}px`; }
@@ -58,6 +67,53 @@ export function App() {
   const mapPreferences = useMemo<MapPreferences>(() => ({ science: scientific, trueSize: worldSize.trueSize, sizeLinked: worldSize.linked,
     camera: mode, unitPreferences: { ...unitPreferences.current }, ...mapRates }), [scientific, worldSize, mode, units, mapRates]);
   useEffect(() => { if (transport.current) transport.current.preferences = mapPreferences; }, [mapPreferences]);
+  const profiles = useProfiles({ state, dispatch, capture: captureSession, apply: applySession, saveEnabled: entryPhase === 'play',
+    sceneStamp: `${snapshot.current.requestId}:${snapshot.current.phase}:${snapshot.current.appliedSeek}:${et}`,
+    sceneReady: restoredEt => snapshot.current.requestId === state.id && snapshot.current.phase === state.phase
+      && (restoredEt === undefined || Math.abs(snapshot.current.et - restoredEt) < .001) });
+  const cloud = useCloudDemo({ profileId: profiles.profile.id, hydrating: profiles.hydrating, capture: captureSession, activate: profiles.activateDemo, restoreGuest: profiles.select });
+  function captureSession(): SavedSession {
+    const checkpoint = mapCheckpoint.current as (MapCheckpoint & { requestId: number }) | null;
+    const hosted = mapOpen && checkpoint?.requestId === state.id ? checkpoint : null;
+    const phase = state.phase === 'snap' ? 'aim' : hosted && state.launch ? hosted.et >= state.launch.endEt ? 'result' : 'flight' : state.phase;
+    const preferences = structuredClone(hosted?.preferences ?? mapPreferences);
+    if (hosted && !hosted.cameraChanged) preferences.camera = mode;
+    return { level: 'first-leap', dv: state.request.deltaVKmS, angle: state.request.burnAngleDeg, phase,
+      et: phase === 'aim' ? LAUNCH_ET : hosted?.et ?? snapshot.current.et, paused: hosted && phase !== 'aim' ? !hosted.playing : paused, preferences, expanded, sound,
+      height: hosted?.cameraChanged ? preferences.camera === 'follow' ? followHeight.current : preferences.camera === 'free' ? snapshot.current.readout.heightKm : height : height,
+      pan: hosted?.cameraChanged && preferences.camera === 'free' ? [...snapshot.current.readout.centre] : [...pan],
+      cameraLock: !hosted?.cameraChanged && pose.current.flightLock ? structuredClone(pose.current.flightLock) : null,
+      clock: hosted || transport.current ? 'rate' : 'smooth' };
+  }
+  function applySession(saved: SavedSession | null, restoredEt?: number) {
+    drag.current = null; gestureOrigin.current = null; pose.current.reset(); transport.current = null; mapCheckpoint.current = null; setPull(null);
+    setInspection(null); setMenu(false); setMapOpen(false); setShowFine(false); setGuided(false); setAutoZoom(false);
+    const p = saved?.preferences;
+    setScientific(p?.science ?? false); unitPreferences.current = p ? { ...p.unitPreferences } : { simple: 'light', science: 'metric' };
+    setUnits(['light', 'metric', 'imperial'].indexOf(unitPreferences.current[p?.science ? 'science' : 'simple']));
+    setWorldSize({ linked: p?.sizeLinked ?? true, trueSize: p?.trueSize ?? false }); setMapRates({ rate: p?.rate ?? 0, lightRate: p?.lightRate ?? 1 });
+    setMode(p?.camera ?? 'system'); setHeight(saved?.height ?? 2200); followHeight.current = saved?.height ?? 2200;
+    setPan(saved ? [...saved.pan] : [0, 0]); setExpanded(saved?.expanded ?? true); setSound(saved?.sound ?? false); setPaused(saved?.paused ?? false);
+    if (saved?.cameraLock) pose.current.flightLock = structuredClone(saved.cameraLock);
+    if (saved && saved.phase !== 'aim' && restoredEt !== undefined) {
+      seek.current = { revision: (seek.current?.revision ?? 0) + 1, et: restoredEt };
+      if (saved.clock === 'rate') transport.current = { et: restoredEt, preferences: structuredClone(saved.preferences) };
+    }
+  }
+  function enterPlay() {
+    if (!model || !state.preview || !readout.ready || profiles.hydrating) return;
+    entry.current.setHome(false, performance.now(), reduced); setEntryPhase('entering');
+  }
+  function home() {
+    profiles.save(); cancel(); cancelDemo(); setMenu(false); setInspection(null); setShowFine(false);
+    entry.current.setHome(true, performance.now(), reduced); setEntryPhase('home');
+  }
+  function parkingView() {
+    cancel(); pose.current.reset(); setMode('free'); setAutoZoom(false);
+    const visible = Math.min(innerWidth - 72, Math.max(120, innerHeight - deckHeight - 130));
+    const next = innerHeight * 6571 * 2 / visible * 1.16;
+    setHeight(next); setPan([0, (innerHeight / 2 - (90 + innerHeight - deckHeight - 24) / 2) * next / innerHeight]);
+  }
   const announce = state.error ?? (state.phase === 'result' ? active?.entryEt ? 'Moon approach reached. Your collector is on its way.' : active?.impact ? 'The path met Earth. Try a gentler angle.' : 'The Moon is still out of reach. Adjust your pull and try again.' : state.pendingRelease ? 'Computing the released path.' : state.phase === 'flight' ? paused ? 'Flight paused.' : 'In flight.' : active?.entryEt ? 'Preview ready. Moon approach lined up.' : 'Pull the rear engine ring, then release.');
   function cancel() {
     drag.current = null; setPull(null);
@@ -82,7 +138,7 @@ export function App() {
   function replay() { if (transport.current) transport.current.et = LAUNCH_ET; pose.current.reset(); initialCamera(); dispatch({ type: 'replay' }); requestAnimationFrame(() => canvas.current?.focus()); }
   function toggleMode(value: boolean) { cancel(); setScientific(value); setUnits(['light', 'metric', 'imperial'].indexOf(unitPreferences.current[value ? 'science' : 'simple'])); if (worldSize.linked) setWorldSize({ linked: true, trueSize: value }); }
   function cycleUnits() { const next = (units + 1) % 3; unitPreferences.current[scientific ? 'science' : 'simple'] = ['light', 'metric', 'imperial'][next] as Units; setUnits(next); }
-  function openMap() { mapOpener.current = document.activeElement as HTMLElement; cancel(); setMenu(false); setShowFine(false); setMapOpen(true); }
+  function openMap() { mapCheckpoint.current = null; mapOpener.current = document.activeElement as HTMLElement; cancel(); setMenu(false); setShowFine(false); setMapOpen(true); }
   function returnMap(checkpoint: MapCheckpoint) {
     const p = checkpoint.preferences; unitPreferences.current = { ...p.unitPreferences }; setScientific(p.science);
     setUnits(['light', 'metric', 'imperial'].indexOf(p.unitPreferences[p.science ? 'science' : 'simple']));
@@ -194,7 +250,7 @@ export function App() {
   }, [mapOpen]);
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if (mapOpen) return;
+      if (mapOpen || entryPhase !== 'play') return;
       if (event.key === 'Escape') {
         cancel(); cancelDemo(); mapDrag.current = null; if (inspection) setInspection(null); else if (menu) { setMenu(false); menuButton.current?.focus(); } else if (showFine) setShowFine(false);
       }
@@ -203,7 +259,12 @@ export function App() {
     const lost = () => { cancel(); cancelDemo(); mapDrag.current = null; };
     window.addEventListener('keydown', key); window.addEventListener('blur', lost); window.addEventListener('resize', lost);
     return () => { window.removeEventListener('keydown', key); window.removeEventListener('blur', lost); window.removeEventListener('resize', lost); };
-  }, [inspection, menu, showFine, state.phase, mapOpen]);
+  }, [inspection, menu, showFine, state.phase, mapOpen, entryPhase]);
+  useEffect(() => {
+    const nodes = [...document.querySelectorAll<HTMLElement>('.game-shell > :not(.entry-shell)')];
+    if (entryPhase !== 'play') nodes.forEach(node => { node.inert = true; });
+    else if (!mapOpen) nodes.forEach(node => { node.inert = false; });
+  }, [entryPhase, mapOpen]);
   useEffect(() => {
     const descriptor = { configurable: true, get: () => ({ phase: state.phase, requestId: state.id, request: state.request,
       pendingRelease: state.pendingRelease, previewReady: !!state.preview, samePath: !!state.launch && state.launch === state.preview,
@@ -222,14 +283,18 @@ export function App() {
       engineExtensionPx: snapshot.current.readout.engineExtensionPx, maxEngineExtensionPx: snapshot.current.readout.maxEngineExtensionPx,
       aimSign: snapshot.current.readout.aimSign, mapOpen, bridge: mapCheckpoint.current, transport: transport.current,
       flightIdentity: flightIdentity(state.launch), previewIdentity: flightIdentity(state.preview), preferences: mapPreferences, endEt: active?.endEt,
+      entry: { phase: entryPhase, amount: entry.current.amount, profileId: profiles.profile.id, hydrating: profiles.hydrating },
+      workerIdentity: workerIdentity.current, rendererIdentity: rendererIdentity.current,
+      parkingRadiusPx: snapshot.current.readout.parkingRadiusPx, burnNode: snapshot.current.readout.burnNode,
+      travelledPoints: snapshot.current.readout.travelledPoints, futurePoints: snapshot.current.readout.futurePoints,
       engineDemo: { charge: snapshot.current.readout.demoCharge, grip: snapshot.current.readout.demoGrip, front: snapshot.current.readout.demoFront, travel: snapshot.current.readout.demoTravelPx },
       previewStart: state.preview?.samples[0] ?? null, launchStart: state.launch?.samples[0] ?? null }) };
     Object.defineProperty(window, '__starshot', descriptor);
     return () => { Reflect.deleteProperty(window, '__starshot'); };
-  }, [state, mode, inspection, paused, reduced, snapshot, mapOpen, mapPreferences, active]);
+  }, [state, mode, inspection, paused, reduced, snapshot, mapOpen, mapPreferences, active, entryPhase, profiles.profile.id, profiles.hydrating]);
   const moonOffscreen = readout.moon[0] < 30 || readout.moon[0] > innerWidth - 30 || readout.moon[1] < 90 || readout.moon[1] > innerHeight - deckHeight - 24;
   const moonX = moonOffscreen ? innerWidth * .62 : readout.moon[0], moonY = moonOffscreen ? innerHeight * .39 : readout.moon[1];
-  return <main className="game-shell" data-phase={state.phase} data-camera={mode} data-pulling={!!pull || state.pendingRelease} data-renderer={readout.renderer} style={{ '--deck-height': `${deckHeight}px` } as React.CSSProperties}>
+  return <main className="game-shell" data-entry={entryPhase !== 'play'} data-phase={state.phase} data-camera={mode} data-pulling={!!pull || state.pendingRelease} data-renderer={readout.renderer} style={{ '--deck-height': `${deckHeight}px` } as React.CSSProperties}>
     <div className="starfield" aria-hidden="true" />
     <canvas ref={canvas} className="world" tabIndex={0} aria-label={inspection ? readout.renderer === 'Canvas fallback' ? '2D vehicle reference' : 'Vehicle model. Drag or use arrow keys to rotate.' : 'Earth to Moon. Drag empty space or use arrow keys to pan.'}
       onPointerDown={mapDown} onPointerMove={mapMove} onPointerUp={() => { mapDrag.current = null; }} onPointerCancel={() => { mapDrag.current = null; }}
@@ -246,7 +311,7 @@ export function App() {
     {!inspection ? <>
       <header className="topbar"><div className="brand">starshot<span>First leap · Play study</span></div><button className="mission-pill" aria-label="Launch window" onClick={openMap}><Icon name="system" /><span>Launch window</span></button><button ref={menuButton} className="pill" onClick={() => { cancel(); setMenu(true); }}><Icon name="menu" /><span>Menu</span></button></header>
       <div className={`level-caption ${state.request.deltaVKmS > 0 ? 'charged' : ''}`}><span className="eyebrow">01 / First leap</span><h1>Reach the Moon.</h1><p>Pull the rear engine ring, then release.</p></div>
-      {model && <><div className={`moon-marker ${moonOffscreen ? 'offscreen' : 'on-world'}`} style={{ left: moonOffscreen ? moonX : Math.min(innerWidth - 78, moonX + readout.moonRadiusPx + 12), top: moonY }}><b>Moon {moonOffscreen && <span aria-hidden="true" style={{ display: 'inline-block', transform: `rotate(${Math.atan2(readout.moon[1] - moonY, readout.moon[0] - moonX)}rad)` }}>→</span>}</b><span>{formatDistance(readout.moonDistance, units)}</span></div>
+      {model && <><MoonMarker x={moonOffscreen ? moonX : Math.min(innerWidth - 78, moonX + readout.moonRadiusPx + 12)} y={moonY} world={readout.moon} offscreen={moonOffscreen} distance={formatDistance(readout.moonDistance, units)} />
         {mode === 'system' && <div className="earth-label" style={{ left: Math.max(12, readout.earth[0] - readout.earthRadiusPx - 44), top: readout.earth[1] }}>Earth</div>}</>}
       <nav className="camera-controls" aria-label="Zoom controls"><div className="zoom-pills"><button onClick={() => zoom(.65)} aria-label="Zoom in"><Icon name="plus" /></button><button onClick={() => zoom(1.55)} aria-label="Zoom out"><Icon name="minus" /></button></div></nav>
       <MissionMarkers frame={readout} et={et} />
@@ -266,7 +331,7 @@ export function App() {
       {showFine && state.phase === 'aim' && <section className="aim-buttons" aria-label="Aim controls"><div><b>Aim controls</b><button aria-label="Close aim controls" onClick={() => setShowFine(false)}><Icon name="close" /></button></div><div><button onClick={() => aim(state.request.deltaVKmS - .05, state.request.burnAngleDeg)} aria-label="Less pull">−</button><span>{Math.round(state.request.deltaVKmS / FUEL_BUDGET * 100)}% fuel</span><button onClick={() => aim(state.request.deltaVKmS + .05, state.request.burnAngleDeg)} aria-label="More pull">+</button></div><div><button onClick={() => aim(state.request.deltaVKmS, clamp(state.request.burnAngleDeg - readout.aimSign, -35, 35))} aria-label="Aim down">↓</button><span>{state.request.burnAngleDeg.toFixed(1)}°</span><button onClick={() => aim(state.request.deltaVKmS, clamp(state.request.burnAngleDeg + readout.aimSign, -35, 35))} aria-label="Aim up">↑</button></div></section>}
       {state.phase === 'result' && <section className={`result-card ${active?.entryEt ? 'success' : ''}`} aria-label="Flight result"><Icon name={active?.entryEt ? 'guide' : 'orbit'} size={28} /><h2>{active?.entryEt ? 'Hello, Moon.' : active?.impact ? 'A little too low.' : 'One more try?'}</h2><p>{active?.entryEt ? 'Approach zone reached. Your first leap.' : active?.impact ? 'Earth caught this shot. Pull a little higher.' : state.request.scope === 'local' ? 'This pull made a loop around Earth.' : 'The Moon moved beyond this path.'}</p><div className="result-actions"><button ref={resultAction} className="primary" onClick={retry}><Icon name="retry" />Try again</button><button className="pill" onClick={replay}><Icon name="play" />Replay</button></div></section>}
       <FlightDeck state={state} scientific={scientific} expanded={expanded} paused={paused} elapsed={et - LAUNCH_ET} distance={readout.moonDistance} units={units} guide={guided}
-        camera={mode} setCamera={camera}
+        camera={mode} setCamera={camera} parking={parkingView}
         setScientific={toggleMode} toggleExpanded={() => { cancel(); setExpanded(value => !value); }} cycleUnits={cycleUnits} aim={aim} release={launch} cancel={cancel}
         hint={() => { cancel(); pose.current.reset(); dispatch({ type: 'aim', request: requestFor(3.24, 0) }); setGuided(true); }} pause={() => setPaused(value => !value)} retry={retry} replay={replay} />
     </> : <><Hangar part={inspection} select={value => { cancelDemo(); setInspection(value); }} flat={readout.renderer === 'Canvas fallback'} back={() => { cancelDemo(); setInspection(null); }} rotate={direction => setOrbit(value => [value[0] + direction * .4, value[1]])}
@@ -279,6 +344,7 @@ export function App() {
       <div className="menu-heading"><h2 id="menu-title">Flight menu</h2><button autoFocus aria-label="Close menu" onClick={() => { setMenu(false); menuButton.current?.focus(); }}><Icon name="close" /></button></div>
       <button className="pill" aria-pressed={sound} onClick={() => setSound(value => !value)}><Icon name="sound" />Sound {sound ? 'on' : 'off'}</button>
       <button className="pill" onClick={restart}><Icon name="retry" />Restart level</button>
+      <button className="pill" onClick={home}>Main menu</button>
       <button className="pill" onClick={() => { setMenu(false); setInspection('craft'); }}>Open the hangar</button>
       <button className="pill" onClick={openMap}>Launch window</button>
       <p>Pull the rear engine ring and let go. Guide sets a measured lunar approach. Arrow keys on the ring also aim; Enter launches.</p>
@@ -287,5 +353,10 @@ export function App() {
     </section></div>}
     {mapOpen && <LaunchWindow flight={state.phase === 'snap' ? null : active} model={model} requestId={state.id} phase={state.phase}
       et={snapshot.current.et} playing={state.phase === 'flight' && !paused} preferences={mapPreferences} finish={returnMap} checkpoint={value => { mapCheckpoint.current = value; }} />}
+    {entryPhase !== 'play' && <HomeMenu ready={!!model && !!state.preview && !!readout.ready && !profiles.hydrating} entering={entryPhase === 'entering'} error={state.error}
+      cloud={cloud}
+      frame={readout} profile={profiles.profile} profiles={profiles.data.profiles} notice={profiles.notice} hydrating={profiles.hydrating}
+      play={enterPlay} restart={() => { cloud.sync(); profiles.fresh(); }} select={id => { cloud.sync(); profiles.select(id); }} create={name => { cloud.sync(); profiles.create(name); }} rename={profiles.rename}
+      sound={sound} scientific={scientific} toggleSound={() => setSound(value => !value)} toggleDetail={() => toggleMode(!scientific)} />}
   </main>;
 }

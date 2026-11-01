@@ -1,7 +1,7 @@
 import { sub, scale, norm, type Vec3 } from '@starshot/ephemeris';
 import { LunarModel, LAUNCH_ET, EARTH_RADIUS, MOON_RADIUS } from '../lunar/model';
 import { sampleFlight } from '../lunar/flight';
-import type { ViewState } from './view-types';
+import type { ViewState, FrameReadout } from './view-types';
 import type { Flight } from '../lunar/flight';
 import { fitOverview, worldRect } from './overview';
 import { local, displayBasis, progradeHeading, burnAngleSign, moonOrbit, approachGeometry, missionArc } from './mission-geometry';
@@ -48,7 +48,7 @@ export function frameGeometry(model: LunarModel, state: ViewState, aspect: numbe
   }
   return { basis, earth, craft, moon, height, centre, rect, velocity, orbit, approach, prograde: progradeHeading(model), aimSign: burnAngleSign(model), arc };
 }
-export function frameReadout(frame: ReturnType<typeof frameGeometry>, state: ViewState, width: number, height: number, renderer: string) {
+export function frameReadout(frame: ReturnType<typeof frameGeometry>, state: ViewState, width: number, height: number, renderer: string): FrameReadout {
   const pixelsPerKm = height / frame.height;
   const project = (p: Vec3): [number, number] => [width / 2 + (p[0] - frame.centre[0]) * pixelsPerKm, height / 2 - (p[1] - frame.centre[1]) * pixelsPerKm];
   const physicalCraft = project(frame.craft), earth = project([0, 0, 0]), moon = project(frame.moon);
@@ -57,11 +57,9 @@ export function frameReadout(frame: ReturnType<typeof frameGeometry>, state: Vie
   const dx = physicalCraft[0] - earth[0], dy = physicalCraft[1] - earth[1], gap = earthRadiusPx + 38;
   // A separated control symbol stays tied to the physical departure point with a leader.
   const distance = Math.hypot(dx, dy), separation = Math.max(0, gap - distance);
-  const bearing = Math.atan2(dy, dx);
-  // Near Earth the enlarged symbol sits above its limb, leaving room for the complete rear-ring cone.
-  const displayBearing = bearing + Math.PI * separation / gap;
-  const controlAnchor: [number, number] = separation > 0 ? [earth[0] + Math.cos(displayBearing) * gap,
-    earth[1] + Math.sin(displayBearing) * gap] : physicalCraft;
+  // Radial separation preserves the visible orbital direction as well as the physical heading.
+  const controlAnchor: [number, number] = separation > 0 && distance > .001 ? [earth[0] + dx / distance * gap,
+    earth[1] + dy / distance * gap] : physicalCraft;
   const headingRad = state.aiming ? frame.prograde + frame.aimSign * state.angle * Math.PI / 180 : Math.atan2(frame.velocity[1]!, frame.velocity[0]!);
   const dxAxis = Math.cos(headingRad), dyAxis = -Math.sin(headingRad);
   const engineFront: [number, number] = [controlAnchor[0] - dxAxis * ENGINE_FRONT_PX, controlAnchor[1] - dyAxis * ENGINE_FRONT_PX];
@@ -71,7 +69,7 @@ export function frameReadout(frame: ReturnType<typeof frameGeometry>, state: Vie
     const x = Math.cos(angle), y = -Math.sin(angle);
     const gripX = controlAnchor[0] - x * ENGINE_RETRACTED_PX, gripY = controlAnchor[1] - y * ENGINE_RETRACTED_PX;
     const roomX = x > .1 ? (gripX - 28) / x : x < -.1 ? (width - 28 - gripX) / -x : 145;
-    const roomY = y > .1 ? (gripY - 80) / y : y < -.1 ? (height - (state.deckHeight ?? 230) - 40 - gripY) / -y : 145;
+    const roomY = y > .1 ? (gripY - 100) / y : y < -.1 ? (height - (state.deckHeight ?? 230) - 48 - gripY) / -y : 145;
     return Math.min(roomX, roomY);
   };
   const safeTravel = Math.min(...[-35, -20, 0, 20, 35].map(angle => travelAt(frame.prograde + angle * Math.PI / 180)));

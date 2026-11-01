@@ -16,6 +16,7 @@ people start from the README at the root.
 |---|---|
 | [architecture.md](architecture.md) | How the packages, the physics worker and the game fit together |
 | [game-design.md](game-design.md) | How the game plays: the loop, the controls, the levels, the scoring |
+| [design/entry-experience.md](design/entry-experience.md) | The live orbital menu, local profiles and simulated cloud-profile interaction design |
 | [hosting.md](hosting.md) | GitHub Pages, Actions on the fork, branch protection, build-time configuration |
 | [astlo-evaluation.md](astlo-evaluation.md) | What testing Mark Macharia's astlo against NASA/JPL found |
 | [astlo/directions.md](astlo/directions.md) | Technical directions for astlo as a partner project (D26) |
@@ -26,6 +27,7 @@ people start from the README at the root.
 |---|---|
 | [plans/v1-starshot/](plans/v1-starshot/) | The current program: the plan, its research, the work list (`03-work.yaml`), the owner's checklist and the deviation log |
 | [plans/pr0-bootstrap.md](plans/pr0-bootstrap.md) | The record of the bootstrap pull request (D8) |
+| [plans/entry-experience-prototype.md](plans/entry-experience-prototype.md) | Entry prototype scope, save ownership, camera handoff and verification |
 
 ## At the repository root
 

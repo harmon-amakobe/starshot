@@ -4,8 +4,12 @@ import { sampleFlight } from '../lunar/flight';
 import { frameGeometry, frameReadout, local } from './coordinates';
 import type { SceneView, ViewState } from './view-types';
 import { drawSleeve } from './charge-sleeve';
+import { parkingOrbit, routePoints } from './orbital-context';
+import { EntryCamera } from './entry-camera';
+import { drawEntryFallback } from './entry-fallback';
 export class CanvasView implements SceneView {
   private ctx: CanvasRenderingContext2D;
+  private entryCamera = new EntryCamera();
   constructor(private canvas: HTMLCanvasElement, private model: LunarModel) { this.ctx = canvas.getContext('2d')!; }
   update(state: ViewState) {
     const w = this.canvas.clientWidth, h = this.canvas.clientHeight;
@@ -13,6 +17,8 @@ export class CanvasView implements SceneView {
     const ctx = this.ctx; ctx.scale(devicePixelRatio, devicePixelRatio); ctx.clearRect(0, 0, w, h);
     const frame = frameGeometry(this.model, state, w / h, { width: w, height: h }), ratio = h / frame.height;
     const readout = frameReadout(frame, state, w, h, 'Canvas fallback');
+    readout.ready = true; readout.cinematic = state.cinematic ?? 0;
+    if (state.cinematic && state.cinematic > 0 && !state.inspection) { drawEntryFallback(ctx, this.entryCamera, frame, state, readout, w, h); return readout; }
     if (state.inspection === 'engine') {
       const top = h < 500 ? 115 : 190, bottom = h < 500 ? 180 : 285;
       const y = (top + h - bottom) / 2, travel = Math.min(150, w * .45), front: [number, number] = [w / 2 + travel / 2, y];
@@ -29,16 +35,22 @@ export class CanvasView implements SceneView {
     if (!state.inspection) {
       ctx.strokeStyle = '#72939566'; ctx.lineWidth = 1; ctx.beginPath();
       frame.orbit.forEach((point, index) => { const p = xy(point); if (index) ctx.lineTo(...p); else ctx.moveTo(...p); }); ctx.stroke();
+      const radius = state.flight?.request.parkingRadiusKm ?? 6571, orbit = parkingOrbit(this.model, radius);
+      ctx.strokeStyle = '#8dbfdfa6'; ctx.beginPath(); orbit.forEach((point, i) => { const p = xy(point); if (i) ctx.lineTo(...p); else ctx.moveTo(...p); }); ctx.stroke();
+      readout.parkingRadiusPx = radius * ratio; readout.burnNode = xy(orbit[0]!);
     }
     if (!state.inspection) { circle([0, 0, 0], readout.earthRadiusPx / ratio, '#397ea1'); circle(frame.moon, readout.moonRadiusPx / ratio, '#c0c7cb'); }
     if (state.flight && !state.inspection) {
-      ctx.strokeStyle = state.previewUpdating ? '#ffd99155' : '#ffd991'; ctx.lineWidth = 2; ctx.setLineDash([2, 8]); ctx.beginPath();
-      for (let i = 0; i <= 400; i++) {
-        const t = state.flight.request.launchEt + (state.flight.endEt - state.flight.request.launchEt) * (i / 400) ** 2;
-        const p = xy(local(sub(sampleFlight(state.flight.samples, t).r, this.model.bodies(t).earth.r), frame.basis));
-        if (i) ctx.lineTo(...p); else ctx.moveTo(...p);
+      const points = routePoints(this.model, state.flight), past = state.aiming ? [] : points.filter(p => p.t < state.et).map(p => p.p), future = points.filter(p => p.t >= state.et).map(p => p.p);
+      if (past.length) past.push(frame.craft); future.unshift(frame.craft);
+      readout.travelledPoints = past.length; readout.futurePoints = future.length;
+      for (const [line, travelled] of [[past, true], [future, false]] as const) {
+        ctx.strokeStyle = travelled ? '#8d9eac88' : state.previewUpdating ? '#ffd99155' : '#ffd991'; ctx.lineWidth = travelled ? 1 : 2;
+        ctx.setLineDash(travelled ? [] : [2, 8]); ctx.beginPath();
+        line.forEach((point, i) => { const p = xy(point); if (i) ctx.lineTo(...p); else ctx.moveTo(...p); }); ctx.stroke();
       }
-      ctx.stroke(); ctx.setLineDash([]);
+      ctx.setLineDash([]);
+      if (readout.burnNode && (readout.parkingRadiusPx ?? 0) > readout.earthRadiusPx + 1) { ctx.strokeStyle = '#e1f3ff'; ctx.beginPath(); ctx.arc(...readout.burnNode, 4, 0, Math.PI * 2); ctx.stroke(); }
     }
     const p = state.inspection ? [w / 2, h * .5] : readout.craft;
     const size = state.inspection ? Math.min(105, w * .26, h * .14) : 24;

@@ -4,10 +4,12 @@ export interface ShotState {
   pendingRelease: boolean; phase: 'aim' | 'snap' | 'flight' | 'result'; error: string | null;
 }
 export type ShotAction = { type: 'aim'; request: ShotRequest } | { type: 'ready'; id: number; flight: Flight }
+  | { type: 'hydrate-flight'; id: number; result: boolean }
   | { type: 'restore-playback'; result: boolean }
   | { type: 'restart'; request: ShotRequest } | { type: 'error'; id: number; error: string }
   | { type: 'release' | 'cancel' | 'finish' | 'retry' | 'replay' | 'complete-snap' };
 export function shotReducer(state: ShotState, action: ShotAction): ShotState {
+  if (action.type === 'hydrate-flight') return action.id === state.id && state.preview && state.phase === 'aim' ? { ...state, launch: state.preview, phase: action.result ? 'result' : 'flight', pendingRelease: false } : state;
   if (action.type === 'restore-playback') return state.launch ? { ...state, phase: action.result ? 'result' : 'flight' } : state;
   if (action.type === 'restart') return { id: state.id + 1, request: action.request, preview: null, previousPreview: null, launch: null, pendingRelease: false, phase: 'aim', error: null };
   if (action.type === 'aim') return state.phase !== 'aim' ? state : { ...state, id: state.id + 1, request: action.request, previousPreview: state.preview ?? state.previousPreview,

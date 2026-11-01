@@ -11,6 +11,7 @@ export interface ViewState {
   flightActive?: boolean; visualTime?: number;
   engineTravel?: number | null;
   demoCharge?: number;
+  cinematic?: number;
 }
 export interface FrameReadout {
   craft: [number, number]; moon: [number, number]; moonDistance: number;
@@ -27,5 +28,6 @@ export interface FrameReadout {
   engineFront: [number, number]; engineGrip: [number, number]; engineExtensionPx: number; maxEngineExtensionPx: number;
   aimSign: number;
   demoCharge: number; demoGrip: [number, number]; demoFront: [number, number]; demoTravelPx: number;
+  ready?: boolean; cinematic?: number; parkingRadiusPx?: number; burnNode?: [number, number]; travelledPoints?: number; futurePoints?: number;
 }
 export interface SceneView { update(state: ViewState): FrameReadout; dispose(): void; }

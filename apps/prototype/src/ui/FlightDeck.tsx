@@ -9,7 +9,7 @@ interface Props {
   setScientific: (value: boolean) => void; toggleExpanded: () => void; cycleUnits: () => void;
   aim: (dv: number, angle: number) => void; release: () => void; cancel: () => void;
   hint: () => void; pause: () => void; retry: () => void; replay: () => void;
-  camera: CameraMode; setCamera: (mode: CameraMode) => void;
+  camera: CameraMode; setCamera: (mode: CameraMode) => void; parking: () => void;
 }
 export function formatDistance(km: number, units: number) {
   if (units === 0) return km < 2997.92458 ? `${(km / 299.792458).toFixed(2)} light-ms` : `${(km / 299792.458).toFixed(2)} light-s`;
@@ -51,7 +51,7 @@ export function FlightDeck(p: Props) {
         </div>}
       </> : <div className="flight-instruments"><div><span>Flight time</span><strong>{(p.elapsed / DAY).toFixed(2)} <small>days</small></strong></div><div><span>To the Moon</span><strong>{formatDistance(p.distance, p.units)}</strong></div><div className="fuel-left"><span>Fuel left</span><strong>{Math.round(100 - fuel)}<small>%</small></strong></div></div>}
     </div>}
-    <div className="deck-footer"><CameraControls mode={p.camera} select={p.setCamera} />
+    <div className="deck-footer"><CameraControls mode={p.camera} select={p.setCamera} parking={p.parking} />
     {state.phase !== 'result' && <div className="deck-actions">
       {aim ? <><button className="primary" onClick={p.release} disabled={!!state.error || snapping || state.pendingRelease}><Icon name="play" />{snapping ? 'Launching…' : state.pendingRelease ? 'Computing…' : 'Launch'}</button><button className="pill" disabled={snapping} onClick={p.hint}><Icon name="guide" />{p.guide ? 'Guide set' : 'Guide'}</button><button className="text-button" onClick={p.cancel}>Cancel pull</button></>
         : <><button className="primary" onClick={p.pause}><Icon name={p.paused ? 'play' : 'pause'} />{p.paused ? 'Resume' : 'Pause'}</button><button className="pill" onClick={p.retry}><Icon name="retry" />Try again</button></>}

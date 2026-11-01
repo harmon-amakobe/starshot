@@ -12,6 +12,11 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- A live orbital entry menu with same-scene Play and Continue, local profiles and a
+  level picker. A labelled cloud-profile demo previews sign-in, restoration, offline
+  drafts, version conflicts and sign-out without contacting Firebase.
+- A true-scale parking-orbit reference and burn node, with travelled and future path
+  styles. Radial-only vessel separation preserves its visible prograde direction.
 - A rear-ring charging gesture with an anchored collector, a cool field chamber and
   release snap. The same engine can be charged in the hangar without changing flight.
 - Shared Follow, System and Free cameras, a north-facing lunar orbit view and measured

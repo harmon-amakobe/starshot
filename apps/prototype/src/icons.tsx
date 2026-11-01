@@ -17,6 +17,7 @@ export function Icon({ name, size = 20 }: { name: string; size?: number }) {
     lock: <><rect x="6" y="10" width="12" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" /></>,
     craft: <><path d="M3 6v12m3-7 12-5 3 6-3 6-12-5Z" /><circle cx="16" cy="12" r="2" /></>,
     wave: <path d="M2 12q3-12 6 0t6 0 6 0" />,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="3" /><path d="m4 7 8 6 8-6" /></>,
     down: <path d="m6 9 6 6 6-6" />,
     sound: <><path d="M3 9h4l5-4v14l-5-4H3ZM16 8q4 4 0 8m3-11q7 7 0 14" /></>,
   };

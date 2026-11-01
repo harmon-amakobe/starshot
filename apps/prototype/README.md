@@ -1,6 +1,7 @@
 # starshot prototype
 
-The root opens the playable lunar study. The approved launch-window and system-map
+The root opens a live orbital main menu with Play, Continue and local profiles.
+The lunar study remains mounted behind the menu. The approved launch-window and system-map
 study is preserved in `public/observatory/`. This is an isolated design workspace.
 The production game, campaign levels and physics packages are unchanged.
 
@@ -26,6 +27,28 @@ npm run verify:data -w @starshot/prototype
 The static build is in `apps/prototype/dist/`. It uses relative URLs and needs an
 HTTP server; opening files directly does not support its module workers and data fetches.
 This command does not deploy the build. The existing game still uses `npm run dev`.
+
+## Entry and profiles
+
+Play moves the same renderer from its elevated menu camera into the level. Continue
+restores the current local profile, including its aim or flight time and controls.
+Menu then Main menu returns without replacing the canvas, worker or cached Flight.
+Reduced motion cuts directly. Levels lists the playable lunar lesson and labels
+future chapters. App Store and Google Play remain coming-soon previews.
+
+Profiles are stored under `starshot.prototype.profiles.v1`. Saves contain validated
+canonical shot inputs and bounded playback state. The worker regenerates the exact
+request on reload; matching scene acknowledgment gates autosave. Storage failures
+leave a playable memory session. Clearing browser data removes these local saves.
+
+Sign in opens a labelled cloud-profile simulation. Google and email-link routes use
+the fixed `pilot@example.com` sample, without credentials or network authentication.
+Choose or create a demo pilot, restore its flight, play and sync. The scenario panel
+offers offline queuing and a second-device conflict with explicit version choices.
+Drafts are isolated per pilot and survive sign-out. Sign-out restores the local guest.
+Its separate key is `starshot.prototype.cloud-demo.v1`; no Firebase service is configured.
+The [entry plan](../../docs/plans/entry-experience-prototype.md) records the backend
+boundary and [design note](../../docs/design/entry-experience.md) names extension points.
 
 ## Preserved Observatory behavior
 
@@ -86,6 +109,9 @@ Earth and Moon orientation reuse the Observatory's validated NAIF model.
 The Moon moves counterclockwise from this side. The 200 km prograde parking orbit
 is unchanged; it is not geostationary. A sampled lunar rail shows the orbit. Successful
 previews mark the actual approach point and the Moon's position at the same future ET.
+The enlarged craft separates radially from Earth without changing its visible orbital
+direction. Parking orbit zoom reveals the true reference circle and burn node. During
+flight, travelled segments are solid and dim; the remaining path stays bright and dotted.
 
 The hosted map suspends the mounted level while it owns playback. A validated bridge
 returns exact ET, pause state, rates and preferences. Its clock uses full 3D geocentric

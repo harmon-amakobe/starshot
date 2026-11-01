@@ -1,10 +1,10 @@
 export interface WorldRect { left: number; top: number; right: number; bottom: number; }
 export function worldRect(width: number, height: number, deckHeight: number): WorldRect {
   const landscape = height < 500 && width > 600;
-  const top = landscape ? 154 : width < 600 ? Math.min(270, height - deckHeight - 130) : width < 1000 ? 285 : 150;
-  return { left: landscape ? 225 : width >= 1000 ? 380 : 65,
+  const top = landscape ? 84 : width < 600 ? Math.min(270, height - deckHeight - 200) : width < 1000 ? 235 : 150;
+  return { left: landscape ? 225 : width >= 1000 ? 380 : width < 600 ? 150 : 145,
     right: width - (width >= 1000 ? 190 : 65), top,
-    bottom: Math.max(top + 85, height - deckHeight - (landscape ? 20 : 46)) };
+    bottom: Math.max(top + 85, height - deckHeight - (landscape ? 65 : 95)) };
 }
 export function fitOverview(points: readonly (readonly number[])[], width: number, height: number, rect: WorldRect) {
   const xs = points.map(p => p[0]!), ys = points.map(p => p[1]!);

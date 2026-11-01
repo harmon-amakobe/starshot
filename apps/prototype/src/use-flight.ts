@@ -2,16 +2,19 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { LunarModel, type RailData } from './lunar/model';
 import { requestFor, type Flight } from './lunar/flight';
 import { shotReducer } from './lunar/shot-state';
+let nextWorkerIdentity = 0;
 export function useFlight() {
   const [state, dispatch] = useReducer(shotReducer, { id: 1, request: requestFor(0, 0), preview: null,
     launch: null, phase: 'aim', pendingRelease: false, error: null });
   const [model, setModel] = useState<LunarModel | null>(null);
   const worker = useRef<Worker | null>(null), busy = useRef(false), latest = useRef(state), sent = useRef(0);
+  const workerIdentity = useRef(0);
   latest.current = state;
   const send = useRef<() => void>(() => {});
   useEffect(() => {
     let alive = true;
     const engine = new Worker(new URL('./lunar/worker.ts', import.meta.url), { type: 'module' });
+    workerIdentity.current = ++nextWorkerIdentity;
     worker.current = engine;
     send.current = () => {
       const current = latest.current;
@@ -39,5 +42,5 @@ export function useFlight() {
     return () => { alive = false; engine.terminate(); worker.current = null; busy.current = false; sent.current = 0; };
   }, []);
   useEffect(() => { if (model) send.current(); }, [state.id, model]);
-  return { state, dispatch, model };
+  return { state, dispatch, model, workerIdentity };
 }
