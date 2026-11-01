@@ -2151,7 +2151,7 @@ class Contin(Astro):
             raise ValueError(f'passed value type for tt is not supported: {tt} ¦ {type(tt)}.\n Required value type is integer in terms of days strictly')
         
 
-        delta_t = 0.041666666666666664 if tt==None else ttm #one hour expressed in days
+        delta_t = (0.041666666666666664 if tt==None else ttm)*86400 #one hour expressed in days..then in seconds because the velocities are m/s and the accelerations m/s^2
         if days:
             try:
                 days = float(days) #override
@@ -2326,7 +2326,7 @@ class Contin(Astro):
 
             velk4X = k4posvel['v_X'] + (midacck3[_+1][0] * delta_t)
             velk4Y = k4posvel['v_Y'] + (midacck3[_+1][1] * delta_t)
-            velk4Z = k4posvel['v_X'] + (midacck3[_+1][2] * delta_t)
+            velk4Z = k4posvel['v_Z'] + (midacck3[_+1][2] * delta_t)
 
             midposk4.append([posk4X,posk4Y,posk4Z])
             midvelk4.append([velk4X,velk4Y,velk4Z])
@@ -2356,9 +2356,9 @@ class Contin(Astro):
         sun_Y = fn_sun['Y_s'] + ((delta_t/6)*(k1fullvelvect[0][1] + (2*midvel[0][1]) + (2*midvelk3[0][1]) + midvelk4[0][1]))
         sun_Z = fn_sun['Z_s'] + ((delta_t/6)*(k1fullvelvect[0][2] + (2*midvel[0][2]) + (2*midvelk3[0][2]) + midvelk4[0][2]))
 
-        sun_v_X = sun_X = fn_sun['v_X'] + ((delta_t/6)*(k1fullaccvect[0][0] + (2*midacc[0][0]) + (2*midacck3[0][0]) + midacck4[0][0]))
-        sun_v_Y = sun_X = fn_sun['v_Y'] + ((delta_t/6)*(k1fullaccvect[0][1] + (2*midacc[0][1]) + (2*midacck3[0][1]) + midacck4[0][1]))
-        sun_v_Z = sun_X = fn_sun['v_Z'] + ((delta_t/6)*(k1fullaccvect[0][2] + (2*midacc[0][2]) + (2*midacck3[0][2]) + midacck4[0][2]))
+        sun_v_X = fn_sun['v_X'] + ((delta_t/6)*(k1fullaccvect[0][0] + (2*midacc[0][0]) + (2*midacck3[0][0]) + midacck4[0][0]))
+        sun_v_Y = fn_sun['v_Y'] + ((delta_t/6)*(k1fullaccvect[0][1] + (2*midacc[0][1]) + (2*midacck3[0][1]) + midacck4[0][1]))
+        sun_v_Z = fn_sun['v_Z'] + ((delta_t/6)*(k1fullaccvect[0][2] + (2*midacc[0][2]) + (2*midacck3[0][2]) + midacck4[0][2]))
 
         final_r.append([sun_X,sun_Y,sun_Z])
         final_v.append([sun_v_X,sun_v_Y,sun_v_Z])
