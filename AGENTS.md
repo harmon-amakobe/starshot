@@ -73,8 +73,9 @@ Each states its reason, so it applies to cases it does not list.
    game for assistive tech costs more than building it in.
 8. **One writer per working tree.** A second builder gets its own worktree. *Why:*
    interleaved edits make every snapshot and every diff half someone else's.
-9. **Stacked pull requests: one PR to `main` per session.** The first branch bases on
-   `main`; each later branch bases on the one below it. Push branches by name.
+9. **Stacked pull requests: one PR to `main` at a time.** The bottom branch bases on
+   `main`; each later branch, in any session, bases on the one below it (in a program
+   built as PR groups, the previous group's branch, D30). Push branches by name.
    *Why:* one reviewable merge beats a scatter of parallel ones (D8 for the bootstrap).
 10. **CI owns version numbers.** Never hand-edit a `version` field or write a dated
     CHANGELOG heading; describe changes under `## [Unreleased]` in `CHANGELOG.md`.
@@ -118,10 +119,11 @@ A wrong change in these is expensive or silent; plan first and say what you chec
 The orchestrator holds the plan, routes work, reconciles and publishes; it does not
 build, except a small single-PR change it declares as such. A pull request builds a
 group of one to four specs (D30). Per group it reads the specs, confirms the base and
-spawns **one** builder. An adversary reviews the diff in a fresh context against
-`.claude/rubrics/`, and the orchestrator closes the gaps itself. It runs the gates and
-the verifiers, pushes, opens the PR, and updates the plan and logs. The full multi-lens
-review waits for the master review at the program's end (D30).
+spawns **one** builder at a time. An adversary reviews the diff in a fresh context
+against `.claude/rubrics/`, joined by `physics-auditor`, `verification-driver` or
+`rules-reviewer` when the diff calls for them, and the orchestrator closes the gaps
+itself. It runs the gates and the verifiers, pushes, opens the PR, and updates the plan
+and logs. The review of the whole stack waits for the master review at the end (D30).
 
 - **Route by one question:** would anything be lost with the cheaper tier? Anything
   short of a confident no goes up a tier. Tiers: originator `fable`, top `opus`,
@@ -141,9 +143,10 @@ review waits for the master review at the program's end (D30).
 - **Commits are the owner's (D24).** The orchestrator commits agent work with the owner
   as author, adds the owner's `Signed-off-by:` at its publish step, and names the agent
   and session in a `Co-Authored-By:` trailer. Builders never commit or sign off.
-- **Work is tracked as issues (D23).** Every PR names its issue (`Part of #n` in a
-  stack, `Closes #n` where it reaches `main`); agents take only `agent-ready` issues; the
-  orchestrator keeps them current with `scripts/sync-work.mjs` (`track-work` skill).
+- **Work is tracked as issues (D23).** Every PR names each member spec's issue
+  (`Part of #n` in a stack, `Closes #n` where it reaches `main`); agents take only
+  `agent-ready` issues; the orchestrator keeps them current with `scripts/sync-work.mjs`
+  (`track-work` skill).
 
 ## Skills
 

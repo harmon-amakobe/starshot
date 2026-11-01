@@ -697,9 +697,8 @@ licence gate keeping `python/astlo/astlo` under `LicenseRef-astlo`.
 
 ## D30. Specs build in groups, two or three a session, with one master review at the end
 
-*Date:* 2026-11-01. *Source:* owner's ruling, modelled on how the owner runs another
-program.
-*Supersedes in part:* D25 (pull requests sized for one reviewer).
+*Date:* 2026-11-01. *Source:* owner's ruling (supersedes D25's sizing of pull requests
+for one reviewer).
 
 **Decision.** The plan's specs stay as written, but they are built as PR groups. A group
 is one branch, one pull request and one review for one to four consecutive specs. It is
@@ -716,9 +715,10 @@ Each group gets one bounded review:
   found.
 - A domain lens only when the diff calls for it: `physics-auditor` for crates,
   packages, fixtures or shot settings; `verification-driver` for anything a player
-  sees; `rules-reviewer` for `AGENTS.md`, `.claude/`, `scripts/agent/` or the gates.
-- No refuters by default. The orchestrator judges each finding from the tree, and
-  spawns one refuter only when a blocker would change the design.
+  sees; `rules-reviewer` for the harness, as the `verify-all` skill's table lists it.
+- No refuters by default. The orchestrator judges each finding from the tree. Only when
+  a blocker would change the design does it ask one more `adversary`, scoped to that
+  finding, to refute it.
 - A second adversary pass only over files the first did not open. A delta pass only
   when the fixes touched a physics number, a workflow, the harness, or more than about
   50 contentful lines.
@@ -728,7 +728,8 @@ whole stack. It runs the `verify-all` sweep on the top tip, with every acceptanc
 criterion's command and exit code. It reviews the combined diff through several lenses:
 an adversary per band, `physics-auditor` over the crates and fixtures, `rules-reviewer`
 over the harness and `verification-driver` over chapter one. A final fix group closes
-what it finds. Then the owner reviews the stack and it merges once. A band still closes with its
+what it finds. Then the owner reviews the stack, and the groups above PR0 merge as one.
+PR0 itself merges when the owner approves it, as before. A band still closes with its
 `verify-all` sweep and a handoff; that is a check, not the master review.
 
 The size cap (`PR_SIZE_CAP`) applies to each member spec. A group of n specs is held to

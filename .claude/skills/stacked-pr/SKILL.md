@@ -7,9 +7,10 @@ description: Use when starting a branch that depends on an unmerged Starshot bra
 
 ## The base rule
 
-One PR per session targets `main`. The first branch of a session bases on `main`;
-every later branch bases on the branch below it, and its PR targets that branch. The
-chain merges as one. Check before every PR:
+Only the bottom of the stack targets `main`. Every later branch, in any session, bases
+on the branch below it, and its PR targets that branch. In a program built as PR groups
+(D30) that is the previous group's branch in the plan's group table. The chain merges as
+one. Check before every PR:
 
 ```bash
 git status --short && git branch --show-current && git log --oneline -5
@@ -57,7 +58,7 @@ git push -u origin starshot/<topic>                # by name; never --all, --mir
 gh pr create --base <branch below> --title "<title>" --body-file <file outside the repo>
 ```
 
-The body names its issue: `Part of #n` inside the stack, `Closes #n` only in the pull
+The body names each member spec's issue: `Part of #n` inside the stack, `Closes #n` only in the pull
 request that reaches `main` (D23, the `track-work` skill).
 
 ## Restack after the branch below changed

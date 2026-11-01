@@ -53,10 +53,12 @@ unlabelled control, meaning carried by colour alone, motion that ignores
 - Scope creep: work the spec does not ask for. Usually split, not justify.
 - Rewrite drift: a file over ~300 lines regenerated instead of edited.
 - An unlogged deviation from the spec.
-- Size past ~400 contentful lines or ~20 files, or two unrelated changes in one PR.
+- Size past `PR_SIZE_CAP` (`.claude/README.md`): about 400 contentful lines or 20 files
+  per member spec, n times that for a PR group of n specs (D30); or a change no member
+  spec asks for.
 - Comments that narrate code, or a non-obvious choice with no why.
 - Main-thread work during aiming, or a frame budget regression on the phone viewport.
-- Stack hygiene: a second PR to `main` in a session, or a wrong base.
+- Stack hygiene: a second PR to `main` while one is open, or a wrong base.
 
 ## Notes
 

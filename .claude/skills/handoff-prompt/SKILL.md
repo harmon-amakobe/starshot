@@ -17,12 +17,12 @@ the session's most degraded point, which is why you are handing off.
 | Base of the stack | the plan's stack section, checked against `gh pr list` |
 | Plan path, decision log, deviation section | `docs/plans/<program>/...`, `docs/decisions.md`: paths, never pasted contents |
 | "Decisions D1..Dn are resolved; do not re-litigate" | n read from `docs/decisions.md` |
-| Done: PR0..PRk, one line each | the plan's status column |
-| Next: one PR, title, spec path with heading anchor | the plan, heading copied exactly |
+| Done: PR0 and each finished group, one line each | `gh pr list` against the plan's group table |
+| Next: one PR group (D30): its members and titles, each spec's path with heading anchor, each issue | the plan, headings copied exactly |
 | Unpushed work, stashes, snapshot refs | the open-gate line (`sh scripts/agent/open-gate.sh`) |
 | Routing | "would anything be lost with the cheaper tier?"; roster in `.claude/agents/` |
 | Definition of Done | `npm run gates` plus the conditional verifiers |
-| Opening move and stop condition | the audit commands; stop when the budget runs low, then hand off in this format |
+| Opening move and stop condition | the audit commands; stop at about 70% of the context (D30), after the current group's publish step, then hand off in this format |
 
 ## Template
 
@@ -30,16 +30,19 @@ the session's most degraded point, which is why you are handing off.
 Repo: <abs path>. Stack tip: <branch> @ <sha>. Base: <branch>.
 Plan: <path>. Decisions: docs/decisions.md (D1..Dn resolved; do not re-litigate).
 Deviations: <path#section>. Open-gate at close: <the line>.
-Done: <PR0 ..., PR1 ...>. Next: PR<k+1> <title>. Spec: <path#anchor>.
+Done: <PR0 ..., group PR2 ...>. Next: group PR<m> (<members>) <titles>.
+Specs: <path#anchor>, ... Issues: #<a>, #<b>.
 You are the orchestrator (top tier). Route by "would anything be lost with the cheaper
-tier?". One builder at a time; adversary per PR against .claude/rubrics/; physics-auditor
-for packages; verification-driver for the game. DoD: npm run gates (+ verify-physics,
-verify-game, public-hygiene as the diff requires). Executors never push.
-Stop when the budget runs low: close, then emit this block again.
+tier?". One builder at a time; one adversary per group against .claude/rubrics/, with
+physics-auditor, verification-driver or rules-reviewer when the diff calls for them
+(D30). DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff
+requires). Executors never push.
+Stop at about 70% of the context: finish the current group's publish step, then emit
+this block again.
 ```
 
 ## Check before sending
 
 A sha read earlier is stale; a spec path without an anchor sends the next session into
-a long file; two "next" items lose the ordering you were carrying. Not a summary, not a
+a long file; two next groups lose the ordering you were carrying. Not a summary, not a
 narrative: constraints and pointers only.

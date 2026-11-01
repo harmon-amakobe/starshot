@@ -21,13 +21,13 @@ epics:
     title: "Foundations and governance"
     labels: [kind:epic, area:harness, priority:p1]
     body: |
-      The program plan, the decisions D12 to D29, the governance files and gates (PR0),
+      The program plan, the decisions D12 to D30, the governance files and gates (PR0),
       and the one-time steps only the owner can take. Done when PR0 has merged and every
       owner task below is closed or explicitly deferred.
       Plan: docs/plans/v1-starshot/00-plan.md. Owner steps: docs/plans/v1-starshot/04-ops-checklist.md.
     tasks:
       - id: v1-pr0-plan
-        title: "PR0: program plan, decisions D12 to D29, governance files and gates"
+        title: "PR0: program plan, decisions D12 to D30, governance files and gates"
         labels: [kind:docs, area:docs, priority:p1, status:claimed]
         size: XL
         priority: p1
@@ -56,8 +56,8 @@ epics:
         spec: docs/plans/v1-starshot/04-ops-checklist.md#github
         depends_on: [v1-pr0-plan]
         body: |
-          Step G8. From the PR2 group on, the app checks that every commit is authored by
-          the owner with a sign-off (D24).
+          Step G8. From the PR2 group on, the app checks that every commit carries a
+          Signed-off-by line matching its author; agent work is authored by the owner (D24).
       - id: v1-ops-board
         title: "Owner: create the project board with its fields and views, and link it"
         labels: [kind:chore, area:harness, priority:p2, status:ready]

@@ -99,7 +99,7 @@ numbers will be added by an automated release step (planned), never by hand.
   unless told to apply (D23). The `track-work` skill explains its use.
 - The v1-starshot program plan in `docs/plans/v1-starshot/` (the plan with its 40
   pull-request specs, the research, the disagreement register, the issues as code, the
-  owner's checklist and the deviation log), decisions D12 to D29 in `docs/decisions.md`,
+  owner's checklist and the deviation log), decisions D12 to D30 in `docs/decisions.md`,
   and `docs/astlo/directions.md`, the technical note for Mark Macharia on where astlo
   could grow beside Starshot (D26, D29).
 
@@ -133,9 +133,9 @@ numbers will be added by an automated release step (planned), never by hand.
 - CI: every workflow starts with no token permissions, and each job asks for what it
   needs. Every action is pinned to a full commit SHA. A new Scorecard workflow scores
   the supply chain, and Dependabot waits 7 days before it proposes a new release.
-- CI: the required `gates` check now fails when any of four jobs fails: the gate
-  registry, zizmor on the workflows, dependency review, or the game's play-through in a
-  headless browser. A failed gate shows as an annotation and in the job summary.
+- CI: the required `gates` check now fails when any of four jobs fails, is cancelled or
+  is skipped: the gate registry, zizmor on the workflows, dependency review, or the
+  game's play-through in a headless browser. A failed gate shows as an annotation and in the job summary.
 - The plan's specs now build as PR groups, two or three a session, with one bounded
   review per group and one master review of the whole stack at the end (D30).
 

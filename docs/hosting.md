@@ -57,10 +57,11 @@ request. To make sure nothing reaches `main` without passing them:
    - **Block force pushes** and **Restrict deletions**.
 
 The required check stays **`gates`** however many jobs CI grows. It is a small job that
-fails when any of four jobs failed or was cancelled: `checks` (the gate registry),
-`workflow-lint` (zizmor, a security linter for workflow files), `dependency-review` and
-`verify-game` (the play-through in a headless browser). `dependency-review` runs on pull
-requests only; on `main` it is skipped, and a skipped job does not fail `gates`.
+fails when any of four jobs failed, was cancelled or was skipped: `checks` (the gate
+registry), `workflow-lint` (zizmor, a security linter for workflow files),
+`dependency-review` and `verify-game` (the play-through in a headless browser). On
+`main`, `dependency-review` still runs but skips its steps, because a push has nothing
+to compare, so it passes. It needs the dependency graph on (Settings, Code security).
 
 A third workflow, **astlo** (`.github/workflows/astlo.yml`), runs only when something
 under `python/astlo/` changes. It builds the fixed astlo wheel

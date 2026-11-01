@@ -7,15 +7,15 @@
 # forks, so the job checks out the base branch (the default branch for issues and
 # comments) and never runs code from the pull request. The text reaches the checker
 # through environment variables, never through an expression inside a script. zizmor
-# flags both triggers; the inline ignores below rest on these two facts.
+# flags both triggers; .github/zizmor.yml ignores those two lines, on these two facts.
 name: copy-lint
 
 on:
   issues:
     types: [opened, edited]
-  issue_comment: # zizmor: ignore[dangerous-triggers] base checkout only, text through env
+  issue_comment:
     types: [created, edited]
-  pull_request_target: # zizmor: ignore[dangerous-triggers] base checkout only, text through env
+  pull_request_target:
     types: [opened, edited]
 
 permissions: {}

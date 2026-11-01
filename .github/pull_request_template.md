@@ -4,14 +4,14 @@
 
 ## Issue
 
-<!-- "Part of #n" inside a stack; "Closes #n" only where the work reaches main (D23). -->
+<!-- "Part of #n" inside a stack, one per member spec of a PR group (D30); "Closes #n" only where the work reaches main (D23). -->
 
 Part of #
 
 ## Stack
 
-- Base branch: <!-- main only for the first PR of a session; otherwise the branch below -->
-- Spec: <!-- docs/plans/<program>/...#anchor, or "none (small change)" -->
+- Base branch: <!-- main only for the bottom of the stack; otherwise the branch below (in a PR group program, the previous group's branch, D30) -->
+- Specs: <!-- docs/plans/<program>/...#anchor for each member spec, or "none (small change)" -->
 
 ## Decisions cited
 

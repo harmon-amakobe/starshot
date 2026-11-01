@@ -46,7 +46,8 @@ plan anchor), `depends_on` (ids) and a short `body`. Every label must exist in
 
 ## Conventions
 
-- **Name the issue in every pull request.** Inside a stack, write `Part of #n`. Write
+- **Name the issue in every pull request.** Inside a stack, write `Part of #n`; a PR
+  group names each member's issue (`Part of #a, #b`, D30). Write
   `Closes #n` only in the pull request whose merge reaches `main`: GitHub closes issues
   only on merges into the default branch, so a `Closes` lower in the stack does nothing
   until the stack lands.

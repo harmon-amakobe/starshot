@@ -68,7 +68,7 @@ interstellar chapter are later programs.
 | D22 | 13 and up; anonymous accounts, display names from a filtered list, no free text, email, analytics or advertising identifiers |
 | D23 | Issues on, epics as `kind:epic` with sub-issues, one user-owned project, issues as code synced by the orchestrator over REST |
 | D24 | Agent commits are authored by the owner, signed off at the publish step, with the agent as co-author |
-| D25 | Solo with agents until chapter one is playable; PRs sized for one reviewer |
+| D25 | Solo with agents until chapter one is playable; PRs sized for one reviewer (sizing superseded by D30) |
 | D26 | Mark hears now, with the fixes and [../../astlo/directions.md](../../astlo/directions.md); astlo is a partner, never a runtime dependency |
 | D27 | The copy standard and its gate, with the em dash, the en dash and the horizontal bar as hard failures |
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
@@ -128,7 +128,7 @@ in their planning sessions.
 
 | PR | Slug | Title | Band | Size estimate | Depends on |
 |---|---|---|---|---|---|
-| PR0 | `v1-pr0-plan` | Plan, decisions D12 to D29, governance files and gates | trunk | well over the cap (deviation 1) | none |
+| PR0 | `v1-pr0-plan` | Plan, decisions D12 to D30, governance files and gates, and PR1's CI hardening (D30) | trunk | well over the cap (deviation 1) | none |
 | PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in PR0 (D30) | PR0 |
 | PR2 | `v1-screen-split-render` | GameScreen split, render loop | A | about 500 lines (about 440 moved), 8 files: over, warns | PR1 |
 | PR3 | `v1-screen-split-state` | GameScreen split, state hooks | A | about 480 lines (about 400 moved), 9 files: over, warns | PR2 |
@@ -203,26 +203,28 @@ each band's planning session confirms or regroups them before it builds.
 | PR30 | PR30, PR31 | `starshot/v1-pr30-firebase` | the PR28 group's | E1 |
 | PR32 | PR32, PR33 | `starshot/v1-pr32-verify-hosting` | the PR30 group's | E1 |
 | PR34 | PR34, PR35, PR36 | `starshot/v1-pr34-levels` | the PR32 group's | F1 |
-| PR37 | PR37, PR38 | `starshot/v1-pr37-credits-release` | the PR34 group's | F1 |
-| PR39 | PR39, PR40 | `starshot/v1-pr39-store-astlo-kit` | the PR37 group's | F1 |
-| Master review | the whole stack | fixes on `starshot/v1-master-fixes` | the PR39 group's | last |
+| PR37 | PR37, PR38, PR39 | `starshot/v1-pr37-release-prep` | the PR34 group's | F1 |
+| PR40 | PR40 | `starshot/v1-pr40-astlo-kit` | the PR37 group's | F1 |
+| Master review | the whole stack | fixes on `starshot/v1-master-fixes` | the PR40 group's | last |
 
 Members are consecutive and every dependency in the table above sits in the same group
-or an earlier one, so the stack stays linear. Groups pair specs that share a domain and a review lens. Examples: the GameScreen
-split, the gates, the Python rails tool, each Rust crate, the cut-over with its
-deletion, the flight model, the renderer, the online pieces and the levels. PR6 and PR15 stand alone because each brings a new
-toolchain or a new runtime boundary. The master review is defined in D30.
+or an earlier one, so the stack stays linear. Groups pair specs that share a domain and
+a review lens. Examples: the GameScreen split, the gates, the Python rails tool, each
+Rust crate, the cut-over with its deletion, the flight model, the renderer, the online
+pieces, the levels and the release preparation. PR6 and PR15 stand alone because each
+brings a new toolchain or a new runtime boundary, and PR40 because it is astlo work, not
+Starshot's. The master review is defined in D30.
 
 ## What PR0 carries
 
 PR0 is this plan's own pull request, on `starshot/pr0-bootstrap` (the bootstrap branch,
-D8). The list below matches the PR0 commits; the PR1 builder confirms each path with
+D8). The list below matches the PR0 commits; the PR2 group's builder confirms each path with
 `git ls-files` before starting. A missing item is logged in
 [05-deviation-log.md](05-deviation-log.md) and joins the Band A PR whose topic it
 matches: copy and work tracking go to PR4, licences and credits to PR5, size to PR3.
 
 - **The plan and the decisions:** `docs/plans/v1-starshot/` (these six files),
-  `docs/decisions.md` D12 to D29 with the supersession notes on D3, D4, D5, D7 and D10, and
+  `docs/decisions.md` D12 to D30 with the supersession notes on D3, D4, D5, D7, D10 and D25, and
   `docs/astlo/directions.md`.
 - **The licence switch (D12):** `LICENSE` (Apache-2.0), `LICENSES/` (`Apache-2.0`,
   `CC-BY-4.0`, `LicenseRef-astlo`, `LicenseRef-starshot-brand`), `REUSE.toml`, the
@@ -440,7 +442,7 @@ export function useFlightPlayback(input: {
 - **Proof.** `npm run gates` exits 0 (`typecheck`, `test`, `size`, `copy`).
   `node scripts/check-file-size.mjs` reports GameScreen.tsx below its old baseline
   entry. `npm run build && node scripts/verify-game.mjs` exits 0, and its report shows
-  the same counts as on PR1's branch (console 0, page errors 0, unnamed controls 0,
+  the same counts as on PR0's branch (console 0, page errors 0, unnamed controls 0,
   small targets 0). The screenshots of both runs, compared side by side, show no
   difference. `git diff --color-moved=zebra --stat` in the PR body.
 - **Adversary checks.** Moves are moves: a function body that changed is called out in
@@ -480,13 +482,13 @@ export function useFlightPlayback(input: {
   0. The `verify-game` job passes on the PR.
 - **Adversary checks.** Every hook has one reason to exist. No hook returns more than
   about ten members. GameScreen.tsx holds no physics or scoring logic. No behaviour
-  changed (compare the verify-game reports of PR1's and PR3's branches).
+  changed (compare the verify-game reports of PR0's branch and this group's).
 - **Out of scope.** New features, copy changes, styles.
 
 ### PR4: Process checks
 
 - **Branch** `starshot/v1-pr04-process-checks`, based on PR3's.
-  **Issue** `v1-process-checks`. **Decisions** D23, D24, D25, D27.
+  **Issue** `v1-process-checks`. **Decisions** D23, D24, D25, D27, D30.
   **Size** about 330 lines, 9 files.
 - **Goal.** The size cap becomes a check, commit messages get the secrets scan, the issues
   file becomes a gate, and the D23 and D24 conventions are written where contributors and
@@ -494,7 +496,7 @@ export function useFlightPlayback(input: {
 
 | File | Change |
 |---|---|
-| `scripts/check-pr-size.mjs` | New. Runs `git diff --numstat <base>...HEAD`; excludes `package-lock.json`, `Cargo.lock`, `**/uv.lock`, `**/fixtures/**/*.json`, `data/ephem/**`, `packages/core-wasm/pkg/**`, binary files (numstat `-`); counts added lines and changed files; prints both. The group's member count n (D30) comes from `--members <n>`, else the number of distinct `PRnn` ids in the pull request title (read from `GITHUB_EVENT_PATH`), else 1. Warns (`::warning::` in Actions) above n times 400 lines or n times 20 files; exits 1 above twice that. Base: `--base <ref>`, else `GITHUB_BASE_REF`, else `origin/main` |
+| `scripts/check-pr-size.mjs` | New. Runs `git diff --numstat <base>...HEAD`; excludes `package-lock.json`, `Cargo.lock`, `**/uv.lock`, `**/fixtures/**/*.json`, `data/ephem/**`, `packages/core-wasm/pkg/**`, binary files (numstat `-`); counts added lines and changed files; prints both. The group's member count n (D30) comes from `--members <n>`, else from the PR groups table in `docs/plans/v1-starshot/00-plan.md` (or `--plan <path>`): the number of `PRnn` ids in the Members cell of the row whose Branch is the head branch (`GITHUB_HEAD_REF`, else the current branch), at least 1; a branch the table does not list, the master review's row included, counts 1. A PR title cannot raise it. Warns (`::warning::` in Actions) above n times 400 lines or n times 20 files; exits 1 above twice that. Base: `--base <ref>`, else `GITHUB_BASE_REF`, else `origin/main` |
 | `scripts/check-commits.mjs` | New gate `commits` (group `hygiene`, fast). For each commit in `<base>..HEAD` (base as above): pipes `%an <%ae>%n%B` through `node scripts/check-secrets.mjs --stdin` and fails on any finding; warns when a commit has no `Signed-off-by:` (the DCO app is the enforcement) |
 | `scripts/gates.mjs` | Register `commits`; register `work` (`node scripts/sync-work.mjs --program v1-starshot --check`, group `hygiene`, fast) unless an entry that runs `scripts/sync-work.mjs` already exists |
 | `scripts/sync-work.mjs` | (PR0's.) `--check` with no `--program` checks every folder under `docs/plans/` that holds a `*work.yaml`, prints one line per program, and exits 1 if any disagrees with its lock. A new `--plans-dir <path>` (default `docs/plans`) lets the self-test point it elsewhere |
@@ -532,7 +534,10 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
   `node scripts/sync-work.mjs --self-test` passes, the two-program case included, and
   `node scripts/sync-work.mjs --check` (no program) checks every program under `docs/plans/`.
   `node scripts/check-pr-size.mjs --base starshot/v1-pr02-screen-split --members 2`
-  prints this group's counts and its cap. A scratch commit whose message contains a planted `ghp_` token makes
+  prints this group's counts and its cap.
+  `GITHUB_HEAD_REF=starshot/v1-pr04-process-licence node scripts/check-pr-size.mjs --base starshot/v1-pr02-screen-split`
+  prints n = 2, and with an unlisted head branch it prints n = 1. A scratch commit whose
+  message contains a planted `ghp_` token makes
   `node scripts/check-commits.mjs` exit 1 (then drop the commit). The `pr-size` job is
   green on the PR.
 - **Adversary checks.** No new token or secret is needed. Nothing writes to issues from
@@ -1498,9 +1503,9 @@ session builds two or three PR groups (D30); steps 2 to 8 run once per group.
    deviation log and the PR body against the diff, and reports per directory which files
    it opened. A domain lens joins only when the diff calls for it (`physics-auditor`,
    `verification-driver`, `rules-reviewer`). No refuters by default: the orchestrator
-   judges each finding from the tree and closes the gaps. A delta pass runs only when the
-   fixes touched a physics number, a workflow, the harness or more than about 50
-   contentful lines.
+   judges each finding from the tree and closes the gaps. A second adversary pass runs
+   only over files the first did not open. A delta pass runs only when the fixes touched
+   a physics number, a workflow, the harness or more than about 50 contentful lines.
 6. **Gates.** `npm run gates` (with `STARSHOT_REQUIRE_RUST=1` from PR6), plus
    `verify-physics` for crates, packages or fixtures and `verify-game` for anything a
    player sees; every command reported with its exit code.
@@ -1534,16 +1539,17 @@ Decisions: docs/decisions.md (D1..D30 resolved; do not re-litigate).
 Deviations: docs/plans/v1-starshot/05-deviation-log.md.
 Open-gate at close: <the line sh scripts/agent/open-gate.sh prints>.
 Done: PR0 <one line>; group PR2 <one line>; ...; group PR<k> <one line>.
-Next: group PR<m> (PR<m>, PR<m+1>) <titles>. Specs: docs/plans/v1-starshot/00-plan.md#<anchor>, ... Issues: #<a>, #<b>.
+Next: group PR<m> (PR<m>, PR<m+1>) <titles>.
+Specs: docs/plans/v1-starshot/00-plan.md#<anchor>, ... Issues: #<a>, #<b>.
 Owner steps it waits on: <ids from 04-ops-checklist.md, or none>.
 Routing: you are the orchestrator (top tier); route by "would anything be lost with the
-cheaper tier?"; roster in .claude/agents/; one builder at a time; adversary per PR
-against .claude/rubrics/; physics-auditor for crates and fixtures; verification-driver
-for the game. Executors never push.
+cheaper tier?"; roster in .claude/agents/; one builder at a time; one adversary per
+group against .claude/rubrics/, with physics-auditor, verification-driver or
+rules-reviewer when the diff calls for them (D30). Executors never push.
 DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff requires),
 every command with its exit code.
-Stop: when the budget runs low, finish the current PR's publish step, then emit this
-block again.
+Stop: at about 70% of the context, finish the current group's publish step, then emit
+this block again.
 First commands:
   git status --short && git branch --show-current && git log --oneline -5
   gh pr list

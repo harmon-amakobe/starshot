@@ -81,9 +81,10 @@ with a link to the original.
 
 ## Pull requests: small, stacked, one at a time
 
-- **One pull request to `main` per working session.** If you need several steps, make
-  a *stack*: the first branch starts from `main`, each later branch starts from the one
-  below it, and each pull request targets the branch below. The stack merges as one.
+- **One pull request to `main` at a time.** If you need several steps, make a *stack*:
+  only the bottom branch starts from `main`, each later branch (in any session) starts
+  from the one below it, and each pull request targets the branch below. The stack
+  merges as one.
   The [stacked-pr skill](.claude/skills/stacked-pr/SKILL.md) has the exact commands.
 - Name branches `starshot/<topic>`, for example `starshot/daily-challenge`.
 - Keep each pull request reviewable: roughly 400 changed lines or 20 files, not

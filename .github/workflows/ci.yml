@@ -63,17 +63,20 @@ jobs:
 
   dependency-review:
     name: dependency-review
-    # It compares the pull request's lockfile with its base; a push has no base.
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
+    # The job always runs, so the aggregator can treat any skipped job as a failure. Its
+    # steps compare the pull request's dependencies with its base; a push has no base, so
+    # on a push they skip and the job passes.
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
 
@@ -115,13 +118,16 @@ jobs:
   gates:
     name: gates
     # always(): without it a failed need skips this job, and a skipped required check
-    # counts as passing. A skipped need (dependency-review on push) is not a failure.
+    # counts as passing. No need has a job-level condition, so a skipped need means
+    # something hid a check: that fails too. A job added later keeps to the same rule.
     if: always()
     needs: [checks, workflow-lint, dependency-review, verify-game]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}
     steps:
-      - name: Fail if any needed job failed or was cancelled
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+      - name: Fail if any needed job failed, was cancelled or was skipped
+        if: >-
+          contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
         run: exit 1

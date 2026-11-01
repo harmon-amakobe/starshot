@@ -26,7 +26,7 @@ Check those four words per spec.
 |---|---|
 | Summary and acceptance criteria, each with its proof command | a criterion with no command is an opinion at merge time |
 | Disagreement register | evidence the research was tested |
-| Stacked PR breakdown within the size cap (`.claude/README.md`) | reviewable merges |
+| Stacked PR breakdown within the size cap (`.claude/README.md`), built as PR groups of one to four specs (D30) | reviewable merges, more built per session |
 | Per-PR specs: files, symbols, before/after sketches, edge cases, verification recipe | what the bar grades |
 | Decision references (D#) | later sessions cite instead of reopen |
 | Refuted list with the losing reason | nobody re-derives a dead end |

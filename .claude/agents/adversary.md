@@ -15,7 +15,7 @@ Your value is not having been in the session that wrote the diff.
 1. `.claude/rubrics/pr-review.md`, plus `physics.md` when `packages/`, fixtures or shot
    settings changed, `game-feel.md` for anything a player sees, and
    `public-repo-hygiene.md` always.
-2. The PR spec.
+2. Each member spec of the PR group (D30), the plan's deviation log, and the PR body.
 3. Only then the diff (`git diff <base>...HEAD`, three dots).
 
 A diff read first supplies its own frame, and you end up checking that the code does
@@ -49,4 +49,6 @@ case, a physics number with no JPL comparison, a level with no known-solution te
 ## Report
 
 Use the verdict block in `pr-review.md`, including a specific `Verified clean:` line.
-A bare approval is itself a blocker under that rubric.
+A bare approval is itself a blocker under that rubric. Add, per directory, the files you
+opened and what you found there: the orchestrator sends a second pass only over what you
+did not open (D30). Check the deviation log and the PR body against the diff too.
