@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { maxStars, scoreShot, type ShotFacts } from "./scoring.js";
+import { scoreShot, type ShotFacts } from "./scoring.js";
 import {
   EMPTY_PROGRESS,
   PROGRESS_KEY,
   isUnlocked,
   loadProgress,
-  saveProgress,
   totalStars,
-  withCoachSeen,
   withResult,
 } from "./progress.js";
 
@@ -61,8 +59,6 @@ describe("scoreShot", () => {
   it("awards no efficiency star without a par (sandbox)", () => {
     const s = scoreShot({}, { ...base, deltaVKmS: 0.1, bullseye: true });
     expect(s.stars).toBe(2);
-    expect(maxStars({})).toBe(2);
-    expect(maxStars(marsRules)).toBe(3);
   });
 });
 
@@ -72,14 +68,13 @@ describe("progress", () => {
     return { getItem: (k: string) => data.get(k) ?? null, setItem: (k: string, v: string) => void data.set(k, v), data };
   };
 
-  it("keeps the best stars and lowest hit delta-v, and round-trips through storage", () => {
+  it("keeps the best stars and lowest hit delta-v, and reads them back from storage", () => {
     let p = withResult(EMPTY_PROGRESS, "first-light", 2, true, 3.9);
     p = withResult(p, "first-light", 1, true, 3.7);
     p = withResult(p, "first-light", 0, false, 1.0);
     expect(p.levels["first-light"]).toEqual({ stars: 2, bestDeltaVKmS: 3.7 });
     const store = memory();
-    saveProgress(p, store);
-    expect(store.data.has(PROGRESS_KEY)).toBe(true);
+    store.setItem(PROGRESS_KEY, JSON.stringify(p));
     expect(loadProgress(store)).toEqual(p);
     expect(totalStars(p)).toBe(2);
   });
@@ -91,20 +86,13 @@ describe("progress", () => {
     expect(loadProgress(undefined)).toEqual(EMPTY_PROGRESS);
     const throwing = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
     expect(loadProgress(throwing)).toEqual(EMPTY_PROGRESS);
-    expect(() => saveProgress(EMPTY_PROGRESS, throwing)).not.toThrow();
   });
 
-  it("remembers that the first-run coach mark was seen, alongside the results", () => {
+  it("ignores the retired coachSeen field in older saved data", () => {
     const store = memory();
-    expect(loadProgress(store).coachSeen).toBeUndefined();
-    const p = withResult(withCoachSeen(EMPTY_PROGRESS), "first-light", 1, true, 3.7);
-    expect(p.coachSeen).toBe(true);
-    expect(withCoachSeen(p)).toBe(p);
-    saveProgress(p, store);
-    expect(loadProgress(store)).toEqual(p);
-    // Anything but a literal true reads as "not seen yet".
-    store.setItem(PROGRESS_KEY, JSON.stringify({ version: 1, levels: {}, coachSeen: "yes" }));
-    expect(loadProgress(store).coachSeen).toBeUndefined();
+    const levels = { "first-light": { stars: 1, bestDeltaVKmS: 3.7 } };
+    store.setItem(PROGRESS_KEY, JSON.stringify({ version: 1, levels, coachSeen: true }));
+    expect(loadProgress(store)).toEqual({ version: 1, levels });
   });
 
   it("unlocks each campaign level after a star on the previous one", () => {

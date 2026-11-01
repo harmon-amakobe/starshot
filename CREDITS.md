@@ -47,7 +47,7 @@ No solar image is shipped. NAIF supplies the physical radius and reference orien
 
 ## Stars
 
-None shipped yet. The starfield is drawn by code (`apps/game/src/render/starfield.ts`).
+None shipped yet. The starfield is drawn by CSS gradients (`packages/presentation/src/base.css`).
 
 ## Music
 

@@ -56,4 +56,4 @@ overlapping HUD, long level titles, empty and completed states.
 
 Each finding names the viewport, the state, and `file:line` where it is fixed, plus the
 screenshot path that shows it. "Feels off on mobile" is not reproducible; "at 390 px
-the launch button sits under the home indicator (`Hud.tsx:42`)" is.
+the launch button sits under the home indicator (`apps/game/src/campaign/FlightDeck.tsx:377`)" is.

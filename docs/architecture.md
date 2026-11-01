@@ -92,13 +92,16 @@ planned next. Sections marked **Future** describe designs that are not built yet
   the HUD and scoring need.
 - `src/sim/sim.worker.ts` runs those on a background thread; `src/sim/useSimulation.ts`
   is the React side of that conversation.
-- `src/campaign/` owns the default single-screen shell and persistent scene. Its
-  controller retains the original worker and scoring contracts. Entry, level,
-  Launch window and body inspection share a scene, ET and preferences.
+- `src/campaign/` owns the default single-screen shell and persistent scene.
+  `campaign/CampaignApp.tsx` is the shell, `campaign/use-campaign.ts` its controller and
+  `campaign/scene.ts` the persistent scene. The controller retains the original worker
+  and scoring contracts. Entry, level, Launch window and body inspection share a scene,
+  ET and preferences.
 - The scene uses camera-relative coordinates in Three.js, with a Canvas fallback.
   Both project the campaign's flattened ephemeris and the worker's Hermite path.
   Body enlargement changes display radii, not centre positions or flight samples.
-  The old `src/ui/`, `src/input/` and most of `src/render/` remain as reference code.
+  The Canvas route comes from `campaign/path.ts`, which densifies the flight samples
+  with cubic Hermite.
 - `src/levels.ts`, `src/scoring.ts` and `src/progress.ts` hold the campaign, the star
   rules and saved progress. Each level names its settings (`sim`), its par and, where
   it differs from the default, its par tolerance and capture-zone size;

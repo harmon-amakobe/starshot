@@ -270,14 +270,3 @@ export function sandboxLevel(target: PlanetId = "mars", now: Date = new Date()):
 export function allLevels(now: Date = new Date()): readonly Level[] {
   return [...CAMPAIGN, sandboxLevel("mars", now)];
 }
-
-export function levelById(id: LevelId, now: Date = new Date()): Level | undefined {
-  return allLevels(now).find((l) => l.id === id);
-}
-
-/** Planets whose orbits frame the view: Earth, the target and any required flyby. */
-export function framingBodies(level: Level): PlanetId[] {
-  const set = new Set<PlanetId>(["earth", level.target]);
-  if (level.requiredFlyby) set.add(level.requiredFlyby);
-  return [...set];
-}

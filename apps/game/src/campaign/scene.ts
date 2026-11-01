@@ -1,6 +1,6 @@
 import { BODIES, orbitPath, type PlanetId, type Vec3 } from '@starshot/ephemeris';
 import { drawSleeve } from '@starshot/presentation/charge-sleeve';
-import { buildPath, type PathData } from '../render/draw';
+import { buildPath, type PathData } from './path';
 import type { ShotResponse } from '../sim/protocol';
 import { colours, makeFrame, type FrameGeometry } from './frame';
 import { loadSceneData, type SceneData } from './scene-data';

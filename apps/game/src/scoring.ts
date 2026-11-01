@@ -69,6 +69,3 @@ export function scoreShot(rules: ScoringRules, facts: ShotFacts): Score {
     uncappedStars: uncapped as Stars,
   };
 }
-
-/** Maximum stars a level can award (the sandbox has no par). */
-export const maxStars = (rules: ScoringRules): Stars => (rules.parDeltaVKmS === undefined ? 2 : 3);

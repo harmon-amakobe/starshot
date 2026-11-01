@@ -91,8 +91,8 @@ for browser verification. It has no game-state mutators.
 | `src/sim/preview.ts` | Launch gate: canonical shot key; Launch only for the preview of the aim on screen. |
 | `src/sim/sim.worker.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker; previews are latest-request-wins and throttled. |
 | `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. |
+| `src/campaign/path.ts` | Cubic Hermite densifying of an integrated flight into the route polyline that `scene.ts` draws. |
 | `packages/presentation/` | Shared collector, engine, crew pod, drone, charge sleeve, icons, audio and entry timing. |
-| `src/render/`, `src/input/`, `src/ui/` | Original 2D implementation retained as a reference; Hermite path construction is reused by the current renderer. |
 | `public/` | Icon, web manifest, a small same-origin service worker for offline play. |
 
 ## Levels
@@ -161,35 +161,22 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 
 ## Design rationale
 
-- **Linear scale, framed per level** (Sun to the outermost relevant orbit). True
-  distances keep the slingshot honest; planets get a minimum on-screen radius and
-  the target's capture zone is drawn to scale when it is big enough, otherwise as
-  a reticle. Pinch / wheel zoom reaches true scale around any planet.
-- **Pull anywhere, band anchored at Earth.** On outer-planet maps Earth sits a few
-  pixels from the Sun, so the drag is measured from where it starts. Pull length
-  maps to v-infinity with a u^1.5 curve (fine control at small pulls); aims snap to
-  0.1 degree and 0.01 km/s, then the step buttons (and the Fine toggle, 10x
-  smaller) refine them. The Grand Tour needs that precision: its solutions are
-  0.02-0.3 degrees wide (the par shot's band is about 0.14 degrees).
+- **Linear scale, framed per mission.** The view fits Earth, the target, any required
+  flyby and the predicted intercept (`src/campaign/scene-geometry.ts`). Distances stay
+  true. Planet symbols get a minimum on-screen size unless true size is on
+  (`src/campaign/frame.ts`). Wheel and pinch zoom change the view height.
+- **Pull the engine ring, refine in Fine aim.** The pull sets the angle, and the speed
+  grows with how far the ring is pulled, up to the level's v-infinity cap
+  (`src/campaign/gestures.ts`). The Fine aim page has inputs in steps of 0.01 degree and
+  0.001 km/s. The Grand Tour needs that precision: its solutions are 0.02-0.3 degrees
+  wide (the par shot's band is about 0.14 degrees).
 - **First Light trains.** Its capture zone is three times Mars's real sphere of
-  influence, and the HUD, the status line and the result card say "Training
-  capture zone (3× real)"; every other level is real size. Until the first drag
-  or nudge, a coach mark near Earth says "Drag anywhere to pull the slingshot"
-  (remembered in `localStorage`).
-- **Draw on demand.** The canvas redraws after React state changes and runs a rAF
-  loop only while flying, bursting or briefly pulsing the capture zone; device
-  pixel ratio is capped at 2.
-- **Honest numbers.** The HUD shows v-infinity, delta-v from a 200 km LEO, C3 and
-  flight time; misses report the closest approach against the capture-zone radius.
-
-## Known issues
-
-- Landscape phones narrower than 700 CSS px (667 x 375, 640 x 360) keep the
-  controls along the bottom, because the right-hand column starts at 700 px, and
-  that leaves almost no map between the HUD and the panel: 40 px tall at
-  667 x 375 with the earlier 36 px step buttons, 20 px with today's 44 px touch
-  targets (Playwright, Chromium). 740 x 360 and wider get the column and a
-  390 x 222 px map.
+  influence, and the mission deck says so; every other level is real size.
+- **One persistent scene.** `src/campaign/use-view.ts` runs one animation loop for the
+  mounted scene, and device pixel ratio is capped at 2.
+- **Honest numbers.** The Overview page shows the departure delta-v from a 200 km LEO
+  in Scientific mode, and the Fine aim page shows the departure speed (v-infinity). The
+  Telemetry page shows the travel speed and the closest approach.
 
 ## Extension points
 
@@ -199,9 +186,10 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
   until it hits).
 - New mechanics (mid-course burns, multiple flybys): extend `ShotRequest` /
   `simulateShot`; preview, launch and tests pick it up together.
-- Scoring tweaks live in `src/scoring.ts` only; `maxStars` drives the UI.
-- Renderer: `drawScene` takes a plain `SceneInput`; a 3D map (apps/orrery, D5)
-  can reuse `src/sim/*` unchanged.
+- Scoring tweaks live in `src/scoring.ts` only.
+- Renderer: `CampaignScene` in `src/campaign/scene.ts` takes a plain `SceneState`
+  (`src/campaign/scene-types.ts`) and drives the Canvas drawing and the Three.js
+  scene; another map can reuse `src/sim/*` unchanged.
 - Leaderboard (D7, future): a separate Starshot-only project configured at build
   time; `progress.ts` is the seam for syncing results.
 

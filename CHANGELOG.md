@@ -55,9 +55,7 @@ numbers will be added by an automated release step (planned), never by hand.
   Worker so the screen never freezes. The launch button waits until the preview of the
   aim on screen has finished, and the launch flies that preview's own request.
 - A training level: First Light's capture zone is three times Mars's real sphere of
-  influence, labelled as such in the HUD, the status line and the result, with a
-  first-run coach mark ("Drag anywhere to pull the slingshot"). Every other level is
-  real size.
+  influence, and the mission deck says so. Every other level is real size.
 - Deterministic hints: a search with a fixed number of simulations and no wall clock,
   rounded to the precision the controls show, so the hint's label is exactly what "Use
   hint" applies; when no exact hit exists, the hint says so.
