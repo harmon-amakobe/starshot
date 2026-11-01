@@ -31,3 +31,17 @@ SPDX-License-Identifier = "Apache-2.0"
 path = ["third_party/astlo/**", "python/astlo/astlo/**", "python/astlo/astlo-*.dist-info/**"]
 SPDX-FileCopyrightText = "Mark Macharia"
 SPDX-License-Identifier = "LicenseRef-astlo"
+
+# The code of conduct adapts Contributor Covenant 3.0, which its authors publish under
+# CC BY-SA 4.0; the adaptation is Starshot's.
+[[annotations]]
+path = "CODE_OF_CONDUCT.md"
+SPDX-FileCopyrightText = "Organization for Ethical Source (Contributor Covenant 3.0); adaptation 2026 Harmon Amakobe and Starshot contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# NASA/JPL data used as test fixtures and reference values (D17): Horizons responses and
+# values derived from DE440. The files are data, credited in CREDITS.md.
+[[annotations]]
+path = ["packages/ephemeris/test/fixtures/**", "python/astlo/tests/fixtures/**"]
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
+SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
