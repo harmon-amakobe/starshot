@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'704'",
+        "CENTER": "'500@799'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'2880'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "38fb4bf55314bed91e6811f864737a52d0744f2f2c07ff52949c8fbe920d0834",
+      "header": "*******************************************************************************\n Revised: Sep 24, 2025             Oberon  / (Uranus)                       704\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 761.4  +- 2.6     Density (g cm^-3)   =  1.66 +- 0.05\n  GM (km^3/s^2)         = 205.34 +- 5.8     Geometric Albedo    =  0.24 \n                                            V(1,0)              = +1.23\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 582.6 (10^3)    Orbital period      = 13.463 d\n  Eccentricity, e         =   0.0008        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:20 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Oberon (704)                    {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 2880 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'704'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "version": "1.2",
+      "source": "NASA/JPL Horizons API"
+    },
+    "sha256": "43744291f40b0bdad074f065d5be78c8ff420d52af4337f6456ce9c00b33e1b9",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Oberon  / (Uranus)                       704\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 761.4  +- 2.6     Density (g cm^-3)   =  1.66 +- 0.05\n  GM (km^3/s^2)         = 205.34 +- 5.8     Geometric Albedo    =  0.24 \n                                            V(1,0)              = +1.23\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 582.6 (10^3)    Orbital period      = 13.463 d\n  Eccentricity, e         =   0.0008        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:23 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Oberon (704)                    {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'704'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "aaef8648f957fa0a8bb226ab493b8221a4b36dec1772933822f4850cc817843f",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Oberon  / (Uranus)                       704\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 761.4  +- 2.6     Density (g cm^-3)   =  1.66 +- 0.05\n  GM (km^3/s^2)         = 205.34 +- 5.8     Geometric Albedo    =  0.24 \n                                            V(1,0)              = +1.23\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 582.6 (10^3)    Orbital period      = 13.463 d\n  Eccentricity, e         =   0.0008        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:11 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Oberon (704)                    {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

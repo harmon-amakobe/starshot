@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'609'",
+        "CENTER": "'500@699'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'1212'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "e54e9fa3959c685cf75b0855e91f83da9c508e949a223d51cdf2747f57838973",
+      "header": "*******************************************************************************\n Revised: Jan 26, 2022              Phoebe / (Saturn)                       609\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 106.6    +- 1.1    Density (g/cm^3)=  1.633 +- 0.049\n  Mass (10^19 kg)        =   0.8289           Geometric Albedo=  0.081 +- 0.002\n  GM (km^3/s^2)          =   0.5548 +- 0.0006 V(1,0)          = +6.89 \n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 12947.78(10^3)     Orbital period    = 550.31 d\n  Eccentricity, e        =     0.1635         Rotational period = 9h 16.438 m\n  Inclination, i  (deg)  =   175.986\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:40 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Phoebe (609)                    {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 1212 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'609'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "24d5711944c906e38dd1e355309f147fc66804beeeb22b6ae19d19353d28c77f",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022              Phoebe / (Saturn)                       609\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 106.6    +- 1.1    Density (g/cm^3)=  1.633 +- 0.049\n  Mass (10^19 kg)        =   0.8289           Geometric Albedo=  0.081 +- 0.002\n  GM (km^3/s^2)          =   0.5548 +- 0.0006 V(1,0)          = +6.89 \n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 12947.78(10^3)     Orbital period    = 550.31 d\n  Eccentricity, e        =     0.1635         Rotational period = 9h 16.438 m\n  Inclination, i  (deg)  =   175.986\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:43 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Phoebe (609)                    {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'609'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "version": "1.2",
+      "source": "NASA/JPL Horizons API"
+    },
+    "sha256": "732bf80447d7be9bc74fed7fdd2bd599e609fdbe056fcc288cdc3394aed1a204",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022              Phoebe / (Saturn)                       609\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 106.6    +- 1.1    Density (g/cm^3)=  1.633 +- 0.049\n  Mass (10^19 kg)        =   0.8289           Geometric Albedo=  0.081 +- 0.002\n  GM (km^3/s^2)          =   0.5548 +- 0.0006 V(1,0)          = +6.89 \n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 12947.78(10^3)     Orbital period    = 550.31 d\n  Eccentricity, e        =     0.1635         Rotational period = 9h 16.438 m\n  Inclination, i  (deg)  =   175.986\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:06 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Phoebe (609)                    {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

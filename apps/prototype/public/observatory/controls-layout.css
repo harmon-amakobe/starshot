@@ -1,0 +1,185 @@
+#starshot-shell .hud { z-index:3; }
+#starshot-shell .utility { padding-left:52px; }
+#starshot-shell .clear-view { width:44px; min-width:44px; height:44px; padding:0; left:auto; right:114px; top:max(18px,env(safe-area-inset-top)); border-color:transparent; background:transparent; }
+#starshot-shell[data-clear=true] .clear-view { right:12px; top:max(18px,env(safe-area-inset-top)); }
+#starshot-shell .clear-view[aria-pressed=true] { background:transparent; color:#FFB000; border-color:transparent; }
+#starshot-shell .eye-icon { width:26px; height:26px; }
+#starshot-shell .eye-closed { display:none; }
+#starshot-shell[data-clear=true] .eye-open { display:none; }
+#starshot-shell[data-clear=true] .eye-closed { display:block; }
+#starshot-shell .clear-view[aria-pressed=true] svg { filter:drop-shadow(0 0 6px #FFB00066); stroke-width:2.2; }
+#starshot-shell .deck-modes button[aria-pressed=true] { background:transparent; color:#FFB000; border-color:transparent; font-weight:700; }
+#starshot-shell .deck-modes button[aria-pressed=true] .mode-icon { background:transparent; }
+#starshot-shell .deck-modes button[aria-pressed=true] svg { stroke-width:2.5; filter:drop-shadow(0 0 6px #FFB00066); }
+#starshot-shell .cockpit-head { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:8px; }
+#starshot-shell .deck-toggle { justify-self:start; border:0; padding:8px 4px; background:transparent; }
+#starshot-shell .deck-modes { grid-column:3; grid-row:1; justify-self:end; margin:0; gap:0; }
+#starshot-shell .units-cycle { grid-column:2; grid-row:1; width:128px; min-width:44px; height:44px; padding:0 5px; gap:6px; color:#FFB000; background:transparent; border-color:transparent; }
+#starshot-shell .units-cycle svg { width:28px; height:28px; stroke-width:2.3; filter:drop-shadow(0 0 6px #FFB00066); }
+#starshot-shell .units-label { font-size:11px; white-space:nowrap; }
+#starshot-shell .units-cycle:hover { background:#FFB00012; }
+#starshot-shell .units-cycle { border-color:#9D7939; background:#30250F99; border-radius:24px; }
+#starshot-shell .deck-modes .mode-label { display:none; }
+#starshot-shell .deck-modes button { width:44px; padding:0; }
+#starshot-shell[data-deck=true] .deck-modes button[aria-pressed=true] { width:auto; padding:8px 12px; border:1px solid #9D7939; border-radius:24px; background:#30250F99; }
+#starshot-shell[data-deck=true] .deck-modes button[aria-pressed=true] .mode-label { display:inline; }
+#starshot-shell[data-deck=false] .deck-modes button[aria-pressed=true] { border-color:transparent; background:transparent; }
+#starshot-shell .deck-short { display:none; }
+#starshot-shell .distance-instrument .instrument-reading { flex-wrap:wrap; column-gap:7px; row-gap:2px; }
+#starshot-shell .distance-unit { white-space:nowrap; }
+#starshot-shell .menu-sound-row { display:flex; gap:8px; }
+#starshot-shell .menu-sound-row .sound-button { width:110px; flex:none; justify-content:center; padding:10px; }
+#starshot-shell .menu-sound-row .sound-button[aria-pressed=true] { background:#392B0B; color:#FFB000; border-color:#A67C24; }
+#starshot-shell .menu-sound-row>button:last-child { flex:1; }
+#starshot-shell .link-size-option { gap:12px; }
+#starshot-shell .world-size-toggle.size-control { width:auto; min-height:44px; padding:8px 14px 8px 10px; gap:9px; color:#E8E6E1; border-color:#728099; background:#131B2BE8; }
+#starshot-shell .size-control[aria-pressed=true] { background:#192C3A; border-color:#A7D5F1; color:#D9EDFF; }
+#starshot-shell .size-control .planet-size-icon { width:27px; height:27px; color:#F5CD78; }
+#starshot-shell[data-size=realistic] .planet-size-icon { color:#ABD9F6; }
+#starshot-shell[data-size=realistic] .size-crescent { display:none; }
+#starshot-shell .size-control .scale-mode { font-size:11px; }
+#starshot-shell .time-warp { display:flex; align-items:center; flex:none; padding:2px; border:1px solid #64728A; border-radius:26px; background:#101B2B; touch-action:manipulation; }
+#starshot-shell .time-warp button { width:44px; min-width:44px; min-height:44px; border:0; padding:0; background:transparent; }
+#starshot-shell .time-warp button[aria-disabled=true] { opacity:.3; }
+#starshot-shell .time-warp svg { width:23px; height:23px; }
+#starshot-shell .time-warp .warp-display { width:62px; height:44px; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; white-space:nowrap; }
+#starshot-shell .warp-label { font-size:12px; font-weight:500; }
+#starshot-shell .warp-chevrons { display:flex; gap:1.5px; }
+#starshot-shell .warp-chevrons i { display:block; width:3px; height:6px; background:#465367; clip-path:polygon(0 0,100% 50%,0 100%); }
+#starshot-shell .warp-chevrons .lit { background:#FFB000; }
+#starshot-shell .camera-cycle { display:none; }
+#starshot-shell .world-targets { position:absolute; inset:0; z-index:1; pointer-events:none; }
+#starshot-shell button.world-target { position:absolute; width:44px; height:44px; min-width:44px; padding:0; border:0; background:transparent; pointer-events:auto; touch-action:none; }
+#starshot-shell .world-target:focus-visible { outline:2px solid #FFB000; background:#FFB00018; }
+#starshot-shell .world-popover { position:absolute; z-index:9; width:264px; max-width:calc(100% - 24px); padding:12px; border:1px solid #9AABC4; border-radius:24px; background:#131E2BF5; backdrop-filter:blur(18px); box-shadow:0 12px 35px #0005; overflow:auto; overscroll-behavior:contain; }
+#starshot-shell .world-popover header { display:flex; align-items:center; gap:4px; }
+#starshot-shell .world-popover h3 { flex:1; font-size:16px; margin:0; }
+#starshot-shell .world-popover header button { width:44px; min-width:44px; padding:0; border-color:transparent; background:transparent; font-size:20px; }
+#starshot-shell .world-kind { margin:4px 0 12px; font-size:11px; color:#B8C5D6; }
+#starshot-shell .world-actions { display:flex; gap:8px; }
+#starshot-shell .world-actions button { flex:1; padding:9px 10px; white-space:nowrap; }
+#starshot-shell .world-candidates { display:grid; gap:5px; }
+#starshot-shell .world-candidates button { justify-content:space-between; }
+#starshot-shell .world-card-notes { font-size:12px; color:#CAD5E3; }
+#starshot-shell .world-catalogue { display:grid; gap:10px; margin-top:14px; }
+#starshot-shell .world-family { border:1px solid #4F6078; border-radius:20px; padding:5px; }
+#starshot-shell .world-family>button { width:100%; justify-content:flex-start; border:0; background:transparent; padding:10px 14px; }
+#starshot-shell .world-family>button>span:last-child { margin-left:auto; }
+#starshot-shell .catalogue-planet { width:13px; height:13px; background:#9FBBD3; border-radius:50%; box-shadow:inset -4px 0 3px #324355; }
+#starshot-shell .catalogue-sun { background:#FFE5AA; box-shadow:0 0 8px #FFBE6888; }
+#starshot-shell .world-family summary { min-height:44px; padding:11px 14px; cursor:pointer; font-size:12px; color:#BCCBE0; }
+#starshot-shell .moon-list { display:grid; grid-template-columns:1fr 1fr; gap:5px; padding:4px; }
+#starshot-shell .moon-list button { min-width:0; padding:10px 8px; font-size:11px; }
+#starshot-shell .mission-deck { position:absolute; pointer-events:auto; top:76px; left:50%; transform:translateX(-50%); width:650px; max-width:calc(100% - 32px); border:1px solid #71819B; border-radius:26px; background:#142030E8; backdrop-filter:blur(18px); padding:8px 16px 12px; }
+#starshot-shell .mission-deck header { display:flex; align-items:center; justify-content:space-between; min-height:44px; }
+#starshot-shell .mission-deck header button { width:44px; padding:0; border:0; background:transparent; font-size:20px; }
+#starshot-shell .mission-content { display:flex; gap:22px; align-items:center; justify-content:space-between; }
+#starshot-shell .mission-content h3 { font-size:18px; margin:0; }
+#starshot-shell .mission-content p { margin:3px 0; font-size:12px; color:#C7D5E6; }
+#starshot-shell .mission-content dl { display:flex; gap:20px; margin:0; }
+#starshot-shell .mission-content dt { font-size:10px; color:#AABAD0; }
+#starshot-shell .mission-content dd { margin:3px 0 0; font-size:12px; }
+#starshot-shell .mission-footnote { margin:8px 0 0; color:#AABAD0; font-size:10px; }
+#starshot-shell .mission[aria-expanded=true] { border-color:#ACCAE8; background:#23364B; }
+#starshot-shell .mission[aria-expanded=true] svg { transform:rotate(180deg); }
+#starshot-shell .inspection-caption { position:absolute; top:90px; left:24px; right:20px; display:flex; flex-direction:row; align-items:flex-start; gap:16px; min-height:44px; max-width:none; pointer-events:none; }
+#starshot-shell .inspection-heading { display:flex; flex-direction:column; min-width:0; max-width:340px; gap:5px; text-shadow:0 2px 8px #000; pointer-events:auto; }
+#starshot-shell .inspection-heading .inspection-name { font-size:20px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#starshot-shell .inspection-caption .inspection-detail { display:block; font-size:11px; line-height:1.4; }
+#starshot-shell .inspection-caption button { min-height:44px; padding:0 10px; gap:6px; font-size:11px; border:0; background:transparent; }
+#starshot-shell .inspection-caption button svg { width:22px; height:22px; }
+#starshot-shell .inspection-caption [data-close-inspection] { width:44px; min-width:44px; padding:0; margin-left:auto; pointer-events:auto; }
+#starshot-shell[data-mission=true] .inspection-caption { top:calc(84px + var(--mission-height)); }
+@media(max-width:650px) {
+ #starshot-shell .deck-modes .mode-label { display:none; }
+ #starshot-shell .deck-modes button { width:44px; padding:0; }
+ #starshot-shell .clear-view { right:100px; top:max(12px,env(safe-area-inset-top)); }
+ #starshot-shell .cockpit-head { gap:6px; }
+ #starshot-shell .units-cycle { width:112px; gap:5px; padding:0 3px; }
+ #starshot-shell .units-cycle svg { width:24px; height:24px; }
+ #starshot-shell[data-deck=true] .cockpit-head { grid-template-columns:44px minmax(0,1fr) auto; gap:6px; }
+ #starshot-shell[data-deck=true] .deck-toggle { width:44px; min-width:44px; padding:0; border-color:transparent; background:transparent; }
+ #starshot-shell[data-deck=true] .deck-short { display:none; }
+ #starshot-shell[data-deck=true] .units-cycle { justify-self:center; }
+ #starshot-shell[data-deck=true] .deck-modes button[aria-pressed=true] { padding:8px 6px; gap:4px; font-size:10px; }
+ #starshot-shell[data-deck=true] .deck-modes .mode-icon { width:20px; height:20px; }
+ #starshot-shell .inspection-caption { top:76px; left:16px; right:12px; }
+ #starshot-shell .inspection-heading .inspection-name { font-size:18px; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .zoom { top:134px; }
+ #starshot-shell .deck-label { display:none; }
+ #starshot-shell .deck-short { display:inline; }
+ #starshot-shell .transport { gap:7px; }
+ #starshot-shell .camera-cycle { display:inline-flex; width:80px; min-width:44px; padding:8px; gap:5px; font-size:10px; margin-left:auto; }
+ #starshot-shell .time-warp { margin-left:auto; }
+ #starshot-shell .play { min-width:68px; padding:8px 11px; }
+ #starshot-shell .world-popover { width:264px; }
+ #starshot-shell .mission-deck { top:68px; max-width:calc(100% - 24px); padding:6px 12px 10px; border-radius:22px; }
+ #starshot-shell .mission-content { display:grid; grid-template-columns:1fr auto; gap:8px; }
+ #starshot-shell .mission-content h3 { font-size:15px; }
+ #starshot-shell .mission-content dl { grid-row:2; grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+ #starshot-shell .mission-content>button { font-size:11px; padding:8px 12px; }
+ #starshot-shell .mission-footnote { display:none; }
+ #starshot-shell[data-mission=true] .zoom { top:calc(76px + var(--mission-height)); }
+ #starshot-shell[data-mission=true] .inspection-caption { top:calc(76px + var(--mission-height)); }
+ #starshot-shell[data-mission=true][data-inspection]:not([data-inspection=""]) .zoom { top:calc(134px + var(--mission-height)); }
+ #starshot-shell[data-mission=true][data-inspection]:not([data-inspection=""]) .map-note { display:none; }
+}
+@media(max-width:360px) {
+ #starshot-shell .cockpit-head { gap:4px; }
+ #starshot-shell[data-deck=true] .cockpit-head { gap:2px; }
+ #starshot-shell[data-deck=true] .deck-modes button[aria-pressed=true] { padding:8px 4px; }
+ #starshot-shell .units-cycle { width:96px; gap:4px; padding:0; }
+ #starshot-shell .units-cycle svg { width:22px; height:22px; }
+ #starshot-shell .units-label { font-size:10px; }
+ #starshot-shell .clear-view { right:64px; }
+ #starshot-shell .deck-short { display:none; }
+ #starshot-shell .deck-toggle { width:44px; min-width:44px; padding:0; border-color:transparent; background:transparent; }
+ #starshot-shell .brand small { display:none; }
+ #starshot-shell .utility [data-panel=menu] { width:44px; min-width:44px; padding:0; }
+ #starshot-shell .menu-label { display:none; }
+ #starshot-shell .mission .origin { display:none; }
+ #starshot-shell .play { min-width:44px; width:44px; padding:0; }
+ #starshot-shell .play-label { display:none; }
+ #starshot-shell .camera-cycle { width:44px; padding:0; }
+ #starshot-shell .camera-cycle-label { display:none; }
+ #starshot-shell .time-warp .warp-display { width:58px; }
+}
+@media(max-height:460px) { #starshot-shell .clear-view { top:10px; } }
+@media(max-height:460px) {
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .journey-state { display:none; }
+ #starshot-shell .inspection-caption { top:64px; }
+ #starshot-shell[data-mission=true] .inspection-caption { top:calc(72px + var(--mission-height)); }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .map-note { top:124px; left:auto; right:76px; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .zoom { top:118px; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .deck-pagination { position:static; transform:none; width:auto; }
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-deck=true] .map-note,
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-mission=true] .map-note,
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-mission=true] .zoom,
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-mission=true] .pan,
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-deck=true] .zoom,
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-deck=true] .pan { display:none; }
+}
+@media(max-height:460px) and (min-width:651px) {
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .cockpit-body { display:flex; align-items:center; gap:8px; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .cockpit-pages { flex:1; min-width:0; width:0; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .deck-pagination { flex:none; width:132px; gap:0; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .deck-pagination button { flex:none; min-width:44px; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .deck-page-name { min-width:44px; width:44px; font-size:0; }
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .deck-page-name .muted { font-size:10px; margin:0; }
+ #starshot-shell .pan { top:142px; left:12px; grid-template-columns:44px; gap:0; }
+ #starshot-shell .pan button { grid-column:1; }
+ #starshot-shell .mission-deck { top:62px; padding:4px 12px 8px; }
+ #starshot-shell .mission-deck header { display:none; }
+ #starshot-shell .mission-footnote { display:none; }
+ #starshot-shell[data-mission=true] .map-note,#starshot-shell[data-mission=true] .zoom { top:calc(76px + var(--mission-height)); }
+ #starshot-shell[data-mission=true] .pan { display:none; }
+}
+@media(max-height:460px) and (max-width:650px) {
+ #starshot-shell[data-inspection]:not([data-inspection=""]) .map-note { top:174px; left:16px; right:auto; }
+ #starshot-shell .mission-deck { top:64px; }
+ #starshot-shell .mission-deck header { display:none; }
+ #starshot-shell[data-mission=true] .map-note,#starshot-shell[data-mission=true] .zoom { display:none; }
+}
+@media(max-height:650px) and (max-width:650px) {
+ #starshot-shell[data-inspection]:not([data-inspection=""])[data-deck=true] .map-note { display:none; }
+}

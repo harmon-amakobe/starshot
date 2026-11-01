@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'802'",
+        "CENTER": "'500@899'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'1212'"
+      },
+      "signature": {
+        "version": "1.2",
+        "source": "NASA/JPL Horizons API"
+      },
+      "sha256": "ea59350fee582b03a8665147de8cf36456ab9d4d4fa63caa04a90336944c76a4",
+      "header": "*******************************************************************************\n Revised: Jul 08, 2026             Nereid / (Neptune)                       802\n                         https://ssd.jpl.nasa.gov/sats/elem/\n                        https://ssd.jpl.nasa.gov/sats/phys_par/\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)        =  170 +- 25      Mean density (g cm^-3)= n.a.\n  GM (km^3/s^2)           =  n.a.           Geometric Albedo      =  0.2  \n                                            V(1,0)                = +4.0 \n\n Satellite Orbital Data (Epoch 2020-Jan-1; MEAN values are wrt ecliptic plane):\n  Semi-major axis, a (km) = 5504000.        Sid. orbital period =  360.1403 d\n  Eccentricity, e         = 0.749           Inclination, i      =   5.8 deg\n  Mean anomaly, M (deg)   = 318.0           Arg of periapse, w  = 290.3 deg\n\n Fit to all reported measurements to date, including Voyager 2.\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:55 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Nereid (802)                    {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 1212 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'802'",
+      "CENTER": "'500@899'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "4ded3c46654cc24fe54b33fb7f456a042ca8836f323eda7d1d339265e0c00ed3",
+    "header": "*******************************************************************************\n Revised: Jul 08, 2026             Nereid / (Neptune)                       802\n                         https://ssd.jpl.nasa.gov/sats/elem/\n                        https://ssd.jpl.nasa.gov/sats/phys_par/\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)        =  170 +- 25      Mean density (g cm^-3)= n.a.\n  GM (km^3/s^2)           =  n.a.           Geometric Albedo      =  0.2  \n                                            V(1,0)                = +4.0 \n\n Satellite Orbital Data (Epoch 2020-Jan-1; MEAN values are wrt ecliptic plane):\n  Semi-major axis, a (km) = 5504000.        Sid. orbital period =  360.1403 d\n  Eccentricity, e         = 0.749           Inclination, i      =   5.8 deg\n  Mean anomaly, M (deg)   = 318.0           Arg of periapse, w  = 290.3 deg\n\n Fit to all reported measurements to date, including Voyager 2.\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:58 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Nereid (802)                    {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'802'",
+      "CENTER": "'500@899'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "version": "1.2",
+      "source": "NASA/JPL Horizons API"
+    },
+    "sha256": "330acee39049e87c766e10e49e457883546b2f262dc5ef89246f9ec8ae655586",
+    "header": "*******************************************************************************\n Revised: Jul 08, 2026             Nereid / (Neptune)                       802\n                         https://ssd.jpl.nasa.gov/sats/elem/\n                        https://ssd.jpl.nasa.gov/sats/phys_par/\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)        =  170 +- 25      Mean density (g cm^-3)= n.a.\n  GM (km^3/s^2)           =  n.a.           Geometric Albedo      =  0.2  \n                                            V(1,0)                = +4.0 \n\n Satellite Orbital Data (Epoch 2020-Jan-1; MEAN values are wrt ecliptic plane):\n  Semi-major axis, a (km) = 5504000.        Sid. orbital period =  360.1403 d\n  Eccentricity, e         = 0.749           Inclination, i      =   5.8 deg\n  Mean anomaly, M (deg)   = 318.0           Arg of periapse, w  = 290.3 deg\n\n Fit to all reported measurements to date, including Voyager 2.\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:14 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Nereid (802)                    {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

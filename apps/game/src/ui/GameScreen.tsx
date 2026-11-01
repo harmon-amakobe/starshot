@@ -512,9 +512,11 @@ export function GameScreen(props: GameScreenProps) {
 
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    // StrictMode replays effect setup; a cancelled ID must not block the next draw.
+    frameRef.current = null;
   }, []);
 
-  // Redraw after every React render (state changes are what the scene shows).
+  // Every render requests a frame, including the transition that starts flight.
   useEffect(() => {
     requestDraw();
   });
@@ -797,11 +799,6 @@ export function GameScreen(props: GameScreenProps) {
     setPhase("aim");
     poke();
   }, [poke]);
-
-  // The flight loop must keep running once the phase flips to "flight".
-  useEffect(() => {
-    if (phase === "flight") requestDraw();
-  }, [phase, requestDraw]);
 
   // Announce the preview once it settles, not on every drag frame.
   useEffect(() => {

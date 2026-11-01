@@ -1,0 +1,526 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>starshot</title><style>
+@font-face { font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(ibm-plex-mono-400.woff2) format('woff2'); }
+@font-face { font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(ibm-plex-mono-500.woff2) format('woff2'); }
+@font-face { font-family:'IBM Plex Mono';font-style:normal;font-weight:700;font-display:swap;src:url(ibm-plex-mono-700.woff2) format('woff2'); }
+#starshot-shell { --ink:#E8E6E1; --muted:#8C8C90; --panel:#161A23; --edge:#667085; --amber:#FFB000; --soft:#FFC24D; position:relative; isolation:isolate; width:100%; height:min(700px,100dvh); overflow:hidden; background:#080B13; color:var(--ink); font:400 13px/1.5 'IBM Plex Mono',monospace; color-scheme:dark; }
+#starshot-shell * { box-sizing:border-box; font-family:inherit; }
+#starshot-shell [hidden] { display:none!important; }
+#starshot-shell button,#starshot-shell select,#starshot-shell input { font:inherit; }
+#starshot-shell button,#starshot-shell select { min-height:44px; color:var(--ink); background:var(--panel); border:1px solid var(--edge); border-radius:24px; padding:9px 15px; display:inline-flex; gap:8px; align-items:center; justify-content:center; font-size:12px; line-height:1.4; }
+#starshot-shell button:hover { background:#242B38; }
+#starshot-shell button:focus-visible,#starshot-shell input:focus-visible,#starshot-shell select:focus-visible { outline:3px solid var(--soft); outline-offset:3px; }
+#starshot-shell button:disabled { opacity:.45; }
+#starshot-shell button[aria-pressed=true] { background:#E8E6E1; color:#0B0B0C; border-color:#E8E6E1; }
+#starshot-shell button.primary { background:var(--amber); border-color:var(--amber); color:#0B0B0C; font-weight:700; }
+#starshot-shell button.primary:hover { background:#FFC24D; }
+#starshot-shell svg { width:17px; height:17px; flex:none; }
+#starshot-shell h2,#starshot-shell h3,#starshot-shell p { margin:0; }
+#starshot-shell h2 { font-size:25px; line-height:1.2; letter-spacing:-1px; font-weight:500; }
+#starshot-shell h3 { font-size:13px; font-weight:500; }
+#starshot-shell .world { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+#starshot-shell .vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(#080B13b0,transparent 25%,transparent 68%,#080B1380); }
+#starshot-shell .hud { position:absolute; inset:0; pointer-events:none; }
+#starshot-shell .hud button,#starshot-shell .hud input,#starshot-shell .hud select { pointer-events:auto; }
+#starshot-shell .topbar { position:absolute; top:max(18px,env(safe-area-inset-top)); left:max(20px,env(safe-area-inset-left)); right:max(20px,env(safe-area-inset-right)); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#starshot-shell .brand { display:flex; flex-direction:column; gap:0; }
+#starshot-shell .brand strong { font-size:23px; line-height:1.1; font-weight:500; letter-spacing:-1.1px; }
+#starshot-shell .brand small { font-size:11px; color:var(--muted); margin-top:6px; }
+#starshot-shell .mission { gap:10px; padding:8px 17px; background:#121722; }
+#starshot-shell .mission .destination { width:12px; height:12px; border-radius:50%; background:#F27C69; box-shadow:inset -3px -2px 3px #522B3A; }
+#starshot-shell .utility { display:flex; gap:8px; }
+#starshot-shell .zoom { position:absolute; right:max(20px,env(safe-area-inset-right)); top:calc(50% - 45px); display:flex; flex-direction:column; padding:5px; gap:2px; border:1px solid var(--edge); border-radius:30px; background:#111620; }
+#starshot-shell .zoom button { width:44px; border:0; padding:0; font-size:24px; background:transparent; }
+#starshot-shell .map-note { position:absolute; bottom:166px; left:max(22px,env(safe-area-inset-left)); display:flex; flex-direction:column; gap:5px; font-size:11px; color:var(--muted); pointer-events:none; }
+#starshot-shell .scale-line { display:block; width:68px; height:1px; background:#ADB6C9; margin-bottom:3px; }
+#starshot-shell .pan { position:absolute; left:max(20px,env(safe-area-inset-left)); bottom:202px; display:grid; grid-template-columns:44px 44px 44px; gap:4px; }
+#starshot-shell .pan button { padding:0; width:44px; font-size:15px; }
+#starshot-shell .pan [data-pan=up] { grid-column:2; }
+#starshot-shell .pan [data-pan=left] { grid-column:1; }
+#starshot-shell .dock { position:absolute; bottom:max(18px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); width:min(720px,calc(100% - 40px)); border:1px solid var(--edge); background:#131823; border-radius:30px; padding:12px 16px 10px; pointer-events:auto; box-shadow:0 10px 40px #0005; }
+#starshot-shell .transport { display:flex; align-items:center; gap:12px; }
+#starshot-shell .play { min-width:114px; min-height:48px; }
+#starshot-shell[data-playing=false] .pause-icon,#starshot-shell[data-playing=true] .play-icon { display:none; }
+#starshot-shell .cameras { display:flex; flex:1; justify-content:center; gap:4px; }
+#starshot-shell .cameras button { border-color:transparent; background:transparent; padding:9px 13px; }
+#starshot-shell .cameras button[aria-pressed=true] { background:#E8E6E1; color:#0B0B0C; }
+#starshot-shell .camera-mobile { display:none; }
+#starshot-shell .details { margin-left:auto; }
+#starshot-shell .timeline { display:flex; align-items:center; gap:12px; }
+#starshot-shell .timeline input { min-width:30px; flex:1; width:100%; height:44px; accent-color:var(--amber); margin:0; }
+#starshot-shell .time-label { font-size:11px; white-space:nowrap; min-width:80px; font-variant-numeric:tabular-nums; }
+#starshot-shell .journey-state { font-size:11px; color:var(--muted); display:flex; gap:8px; align-items:center; }
+#starshot-shell .journey-state .dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+#starshot-shell .clear-view { position:absolute; right:max(20px,env(safe-area-inset-right)); top:80px; z-index:6; }
+#starshot-shell[data-clear=true] .clear-view { top:max(18px,env(safe-area-inset-top)); }
+#starshot-shell .quiet-play { position:absolute; bottom:max(20px,env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); z-index:6; min-width:110px; }
+#starshot-shell .overlay { position:absolute; inset:0; z-index:20; background:#0407108a; display:flex; justify-content:flex-end; align-items:center; padding:20px; }
+#starshot-shell .panel { width:410px; max-width:100%; max-height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto; border:1px solid #626B7D; border-radius:28px; background:#141923; box-shadow:0 18px 70px #0008; overflow:hidden; }
+#starshot-shell .panel-head { padding:22px 22px 17px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #343C4B; }
+#starshot-shell .panel-head .eyebrow { color:var(--muted); font-size:11px; margin-bottom:6px; }
+#starshot-shell .panel-head button { width:44px; padding:0; flex:none; }
+#starshot-shell .panel-body { padding:22px; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; min-height:0; }
+#starshot-shell .panel-body p { font-size:13px; line-height:1.75; }
+#starshot-shell .panel-body p+p { margin-top:12px; }
+#starshot-shell .panel-foot { padding:14px 22px; border-top:1px solid #343C4B; }
+#starshot-shell .panel-foot button { width:100%; min-height:48px; }
+#starshot-shell .menu-list { display:grid; gap:8px; }
+#starshot-shell .menu-list button { justify-content:space-between; text-align:left; width:100%; border-radius:16px; padding:13px 16px; min-height:52px; }
+#starshot-shell .muted { color:var(--muted); }
+#starshot-shell .small { font-size:11px!important; }
+#starshot-shell .section { margin-top:24px; }
+#starshot-shell .choice { display:flex; gap:6px; margin-top:12px; }
+#starshot-shell .choice button { flex:1; }
+#starshot-shell .readings { margin:18px 0 0; display:grid; gap:0; }
+#starshot-shell .readings>div { display:flex; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid #343C4B; font-size:12px; }
+#starshot-shell .readings dt { color:var(--muted); }
+#starshot-shell .readings dd { margin:0; text-align:right; font-variant-numeric:tabular-nums; }
+#starshot-shell .option { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #343C4B; font-size:13px; }
+#starshot-shell .option input[type=checkbox] { width:44px; height:44px; accent-color:var(--amber); flex:none; }
+#starshot-shell .volume { width:100%; height:44px; accent-color:var(--amber); }
+#starshot-shell .launch-art { height:92px; position:relative; display:flex; justify-content:space-between; align-items:center; margin:5px 18px 22px; }
+#starshot-shell .launch-art::before { content:''; position:absolute; left:30px; right:30px; top:50%; border-top:2px dotted #7D8495; }
+#starshot-shell .orb { border-radius:50%; position:relative; width:58px; height:58px; background:radial-gradient(circle at 30% 25%,#D5F7FF,#4BC6F2 32%,#144D94 65%,#0A1529); box-shadow:0 0 0 3px #87D6FF22,0 0 30px #3583EF20; }
+#starshot-shell .orb.mars { width:44px; height:44px; background:radial-gradient(circle at 30% 25%,#FFD8BB,#EF7C68 30%,#9B4545 65%,#241C2B); }
+#starshot-shell .result-orb { width:86px; height:86px; margin:0 auto 22px; background:radial-gradient(circle at 30% 25%,#FFD8BB,#EF7C68 30%,#9B4545 65%,#241C2B); }
+#starshot-shell .help-row { padding:13px 0; border-bottom:1px solid #343C4B; }
+#starshot-shell .help-row strong { display:block; font-weight:500; margin-bottom:4px; }
+#starshot-shell .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+@media(max-width:650px) {
+  #starshot-shell .topbar { top:max(12px,env(safe-area-inset-top)); left:12px; right:12px; gap:8px; }
+  #starshot-shell .brand strong { font-size:20px; }
+  #starshot-shell .brand small { font-size:11px; }
+  #starshot-shell .mission { padding:9px 12px; }
+  #starshot-shell .mission .origin { display:none; }
+  #starshot-shell .utility .sound-button { display:none; }
+  #starshot-shell .utility button { padding:10px 12px; }
+  #starshot-shell .clear-view { right:12px; top:76px; font-size:11px; padding:8px 12px; }
+  #starshot-shell .dock { width:calc(100% - 20px); bottom:max(10px,env(safe-area-inset-bottom)); padding:10px 12px 8px; border-radius:26px; }
+  #starshot-shell .transport { gap:7px; }
+  #starshot-shell .play { min-width:82px; padding:10px 12px; }
+  #starshot-shell .cameras { display:none; }
+  #starshot-shell .camera-mobile { display:block; flex:1; min-width:0; padding:10px 9px; font-size:12px; }
+  #starshot-shell .details { padding:10px 12px; }
+  #starshot-shell .details svg { display:none; }
+  #starshot-shell .timeline { gap:8px; }
+  #starshot-shell .timeline input { height:44px; }
+  #starshot-shell .journey-state { font-size:11px; }
+  #starshot-shell .zoom { right:12px; top:calc(48% - 40px); }
+  #starshot-shell .map-note { left:16px; bottom:164px; }
+  #starshot-shell .pan { left:12px; bottom:205px; }
+  #starshot-shell .overlay { padding:10px; align-items:flex-end; }
+  #starshot-shell .panel { width:100%; max-height:100%; border-radius:26px; }
+  #starshot-shell .panel-head { padding:17px 18px 14px; }
+  #starshot-shell .panel-body { padding:18px; }
+  #starshot-shell .panel-foot { padding:12px 18px; }
+}
+@media(max-height:460px) {
+  #starshot-shell .brand small { display:none; }
+  #starshot-shell .topbar { top:10px; }
+  #starshot-shell .clear-view { top:64px; }
+  #starshot-shell .dock { bottom:8px; padding:8px 12px; width:min(650px,calc(100% - 130px)); }
+  #starshot-shell .timeline { position:absolute; right:18px; bottom:9px; }
+  #starshot-shell .timeline input { display:none; }
+  #starshot-shell .journey-state { max-width:calc(100% - 108px); }
+  #starshot-shell .journey-state { margin-top:4px; }
+  #starshot-shell .map-note { left:14px; bottom:100px; }
+  #starshot-shell .pan { bottom:130px; }
+  #starshot-shell .overlay { padding:10px; }
+  #starshot-shell .panel-head { padding:12px 18px; }
+}
+#starshot-shell .dock { --muted:#B4B8C5; width:min(820px,calc(100% - 40px)); max-height:min(380px,calc(100% - 138px)); display:flex; flex-direction:column; background:rgba(15,22,34,.86); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); padding:7px 16px 8px; border-color:#69768E; }
+#starshot-shell .cockpit-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex:none; }
+#starshot-shell .deck-toggle { border:0; background:transparent; padding:8px 4px; font-weight:500; }
+#starshot-shell .deck-toggle svg { transition:transform 120ms ease; }
+#starshot-shell[data-deck=false] .deck-toggle svg { transform:rotate(180deg); }
+#starshot-shell .deck-modes { display:flex; gap:3px; }
+#starshot-shell .deck-modes button { padding:8px 12px; border:0; background:transparent; min-height:44px; }
+#starshot-shell .deck-modes button[aria-pressed=true] { background:#E8E6E1; color:#0B0B0C; }
+#starshot-shell .cockpit-body { overflow:auto; overscroll-behavior:contain; min-height:0; padding:5px 0 12px; margin-bottom:9px; border-bottom:1px solid #68768D55; scrollbar-width:thin; }
+#starshot-shell .cockpit-body:focus-visible { outline:2px solid #FFC24D; outline-offset:-2px; }
+#starshot-shell .instruments { display:grid; grid-template-columns:1fr 1fr 1.15fr; gap:12px; }
+#starshot-shell .instrument { min-width:0; padding:10px 12px; border:0; border-radius:18px; background:transparent; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px; }
+#starshot-shell .instrument-label { display:flex; gap:7px; align-items:center; color:#B4B8C5; font-size:11px; }
+#starshot-shell .instrument-label svg { width:14px; height:14px; }
+#starshot-shell .instrument-reading { display:flex; gap:7px; align-items:center; white-space:nowrap; }
+#starshot-shell .instrument strong { font-size:25px; line-height:1.1; font-weight:500; font-variant-numeric:tabular-nums; letter-spacing:-.8px; }
+#starshot-shell .reading-unit { color:#B4B8C5; font-size:11px; letter-spacing:0; }
+#starshot-shell .trip-gauge { width:38px; height:38px; }
+#starshot-shell .trip-gauge circle { fill:none; stroke-width:3; }
+#starshot-shell .gauge-track { stroke:#69768E44; }
+#starshot-shell .gauge-fill { stroke:#FFB000; stroke-linecap:round; transform:rotate(-90deg); transform-origin:20px 20px; stroke-dasharray:100.531; stroke-dashoffset:82.44; }
+#starshot-shell .distance-instrument { background:#25324866; width:100%; color:#E8E6E1; text-align:left; }
+#starshot-shell .distance-instrument:hover,#starshot-shell .distance-instrument[aria-pressed=true] { background:#34476099; color:#E8E6E1; }
+#starshot-shell .map-link { width:14px; height:14px; color:#B9D8FF; }
+#starshot-shell .route-diagram { display:flex; align-items:center; gap:7px; font-size:12px; white-space:nowrap; }
+#starshot-shell .route-body { width:14px; height:14px; border-radius:50%; flex:none; }
+#starshot-shell .earth-dot { background:radial-gradient(circle at 30% 25%,#DEF8FF,#50C9F1 40%,#175297); }
+#starshot-shell .mars-dot { background:radial-gradient(circle at 30% 25%,#FFE1CE,#F17C68 40%,#773C48); outline:1px dashed #CFD2DD; outline-offset:3px; }
+#starshot-shell .route-connector { color:#BAC7DD; }
+#starshot-shell .route-phase { font-size:11px; color:#B4B8C5; }
+#starshot-shell .science-panel { border-top:1px solid #68768D55; padding:12px; margin-top:10px; }
+#starshot-shell .science-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px 12px; margin:0; }
+#starshot-shell .science-grid dt { font-size:11px; color:#B4B8C5; margin-bottom:5px; }
+#starshot-shell .science-grid dd { margin:0; font-size:16px; font-variant-numeric:tabular-nums; }
+#starshot-shell .science-grid small { font-size:11px; color:#B4B8C5; }
+#starshot-shell .science-tools { display:flex; align-items:center; gap:12px; margin-top:15px; }
+#starshot-shell .trip-instrument .instrument-reading>span { display:flex; flex-direction:column; gap:3px; }
+#starshot-shell .transport { flex:none; }
+#starshot-shell .timeline { flex:none; }
+#starshot-shell[data-deck=true] .journey-state { display:none; }
+#starshot-shell .zoom { top:max(132px,calc((100% - var(--deck-bottom,320px))/2 - 20px)); }
+#starshot-shell .map-note { bottom:var(--deck-bottom,320px); }
+#starshot-shell .pan { bottom:calc(var(--deck-bottom,320px) + 40px); }
+@media(max-width:650px) {
+  #starshot-shell .dock { width:calc(100% - 20px); max-height:min(345px,calc(100% - 140px)); padding:5px 11px 7px; }
+  #starshot-shell .cockpit-head { gap:5px; }
+  #starshot-shell .deck-toggle { font-size:11px; gap:4px; }
+  #starshot-shell .deck-modes { gap:0; }
+  #starshot-shell .deck-modes button { padding:8px 9px; font-size:11px; }
+  #starshot-shell .instruments { grid-template-columns:1fr 1fr; gap:6px; }
+  #starshot-shell .route-instrument { grid-column:1/-1; grid-row:1; flex-direction:row; justify-content:space-between; align-items:center; padding:4px 6px; gap:7px; }
+  #starshot-shell .route-instrument>.instrument-label { display:none; }
+  #starshot-shell .route-phase { font-size:11px; }
+  #starshot-shell .instrument { padding:7px 6px; gap:6px; }
+  #starshot-shell .instrument strong { font-size:22px; }
+  #starshot-shell .trip-gauge { width:28px; height:28px; }
+  #starshot-shell .instrument-reading { gap:4px; }
+  #starshot-shell .reading-unit { font-size:11px; }
+  #starshot-shell .route-diagram { font-size:11px; gap:6px; }
+  #starshot-shell .science-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #starshot-shell .science-tools { flex-wrap:wrap; gap:5px; }
+  #starshot-shell[data-deck=true] .timeline { display:none; }
+  #starshot-shell .zoom { top:76px; left:12px; right:auto; flex-direction:row; padding:2px; }
+}
+@media(max-height:460px) {
+  #starshot-shell .dock { max-height:205px; padding:3px 12px 7px; width:min(760px,calc(100% - 120px)); }
+  #starshot-shell .cockpit-body { margin-bottom:4px; padding:0 0 5px; }
+  #starshot-shell .instrument { padding:4px 8px; gap:3px; }
+  #starshot-shell .instrument strong { font-size:20px; }
+  #starshot-shell .trip-gauge { width:30px; height:30px; }
+  #starshot-shell .instrument-label { font-size:11px; }
+  #starshot-shell .route-phase { display:none; }
+  #starshot-shell .timeline { position:static; justify-content:flex-end; min-height:16px; }
+}
+#starshot-shell .cockpit-body { overflow:hidden; flex:none; padding:0 0 6px; margin-bottom:6px; }
+#starshot-shell .cockpit-pages { display:flex; width:100%; height:108px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; touch-action:pan-x; scrollbar-width:none; }
+#starshot-shell .cockpit-pages::-webkit-scrollbar { display:none; }
+#starshot-shell .instrument-page { flex:0 0 100%; width:100%; min-width:0; height:100%; scroll-snap-align:start; scroll-snap-stop:always; display:flex; align-items:center; }
+#starshot-shell .instrument-page .instruments { width:100%; }
+#starshot-shell .science-page { padding:8px 12px; }
+#starshot-shell .science-page .science-grid { width:100%; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+#starshot-shell .science-page dt { display:flex; flex-direction:column; gap:6px; line-height:1.4; }
+#starshot-shell .science-page dt svg { width:17px; height:17px; color:#BDCCE2; }
+#starshot-shell .science-page dd { font-size:20px; white-space:nowrap; }
+#starshot-shell .science-page .date-reading { font-size:16px; }
+#starshot-shell .deck-pagination { display:flex; align-items:center; justify-content:flex-start; gap:5px; padding:0 3px; }
+#starshot-shell .deck-pagination button { width:44px; padding:0; border-color:transparent; background:transparent; }
+#starshot-shell .deck-pagination button[aria-disabled=true] { opacity:.3; }
+#starshot-shell .deck-page-name { min-width:116px; text-align:center; font-size:11px; }
+#starshot-shell .deck-page-name .muted { margin-left:6px; }
+#starshot-shell .deck-time { margin-left:auto; font-size:11px; white-space:nowrap; color:#B4B8C5; font-variant-numeric:tabular-nums; }
+#starshot-shell .mode-icon { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; background:#C7D2E51A; flex:none; }
+#starshot-shell .mode-icon svg { width:20px; height:20px; stroke-width:1.8; }
+#starshot-shell button[aria-pressed=true] .mode-icon { background:#0B0B0C0D; }
+#starshot-shell[data-deck=false] .deck-modes .mode-label { display:none; }
+#starshot-shell[data-deck=false] .deck-modes button { width:44px; padding:0; }
+#starshot-shell .choice button[data-detail] { flex-direction:column; gap:5px; }
+@media(max-width:420px), (max-height:460px) {
+  #starshot-shell .deck-modes .mode-label { display:none; }
+  #starshot-shell .deck-modes button { width:44px; padding:0; }
+}
+@media(max-width:650px) {
+  #starshot-shell .cockpit-pages { height:126px; }
+  #starshot-shell .science-page { padding:6px 3px; }
+  #starshot-shell .science-page .science-grid { gap:6px; }
+  #starshot-shell .science-page dd { font-size:16px; }
+  #starshot-shell .science-page dd small { display:block; margin-top:2px; }
+  #starshot-shell .science-page .date-reading { font-size:12px; }
+  #starshot-shell .deck-page-name { min-width:90px; }
+  #starshot-shell .deck-page-name .muted { display:block; margin:0; }
+  #starshot-shell .deck-pagination { gap:0; }
+}
+@media(max-height:460px) {
+  #starshot-shell .dock { max-height:205px; width:min(760px,calc(100% - 156px)); }
+  #starshot-shell .cockpit-pages { height:64px; }
+  #starshot-shell .science-page { padding:2px 8px; }
+  #starshot-shell .science-page dt { flex-direction:row; align-items:center; gap:5px; margin-bottom:4px; }
+  #starshot-shell .science-page dd { font-size:17px; }
+  #starshot-shell .science-page .date-reading { font-size:14px; }
+  #starshot-shell[data-deck=true] .timeline { display:flex; }
+  #starshot-shell .trip-instrument .instrument-reading>span { flex-direction:row; align-items:baseline; }
+  #starshot-shell .deck-pagination { position:absolute; top:3px; left:50%; transform:translateX(-50%); width:190px; padding:0; }
+  #starshot-shell .deck-page-name { min-width:90px; }
+  #starshot-shell .deck-time { display:none; }
+  #starshot-shell .pan { top:78px; bottom:auto; }
+  #starshot-shell .map-note { left:auto; right:90px; top:75px; bottom:auto; }
+}
+@media(max-width:650px) and (max-height:460px) {
+  #starshot-shell .dock { width:calc(100% - 20px); max-height:calc(100% - 122px); padding:3px 8px 6px; }
+  #starshot-shell .cockpit-body { padding-bottom:0; margin-bottom:0; }
+  #starshot-shell .cockpit-pages { height:76px; }
+  #starshot-shell .deck-pagination { position:static; transform:none; width:auto; }
+  #starshot-shell .deck-time { display:block; }
+  #starshot-shell[data-deck=true] .timeline { display:none; }
+  #starshot-shell .science-page dt { flex-direction:column; align-items:flex-start; gap:3px; }
+  #starshot-shell .science-page dt svg { display:none; }
+  #starshot-shell .science-page dd { font-size:16px; }
+  #starshot-shell .science-page .date-reading { font-size:12px; }
+  #starshot-shell .instruments { gap:2px; }
+  #starshot-shell .route-instrument { display:none; }
+  #starshot-shell .mission .origin { display:inline; }
+  #starshot-shell .mission { padding:9px 6px; gap:3px; }
+  #starshot-shell .zoom { top:60px; }
+  #starshot-shell .map-note { display:none; }
+  #starshot-shell .pan { top:118px; left:12px; gap:0; grid-template-columns:44px; }
+  #starshot-shell .pan button { grid-column:1; }
+  #starshot-shell[data-deck=true] .pan { top:112px; left:50%; transform:translateX(-50%); grid-template-columns:repeat(4,44px); }
+  #starshot-shell[data-deck=true] .pan button { grid-column:auto; }
+}
+@media(prefers-reduced-motion:reduce) { #starshot-shell .deck-toggle svg { transition:none; } }
+@media(prefers-reduced-motion:no-preference) {
+  #starshot-shell button { transition:background 120ms ease,transform 120ms ease; }
+  #starshot-shell button:active { transform:scale(.96); }
+  #starshot-shell .panel { animation:shell-panel-in 140ms cubic-bezier(.2,0,.2,1); }
+  @keyframes shell-panel-in { from { transform:translateY(8px); opacity:.6; } to { transform:translateY(0); opacity:1; } }
+}
+#starshot-shell .map-note { gap:2px; max-width:calc(100% - 24px); color:#B4B8C5; }
+#starshot-shell .scale-caption { display:flex; gap:9px; align-items:center; min-height:16px; }
+#starshot-shell .scale-line { margin:0; flex:none; }
+#starshot-shell .size-row { display:flex; align-items:center; gap:6px; }
+#starshot-shell .world-size-toggle { width:44px; padding:0; border:1px solid #69768E; background:#131B2BD9; }
+#starshot-shell .inspect-world { width:127px; padding:8px; font-size:11px; background:#131B2BE8; }
+#starshot-shell .large-size-icon,#starshot-shell[data-size=realistic] .real-size-icon { display:none; }
+#starshot-shell[data-size=realistic] .large-size-icon { display:block; }
+#starshot-shell .pan { bottom:calc(var(--deck-bottom,320px) + 86px); }
+#starshot-shell .world:focus-visible { outline:2px solid #FFC24D; outline-offset:-3px; }
+#starshot-shell .panel-body a { color:#BBD9FF; }
+@media(max-height:460px) {
+  #starshot-shell .map-note { display:flex; left:20px; right:auto; top:68px; bottom:auto; }
+  #starshot-shell .pan { top:142px; bottom:auto; left:12px; grid-template-columns:44px; gap:0; }
+  #starshot-shell .pan button { grid-column:1; }
+}
+@media(max-width:650px) and (max-height:460px) {
+  #starshot-shell .map-note { top:110px; left:12px; gap:0; }
+  #starshot-shell .scale-caption { min-height:12px; line-height:12px; }
+  #starshot-shell .cockpit-pages { height:64px; }
+  #starshot-shell .science-page dt { line-height:1.2; }
+  #starshot-shell .science-page dd small { display:inline; margin:0; }
+  #starshot-shell .pan { display:none; }
+  #starshot-shell[data-deck=false] .pan { display:grid; top:176px; left:12px; transform:none; grid-template-columns:repeat(4,44px); }
+  #starshot-shell[data-deck=false] .pan button { grid-column:auto; }
+}
+
+html,body{margin:0;overflow:hidden}#starshot-shell{height:100dvh}
+
+#starshot-shell .playback-rate { min-height:44px; width:114px; padding:8px; font-size:11px; background:#162035; }
+#starshot-shell .explore-tools { display:flex; gap:6px; }
+#starshot-shell .explore-tools button { font-size:11px; padding:8px 12px; min-width:44px; }
+#starshot-shell .explore-tools button[aria-pressed=true] { background:#34465B; border-color:#A7D5F1; color:#E8E6E1; }
+#starshot-shell .inspect-world { width:132px; }
+#starshot-shell .inspection-caption { position:absolute; top:94px; left:24px; display:flex; flex-direction:column; gap:6px; pointer-events:none; }
+#starshot-shell .inspection-name { font-size:20px; font-weight:500; }
+#starshot-shell .inspection-detail { color:#B4B8C5; font-size:11px; }
+#starshot-shell .pan { bottom:calc(var(--deck-bottom,320px) + 138px); }
+#starshot-shell .loading-system { position:absolute; inset:0; display:grid; place-items:center; z-index:50; background:#0B1020; color:#E8E6E1; }
+@media(max-width:650px) {
+ #starshot-shell .transport { gap:8px; }
+ #starshot-shell .playback-rate { width:100px; flex:none; }
+ #starshot-shell .camera-mobile { min-width:0; width:116px; flex:1; padding:8px; font-size:11px; }
+ #starshot-shell .play { min-width:74px; padding:8px 12px; }
+ #starshot-shell .inspection-caption { top:134px; left:16px; max-width:calc(100% - 32px); }
+ #starshot-shell .inspection-name { font-size:16px; }
+ #starshot-shell .inspection-detail { line-height:1.4; font-size:10px; }
+ #starshot-shell .size-row { gap:4px; }
+ #starshot-shell .scale-mode { font-size:10px; }
+}
+@media(max-height:460px) {
+ #starshot-shell .inspection-caption { top:72px; left:340px; max-width:calc(100% - 440px); }
+ #starshot-shell .inspection-detail { display:none; }
+ #starshot-shell .pan { top:192px; bottom:auto; }
+}
+@media(max-width:650px) and (max-height:460px) {
+ #starshot-shell .inspection-caption { display:none; }
+ #starshot-shell .map-note { top:110px; }
+ #starshot-shell .explore-tools { gap:4px; }
+ #starshot-shell .explore-tools button { padding:4px 8px; }
+ #starshot-shell .pan { display:none!important; }
+}
+
+</style>
+<div id="starshot-shell" aria-label="starshot merged game shell">
+  <div class="loading-system" role="status">Preparing the Solar System…</div><canvas class="world" role="img" aria-label="First light: a recorded Earth to Mars flight. Amber marks your craft and completed path. The dotted line shows the remaining route."></canvas>
+  <div class="vignette"></div>
+  <div class="hud">
+    <header class="topbar">
+      <div class="brand"><strong>starshot</strong><small>First light · replay</small></div>
+      <button class="mission" data-panel="launch"><span class="destination" aria-hidden="true"></span><span><span class="origin">Earth → </span>Mars</span><i data-lucide="chevron-down" aria-hidden="true"></i></button>
+      <div class="utility"><button class="sound-button" data-action="sound">Sound off</button><button data-panel="menu"><i data-lucide="menu" aria-hidden="true"></i>Menu</button></div>
+    </header>
+    <div class="zoom" role="group" aria-label="Map zoom"><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="out" aria-label="Zoom out">−</button><button data-action="fit" aria-label="Fit full route"><i data-lucide="scan" aria-hidden="true"></i><span class="sr">Fit</span></button></div>
+    <div class="pan" role="group" aria-label="Pan the free camera" hidden><button data-pan="up" aria-label="Pan up">↑</button><button data-pan="left" aria-label="Pan left">←</button><button data-pan="down" aria-label="Pan down">↓</button><button data-pan="right" aria-label="Pan right">→</button></div>
+    <div class="inspection-caption" hidden><strong class="inspection-name"></strong><small class="inspection-detail"></small></div><div class="map-note">
+      <div class="scale-caption"><span class="scale-line"></span><span class="scale-text">0.5 AU</span></div>
+      <div class="size-row"><span class="scale-mode">Worlds enlarged</span><button class="world-size-toggle" data-action="true-scale" aria-pressed="false" aria-label="Use realistic size" data-tooltip="Use realistic size"><i class="real-size-icon" data-lucide="minimize-2" aria-hidden="true"></i><i class="large-size-icon" data-lucide="maximize-2" aria-hidden="true"></i></button>
+      <select class="inspect-world" aria-label="Inspect a world" hidden><option value="">Look closer…</option><option value="mercury">Mercury</option><option value="venus">Venus</option><option value="earth">Earth</option><option value="mars">Mars</option></select></div><div class="explore-tools"><button data-action="local-system" aria-label="Show moons and rings" aria-pressed="false" hidden>Moons</button><button data-action="ring-guides" aria-pressed="false" hidden>Ring guides</button><button data-action="body-info" aria-label="About this world" hidden>ⓘ</button></div>
+    </div>
+    <div class="dock" aria-label="Flight deck">
+      <div class="cockpit-head">
+        <button class="deck-toggle" data-action="deck" aria-expanded="true" aria-controls="live-instruments"><i data-lucide="chevron-down" aria-hidden="true"></i>Flight deck</button>
+        <div class="deck-modes" role="group" aria-label="Instrument detail"><button data-detail="simple" aria-pressed="true" aria-label="Simplified" data-tooltip="Simplified"><span class="mode-icon" aria-hidden="true"><i data-lucide="smile"></i></span><span class="mode-label">Simplified</span></button><button data-detail="science" aria-pressed="false" aria-label="Scientific" data-tooltip="Scientific"><span class="mode-icon" aria-hidden="true"><i data-lucide="orbit"></i></span><span class="mode-label">Scientific</span></button></div>
+      </div>
+      <div id="live-instruments" class="cockpit-body" role="region" aria-label="Live flight instruments" tabindex="0">
+        <div class="cockpit-pages" aria-label="Instrument pages" aria-roledescription="carousel">
+        <section class="instrument-page" data-page="0" aria-label="Journey instruments">
+        <div class="instruments">
+          <div class="instrument trip-instrument">
+            <span class="instrument-label"><i data-lucide="clock-3" aria-hidden="true"></i>Trip time</span>
+            <div class="instrument-reading"><svg class="trip-gauge" viewBox="0 0 40 40" role="img" aria-label="Elapsed journey time"><circle class="gauge-track" cx="20" cy="20" r="16"></circle><circle class="gauge-fill" cx="20" cy="20" r="16"></circle></svg><span><strong class="trip-day">54</strong><span class="reading-unit"> / 303 d</span></span></div>
+          </div>
+          <button class="instrument distance-instrument" data-action="ruler" aria-pressed="false" aria-label="Show distance to Mars on the map" aria-describedby="distance-description">
+            <span class="instrument-label"><i data-lucide="crosshair" aria-hidden="true"></i>To Mars</span>
+            <span class="instrument-reading"><strong class="distance-value">0</strong><span class="reading-unit distance-unit">M km</span><i class="map-link" data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+            <span class="sr" id="distance-description"></span>
+          </button>
+          <div class="instrument route-instrument">
+            <span class="instrument-label"><i data-lucide="route" aria-hidden="true"></i>Route</span>
+            <div class="route-diagram"><span class="route-body earth-dot" aria-hidden="true"></span><span>Earth</span><span class="route-connector" aria-hidden="true">→</span><span class="route-body mars-dot" aria-hidden="true"></span><span>Mars</span></div>
+            <span class="route-phase">Paused</span>
+          </div>
+        </div>
+        </section>
+        <section class="instrument-page science-page" data-page="1" aria-label="Launch instruments" hidden>
+          <dl class="science-grid"><div><dt><i data-lucide="fuel" aria-hidden="true"></i>Δv · launch cost</dt><dd>3.62 <small>km/s</small></dd></div><div><dt><i data-lucide="gauge" aria-hidden="true"></i>v∞ · departure</dt><dd>2.982 <small>km/s</small></dd></div><div><dt><i data-lucide="orbit" aria-hidden="true"></i>C3 · departure</dt><dd>8.89 <small>km²/s²</small></dd></div></dl>
+        </section>
+        <section class="instrument-page science-page" data-page="2" aria-label="Flight reference" hidden>
+          <dl class="science-grid"><div><dt><i data-lucide="compass" aria-hidden="true"></i>Launch angle</dt><dd>127.50°</dd></div><div><dt><i data-lucide="layers" aria-hidden="true"></i>Flight plane</dt><dd>2D</dd></div><div><dt><i data-lucide="calendar-days" aria-hidden="true"></i>Launch date</dt><dd class="date-reading">2026-11-02</dd></div></dl>
+        </section>
+        </div>
+        <div class="deck-pagination" hidden>
+          <button data-action="deck-prev" aria-label="Previous instrument page" aria-disabled="true"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+          <span class="deck-page-name">Journey <span class="muted">1 / 3</span></span>
+          <button data-action="deck-next" aria-label="Next instrument page"><i data-lucide="chevron-right" aria-hidden="true"></i></button>
+          <span class="deck-time">54 / 303 d</span>
+        </div>
+      </div>
+      <div class="transport">
+        <button class="primary play" data-action="play"><i class="play-icon" data-lucide="play" aria-hidden="true"></i><i class="pause-icon" data-lucide="pause" aria-hidden="true"></i><span class="play-label">Play</span></button>
+        <div class="cameras" role="group" aria-label="Travel camera"><button data-camera="follow">Follow</button><button data-camera="system" aria-pressed="true">System</button><button data-camera="free">Free</button></div>
+        <select class="playback-rate" aria-label="Playback speed"><option value="0">Trip speed</option><option value="86400">1 day/s</option><option value="3600">1 hour/s</option><option value="60">1 min/s</option><option value="1">Real time</option></select><select class="camera-mobile" aria-label="Travel camera"><option value="follow">Follow craft</option><option value="system" selected>System</option><option value="free">Free camera</option></select>
+      </div>
+      <div class="timeline"><input type="range" min="0" max="1000" value="180" aria-label="Journey position"><span class="time-label">Day 54 / 303</span></div>
+      <div class="journey-state"><span class="dot" aria-hidden="true"></span><span class="state-label">Paused. Space can wait.</span></div>
+    </div>
+  </div>
+  <button class="clear-view" data-action="clear" aria-pressed="false"><i data-lucide="minimize-2" aria-hidden="true"></i><span>Hide UI</span></button>
+  <button class="quiet-play primary" data-action="play" hidden>Play</button>
+  <div class="overlay" hidden>
+    <section class="panel" role="dialog" aria-modal="true" aria-labelledby="shell-panel-title" aria-describedby="shell-panel-state">
+      <header class="panel-head"><div><p id="shell-panel-state" class="eyebrow">Journey paused</p><h2 id="shell-panel-title">Flight menu</h2></div><button class="close-panel" aria-label="Close panel"><i data-lucide="x" aria-hidden="true"></i><span class="sr">Close</span></button></header>
+      <div class="panel-body" role="region" aria-label="Panel content" tabindex="0"></div>
+      <footer class="panel-foot"><button class="primary" data-action="return">Back to flight</button></footer>
+    </section>
+  </div>
+  <p class="sr announcer" role="status" aria-live="polite"></p>
+</div>
+
+
+
+
+
+<!-- IBM Plex Mono, OFL-1.1
+Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+This license is copied below, and is also available with a FAQ at: http://scripts.sil.org/OFL
+
+
+- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded, 
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting - - in part or in whole - - any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+
+-->
+<link rel="stylesheet" href="controls-layout.css"><script src="system-icons.js"></script><script src="replay-model.js"></script><script type="module" src="system-main.js"></script></html>

@@ -12,6 +12,8 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- An isolated Observatory prototype with the approved launch-window controls,
+  local assets, source credits and reproducible astronomy-data checks.
 - The Starshot game (`apps/game`): a slingshot across the real Solar System, built
   with Vite, React and Canvas 2D, playable on phones and desktops, with keyboard
   controls, screen-reader announcements and reduced-motion support.
@@ -141,6 +143,8 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Fixed
 
+- Game: the map and aiming preview render after development-mode effect cleanup.
+  Cancelling a frame now clears its pending state so the next draw can start.
 - `@starshot/physics`: `lambert()` now solves long transfers (more than 180°), with a
   numerically stable Stumpff C function and an upper bracket that steps back from the
   single-revolution limit until the flight time is finite.

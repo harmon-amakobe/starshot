@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'608'",
+        "CENTER": "'500@699'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'1212'"
+      },
+      "signature": {
+        "version": "1.2",
+        "source": "NASA/JPL Horizons API"
+      },
+      "sha256": "ee2d6700a96585379a2761575102ee7767c6cc4f9c1f52a1b2e0cdd42a49946a",
+      "header": "*******************************************************************************\n Revised: Jan 26, 2022             Iapetus / (Saturn)                       608\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 734.5    +- 4.0    Density (g/cm^3)=  1.088 +- 0.018 \n  Mass (10^19 kg)        = 180.59             Geometric Albedo=  0.6\n  GM (km^3/s^2)          = 120.52   +- 0.03   V(1,0)          =   +1.5 (.7-2.5)\n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 3560.84 (10^3)     Orbital period    = 79.33 d\n  Eccentricity, e        =     0.0283         Rotational period = Synchronous\n  Inclination, i  (deg)  =     7.489\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:34 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Iapetus (608)                   {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 1212 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'608'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "version": "1.2",
+      "source": "NASA/JPL Horizons API"
+    },
+    "sha256": "f1440f8dffb517eabcc025196419cc570509e193f42af40ea79550525a5e5e4a",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022             Iapetus / (Saturn)                       608\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 734.5    +- 4.0    Density (g/cm^3)=  1.088 +- 0.018 \n  Mass (10^19 kg)        = 180.59             Geometric Albedo=  0.6\n  GM (km^3/s^2)          = 120.52   +- 0.03   V(1,0)          =   +1.5 (.7-2.5)\n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 3560.84 (10^3)     Orbital period    = 79.33 d\n  Eccentricity, e        =     0.0283         Rotational period = Synchronous\n  Inclination, i  (deg)  =     7.489\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:39 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Iapetus (608)                   {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'608'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "6cd1b85ead0f1596f23f691ba2a05811338861f3cad100e8acf7ad1a6bd85d2e",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022             Iapetus / (Saturn)                       608\n                          http://ssd.jpl.nasa.gov/?sat_phys_par\n                            http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)            = 734.5    +- 4.0    Density (g/cm^3)=  1.088 +- 0.018 \n  Mass (10^19 kg)        = 180.59             Geometric Albedo=  0.6\n  GM (km^3/s^2)          = 120.52   +- 0.03   V(1,0)          =   +1.5 (.7-2.5)\n\n SATELLITE ORBITAL DATA (mean values with respect to local Laplace plane):\n  Semi-major axis, a (km)= 3560.84 (10^3)     Orbital period    = 79.33 d\n  Eccentricity, e        =     0.0283         Rotational period = Synchronous\n  Inclination, i  (deg)  =     7.489\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:05 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Iapetus (608)                   {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

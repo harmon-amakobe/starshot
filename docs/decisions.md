@@ -743,3 +743,52 @@ finished stack sees how the parts fit, which no single-spec review can.
 **Consequences.** PR0 (#1) carries the CI hardening. Every group PR names each member's
 issue (`Part of #a, #b`). PR4's size check reads the member count. Each spec's Branch
 line gives way to its group's branch in the group table.
+
+---
+
+## D31. The name is always written starshot
+
+*Date:* 2026-11-01. *Source:* owner's ruling (refines D20's spelling; the name and
+domains are unchanged).
+
+**Decision.** Write "starshot" in lowercase everywhere, including logos, title
+screens, documentation and the start of a sentence. The look prototype follows
+this rule in new and changed copy.
+
+**Why.** The owner chose lowercase as the name's presentation.
+
+**Consequences.** A sweep of existing spelling, including `TRADEMARK.md`, is a
+separate proposed change for the owner. It is not part of the look prototype.
+
+---
+
+## D32. A playful observatory in a single-screen game shell
+
+*Date:* 2026-11-01. *Source:* owner's choice after comparing the three look studies.
+
+**Decision.** Combine Pocket observatory's playfulness with Deep field's rounded
+forms and spacious world view. Present the game in an app shell that fits the screen.
+The world stays behind the controls. Menus and detailed information appear in
+overlays and can be dismissed. Long content scrolls inside its own panel; the game
+page does not scroll.
+
+Flight instruments belong in a live translucent bottom sheet. The map remains
+interactive while the instruments are open. Their primary presentation uses clear
+symbols, numbers and short labels, with scientific precision available in the same
+sheet. Reading or changing a flight instrument must not implicitly pause the journey.
+Settings and help may use modal panels.
+
+The flight deck does not scroll vertically. Additional instruments use swipeable
+horizontal pages with visible navigation; playback and camera controls stay fixed.
+The detail choices are named Simplified and Scientific. Each has an icon that can
+stand alone when the deck is collapsed or space is limited. Accessible names remain.
+The control for hiding the interface is named Hide UI; its return action is Show UI.
+
+**Why.** The owner wants an intuitive game that can be read at a glance, with the
+world and current action on screen together.
+
+**Consequences.** The [look direction](design/look-direction.md) records the combined
+style and proposed interaction details. The look prototype demonstrates the shell
+before adopting it in the game. D6's physics and preview agreement, D15's asset
+rules and D19's rendering constraints remain in force. Detailed timing, materials
+and sound composition remain adjustable during iteration.

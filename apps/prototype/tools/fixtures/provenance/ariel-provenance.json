@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'701'",
+        "CENTER": "'500@799'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'15374'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "d18f5d55cfe75dd660a620b31a170fa056b3eeea03c5736c88d01ee5658dfbbc",
+      "header": "*******************************************************************************\n Revised: Sep 24, 2025             Ariel  / (Uranus)                        701\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 581.1x577.9x577.7 Density (g cm^-3)   = 1.54 +- 0.026\n  GM (km^3/s^2)         =   83.43 +- 1.40   Geometric Albedo    =  0.34 \n                                            V(1,0)              = +1.45\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 191.2 (10^3)    Orbital period      = 2.520 d\n  Eccentricity, e         =   0.0034        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.69\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:44 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Ariel (701)                     {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 15374 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'701'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "173c88ebb27b28acf79bf67532c553d716358b4bc12029b8c0f372bc04a56e84",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Ariel  / (Uranus)                        701\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 581.1x577.9x577.7 Density (g cm^-3)   = 1.54 +- 0.026\n  GM (km^3/s^2)         =   83.43 +- 1.40   Geometric Albedo    =  0.34 \n                                            V(1,0)              = +1.45\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 191.2 (10^3)    Orbital period      = 2.520 d\n  Eccentricity, e         =   0.0034        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.69\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:52 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Ariel (701)                     {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'701'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "52aed67125ade33b17c17d94a634b669efe49a64bb7043a138ad4c2ed795f7bc",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Ariel  / (Uranus)                        701\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 581.1x577.9x577.7 Density (g cm^-3)   = 1.54 +- 0.026\n  GM (km^3/s^2)         =   83.43 +- 1.40   Geometric Albedo    =  0.34 \n                                            V(1,0)              = +1.45\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 191.2 (10^3)    Orbital period      = 2.520 d\n  Eccentricity, e         =   0.0034        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.69\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:07 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Ariel (701)                     {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

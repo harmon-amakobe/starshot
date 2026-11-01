@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'605'",
+        "CENTER": "'500@699'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'8576'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "89cacbd5b413655df89aa3df0c5d166824900a5cf84be533ef6a97eacc83c418",
+      "header": "*******************************************************************************\n Revised: Jan 26, 2022            Rhea  / (Saturn)                          605\n                        http://ssd.jpl.nasa.gov/?sat_phys_par\n                         http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 764.5  +- 2     Density (g/cm^3)  =  1.233 +- 0.010\n  Mass (10^19 kg)         = 230.9           Geometric Albedo  =  0.6\n  GM (km^3/s^2)           = 153.94 +- 0.16  V(1,0)            = +0.1\n\n SATELLITE ORBITAL DATA (mean values referred to local Laplace plane):\n  Semi-major axis, a (km) = 527.07(10^3)    Orbital period    = 4.518 d\n  Eccentricity, e         = 0.001           Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.331\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:17 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Rhea (605)                      {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 8576 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'605'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "573f15fb3847c48bc8e0df4473fe852c5c3d7ac82baefb7f1fd09d655ee2afcb",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022            Rhea  / (Saturn)                          605\n                        http://ssd.jpl.nasa.gov/?sat_phys_par\n                         http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 764.5  +- 2     Density (g/cm^3)  =  1.233 +- 0.010\n  Mass (10^19 kg)         = 230.9           Geometric Albedo  =  0.6\n  GM (km^3/s^2)           = 153.94 +- 0.16  V(1,0)            = +0.1\n\n SATELLITE ORBITAL DATA (mean values referred to local Laplace plane):\n  Semi-major axis, a (km) = 527.07(10^3)    Orbital period    = 4.518 d\n  Eccentricity, e         = 0.001           Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.331\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:43:24 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Rhea (605)                      {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'605'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "a99f3c2e56574b282175a1e82c84c021dace9a80b3aa15220de79218f8a3d628",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022            Rhea  / (Saturn)                          605\n                        http://ssd.jpl.nasa.gov/?sat_phys_par\n                         http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 764.5  +- 2     Density (g/cm^3)  =  1.233 +- 0.010\n  Mass (10^19 kg)         = 230.9           Geometric Albedo  =  0.6\n  GM (km^3/s^2)           = 153.94 +- 0.16  V(1,0)            = +0.1\n\n SATELLITE ORBITAL DATA (mean values referred to local Laplace plane):\n  Semi-major axis, a (km) = 527.07(10^3)    Orbital period    = 4.518 d\n  Eccentricity, e         = 0.001           Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.331\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:01 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Rhea (605)                      {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

@@ -16,6 +16,8 @@
     "dev": "npm run dev -w @starshot/game",
     "build": "npm run build -w @starshot/game",
     "preview": "npm run preview -w @starshot/game",
+    "dev:prototype": "npm run dev -w @starshot/prototype",
+    "build:prototype": "npm run build -w @starshot/prototype",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "gates": "node scripts/gates.mjs",

@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'602'",
+        "CENTER": "'500@699'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'28280'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "643d59843ef6ac4920a211476d2b84cd3d94281a08ff8394ba25ea525438c391",
+      "header": "*******************************************************************************\n Revised: Jan 26, 2022            Enceladus / (Saturn)                      602\n                           http://ssd.jpl.nasa.gov/?sat_phys_par\n                             http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 252.3   +- 0.6   Density (g/cm^3) =  1.606 +- 0.012\n  Mass (10^19 kg)         =  10.805          Geometric Albedo =  1.04\n  GM (km^3/s^2)           =   7.210367       V(1,0)           =  +2.1\n\n SATELLITE ORBITAL DATA (mean elements referred to local Laplace plane):\n  Semi-major axis, a (km) = 238.04(10^3)    Orbital period    = 1.370218 d\n  Eccentricity, e         = 0.0047          Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.009\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:42:40 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Enceladus (602)                 {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 28280 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'602'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "6c362f6bfcb830cb4b5c83ea8a38b8032d116629771645b12ce0b5d6138f433b",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022            Enceladus / (Saturn)                      602\n                           http://ssd.jpl.nasa.gov/?sat_phys_par\n                             http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 252.3   +- 0.6   Density (g/cm^3) =  1.606 +- 0.012\n  Mass (10^19 kg)         =  10.805          Geometric Albedo =  1.04\n  GM (km^3/s^2)           =   7.210367       V(1,0)           =  +2.1\n\n SATELLITE ORBITAL DATA (mean elements referred to local Laplace plane):\n  Semi-major axis, a (km) = 238.04(10^3)    Orbital period    = 1.370218 d\n  Eccentricity, e         = 0.0047          Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.009\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:42:55 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Enceladus (602)                 {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'602'",
+      "CENTER": "'500@699'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "e8727fa67b27ba0ffc5dcd4f0a89315cad6f84d620b79e0126adb1da2bdec2b3",
+    "header": "*******************************************************************************\n Revised: Jan 26, 2022            Enceladus / (Saturn)                      602\n                           http://ssd.jpl.nasa.gov/?sat_phys_par\n                             http://ssd.jpl.nasa.gov/?sat_elem\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean Radius (km)        = 252.3   +- 0.6   Density (g/cm^3) =  1.606 +- 0.012\n  Mass (10^19 kg)         =  10.805          Geometric Albedo =  1.04\n  GM (km^3/s^2)           =   7.210367       V(1,0)           =  +2.1\n\n SATELLITE ORBITAL DATA (mean elements referred to local Laplace plane):\n  Semi-major axis, a (km) = 238.04(10^3)    Orbital period    = 1.370218 d\n  Eccentricity, e         = 0.0047          Rotational period = Synchronous\n  Inclination, i  (deg)   = 0.009\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:52:58 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Enceladus (602)                 {source: sat441l}\nCenter body name: Saturn (699)                    {source: sat441l}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 60268.0, 60268.0, 54364.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}
