@@ -1605,11 +1605,11 @@ class Contin(Astro):
         #Omega_a = math.radians(self.moons[sysname]['Omega_a'])
         #Omega_b = math.radians(self.moons[sysname]['Omega_b'])
       #  Omega = (Omega_a - (Omega_b*d))%(2*math.pi)
-        Omega = self.moons[sysname]['Omega_a']
+        Omega = math.radians(self.moons[sysname]['Omega_a']) #the table is in degrees but cos/sin need radians
        # omega_a = math.radians(self.moons[sysname]['omega_a'])
        # omega_b = math.radians(self.moons[sysname]['omega_b'])
       #  omega = (omega_a + (omega_b*d)) % (2*math.pi)
-        omega = self.moons[sysname]['omega_a']
+        omega = math.radians(self.moons[sysname]['omega_a'])
         inclination = math.radians(self.moons[sysname]['i'])
 
         mean_motion = (2*math.pi)/(self.moons[sysname]['sidereal_p_s'])
@@ -1624,7 +1624,7 @@ class Contin(Astro):
             eccentric_anomaly = eccentric_anomaly - ((eccentric_anomaly - (self.moons[sysname]['e']*math.sin(eccentric_anomaly)) - mean_anomaly)/(1 - (self.moons[sysname]['e']*math.cos(eccentric_anomaly))))
         ##the 2D position vector..ahere Z==0 at 2D r_PQW
         
-        r_P = (self.moons[sysname]['a']*(math.cos(eccentric_anomaly - self.moons[sysname]['e'])))  #basically x
+        r_P = (self.moons[sysname]['a']*(math.cos(eccentric_anomaly) - self.moons[sysname]['e']))  #basically x...a(cosE - e) not a*cos(E - e)
         b = (self.moons[sysname]['a']*(math.sqrt(1 - math.pow(self.moons[sysname]['e'],2)))) #basically the semiminor axis
         r_Q = b*math.sin(eccentric_anomaly)#basically y
         r_W = 0.0
@@ -1636,7 +1636,7 @@ class Contin(Astro):
 
         v_P = -(math.sqrt(grav_param*self.moons[sysname]['a'])/r_raw)*math.sin(eccentric_anomaly)
 
-        v_Q = (math.sqrt(grav_param*b)/r_raw)*math.cos(eccentric_anomaly)
+        v_Q = (math.sqrt(grav_param*self.moons[sysname]['a']*(1 - math.pow(self.moons[sysname]['e'],2)))/r_raw)*math.cos(eccentric_anomaly) #sqrt(u*a*(1-e^2)) as in orbits()
         v_W = 0.0
 
         #return {'r_P_bas_x':r_P,'r_Q_bas_y':r_Q,'r_W_bas_z':r_W,'v_P_bas_vx':v_P,'v_Q_bas_vy':v_Q,'v_W_bas_vz':v_W,'b_moon':b,'name':f'{sysname} system'}
@@ -1659,7 +1659,7 @@ class Contin(Astro):
         osc_elements = self.oscelem([X,Y,Z],[v_X,v_Y,v_Z]) #a amd e from this is wrong because of the 3 body system fkr earth moon system...also the energy e..for a 3 body system changes..
 
         ##E a and e for this 3 body system..# heliocentric
-        Earth_helio = self.barycentric('earth')
+        Earth_helio = self.barycentric('earth',days) #same instant as the moon
         global_moon_X = Earth_helio['X_helio'] + X
         global_moon_Y = Earth_helio['Y_helio'] + Y#heliocentric
         global_moon_Z = Earth_helio['Z_helio'] + Z
@@ -1669,7 +1669,7 @@ class Contin(Astro):
         global_moon_Z_bary = Earth_helio['Z_bary'] + Z
 
         #r_moon_sun_heliomagn = vectors.magn_vect([-global_moon_X,-global_moon_Y,-global_moon_Z]) # a vector pointing from the moon to the sun
-        list_r_sun = [-Earth_helio['X_helio'],-Earth_helio['Y_helio'],Earth_helio['Z_helio']]#geocentric remmber
+        list_r_sun = [-Earth_helio['X_helio'],-Earth_helio['Y_helio'],-Earth_helio['Z_helio']]#geocentric remmber
         #r_earth_sun_heliomagn = vectors.magn_vect(list_r_sun)
        # dot_es_r = vectors.dot_vect(list_r_sun,[X,Y,Z]) #es is vector po8ntingfrom the earth to the sun and r is the moon vector
 
