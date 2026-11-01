@@ -2,18 +2,25 @@
 
 import matplotlib
 from rich.console import Console
+import os
+import sys
 
 console=Console()
 
 #matplotlib.use('TkAgg')
 
-try:
-    matplotlib.use('TkAgg')
-    console.print('[bold Cyan]Using TkAgg backend.[/bold Cyan]')
-except ImportError:
-    # If TkAgg fails, let Matplotlib pick the best available backend automatically
-    console.print('[bold red]Warning: Tkinter not found. Falling back to default backend.[/bold red]')
-    pass 
+#no printing here: this runs on 'import astlo' and library users (servers, notebooks, scripts) should get a quiet import
+if os.environ.get('MPLBACKEND'):
+    pass #the user picked a backend..respect it
+elif os.name=='posix' and sys.platform!='darwin' and not (os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY')):
+    matplotlib.use('Agg') #no screen (server, CI, Termux without X11): the PNGs are still written, just no window
+else:
+    try:
+        import tkinter #TkAgg needs tkinter..check first because matplotlib.use() only fails later, at the first plot
+        matplotlib.use('TkAgg')
+    except ImportError:
+        # If TkAgg fails, let Matplotlib pick the best available backend automatically
+        pass 
 
 #import matplotlib.pyplot as plt
 

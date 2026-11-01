@@ -10,7 +10,7 @@ Classifier: Programming Language :: Python :: 3
 Classifier: License :: COPYRIGHT
 Classifier: Operating System :: OS Independent
 Classifier: Topic :: Scientific/Engineering :: Astronomy :: Astrophysics
-Requires-Python: >=3.10
+Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: plotext
