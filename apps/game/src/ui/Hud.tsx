@@ -13,9 +13,11 @@ export interface HudProps {
   readonly onExit: () => void;
   readonly onSandboxTarget?: (target: PlanetId) => void;
   readonly targetLocked: boolean;
+  /** "Training capture zone (3× real)" on the training level. */
+  readonly trainingZone?: string | null;
 }
 
-export function Hud({ level, dateLabel, dateCaption, onExit, onSandboxTarget, targetLocked }: HudProps) {
+export function Hud({ level, dateLabel, dateCaption, onExit, onSandboxTarget, targetLocked, trainingZone }: HudProps) {
   const [infoOpen, setInfoOpen] = useState(false);
   const noteId = useId();
   const selectId = useId();
@@ -84,6 +86,11 @@ export function Hud({ level, dateLabel, dateCaption, onExit, onSandboxTarget, ta
           <span className="date-caption">{dateCaption}</span>
           <time>{dateLabel}</time>
         </div>
+        {trainingZone ? (
+          <div className="chip training-chip" style={{ ["--planet" as string]: color }}>
+            {trainingZone}
+          </div>
+        ) : null}
       </div>
       {infoOpen ? (
         <p className="info-note" id={noteId}>

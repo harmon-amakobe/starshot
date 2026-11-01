@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { maxStars, scoreShot, type ShotFacts } from "./scoring.js";
-import { EMPTY_PROGRESS, PROGRESS_KEY, isUnlocked, loadProgress, saveProgress, totalStars, withResult } from "./progress.js";
+import {
+  EMPTY_PROGRESS,
+  PROGRESS_KEY,
+  isUnlocked,
+  loadProgress,
+  saveProgress,
+  totalStars,
+  withCoachSeen,
+  withResult,
+} from "./progress.js";
 
 const base: ShotFacts = { hit: true, deltaVKmS: 3.7, bullseye: false, requiredFlybyDone: false, hintUsed: false };
 const marsRules = { parDeltaVKmS: 3.66 };
@@ -17,6 +26,14 @@ describe("scoreShot", () => {
     expect(scoreShot(marsRules, { ...base, deltaVKmS: 4.5 }).stars).toBe(1);
     expect(scoreShot(marsRules, { ...base, deltaVKmS: 3.66 * 1.1 }).stars).toBe(2);
     expect(scoreShot(marsRules, { ...base, deltaVKmS: 3.66 * 1.1 + 0.001 }).stars).toBe(1);
+  });
+
+  it("honours a tighter per-level par tolerance", () => {
+    const tour = { parDeltaVKmS: 6.56, parTolerance: 1.05, requiredFlyby: "jupiter" as const };
+    expect(scoreShot(tour, { ...base, deltaVKmS: 6.56 * 1.05 }).efficient).toBe(true);
+    expect(scoreShot(tour, { ...base, deltaVKmS: 6.56 * 1.05 + 0.001 }).efficient).toBe(false);
+    // The default 110% would still have given the star.
+    expect(scoreShot({ ...tour, parTolerance: undefined }, { ...base, deltaVKmS: 6.56 * 1.05 + 0.001 }).efficient).toBe(true);
   });
 
   it("gives the third star for a bullseye", () => {
@@ -75,6 +92,19 @@ describe("progress", () => {
     const throwing = { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
     expect(loadProgress(throwing)).toEqual(EMPTY_PROGRESS);
     expect(() => saveProgress(EMPTY_PROGRESS, throwing)).not.toThrow();
+  });
+
+  it("remembers that the first-run coach mark was seen, alongside the results", () => {
+    const store = memory();
+    expect(loadProgress(store).coachSeen).toBeUndefined();
+    const p = withResult(withCoachSeen(EMPTY_PROGRESS), "first-light", 1, true, 3.7);
+    expect(p.coachSeen).toBe(true);
+    expect(withCoachSeen(p)).toBe(p);
+    saveProgress(p, store);
+    expect(loadProgress(store)).toEqual(p);
+    // Anything but a literal true reads as "not seen yet".
+    store.setItem(PROGRESS_KEY, JSON.stringify({ version: 1, levels: {}, coachSeen: "yes" }));
+    expect(loadProgress(store).coachSeen).toBeUndefined();
   });
 
   it("unlocks each campaign level after a star on the previous one", () => {

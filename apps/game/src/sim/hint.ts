@@ -1,11 +1,17 @@
 /**
  * The aiming hint: the cheapest direct (Lambert) transfer over the level's
  * launch window, nudged with the game's own simulator until it really reaches
- * the capture zone (the two-body Lambert aim ignores the other planets and the
- * patched-conic departure, so it can miss by a little). Levels whose answer is
- * not a direct transfer (gravity assists) ship a curated, test-verified shot.
+ * the capture zone (the two-body Lambert aim ignores the other planets, so it
+ * can miss by a little). Levels whose answer is not a direct transfer (gravity
+ * assists) ship a curated, test-verified shot.
+ *
+ * Deterministic: the search is bounded by a number of simulations, never by
+ * wall-clock time, so a level gives the same hint on every device. The hint's
+ * aim is rounded to the grid the controls show and can set (0.01 degree,
+ * 0.001 km/s) before it is simulated, so "Use hint" applies exactly the aim the
+ * label shows and the simulator checked.
  */
-import type { Ephemeris, PlanetId, Vec3 } from "@starshot/ephemeris";
+import type { Ephemeris, Vec3 } from "@starshot/ephemeris";
 import { bestDirectTransfer } from "@starshot/physics";
 import {
   DAY,
@@ -13,10 +19,13 @@ import {
   analyzeShot,
   daysBetweenIso,
   launchEtForDay,
+  roundAim,
   simulateShot,
   vInfFromAim,
   type Aim,
+  type ShotAnalysis,
   type ShotRequest,
+  type ShotTemplate,
 } from "./shot.js";
 
 export interface KnownShot {
@@ -27,112 +36,119 @@ export interface KnownShot {
 }
 
 export interface HintQuery {
-  readonly target: PlanetId;
-  readonly attractors: readonly PlanetId[];
+  /** The level's shot: target, attractors, flight limit, integrator settings, capture zone. */
+  readonly shot: ShotTemplate;
   readonly windowStartIso: string;
   readonly windowDays: number;
-  readonly maxFlightDays: number;
   readonly vInfMaxKmS: number;
-  readonly requiredFlyby?: PlanetId;
   readonly curated?: KnownShot;
-  /** Wall-clock budget for the simulation nudging [ms]; the best miss so far is returned when it runs out. */
-  readonly budgetMs?: number;
+  /** Most game simulations the search may run; the closest miss is returned when they run out. */
+  readonly maxSimulations?: number;
 }
 
 export interface Hint {
   /** Day index in the launch window. */
   readonly day: number;
   readonly launchEt: number;
+  /** On the controls' grid (0.01 degree, 0.001 km/s): exactly what "Use hint" applies. */
   readonly aim: Aim;
-  /** Whether the game simulation confirms the hint reaches the capture zone. */
+  /** The game simulation of exactly this aim reaches the capture zone (and makes any required flyby). */
   readonly hits: boolean;
+  /** Closest approach of exactly this aim to the target's centre [km]. */
+  readonly closestKm: number;
   readonly source: "lambert" | "curated";
   readonly simulations: number;
 }
 
+/** Default simulation budget for the nudging search (Lambert grid solves are not counted). */
+export const HINT_MAX_SIMULATIONS = 240;
+
 const range = (from: number, to: number, step: number): number[] => {
   const out: number[] = [];
-  for (let x = from; x <= to + 1e-9; x += step) out.push(x);
+  for (let k = 0; from + k * step <= to + 1e-9; k++) out.push(from + k * step);
   return out;
 };
 
 export function findHint(ephemeris: Ephemeris, q: HintQuery): Hint | null {
-  const shotFor = (day: number, aim: Aim): ShotRequest => ({
-    target: q.target,
-    attractors: q.attractors,
-    launchEt: launchEtForDay(q.windowStartIso, day),
-    vInf: vInfFromAim(aim),
-    maxFlightDays: q.maxFlightDays,
-    requiredFlyby: q.requiredFlyby,
-  });
+  const maxSimulations = q.maxSimulations ?? HINT_MAX_SIMULATIONS;
+  const launchEtOf = (day: number) => launchEtForDay(q.windowStartIso, day);
+  const shotFor = (day: number, aim: Aim): ShotRequest => ({ ...q.shot, launchEt: launchEtOf(day), vInf: vInfFromAim(aim) });
+  /** Aims are put on the controls' grid, under the speed cap, before they are simulated. */
+  const onGrid = (aim: Aim): Aim => {
+    const r = roundAim(aim);
+    return r.speedKmS > q.vInfMaxKmS ? roundAim({ ...r, speedKmS: Math.floor(q.vInfMaxKmS * 1000) / 1000 }) : r;
+  };
+  const success = (a: ShotAnalysis) => a.hit && (q.shot.requiredFlyby === undefined || a.requiredFlybyDone);
+
   let simulations = 0;
-  const tryShot = (day: number, aim: Aim) => {
+  const seen = new Map<string, ShotAnalysis>();
+  const tryShot = (day: number, aim: Aim): ShotAnalysis => {
+    const key = `${day}|${aim.angleDeg}|${aim.speedKmS}`;
+    const known = seen.get(key);
+    if (known) return known;
     simulations++;
     const shot = shotFor(day, aim);
-    return analyzeShot(ephemeris, shot, simulateShot(ephemeris, shot));
+    const a = analyzeShot(ephemeris, shot, simulateShot(ephemeris, shot));
+    seen.set(key, a);
+    return a;
   };
+  const hintOf = (day: number, aim: Aim, a: ShotAnalysis, source: Hint["source"]): Hint => ({
+    day,
+    launchEt: launchEtOf(day),
+    aim,
+    hits: success(a),
+    closestKm: a.closestKm,
+    source,
+    simulations,
+  });
 
   if (q.curated) {
     const day = daysBetweenIso(q.windowStartIso, q.curated.launchIso);
-    const aim = aimFromVInf(q.curated.vInf);
-    const a = tryShot(day, aim);
-    return { day, launchEt: launchEtForDay(q.windowStartIso, day), aim, hits: a.hit, source: "curated", simulations };
+    const aim = onGrid(aimFromVInf(q.curated.vInf));
+    return hintOf(day, aim, tryShot(day, aim), "curated");
   }
 
-  // Coarse grid (about 50 x 160 Lambert solves at most), then a fine grid around its best point.
+  // Coarse Lambert grid (about 50 x 160 solves at most), then a fine grid around its best point.
+  const maxFlightDays = q.shot.maxFlightDays;
   const dayStep = Math.max(2, Math.ceil(q.windowDays / 50));
-  const tofStep = Math.max(5, Math.ceil(q.maxFlightDays / 160));
+  const tofStep = Math.max(5, Math.ceil(maxFlightDays / 160));
   const coarseDays = range(0, q.windowDays, dayStep);
-  const tofs = range(40, q.maxFlightDays * 0.95, tofStep).map((d) => d * DAY);
-  const coarse = bestDirectTransfer(
-    ephemeris,
-    "earth",
-    q.target,
-    coarseDays.map((d) => launchEtForDay(q.windowStartIso, d)),
-    tofs,
-  );
+  const tofs = range(40, maxFlightDays * 0.95, tofStep).map((d) => d * DAY);
+  const coarse = bestDirectTransfer(ephemeris, "earth", q.shot.target, coarseDays.map(launchEtOf), tofs);
   if (!coarse) return null;
-  const coarseDay = Math.round(daysBetweenEt(launchEtForDay(q.windowStartIso, 0), coarse.launchEt));
+  const coarseDay = Math.round((coarse.launchEt - launchEtOf(0)) / DAY);
   const fineDays = range(Math.max(0, coarseDay - dayStep), Math.min(q.windowDays, coarseDay + dayStep), 1);
   const tofDays = coarse.tof / DAY;
-  const fineTofs = range(Math.max(20, tofDays - 2 * tofStep), tofDays + 2 * tofStep, Math.max(1, tofStep / 5)).map((d) => d * DAY);
+  const fineTofs = range(Math.max(20, tofDays - 2 * tofStep), Math.min(maxFlightDays, tofDays + 2 * tofStep), Math.max(1, tofStep / 5));
   const best =
-    bestDirectTransfer(
-      ephemeris,
-      "earth",
-      q.target,
-      fineDays.map((d) => launchEtForDay(q.windowStartIso, d)),
-      fineTofs,
-    ) ?? coarse;
-  const day = Math.round(daysBetweenEt(launchEtForDay(q.windowStartIso, 0), best.launchEt));
+    bestDirectTransfer(ephemeris, "earth", q.shot.target, fineDays.map(launchEtOf), fineTofs.map((d) => d * DAY)) ?? coarse;
+  const day = Math.round((best.launchEt - launchEtOf(0)) / DAY);
   const base = aimFromVInf(best.vInf);
-  const capped = (aim: Aim): Aim => ({ ...aim, speedKmS: Math.min(aim.speedKmS, q.vInfMaxKmS) });
 
-  // Nudge the angle (and then the speed) until the game simulator agrees.
-  const deadline = performance.now() + (q.budgetMs ?? 2500);
-  let bestAim = capped(base);
-  let bestMiss = Infinity;
+  // Nudge the angle (then the speed) until the game simulator agrees, within the budget.
+  let closest: { aim: Aim; a: ShotAnalysis } | null = null;
   const speedFactors = [1, 1.01, 0.99, 1.02, 0.98, 1.04];
   const angleOffsets = [0, ...range(0.05, 3, 0.05).flatMap((x) => [x, -x])];
-  search: for (const f of speedFactors) {
+  for (const f of speedFactors) {
     for (const da of angleOffsets) {
-      if (simulations >= 400 || performance.now() > deadline) break search;
-      const aim = capped({ angleDeg: base.angleDeg + da, speedKmS: base.speedKmS * f });
+      if (simulations >= maxSimulations) break;
+      const aim = onGrid({ angleDeg: base.angleDeg + da, speedKmS: base.speedKmS * f });
       const a = tryShot(day, aim);
-      if (a.hit) {
-        const centred = centreOfBand(aim, (x) => performance.now() < deadline && tryShot(day, x).hit);
-        return { day, launchEt: launchEtForDay(q.windowStartIso, day), aim: centred, hits: true, source: "lambert", simulations };
+      if (success(a)) {
+        // Prefer the middle of the hitting band, if the budget allows finding it and it still hits.
+        const centre = onGrid(centreOfBand(aim, (x) => simulations < maxSimulations && success(tryShot(day, onGrid(x)))));
+        const c = tryShot(day, centre);
+        return success(c) ? hintOf(day, centre, c, "lambert") : hintOf(day, aim, a, "lambert");
       }
-      if (a.closestKm < bestMiss) {
-        bestMiss = a.closestKm;
-        bestAim = aim;
-      }
+      if (!closest || a.closestKm < closest.a.closestKm) closest = { aim, a };
     }
   }
-  return { day, launchEt: launchEtForDay(q.windowStartIso, day), aim: bestAim, hits: false, source: "lambert", simulations };
+  if (!closest) {
+    const aim = onGrid(base);
+    return hintOf(day, aim, tryShot(day, aim), "lambert");
+  }
+  return hintOf(day, closest.aim, closest.a, "lambert");
 }
-
-const daysBetweenEt = (a: number, b: number): number => (b - a) / DAY;
 
 /** Middle of the run of hitting angles around a hitting aim (0.1 degree steps, up to 3 degrees each way). */
 function centreOfBand(aim: Aim, hits: (aim: Aim) => boolean): Aim {

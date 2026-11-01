@@ -2,12 +2,15 @@
  * React hook around the physics worker.
  *
  * Previews are "latest request wins": at most one preview is in flight; newer
- * requests replace the queued one, and posts are throttled. Launches and hints
- * are awaited individually. Launches re-run the exact same simulateShot as the
- * preview (the worker is deterministic), so the flight matches the preview.
+ * requests replace the queued one, and posts are throttled. So the finished
+ * preview can be for an older aim than the one on screen: the game launches
+ * only when it matches (see preview.ts), and then launches that preview's own
+ * request, which the deterministic worker simulates bit for bit the same.
+ * Launches and hints are awaited individually.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { HintQuery } from "./hint.js";
+import { shotKey } from "./preview.js";
 import type { HintResponse, ShotResponse, SimRequest, SimResponse } from "./protocol.js";
 import type { ShotRequest } from "./shot.js";
 
@@ -17,16 +20,13 @@ export const PREVIEW_THROTTLE_MS = 30;
 type Pending = { resolve: (r: SimResponse) => void; reject: (e: Error) => void };
 
 export interface SimulationApi {
-  /** Latest finished preview (may lag the aim by one request while dragging). */
+  /** Latest finished preview (may lag the aim by one request while dragging; check its shot). */
   readonly preview: ShotResponse | null;
   readonly previewBusy: boolean;
   requestPreview(shot: ShotRequest): void;
-  clearPreview(): void;
   launch(shot: ShotRequest): Promise<ShotResponse>;
   hint(query: HintQuery): Promise<HintResponse>;
 }
-
-const shotKey = (s: ShotRequest): string => JSON.stringify(s);
 
 export function useSimulation(): SimulationApi {
   const workerRef = useRef<Worker | null>(null);
@@ -113,12 +113,6 @@ export function useSimulation(): SimulationApi {
     [pump],
   );
 
-  const clearPreview = useCallback(() => {
-    queued.current = null;
-    lastKey.current = "";
-    setPreview(null);
-  }, []);
-
   const call = useCallback(<T extends SimResponse>(build: (id: number) => SimRequest): Promise<T> => {
     const worker = workerRef.current;
     if (!worker) return Promise.reject(new Error("physics worker not ready"));
@@ -135,5 +129,5 @@ export function useSimulation(): SimulationApi {
   );
   const hint = useCallback((query: HintQuery) => call<HintResponse>((id) => ({ kind: "hint", id, query })), [call]);
 
-  return { preview, previewBusy, requestPreview, clearPreview, launch, hint };
+  return { preview, previewBusy, requestPreview, launch, hint };
 }

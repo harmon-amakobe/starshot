@@ -1,6 +1,21 @@
 import { useEffect, useRef } from "react";
+import { CAMPAIGN, DEFAULT_PAR_TOLERANCE } from "../levels.js";
 import { renderStarfield } from "../render/starfield.js";
 import { HONESTY_NOTE } from "./Hud.js";
+
+const pct = (tolerance: number) => `${Math.round(tolerance * 100)}%`;
+/** "110% of the level's par delta-v (105% on the Grand Tour)", from the level table. */
+const PAR_RULE = (() => {
+  const tighter = CAMPAIGN.filter((l) => l.parTolerance !== undefined && l.parTolerance !== DEFAULT_PAR_TOLERANCE);
+  const extra = tighter.map((l) => `${pct(l.parTolerance!)} on ${l.title}`).join(", ");
+  return `${pct(DEFAULT_PAR_TOLERANCE)} of the level's par delta-v${extra ? ` (${extra})` : ""}`;
+})();
+/** "Reach the target's capture zone (on First Light, a training zone 3× the real size)." */
+const ZONE_RULE = (() => {
+  const training = CAMPAIGN.filter((l) => (l.captureZoneScale ?? 1) !== 1);
+  const extra = training.map((l) => `on ${l.title}, a training zone ${l.captureZoneScale}\u00D7 the real size`).join("; ");
+  return `Reach the target's capture zone${extra ? ` (${extra})` : ""}.`;
+})();
 
 /** Full-screen deterministic starfield behind the menus. */
 export function Backdrop() {
@@ -111,8 +126,8 @@ export function HowToScreen({ onBack }: { readonly onBack: () => void }) {
         </ol>
         <h2>Stars</h2>
         <ul>
-          <li>Reach the target&apos;s capture zone.</li>
-          <li>Use no more than 110% of the level&apos;s par delta-v (from a 200 km parking orbit).</li>
+          <li>{ZONE_RULE}</li>
+          <li>Use no more than {PAR_RULE} (from a 200 km parking orbit).</li>
           <li>Bullseye: pass within 10 planet radii, or, on the Grand Tour, swing by Jupiter on the way.</li>
           <li>Using the hint caps a level at two stars.</li>
         </ul>

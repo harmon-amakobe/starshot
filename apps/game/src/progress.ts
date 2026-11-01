@@ -14,6 +14,8 @@ export interface LevelProgress {
 export interface Progress {
   readonly version: 1;
   readonly levels: Readonly<Record<string, LevelProgress>>;
+  /** The first-run coach mark ("Drag anywhere to pull the slingshot") has been dismissed by a drag or nudge. */
+  readonly coachSeen?: boolean;
 }
 
 export const EMPTY_PROGRESS: Progress = { version: 1, levels: {} };
@@ -47,7 +49,7 @@ export function loadProgress(store: KeyValueStore | undefined = defaultStore()):
         ...(Number.isFinite(dv) ? { bestDeltaVKmS: dv } : {}),
       };
     }
-    return { version: 1, levels };
+    return parsed.coachSeen === true ? { version: 1, levels, coachSeen: true } : { version: 1, levels };
   } catch {
     return EMPTY_PROGRESS;
   }
@@ -68,8 +70,11 @@ export function withResult(progress: Progress, levelId: string, stars: number, h
   const prevDv = prev?.bestDeltaVKmS;
   const bestDv = hit ? Math.min(prevDv ?? Infinity, deltaVKmS) : prevDv;
   const next: LevelProgress = { stars: bestStars, ...(bestDv !== undefined && Number.isFinite(bestDv) ? { bestDeltaVKmS: bestDv } : {}) };
-  return { version: 1, levels: { ...progress.levels, [levelId]: next } };
+  return { ...progress, levels: { ...progress.levels, [levelId]: next } };
 }
+
+/** Progress once the player has dragged or nudged the aim for the first time. */
+export const withCoachSeen = (progress: Progress): Progress => (progress.coachSeen ? progress : { ...progress, coachSeen: true });
 
 /** Campaign level n (0-based) is open once level n-1 has at least one star. */
 export function isUnlocked(campaignIds: readonly string[], index: number, progress: Progress): boolean {

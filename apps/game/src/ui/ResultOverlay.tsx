@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { BODIES } from "@starshot/ephemeris";
 import { formatDate, formatDays, formatKm, isoDate } from "../format.js";
 import type { Level } from "../levels.js";
-import { PAR_TOLERANCE, type Score } from "../scoring.js";
-import { BULLSEYE_RADII, type ShotAnalysis } from "../sim/shot.js";
+import type { Score } from "../scoring.js";
+import { BULLSEYE_RADII, EPHEMERIS_VALID_UNTIL_ISO, type ShotAnalysis } from "../sim/shot.js";
 
 export interface ResultOverlayProps {
   readonly level: Level;
   readonly score: Score;
   readonly maxStars: number;
+  /** Efficiency star up to par x parTolerance. */
+  readonly parTolerance: number;
+  /** "Training capture zone (3× real)" on the training level. */
+  readonly trainingZone?: string | null;
   readonly analysis: ShotAnalysis;
   readonly hintUsed: boolean;
   readonly canNext: boolean;
@@ -41,19 +45,42 @@ export function shareText(level: Level, score: Score, maxStars: number, a: ShotA
   return `STARSHOT ${level.title} ${stars}: ${what} with ${a.deltaVKmS.toFixed(2)} km/s of delta-v (launch ${isoDate(a.launchEt)}).`;
 }
 
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function ResultOverlay(p: ResultOverlayProps) {
   const { level, score, analysis: a } = p;
-  const first = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [shared, setShared] = useState<string | null>(null);
   const { onRetry } = p;
   useEffect(() => {
-    first.current?.focus();
+    // Start at the top of the card: focus the heading (not a button further down).
+    cardRef.current?.scrollTo?.({ top: 0 });
+    headingRef.current?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onRetry();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onRetry]);
+
+  // Keep Tab inside the dialog (the game behind it is also inert while it is open).
+  const trapTab = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "Tab" || !cardRef.current) return;
+    const items = [...cardRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    const firstItem = items[0];
+    const lastItem = items[items.length - 1];
+    if (!firstItem || !lastItem) return;
+    const active = document.activeElement;
+    const outside = !cardRef.current.contains(active);
+    if (e.shiftKey && (active === firstItem || active === headingRef.current || outside)) {
+      e.preventDefault();
+      lastItem.focus();
+    } else if (!e.shiftKey && (active === lastItem || outside)) {
+      e.preventDefault();
+      firstItem.focus();
+    }
+  };
 
   const share = async () => {
     const text = shareText(level, score, p.maxStars, a);
@@ -88,8 +115,12 @@ export function ResultOverlay(p: ResultOverlayProps) {
   }
 
   const name = BODIES[level.target].name;
-  const checks: Array<[boolean, string]> = [[score.hit, `Reach ${name}'s capture zone`]];
-  if (level.par) checks.push([score.efficient, `Δv within ${Math.round((PAR_TOLERANCE - 1) * 100)}% of par (${(level.par.deltaVKmS * PAR_TOLERANCE).toFixed(2)} km/s)`]);
+  const zone = p.trainingZone ? `${name}'s ${p.trainingZone.charAt(0).toLowerCase()}${p.trainingZone.slice(1)}` : `${name}'s capture zone`;
+  const checks: Array<[boolean, string]> = [[score.hit, `Reach ${zone}`]];
+  if (level.par) {
+    const pct = Math.round((p.parTolerance - 1) * 100);
+    checks.push([score.efficient, `Δv within ${pct}% of par (${(level.par.deltaVKmS * p.parTolerance).toFixed(2)} km/s)`]);
+  }
   checks.push([
     score.skill,
     level.requiredFlyby
@@ -98,8 +129,15 @@ export function ResultOverlay(p: ResultOverlayProps) {
   ]);
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="result-title" aria-describedby="result-summary">
-      <div className={`result-card ${a.hit ? "is-hit" : "is-miss"}`}>
+    <div
+      className="overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="result-title"
+      aria-describedby="result-summary"
+      onKeyDown={trapTab}
+    >
+      <div ref={cardRef} className={`result-card ${a.hit ? "is-hit" : "is-miss"}`}>
         <div className="stars" aria-label={`${score.stars} of ${p.maxStars} stars`} role="img">
           {Array.from({ length: p.maxStars }, (_, i) => (
             <svg key={i} viewBox="0 0 24 24" className={`star${i < score.stars ? " on" : ""}`} style={{ animationDelay: `${150 + i * 180}ms` }} aria-hidden="true">
@@ -107,12 +145,19 @@ export function ResultOverlay(p: ResultOverlayProps) {
             </svg>
           ))}
         </div>
-        <h2 id="result-title">{headline(level, a)}</h2>
+        <h2 id="result-title" ref={headingRef} tabIndex={-1}>
+          {headline(level, a)}
+        </h2>
         <p id="result-summary" className="result-summary">
           {a.hit
-            ? `Entered ${name}'s sphere of influence on ${formatDate(a.endEt)} after ${formatDays(a.flightDays)}.`
-            : `Closest approach ${formatKm(a.closestKm)} on ${formatDate(a.closestEt)}; ${name}'s capture zone reaches ${formatKm(a.targetSoiKm)} from its centre.`}
+            ? p.trainingZone
+              ? `Entered ${zone} on ${formatDate(a.endEt)} after ${formatDays(a.flightDays)}.`
+              : `Entered ${name}'s sphere of influence on ${formatDate(a.endEt)} after ${formatDays(a.flightDays)}.`
+            : `Closest approach ${formatKm(a.closestKm)} on ${formatDate(a.closestEt)}; ${zone} reaches ${formatKm(a.captureZoneKm)} from its centre.`}
           {score.hintCapped ? " Hint used: capped at 2 stars." : ""}
+          {a.beyondEphemerisRange
+            ? ` The flight runs past ${EPHEMERIS_VALID_UNTIL_ISO.slice(0, 4)}, the end of the JPL table: planet positions there are extrapolated.`
+            : ""}
         </p>
         <ul className="checks">
           {checks.map(([ok, text]) => (
@@ -129,8 +174,8 @@ export function ResultOverlay(p: ResultOverlayProps) {
             </div>
           ))}
         </dl>
-        <div className="result-actions">
-          <button ref={first} type="button" className="ghost-btn" onClick={p.onRetry}>
+        <div className={`result-actions${p.canNext ? " has-next" : ""}`}>
+          <button type="button" className="ghost-btn" onClick={p.onRetry}>
             Retry
           </button>
           {p.canNext ? (

@@ -1,21 +1,29 @@
 /**
  * Star rules (pure, unit-tested in scoring.test.ts):
  *   1 star  - hit: the probe reaches the target's sphere of influence (or its surface);
- *   +1 star - efficient: delta-v from low Earth orbit within 110% of the level's par;
+ *   +1 star - efficient: delta-v from low Earth orbit within the level's par tolerance
+ *             (110% of par by default, tighter on the Grand Tour);
  *   +1 star - bullseye (closest approach under 10 target radii) OR, on a level with a
  *             required flyby, flying through that planet's sphere of influence on the way;
  *   using the hint caps the result at 2 stars. A miss scores 0.
  */
 import type { PlanetId } from "@starshot/ephemeris";
 
+/** Default efficiency tolerance: delta-v up to 110% of par earns the star. */
 export const PAR_TOLERANCE = 1.1;
 export const HINT_STAR_CAP = 2;
 
 export interface ScoringRules {
   /** Par delta-v from LEO [km/s]; no par means no efficiency star (sandbox). */
   readonly parDeltaVKmS?: number;
+  /** Efficiency star up to par x parTolerance; default PAR_TOLERANCE. */
+  readonly parTolerance?: number;
   readonly requiredFlyby?: PlanetId;
 }
+
+/** Highest delta-v [km/s] that still earns the efficiency star, if the level has a par. */
+export const parLimitKmS = (rules: ScoringRules): number | undefined =>
+  rules.parDeltaVKmS === undefined ? undefined : rules.parDeltaVKmS * (rules.parTolerance ?? PAR_TOLERANCE);
 
 export interface ShotFacts {
   readonly hit: boolean;
@@ -43,8 +51,8 @@ export interface Score {
 
 export function scoreShot(rules: ScoringRules, facts: ShotFacts): Score {
   const hit = facts.hit;
-  const efficient =
-    hit && rules.parDeltaVKmS !== undefined && facts.deltaVKmS <= rules.parDeltaVKmS * PAR_TOLERANCE + 1e-9;
+  const limit = parLimitKmS(rules);
+  const efficient = hit && limit !== undefined && facts.deltaVKmS <= limit + 1e-9;
   const bullseye = hit && facts.bullseye;
   const flyby = hit && rules.requiredFlyby !== undefined && facts.requiredFlybyDone;
   const skill = bullseye || flyby;

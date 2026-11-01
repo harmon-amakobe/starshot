@@ -1,17 +1,26 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { BODIES, PLANET_IDS, createEphemeris, orbitPath, type PlanetId } from "@starshot/ephemeris";
 import { sampleAt } from "@starshot/physics";
-import { bodyName, formatDate, formatKm } from "../format.js";
-import { framingBodies, type Level } from "../levels.js";
+import { bodyName, formatAimAngle, formatAimSpeed, formatDate, formatKm } from "../format.js";
+import {
+  captureZoneScaleOf,
+  framingBodies,
+  hintQueryFor,
+  parToleranceOf,
+  shotRequestFor,
+  type Level,
+} from "../levels.js";
 import { aimFromPull, useSlingshot, type Pull } from "../input/useSlingshot.js";
-import { fitCamera, focusPoint, panBy, zoomAt, type Camera, type Viewport } from "../render/camera.js";
-import { buildPath, drawScene, type Ghost, type Marker, type PathData } from "../render/draw.js";
+import { fitCamera, focusPoint, panBy, project, zoomAt, type Camera, type Viewport } from "../render/camera.js";
+import { buildPath, drawScene, visibleMapRect, type Ghost, type Marker, type PathData } from "../render/draw.js";
 import { renderStarfield } from "../render/starfield.js";
-import { maxStars, scoreShot, type Score } from "../scoring.js";
+import { maxStars, scoreShot, type Score, type ScoringRules } from "../scoring.js";
 import type { Hint } from "../sim/hint.js";
+import { launchGate, shotKey } from "../sim/preview.js";
 import type { ShotResponse } from "../sim/protocol.js";
 import {
   DAY,
+  cachedEphemeris,
   daysBetweenIso,
   launchEtForDay,
   normalizeDeg,
@@ -27,7 +36,7 @@ import { Hud } from "./Hud.js";
 import { ResultOverlay } from "./ResultOverlay.js";
 
 /** Main-thread ephemeris, for drawing only (the worker has its own for physics). */
-const eph = createEphemeris({ flatten: true });
+const eph = cachedEphemeris(createEphemeris({ flatten: true }));
 
 export interface GameScreenProps {
   readonly level: Level;
@@ -36,6 +45,9 @@ export interface GameScreenProps {
   readonly onNext: () => void;
   readonly onRecord: (level: Level, score: Score, analysis: ShotAnalysis) => void;
   readonly onSandboxTarget?: (target: PlanetId) => void;
+  /** Show the first-run coach mark until the player drags or nudges the aim. */
+  readonly showCoach: boolean;
+  readonly onCoachSeen: () => void;
 }
 
 type Phase = "aim" | "launching" | "flight" | "result";
@@ -55,6 +67,25 @@ interface FlightAnim {
 const DPR_CAP = 2;
 const FAST_FORWARD = 6;
 const round = (x: number, step: number) => Math.round(x / step) * step;
+
+/** First-run coach mark, shown near Earth and in the status line. */
+export const COACH_TEXT = "Drag anywhere to pull the slingshot";
+
+/** "Training capture zone (3× real)" on the training level, otherwise null. */
+export function trainingZoneLabel(level: Level): string | null {
+  const k = captureZoneScaleOf(level);
+  return k === 1 ? null : `Training capture zone (${k}\u00D7 real)`;
+}
+
+export const scoringRulesFor = (level: Level): ScoringRules => ({
+  parDeltaVKmS: level.par?.deltaVKmS,
+  parTolerance: parToleranceOf(level),
+  requiredFlyby: level.requiredFlyby,
+});
+
+/** One-line fingerprint of a flight, to check that a launch flew exactly its preview (D6). */
+const flightSummary = (a: ShotAnalysis): string =>
+  `${a.hit}|${a.termination}|${a.endEt}|${a.closestKm}|${a.flybys.map((f) => `${f.body}@${f.t}`).join(",")}`;
 
 function usePrefersReducedMotion(): boolean {
   const query = "(prefers-reduced-motion: reduce)";
@@ -83,21 +114,27 @@ function defaultAim(level: Level, launchEt: number): Aim {
 function statusFor(level: Level, a: ShotAnalysis | null): { text: string; tone: Tone } {
   if (!a) return { text: "Drag back from Earth to aim: the probe flies the opposite way.", tone: "idle" };
   const name = BODIES[level.target].name;
+  const training = trainingZoneLabel(level);
   const via =
     level.requiredFlyby && a.requiredFlybyDone ? ` · ${BODIES[level.requiredFlyby].name} flyby` : "";
+  // The JPL table stops at 2050; later planet positions are extrapolated.
+  const range = a.beyondEphemerisRange ? " · after 2050: planet positions extrapolated" : "";
   if (a.hit) {
-    if (a.termination === "impact") return { text: `Impact on ${name} on ${formatDate(a.endEt)}${via}`, tone: "hit" };
+    if (a.termination === "impact") return { text: `Impact on ${name} on ${formatDate(a.endEt)}${via}${range}`, tone: "hit" };
     const bull = a.bullseye ? " · bullseye!" : "";
+    if (training) {
+      return { text: `Hit! ${training} on ${formatDate(a.endEt)}${bull}${via}${range}`, tone: "hit" };
+    }
     return {
-      text: `Hit! Capture ${formatDate(a.endEt)} · periapsis ${formatKm(a.closestKm)}${bull}${via}`,
+      text: `Hit! Capture ${formatDate(a.endEt)} · periapsis ${formatKm(a.closestKm)}${bull}${via}${range}`,
       tone: "hit",
     };
   }
   if (a.termination === "sun") return { text: "Falls into the Sun: aim further from it.", tone: "miss" };
-  if (a.termination === "escape") return { text: "Escapes the Solar System: too fast.", tone: "miss" };
-  if (a.termination === "impact") return { text: `Crashes into ${bodyName(a.terminatedBy)}.`, tone: "miss" };
+  if (a.termination === "escape") return { text: `Escapes the Solar System: too fast.${range}`, tone: "miss" };
+  if (a.termination === "impact") return { text: `Crashes into ${bodyName(a.terminatedBy)}.${range}`, tone: "miss" };
   return {
-    text: `Miss ${formatKm(a.closestKm)} · capture zone ${formatKm(a.targetSoiKm)}${via}`,
+    text: `Miss ${formatKm(a.closestKm)} · ${training ? `${training}: ` : "capture zone "}${formatKm(a.captureZoneKm)}${via}${range}`,
     tone: "miss",
   };
 }
@@ -148,6 +185,17 @@ function buildGhost(res: ShotResponse): Ghost | null {
   return { x: target[0], y: target[1], probeX: probe[0], probeY: probe[1], label, hit: a.hit };
 }
 
+/** Where the coach mark sits: just below Earth, kept inside the uncovered map. */
+function placeCoach(el: HTMLElement, vp: Viewport, x: number, y: number) {
+  const map = visibleMapRect(vp, 8);
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  const left = Math.max(map.x, Math.min(x - w / 2, map.x + map.w - w));
+  const below = y + 18;
+  const top = below + h <= map.y + map.h ? below : Math.max(map.y, y - 18 - h);
+  el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+}
+
 export function GameScreen(props: GameScreenProps) {
   const { level } = props;
   const reducedMotion = usePrefersReducedMotion();
@@ -157,6 +205,7 @@ export function GameScreen(props: GameScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
+  const coachRef = useRef<HTMLDivElement>(null);
 
   const clampDay = useCallback((d: number) => Math.max(0, Math.min(level.window.days, Math.round(d))), [level]);
   const [day, setDay] = useState(() => clampDay(daysBetweenIso(level.window.startIso, level.defaultLaunchIso)));
@@ -173,18 +222,10 @@ export function GameScreen(props: GameScreenProps) {
   const [fast, setFast] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  // The coach mark stays until the first drag or nudge of this session, even once storage says "seen".
+  const [coach, setCoach] = useState(props.showCoach);
 
-  const shot: ShotRequest = useMemo(
-    () => ({
-      target: level.target,
-      attractors: level.attractors,
-      launchEt,
-      vInf: vInfFromAim(aim),
-      maxFlightDays: level.maxFlightDays,
-      requiredFlyby: level.requiredFlyby,
-    }),
-    [level, launchEt, aim],
-  );
+  const shot: ShotRequest = useMemo(() => shotRequestFor(level, launchEt, vInfFromAim(aim)), [level, launchEt, aim]);
 
   const { requestPreview } = sim;
   useEffect(() => {
@@ -192,11 +233,22 @@ export function GameScreen(props: GameScreenProps) {
   }, [shot, phase, requestPreview]);
 
   const preview = sim.preview;
+  // Launch only the preview of exactly the aim on screen (D6); until it lands the status is "busy".
+  const gate = launchGate(phase === "aim", preview, shot);
   const shown = phase === "flight" || phase === "result" ? flight : preview;
   const path = useMemo(() => (shown ? buildPath(shown.result) : null), [shown]);
   const markers = useMemo(() => (shown ? buildMarkers(shown) : []), [shown]);
   const ghost = useMemo(() => (shown ? buildGhost(shown) : null), [shown]);
-  const status = statusFor(level, preview?.analysis ?? null);
+  const shotStatus = statusFor(level, preview?.analysis ?? null);
+  const status = coach ? { text: `${COACH_TEXT}: the probe flies the opposite way.`, tone: "idle" as Tone } : shotStatus;
+  const { onCoachSeen } = props;
+  const coachOn = useRef(props.showCoach);
+  const dismissCoach = useCallback(() => {
+    if (!coachOn.current) return;
+    coachOn.current = false;
+    setCoach(false);
+    onCoachSeen();
+  }, [onCoachSeen]);
 
   // ----- static per-level geometry
   const orbits = useMemo(() => {
@@ -254,6 +306,10 @@ export function GameScreen(props: GameScreenProps) {
     hintShown: hintState === "shown",
     reducedMotion,
     level,
+    coach,
+    gate,
+    preview,
+    shot,
     pathHit: Boolean((phase === "aim" || phase === "launching" ? preview : flight)?.analysis.hit),
   };
   const latest = useRef(snapshot);
@@ -300,6 +356,7 @@ export function GameScreen(props: GameScreenProps) {
       eph,
       et,
       soiEt: L.launchEt,
+      captureZoneScale: captureZoneScaleOf(L.level),
       target: L.level.target,
       highlight: L.level.requiredFlyby,
       orbits,
@@ -317,6 +374,13 @@ export function GameScreen(props: GameScreenProps) {
       burst,
       shake,
     });
+    // The coach mark is DOM text (crisp, zoomable) that follows Earth on the map.
+    const coachEl = coachRef.current;
+    if (coachEl && L.coach && L.phase === "aim") {
+      const e = eph.state("earth", et).r;
+      const [x, y] = project(camRef.current, vpRef.current, e[0], e[1]);
+      placeCoach(coachEl, vpRef.current, x, y);
+    }
   }, [orbits]);
 
   const stepFlight = useCallback((now: number): boolean => {
@@ -412,6 +476,8 @@ export function GameScreen(props: GameScreenProps) {
       const width = Math.max(1, rb.width);
       const height = Math.max(1, rb.height);
       const insets = measureInsets(root, hudRef.current, controlsRef.current);
+      // The zoom buttons sit just below the HUD, whose height changes (training chip, hint tag).
+      root.style.setProperty("--hud-bottom", `${Math.round(insets.insetTop)}px`);
       const dpr = Math.min(DPR_CAP, window.devicePixelRatio || 1);
       const prev = vpRef.current;
       const sizeChanged = prev.width !== width || prev.height !== height || dprRef.current !== dpr;
@@ -453,6 +519,7 @@ export function GameScreen(props: GameScreenProps) {
   useSlingshot(canvasRef, phase === "aim", {
     onPull(pull, final) {
       if (latest.current.phase !== "aim") return;
+      dismissCoach();
       pullRef.current = final ? null : pull;
       if (!aimBeforeDrag.current) aimBeforeDrag.current = latest.current.aim;
       const raw = aimFromPull(pull, maxPull(), level.vInfMaxKmS);
@@ -492,36 +559,39 @@ export function GameScreen(props: GameScreenProps) {
   };
 
   // ----- actions
-  const nudgeAngle = useCallback((d: number) => setAim((a) => ({ ...a, angleDeg: normalizeDeg(round(a.angleDeg + d, 0.001)) })), []);
+  const nudgeAngle = useCallback(
+    (d: number) => {
+      dismissCoach();
+      setAim((a) => ({ ...a, angleDeg: normalizeDeg(round(a.angleDeg + d, 0.001)) }));
+    },
+    [dismissCoach],
+  );
   const nudgeSpeed = useCallback(
-    (d: number) => setAim((a) => ({ ...a, speedKmS: Math.max(0, Math.min(level.vInfMaxKmS, round(a.speedKmS + d, 0.0001))) })),
-    [level],
+    (d: number) => {
+      dismissCoach();
+      setAim((a) => ({ ...a, speedKmS: Math.max(0, Math.min(level.vInfMaxKmS, round(a.speedKmS + d, 0.0001))) }));
+    },
+    [level, dismissCoach],
   );
 
   const showHint = useCallback(() => {
-    setHintUsed(true);
     setHintState("busy");
     sim
-      .hint({
-        target: level.target,
-        attractors: level.attractors,
-        windowStartIso: level.window.startIso,
-        windowDays: level.window.days,
-        maxFlightDays: level.maxFlightDays,
-        vInfMaxKmS: level.vInfMaxKmS,
-        requiredFlyby: level.requiredFlyby,
-        curated: level.hint,
-      })
+      .hint(hintQueryFor(level))
       .then((res) => {
         if (!res.hint) {
           setHintState("failed");
           setAnnouncement("No direct route found in this window.");
           return;
         }
-        setHint(res.hint);
+        const h = res.hint;
+        setHint(h);
         setHintState("shown");
+        const what = `launch ${formatDate(h.launchEt)}, angle ${formatAimAngle(h.aim.angleDeg)} degrees, ${formatAimSpeed(h.aim.speedKmS)} km/s`;
         setAnnouncement(
-          `Hint: launch ${formatDate(res.hint.launchEt)}, angle ${res.hint.aim.angleDeg.toFixed(1)} degrees, ${res.hint.aim.speedKmS.toFixed(2)} km/s. Hints cap this level at two stars.`,
+          h.hits
+            ? `Hint: ${what}. Using it caps this level at two stars.`
+            : `No exact hint found; closest miss shown: ${what}, missing by ${formatKm(h.closestKm)}. Using it caps this level at two stars.`,
         );
         poke();
       })
@@ -530,21 +600,30 @@ export function GameScreen(props: GameScreenProps) {
 
   const applyHint = useCallback(() => {
     if (!hint) return;
+    // Only applying the hint caps the stars; looking at it does not.
+    setHintUsed(true);
+    dismissCoach();
     setDay(hint.day);
     setAim(hint.aim);
-  }, [hint]);
+  }, [hint, dismissCoach]);
 
   const finish = useCallback(
     (f: FlightAnim) => {
       const a = f.response.analysis;
-      const score = scoreShot(
-        { parDeltaVKmS: level.par?.deltaVKmS, requiredFlyby: level.requiredFlyby },
-        { hit: a.hit, deltaVKmS: a.deltaVKmS, bullseye: a.bullseye, requiredFlybyDone: a.requiredFlybyDone, hintUsed },
-      );
+      const rules = scoringRulesFor(level);
+      const score = scoreShot(rules, {
+        hit: a.hit,
+        deltaVKmS: a.deltaVKmS,
+        bullseye: a.bullseye,
+        requiredFlybyDone: a.requiredFlybyDone,
+        hintUsed,
+      });
       setOutcome({ score, analysis: a });
       setPhase("result");
+      const zone = trainingZoneLabel(level);
+      const name = BODIES[level.target].name;
       setAnnouncement(
-        `${a.hit ? `Reached ${BODIES[level.target].name}` : `Missed ${BODIES[level.target].name} by ${formatKm(a.closestKm)}`}: ${score.stars} of ${maxStars({ parDeltaVKmS: level.par?.deltaVKmS })} stars.`,
+        `${a.hit ? `Reached ${name}${zone ? ` (${zone})` : ""}` : `Missed ${name} by ${formatKm(a.closestKm)}`}: ${score.stars} of ${maxStars(rules)} stars.`,
       );
       props.onRecord(level, score, a);
     },
@@ -552,40 +631,76 @@ export function GameScreen(props: GameScreenProps) {
   );
   finishRef.current = finish;
 
+  /** Fly exactly the preview on screen: its own request, re-run by the deterministic worker. */
+  const pendingLaunch = useRef<string | null>(null);
+  const fire = useCallback(
+    (current: ShotResponse) => {
+      pendingLaunch.current = null;
+      setPhase("launching");
+      const expected = flightSummary(current.analysis);
+      sim
+        .launch(current.shot)
+        .then((res) => {
+          if (flightSummary(res.analysis) !== expected) {
+            // D6 says this cannot happen; say so loudly if it ever does.
+            console.error("Starshot: the launch did not fly its preview", { preview: expected, launch: flightSummary(res.analysis) });
+          }
+          const days = res.analysis.flightDays;
+          const seconds = Math.max(4, Math.min(9, 2.5 + days / 200)) * (reducedMotion ? 0.6 : 1);
+          flightRef.current = {
+            response: res,
+            path: buildPath(res.result),
+            t: res.shot.launchEt,
+            lastNow: null,
+            daysPerSecond: Math.max(1, days / seconds),
+            doneAt: null,
+            lastClock: 0,
+            slowedBy: null,
+          };
+          setFlight(res);
+          setFast(false);
+          setClock({ et: res.shot.launchEt, slowedBy: null });
+          setPhase("flight");
+          const earthAtLaunch = eph.state("earth", res.shot.launchEt).r;
+          burstRef.current = { start: performance.now(), x: earthAtLaunch[0], y: earthAtLaunch[1], color: "#5eead4" };
+          navigator.vibrate?.(18);
+          setAnnouncement(`Launched on ${formatDate(res.shot.launchEt)} at ${res.analysis.vInfKmS.toFixed(2)} km/s.`);
+          requestDraw();
+        })
+        .catch((err: unknown) => {
+          setPhase("aim");
+          setAnnouncement(`Launch failed: ${err instanceof Error ? err.message : String(err)}`);
+        });
+    },
+    [sim, reducedMotion, requestDraw],
+  );
+
   const launch = useCallback(() => {
-    if (latest.current.phase !== "aim") return;
+    const L = latest.current;
+    if (L.phase !== "aim") return;
+    dismissCoach();
+    if (L.gate.ready && L.preview) {
+      fire(L.preview);
+      return;
+    }
+    // The aim changed a moment ago (a key press) and its preview is still computing:
+    // launch as soon as exactly that preview lands. The Launch button itself stays
+    // disabled until then, so a pointer can never fire a stale shot.
+    pendingLaunch.current = shotKey(L.shot);
+    requestPreview(L.shot);
     setPhase("launching");
-    const fired = shot;
-    sim
-      .launch(fired)
-      .then((res) => {
-        const days = res.analysis.flightDays;
-        const seconds = Math.max(4, Math.min(9, 2.5 + days / 200)) * (reducedMotion ? 0.6 : 1);
-        flightRef.current = {
-          response: res,
-          path: buildPath(res.result),
-          t: res.shot.launchEt,
-          lastNow: null,
-          daysPerSecond: Math.max(1, days / seconds),
-          doneAt: null,
-          lastClock: 0,
-          slowedBy: null,
-        };
-        setFlight(res);
-        setFast(false);
-        setClock({ et: res.shot.launchEt, slowedBy: null });
-        setPhase("flight");
-        const earthAtLaunch = eph.state("earth", res.shot.launchEt).r;
-        burstRef.current = { start: performance.now(), x: earthAtLaunch[0], y: earthAtLaunch[1], color: "#5eead4" };
-        navigator.vibrate?.(18);
-        setAnnouncement(`Launched on ${formatDate(res.shot.launchEt)} at ${res.analysis.vInfKmS.toFixed(2)} km/s.`);
-        requestDraw();
-      })
-      .catch((err: unknown) => {
-        setPhase("aim");
-        setAnnouncement(`Launch failed: ${err instanceof Error ? err.message : String(err)}`);
-      });
-  }, [shot, sim, reducedMotion, requestDraw]);
+  }, [fire, requestPreview, dismissCoach]);
+
+  useEffect(() => {
+    const key = pendingLaunch.current;
+    if (phase !== "launching" || key === null) return;
+    if (preview && shotKey(preview.shot) === key) fire(preview);
+    else if (!sim.previewBusy) {
+      pendingLaunch.current = null;
+      setPhase("aim");
+      setAnnouncement("Launch cancelled: the path for this aim could not be computed.");
+    }
+  }, [phase, preview, sim.previewBusy, fire]);
 
   const skip = useCallback(() => {
     const f = flightRef.current;
@@ -703,14 +818,18 @@ export function GameScreen(props: GameScreenProps) {
     c3: c3(vInfKmS),
     flightDays: preview ? preview.analysis.flightDays : null,
   };
+  // Exactly what "Use hint" applies, formatted as the angle and speed controls show it.
   const hintLabel = hint
-    ? `${formatDate(hint.launchEt)} · ${hint.aim.angleDeg.toFixed(1)}° · ${hint.aim.speedKmS.toFixed(2)} km/s`
+    ? `${formatDate(hint.launchEt)} · ${formatAimAngle(hint.aim.angleDeg)}° · ${formatAimSpeed(hint.aim.speedKmS)} km/s`
     : null;
   const inFlight = phase === "flight" || phase === "result";
   const dateCaption = inFlight ? "Now" : "Launch";
   const dateLabel = inFlight ? formatDate(clock.et || launchEt) : formatDate(launchEt);
-  const rules = { parDeltaVKmS: level.par?.deltaVKmS, requiredFlyby: level.requiredFlyby };
+  const rules = scoringRulesFor(level);
+  const training = trainingZoneLabel(level);
   const canvasLabel = `Solar System map, ${level.title}: Earth and target ${BODIES[level.target].name}. Drag to aim the slingshot; pinch or scroll to zoom.`;
+  // While the result dialog is open everything behind it is inert (no focus, hidden from assistive tech).
+  const behindDialog = phase === "result" && outcome !== null;
 
   return (
     <div
@@ -718,9 +837,26 @@ export function GameScreen(props: GameScreenProps) {
       ref={rootRef}
       data-sim-ms={preview ? preview.ms.toFixed(1) : undefined}
       data-preview-hit={preview ? String(preview.analysis.hit) : undefined}
+      data-preview-current={String(!gate.stale)}
+      data-preview-summary={preview ? flightSummary(preview.analysis) : undefined}
+      data-flight-summary={flight ? flightSummary(flight.analysis) : undefined}
+      data-coach={coach ? "on" : "off"}
     >
-      <canvas ref={canvasRef} className="stage" role="img" aria-label={canvasLabel} aria-describedby="shot-status" />
-      <div ref={hudRef} className="hud-wrap">
+      <canvas
+        ref={canvasRef}
+        className="stage"
+        role="img"
+        aria-label={canvasLabel}
+        aria-describedby="shot-status"
+        inert={behindDialog}
+      />
+      {coach && phase === "aim" ? (
+        <div ref={coachRef} className="coach-mark" aria-hidden="true">
+          <span className="coach-hand" />
+          {COACH_TEXT}
+        </div>
+      ) : null}
+      <div ref={hudRef} className="hud-wrap" inert={behindDialog}>
         <Hud
           level={level}
           dateLabel={dateLabel}
@@ -728,14 +864,15 @@ export function GameScreen(props: GameScreenProps) {
           onExit={props.onExit}
           onSandboxTarget={props.onSandboxTarget}
           targetLocked={phase !== "aim"}
+          trainingZone={training}
         />
-        {hintState === "shown" && hintLabel && phase === "aim" ? (
-          <p className="hint-tag">
-            <span>Hint</span> {hintLabel}
+        {hintState === "shown" && hintLabel && hint && phase === "aim" ? (
+          <p className={`hint-tag${hint.hits ? "" : " is-miss"}`}>
+            <span>{hint.hits ? "Hint" : "No exact hint found \u2014 closest miss shown"}</span> {hintLabel}
           </p>
         ) : null}
       </div>
-      <div className="map-tools" role="group" aria-label="Map view">
+      <div className="map-tools" role="group" aria-label="Map view" inert={behindDialog}>
         <button type="button" className="icon-btn" aria-label="Zoom in" onClick={() => zoomButton(1.6)}>
           +
         </button>
@@ -749,7 +886,7 @@ export function GameScreen(props: GameScreenProps) {
           </svg>
         </button>
       </div>
-      <div ref={controlsRef} className="controls-wrap">
+      <div ref={controlsRef} className="controls-wrap" inert={behindDialog}>
         {phase === "aim" || phase === "launching" ? (
           <AimControls
             level={level}
@@ -759,10 +896,12 @@ export function GameScreen(props: GameScreenProps) {
             launchDateLabel={formatDate(launchEt)}
             readouts={readouts}
             status={status.text}
-            statusTone={sim.previewBusy && !preview ? "busy" : status.tone}
+            statusTone={gate.stale && !coach ? "busy" : status.tone}
+            statusTwoLines={training !== null}
             hintState={hintState}
             hintLabel={hintLabel}
             launching={phase === "launching"}
+            launchReady={gate.ready}
             onAngle={nudgeAngle}
             onSpeed={nudgeSpeed}
             onFine={() => setFine((v) => !v)}
@@ -790,6 +929,8 @@ export function GameScreen(props: GameScreenProps) {
           level={level}
           score={outcome.score}
           maxStars={maxStars(rules)}
+          parTolerance={parToleranceOf(level)}
+          trainingZone={training}
           analysis={outcome.analysis}
           hintUsed={hintUsed}
           canNext={props.hasNext && outcome.score.hit}

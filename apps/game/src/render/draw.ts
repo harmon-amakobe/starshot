@@ -115,6 +115,8 @@ export interface SceneInput {
   readonly et: number;
   /** Time the capture-zone radius is evaluated at. */
   readonly soiEt: number;
+  /** Capture zone as a multiple of the target's sphere of influence (3 on the training level). */
+  readonly captureZoneScale: number;
   readonly target: PlanetId;
   readonly highlight?: PlanetId;
   readonly orbits: ReadonlyArray<{ readonly id: PlanetId; readonly pts: Float64Array }>;
@@ -144,6 +146,21 @@ interface Rect {
   h: number;
 }
 const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (r: Rect, area: Rect) => r.x >= area.x && r.y >= area.y && r.x + r.w <= area.x + area.w && r.y + r.h <= area.y + area.h;
+/** Move a rectangle the least distance that puts it inside `area` (top-left wins if it cannot fit). */
+const clampInto = (r: Rect, area: Rect): Rect => ({
+  ...r,
+  x: Math.max(area.x, Math.min(r.x, area.x + area.w - r.w)),
+  y: Math.max(area.y, Math.min(r.y, area.y + area.h - r.h)),
+});
+
+/** The part of the canvas not covered by the HUD and the controls, less a small margin [px]. */
+export function visibleMapRect(vp: Viewport, margin = 4): Rect {
+  const top = vp.insetTop + margin;
+  const bottom = vp.height - vp.insetBottom - margin;
+  const right = vp.width - vp.insetRight - margin;
+  return { x: margin, y: top, w: Math.max(0, right - margin), h: Math.max(0, bottom - top) };
+}
 
 function hexToRgb(hex: string): string {
   const h = hex.replace("#", "");
@@ -356,7 +373,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
   }
 
   // Encounter markers along the path.
-  ctx.font = `600 10.5px ${FONT}`;
+  ctx.font = `600 12px ${FONT}`;
   for (const m of s.markers) {
     const [x, y] = project(cam, vp, m.x, m.y);
     ctx.save();
@@ -371,7 +388,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     ctx.stroke();
     ctx.restore();
     const w = ctx.measureText(m.label).width;
-    const rect = { x: x + 8, y: y - 7, w: w + 4, h: 14 };
+    const rect = { x: x + 8, y: y - 8, w: w + 4, h: 16 };
     if (!occupied.some((o) => overlaps(o, rect))) {
       ctx.fillStyle = rgba(COLORS.bg, 0.6);
       ctx.fillRect(rect.x - 2, rect.y, rect.w + 2, rect.h);
@@ -387,7 +404,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     const g = s.ghost;
     const [gx, gy] = project(cam, vp, g.x, g.y);
     const [qx, qy] = project(cam, vp, g.probeX, g.probeY);
-    const ghostR = Math.max(7, s.eph.soiKm(s.target, s.soiEt) * cam.scale);
+    const ghostR = Math.max(7, s.eph.soiKm(s.target, s.soiEt) * s.captureZoneScale * cam.scale);
     ctx.save();
     ctx.setLineDash([3, 4]);
     ctx.lineWidth = 1.2;
@@ -413,9 +430,9 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
     ctx.beginPath();
     ctx.arc(qx, qy, g.hit ? 3.5 : 2.6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.font = `700 11px ${FONT}`;
+    ctx.font = `700 12px ${FONT}`;
     const w = ctx.measureText(g.label).width + 8;
-    const h = 16;
+    const h = 18;
     const off = ghostR + 6;
     const spots: Rect[] = [
       { x: gx + off * 0.75, y: gy + off * 0.75, w, h },
@@ -425,11 +442,16 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
       { x: gx - w / 2, y: gy + off, w, h },
       { x: gx - w / 2, y: gy - off - h, w, h },
     ];
-    const at = spots.find((c) => !occupied.some((o) => overlaps(o, c))) ?? spots[0]!;
+    // Always readable: inside the uncovered map, clear of other labels when possible.
+    const map = visibleMapRect(vp);
+    const at =
+      spots.find((c) => inside(c, map) && !occupied.some((o) => overlaps(o, c))) ??
+      spots.find((c) => inside(c, map)) ??
+      clampInto(spots[0]!, map);
     ctx.fillStyle = rgba(COLORS.bg, 0.72);
     ctx.fillRect(at.x, at.y, at.w, at.h);
     ctx.fillStyle = g.hit ? COLORS.probe : COLORS.warn;
-    ctx.fillText(g.label, at.x + 4, at.y + 12);
+    ctx.fillText(g.label, at.x + 4, at.y + 13);
     occupied.push(at);
     ctx.restore();
   }
@@ -447,10 +469,10 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
   labelQueue.sort((a, b) => a.priority - b.priority);
   for (const l of labelQueue) {
     const isTarget = l.id === s.target;
-    ctx.font = `${isTarget ? 700 : 600} ${isTarget ? 12 : 11}px ${FONT}`;
+    ctx.font = `${isTarget ? 700 : 600} ${isTarget ? 13 : 12}px ${FONT}`;
     const text = BODIES[l.id].name;
     const w = ctx.measureText(text).width;
-    const h = 14;
+    const h = 15;
     const gap = l.r + (isTarget ? 12 : 5);
     const candidates: Rect[] = [
       { x: l.x + gap, y: l.y - h / 2, w, h },
@@ -517,7 +539,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, s: SceneInput): void {
 
 function drawCaptureZone(ctx: CanvasRenderingContext2D, s: SceneInput, x: number, y: number, r: number) {
   const color = BODIES[s.target].color;
-  const soiPx = s.eph.soiKm(s.target, s.soiEt) * s.cam.scale;
+  const soiPx = s.eph.soiKm(s.target, s.soiEt) * s.captureZoneScale * s.cam.scale;
   const phase = s.pulse ? (s.time % 1800) / 1800 : 0;
   ctx.save();
   if (soiPx >= 9) {

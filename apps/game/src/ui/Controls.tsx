@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react";
+import { formatAimAngle, formatAimSpeed } from "../format.js";
 import type { Level } from "../levels.js";
 import type { Aim } from "../sim/shot.js";
 
@@ -22,9 +24,13 @@ export interface AimControlsProps {
   readonly readouts: Readouts;
   readonly status: string;
   readonly statusTone: Tone;
+  /** The status can run to two lines (training level): reserve the room so the panel does not jump. */
+  readonly statusTwoLines?: boolean;
   readonly hintState: HintState;
   readonly hintLabel: string | null;
   readonly launching: boolean;
+  /** The finished preview is for exactly this aim, so Launch would fly what is on screen. */
+  readonly launchReady: boolean;
   readonly onAngle: (deltaDeg: number) => void;
   readonly onSpeed: (deltaKmS: number) => void;
   readonly onFine: () => void;
@@ -34,11 +40,42 @@ export interface AimControlsProps {
   readonly onLaunch: () => void;
 }
 
-/** Digits needed to show a value exactly on a 10^-base grid, up to one more for fine steps. */
-const digitsFor = (x: number, base: number, fine: boolean) =>
-  fine || Math.abs(x * 10 ** base - Math.round(x * 10 ** base)) > 1e-6 ? base + 1 : base;
-
 const fmtStep = (x: number) => (x >= 1 ? x.toFixed(0) : x >= 0.1 ? x.toFixed(1) : x >= 0.01 ? x.toFixed(2) : x.toFixed(3));
+const degrees = (x: number) => `${fmtStep(x)} ${x === 1 ? "degree" : "degrees"}`;
+
+/**
+ * After a mouse or touch click, give focus back to the page so Space and Enter
+ * launch again (a focused button would take them). Keyboard activation
+ * (detail 0) keeps focus where the player put it.
+ */
+const releaseFocusAfterPointer = (e: MouseEvent<HTMLElement>) => {
+  if (e.detail > 0) e.currentTarget.blur();
+};
+
+interface StepProps {
+  readonly text: string;
+  readonly action: string;
+  readonly onStep: () => void;
+  readonly disabled?: boolean;
+}
+
+/** A step button whose accessible name starts with its visible text (WCAG 2.5.3), then says what it does. */
+function Step({ text, action, onStep, disabled }: StepProps) {
+  return (
+    <button
+      type="button"
+      className="step-btn"
+      aria-label={`${text}: ${action}`}
+      disabled={disabled}
+      onClick={(e) => {
+        onStep();
+        releaseFocusAfterPointer(e);
+      }}
+    >
+      {text}
+    </button>
+  );
+}
 
 export function AimControls(p: AimControlsProps) {
   const a = p.fine ? [0.1, 0.01] : [1, 0.1];
@@ -46,18 +83,18 @@ export function AimControls(p: AimControlsProps) {
   const r = p.readouts;
   return (
     <section className="controls" aria-label="Aim and launch">
-      <p className={`status tone-${p.statusTone}`} id="shot-status">
+      <p className={`status tone-${p.statusTone}${p.statusTwoLines ? " two-lines" : ""}`} id="shot-status">
         {p.status}
       </p>
       <dl className="readouts">
-        <div>
+        <div className="ro-vinf">
           <dt>v&#x221E;</dt>
           <dd>
             {r.vInfKmS.toFixed(2)}
             <small> km/s</small>
           </dd>
         </div>
-        <div>
+        <div className="ro-dv">
           <dt>
             <abbr title="Delta-v from a 200 km low Earth orbit">&#x394;v LEO</abbr>
           </dt>
@@ -66,14 +103,14 @@ export function AimControls(p: AimControlsProps) {
             <small> km/s</small>
           </dd>
         </div>
-        <div>
+        <div className="ro-c3">
           <dt>C3</dt>
           <dd>
             {r.c3.toFixed(1)}
             <small> km&#xB2;/s&#xB2;</small>
           </dd>
         </div>
-        <div>
+        <div className="ro-flight">
           <dt>Flight</dt>
           <dd>
             {r.flightDays === null ? "-" : Math.round(r.flightDays)}
@@ -83,7 +120,16 @@ export function AimControls(p: AimControlsProps) {
       </dl>
 
       <div className="date-row">
-        <button type="button" className="step-btn" aria-label="Launch one day earlier" disabled={p.day <= 0} onClick={() => p.onDay(p.day - 1)}>
+        <button
+          type="button"
+          className="step-btn"
+          aria-label="Launch one day earlier"
+          disabled={p.day <= 0}
+          onClick={(e) => {
+            p.onDay(p.day - 1);
+            releaseFocusAfterPointer(e);
+          }}
+        >
           &#x2039;
         </button>
         <label className="date-slider">
@@ -96,6 +142,7 @@ export function AimControls(p: AimControlsProps) {
             value={p.day}
             aria-valuetext={p.launchDateLabel}
             onChange={(e) => p.onDay(Number(e.target.value))}
+            onPointerUp={(e) => e.currentTarget.blur()}
           />
         </label>
         <button
@@ -103,7 +150,10 @@ export function AimControls(p: AimControlsProps) {
           className="step-btn"
           aria-label="Launch one day later"
           disabled={p.day >= p.level.window.days}
-          onClick={() => p.onDay(p.day + 1)}
+          onClick={(e) => {
+            p.onDay(p.day + 1);
+            releaseFocusAfterPointer(e);
+          }}
         >
           &#x203A;
         </button>
@@ -113,37 +163,21 @@ export function AimControls(p: AimControlsProps) {
       <div className="tune-grid">
         <div className="tune-row" role="group" aria-label="Fine-tune launch angle">
           <span className="tune-label">
-            Angle <strong>{p.aim.angleDeg.toFixed(digitsFor(p.aim.angleDeg, 1, p.fine))}&#xB0;</strong>
+            Angle <strong>{formatAimAngle(p.aim.angleDeg, p.fine)}&#xB0;</strong>
           </span>
-          <button type="button" className="step-btn" aria-label={`Rotate aim ${fmtStep(a[0]!)} degrees clockwise`} onClick={() => p.onAngle(-a[0]!)}>
-            &#x2212;{fmtStep(a[0]!)}&#xB0;
-          </button>
-          <button type="button" className="step-btn" aria-label={`Rotate aim ${fmtStep(a[1]!)} degrees clockwise`} onClick={() => p.onAngle(-a[1]!)}>
-            &#x2212;{fmtStep(a[1]!)}&#xB0;
-          </button>
-          <button type="button" className="step-btn" aria-label={`Rotate aim ${fmtStep(a[1]!)} degrees counter-clockwise`} onClick={() => p.onAngle(a[1]!)}>
-            +{fmtStep(a[1]!)}&#xB0;
-          </button>
-          <button type="button" className="step-btn" aria-label={`Rotate aim ${fmtStep(a[0]!)} degrees counter-clockwise`} onClick={() => p.onAngle(a[0]!)}>
-            +{fmtStep(a[0]!)}&#xB0;
-          </button>
+          <Step text={`\u2212${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} clockwise`} onStep={() => p.onAngle(-a[0]!)} />
+          <Step text={`\u2212${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} clockwise`} onStep={() => p.onAngle(-a[1]!)} />
+          <Step text={`+${fmtStep(a[1]!)}\u00B0`} action={`rotate aim ${degrees(a[1]!)} counter-clockwise`} onStep={() => p.onAngle(a[1]!)} />
+          <Step text={`+${fmtStep(a[0]!)}\u00B0`} action={`rotate aim ${degrees(a[0]!)} counter-clockwise`} onStep={() => p.onAngle(a[0]!)} />
         </div>
         <div className="tune-row" role="group" aria-label="Fine-tune launch speed">
           <span className="tune-label">
-            Speed <strong>{p.aim.speedKmS.toFixed(digitsFor(p.aim.speedKmS, 2, p.fine))}</strong>
+            Speed <strong>{formatAimSpeed(p.aim.speedKmS, p.fine)}</strong>
           </span>
-          <button type="button" className="step-btn" aria-label={`Slower by ${fmtStep(s[0]!)} km/s`} onClick={() => p.onSpeed(-s[0]!)}>
-            &#x2212;{fmtStep(s[0]!)}
-          </button>
-          <button type="button" className="step-btn" aria-label={`Slower by ${fmtStep(s[1]!)} km/s`} onClick={() => p.onSpeed(-s[1]!)}>
-            &#x2212;{fmtStep(s[1]!)}
-          </button>
-          <button type="button" className="step-btn" aria-label={`Faster by ${fmtStep(s[1]!)} km/s`} onClick={() => p.onSpeed(s[1]!)}>
-            +{fmtStep(s[1]!)}
-          </button>
-          <button type="button" className="step-btn" aria-label={`Faster by ${fmtStep(s[0]!)} km/s`} onClick={() => p.onSpeed(s[0]!)}>
-            +{fmtStep(s[0]!)}
-          </button>
+          <Step text={`\u2212${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s slower`} onStep={() => p.onSpeed(-s[0]!)} />
+          <Step text={`\u2212${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s slower`} onStep={() => p.onSpeed(-s[1]!)} />
+          <Step text={`+${fmtStep(s[1]!)}`} action={`${fmtStep(s[1]!)} km/s faster`} onStep={() => p.onSpeed(s[1]!)} />
+          <Step text={`+${fmtStep(s[0]!)}`} action={`${fmtStep(s[0]!)} km/s faster`} onStep={() => p.onSpeed(s[0]!)} />
         </div>
       </div>
 
@@ -153,12 +187,15 @@ export function AimControls(p: AimControlsProps) {
           className={`toggle-btn${p.fine ? " is-on" : ""}`}
           aria-pressed={p.fine}
           aria-label="Fine steps: divide angle and speed steps by ten"
-          onClick={p.onFine}
+          onClick={(e) => {
+            p.onFine();
+            releaseFocusAfterPointer(e);
+          }}
         >
           Fine
         </button>
         {p.hintState === "shown" && p.hintLabel ? (
-          <button type="button" className="ghost-btn hint-btn" onClick={p.onApplyHint} aria-label={`Use the hint: ${p.hintLabel}`}>
+          <button type="button" className="ghost-btn hint-btn" onClick={p.onApplyHint} aria-label={`Use hint: ${p.hintLabel} (caps this level at two stars)`}>
             Use hint
           </button>
         ) : (
@@ -167,12 +204,18 @@ export function AimControls(p: AimControlsProps) {
             className="ghost-btn hint-btn"
             onClick={p.onHint}
             disabled={p.hintState === "busy"}
-            aria-label="Show a hint (caps this level at two stars)"
+            aria-label={p.hintState === "busy" ? "Finding a hint" : "Hint: show a suggested launch (using it caps this level at two stars)"}
           >
             {p.hintState === "busy" ? "Finding…" : "Hint"}
           </button>
         )}
-        <button type="button" className="launch-btn" onClick={p.onLaunch} disabled={p.launching} aria-describedby="shot-status">
+        <button
+          type="button"
+          className="launch-btn"
+          onClick={p.onLaunch}
+          disabled={p.launching || !p.launchReady}
+          aria-describedby="shot-status"
+        >
           {p.launching ? "Launching…" : "Launch"}
         </button>
       </div>

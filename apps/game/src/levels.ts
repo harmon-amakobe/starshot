@@ -4,9 +4,16 @@
  * approximate ephemeris, and every non-sandbox level carries a known solution
  * that levels.test.ts flies with the game's exact simulator settings.
  */
-import { PLANET_IDS, type PlanetId } from "@starshot/ephemeris";
+import { PLANET_IDS, type PlanetId, type Vec3 } from "@starshot/ephemeris";
 import { deltaVFromLeo } from "@starshot/physics";
-import type { KnownShot } from "./sim/hint.js";
+import type { HintQuery, KnownShot } from "./sim/hint.js";
+import {
+  OUTER_SIM_SETTINGS,
+  SIM_SETTINGS,
+  type ShotRequest,
+  type ShotTemplate,
+  type SimSettings,
+} from "./sim/shot.js";
 
 export type LevelId = "first-light" | "morning-star" | "big-game" | "grand-tour" | "sandbox";
 
@@ -41,9 +48,56 @@ export interface Level {
   /** A planet to fly through (inside its sphere of influence) on the way. */
   readonly requiredFlyby?: PlanetId;
   readonly par?: Par;
+  /**
+   * The efficiency star needs delta-v <= par x parTolerance. Default 1.10; tighter
+   * where the speed cap would otherwise hand the star to every hit.
+   */
+  readonly parTolerance?: number;
+  /**
+   * Capture-zone radius as a multiple of the target's real sphere of influence.
+   * Default 1 (real size); only the first, training level is larger.
+   */
+  readonly captureZoneScale?: number;
+  /** Integrator settings: the same for this level's preview and launch (D6). */
+  readonly sim: SimSettings;
   /** A curated hint for levels whose answer is not a direct transfer. */
   readonly hint?: KnownShot;
   readonly sandbox?: boolean;
+}
+
+/** Default efficiency-star tolerance on the par delta-v. */
+export const DEFAULT_PAR_TOLERANCE = 1.1;
+
+export const parToleranceOf = (level: Level): number => level.parTolerance ?? DEFAULT_PAR_TOLERANCE;
+export const captureZoneScaleOf = (level: Level): number => level.captureZoneScale ?? 1;
+
+/** The level's shot without launch time and aim; preview, launch, hint and tests all start here. */
+export function shotTemplate(level: Level): ShotTemplate {
+  return {
+    target: level.target,
+    attractors: level.attractors,
+    maxFlightDays: level.maxFlightDays,
+    requiredFlyby: level.requiredFlyby,
+    sim: level.sim,
+    captureZoneScale: captureZoneScaleOf(level),
+  };
+}
+
+export const shotRequestFor = (level: Level, launchEt: number, vInf: Vec3): ShotRequest => ({
+  ...shotTemplate(level),
+  launchEt,
+  vInf,
+});
+
+/** The hint search for a level, run with the level's own shot settings. */
+export function hintQueryFor(level: Level): HintQuery {
+  return {
+    shot: shotTemplate(level),
+    windowStartIso: level.window.startIso,
+    windowDays: level.window.days,
+    vInfMaxKmS: level.vInfMaxKmS,
+    curated: level.hint,
+  };
 }
 
 const par = (vInfKmS: number, source: string): Par => ({
@@ -52,13 +106,28 @@ const par = (vInfKmS: number, source: string): Par => ({
 });
 
 /**
- * A Voyager-2-like Grand Tour shot (75.93 degrees, 9.80 km/s on 1977-08-20):
- * Jupiter flyby on 1979-07-07, Saturn capture zone on 1981-06-21 in the
- * game's flattened model. Verified in levels.test.ts.
+ * A Voyager-2-like Grand Tour shot (75.93 degrees, 9.800 km/s on 1977-08-20,
+ * exactly as the hint label shows it): Jupiter flyby on 1979-07-03, Saturn
+ * capture zone on 1981-06-26 in the game's flattened model. Verified in
+ * levels.test.ts.
  */
 export const GRAND_TOUR_HINT: KnownShot = {
   launchIso: "1977-08-20",
   vInf: [2.3829478446723424, 9.50586974293102, 0],
+};
+
+/**
+ * The Grand Tour's par shot: the cheapest Jupiter-assisted hit found by a search
+ * of every launch day at 0.1 km/s steps (8.8-10.5 km/s), then 0.01 km/s steps
+ * (9.00-9.12 km/s) on 1977-08-26 to 09-09, at 0.01 degree steps around every
+ * close Jupiter pass. No hit exists below 9.10 km/s on that grid: slower shots
+ * run out of the 1,700-day flight time. 68.43 degrees at 9.100 km/s on
+ * 1977-09-02 (a 0.07 degree wide band) passes Jupiter on 1979-11-04 and reaches
+ * Saturn on 1982-04-04, after 1,676 days. Flown in levels.test.ts.
+ */
+export const GRAND_TOUR_PAR_SHOT: KnownShot = {
+  launchIso: "1977-09-02",
+  vInf: [3.345503, 8.462719, 0],
 };
 
 export const CAMPAIGN: readonly Level[] = [
@@ -74,7 +143,10 @@ export const CAMPAIGN: readonly Level[] = [
     maxFlightDays: 400,
     vInfMaxKmS: 6,
     attractors: ["earth", "mars", "jupiter"],
-    par: par(3.116, "Cheapest direct transfer in the window: launch 2026-11-04, v-infinity 3.12 km/s."),
+    // Training: a capture zone three times Mars's real sphere of influence, said so in the HUD.
+    captureZoneScale: 3,
+    sim: SIM_SETTINGS,
+    par: par(2.982, "Cheapest direct transfer in the window: launch 2026-11-02, v-infinity 2.98 km/s (323 days)."),
   },
   {
     id: "morning-star",
@@ -88,7 +160,8 @@ export const CAMPAIGN: readonly Level[] = [
     maxFlightDays: 300,
     vInfMaxKmS: 5,
     attractors: ["mercury", "venus", "earth"],
-    par: par(2.533, "Cheapest direct transfer in the window: launch 2028-03-03, v-infinity 2.53 km/s."),
+    sim: SIM_SETTINGS,
+    par: par(2.528, "Cheapest direct transfer in the window: launch 2028-03-05, v-infinity 2.53 km/s (150 days)."),
   },
   {
     id: "big-game",
@@ -102,7 +175,8 @@ export const CAMPAIGN: readonly Level[] = [
     maxFlightDays: 1300,
     vInfMaxKmS: 12,
     attractors: ["earth", "mars", "jupiter", "saturn"],
-    par: par(8.7, "Cheapest direct transfer in the window: launch 2028-12-24, v-infinity 8.70 km/s."),
+    sim: SIM_SETTINGS,
+    par: par(8.693, "Cheapest direct transfer in the window: launch 2028-12-25, v-infinity 8.69 km/s (1,056 days)."),
   },
   {
     id: "grand-tour",
@@ -117,7 +191,14 @@ export const CAMPAIGN: readonly Level[] = [
     vInfMaxKmS: 10.5,
     attractors: ["earth", "jupiter", "saturn"],
     requiredFlyby: "jupiter",
-    par: par(9.4, "Cheapest Jupiter-assisted shot found on a 0.1 degree by 0.2 km/s search: v-infinity 9.4 km/s."),
+    sim: SIM_SETTINGS,
+    parTolerance: 1.05,
+    // Cheapest assisted hit found (see GRAND_TOUR_PAR_SHOT). 105% of it allows v-infinity up to
+    // 9.60 km/s for the efficiency star; 110% would allow 10.09, nearly the 10.5 km/s cap.
+    par: par(
+      9.1,
+      "Cheapest Jupiter-assisted hit found: launch 1977-09-02, 68.43 degrees, v-infinity 9.10 km/s, Saturn after 1,676 days.",
+    ),
     hint: GRAND_TOUR_HINT,
   },
 ];
@@ -147,6 +228,21 @@ export function sandboxStartIso(now: Date = new Date()): string {
   return iso;
 }
 
+/** Sandbox targets beyond Mars: years-long flights, run with OUTER_SIM_SETTINGS. */
+const OUTER_TARGETS: ReadonlySet<PlanetId> = new Set<PlanetId>(["jupiter", "saturn", "uranus", "neptune"]);
+
+/**
+ * Planets that pull in the sandbox. Inner targets: every planet except Mercury
+ * (tiny, and the fastest orbit to evaluate) unless it is the target. Targets
+ * beyond Mars: Earth and the giants only; Mercury, Venus and Mars change a
+ * 5-14 year flight to a 48-87 million km capture zone far less than the aim
+ * resolution does, and leaving them out keeps the preview fast.
+ */
+export function sandboxAttractors(target: PlanetId): readonly PlanetId[] {
+  if (OUTER_TARGETS.has(target)) return ["earth", "jupiter", "saturn", "uranus", "neptune"];
+  return target === "mercury" ? PLANET_IDS : PLANET_IDS.filter((p) => p !== "mercury");
+}
+
 /** Free play from today's date: any target, generous speed, no par. */
 export function sandboxLevel(target: PlanetId = "mars", now: Date = new Date()): Level {
   const startIso = sandboxStartIso(now);
@@ -160,9 +256,8 @@ export function sandboxLevel(target: PlanetId = "mars", now: Date = new Date()):
     target,
     maxFlightDays: SANDBOX_MAX_FLIGHT_DAYS[target],
     vInfMaxKmS: 20,
-    // Every planet pulls, except Mercury when it is not the target: it is tiny, and the
-    // fastest orbit to evaluate, so dropping it keeps 14-year previews under budget.
-    attractors: target === "mercury" ? PLANET_IDS : PLANET_IDS.filter((p) => p !== "mercury"),
+    attractors: sandboxAttractors(target),
+    sim: OUTER_TARGETS.has(target) ? OUTER_SIM_SETTINGS : SIM_SETTINGS,
     sandbox: true,
   };
 }

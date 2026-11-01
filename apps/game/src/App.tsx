@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type { PlanetId } from "@starshot/ephemeris";
 import { CAMPAIGN, sandboxLevel, type Level, type LevelId } from "./levels.js";
-import { loadProgress, saveProgress, totalStars, withResult } from "./progress.js";
+import { loadProgress, saveProgress, totalStars, withCoachSeen, withResult } from "./progress.js";
 import type { Score } from "./scoring.js";
 import type { ShotAnalysis } from "./sim/shot.js";
 import { GameScreen } from "./ui/GameScreen.js";
@@ -29,6 +29,14 @@ export function App() {
     setProgress((p) => {
       const next = withResult(p, level.id, score.stars, score.hit, analysis.deltaVKmS);
       saveProgress(next);
+      return next;
+    });
+  }, []);
+
+  const coachSeen = useCallback(() => {
+    setProgress((p) => {
+      const next = withCoachSeen(p);
+      if (next !== p) saveProgress(next);
       return next;
     });
   }, []);
@@ -72,6 +80,8 @@ export function App() {
           }}
           onRecord={record}
           onSandboxTarget={level.sandbox ? setSandboxTarget : undefined}
+          showCoach={!progress.coachSeen}
+          onCoachSeen={coachSeen}
         />
       );
     }

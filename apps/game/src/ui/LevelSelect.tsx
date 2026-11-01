@@ -49,6 +49,9 @@ export function LevelSelect({ progress, sandbox, onPick, onBack }: LevelSelectPr
             const open = isSandbox || isUnlocked(ids, index, progress);
             const earned = progress.levels[level.id]?.stars ?? 0;
             const color = BODIES[level.target].color;
+            // The accessible name is the visible kicker and title (WCAG 2.5.3) plus the star count;
+            // the blurb is the description.
+            const id = `level-${level.id}`;
             return (
               <li key={level.id}>
                 <button
@@ -57,18 +60,24 @@ export function LevelSelect({ progress, sandbox, onPick, onBack }: LevelSelectPr
                   style={{ ["--planet" as string]: color }}
                   disabled={!open}
                   onClick={() => onPick(level.id)}
-                  aria-label={`${isSandbox ? "Sandbox" : `Level ${level.number}`}: ${level.title}. ${
-                    open ? (isSandbox ? "Free play." : `${earned} of 3 stars.`) : "Locked: earn a star on the previous level."
-                  }`}
+                  aria-labelledby={`${id}-kicker ${id}-title ${id}-state`}
+                  aria-describedby={`${id}-blurb`}
                 >
                   <span className="card-planet" aria-hidden="true" />
                   <span className="card-body">
-                    <span className="card-kicker">
+                    <span className="card-kicker" id={`${id}-kicker`}>
                       {isSandbox ? "Free play" : `Level ${level.number}`} &#xB7; {BODIES[level.target].name}
                       {level.requiredFlyby ? ` via ${BODIES[level.requiredFlyby].name}` : ""}
                     </span>
-                    <span className="card-title">{level.title}</span>
-                    <span className="card-blurb">{open ? level.blurb : "Earn a star on the previous level to unlock."}</span>
+                    <span className="card-title" id={`${id}-title`}>
+                      {level.title}
+                    </span>
+                    <span className="card-blurb" id={`${id}-blurb`}>
+                      {open ? level.blurb : "Earn a star on the previous level to unlock."}
+                    </span>
+                  </span>
+                  <span className="sr-only" id={`${id}-state`}>
+                    {open ? (isSandbox ? ", any planet" : `, ${earned} of 3 stars`) : ", locked"}
                   </span>
                   <span className="card-side" aria-hidden="true">
                     {isSandbox ? <span className="card-tag">Any planet</span> : open ? <Stars earned={earned} max={3} /> : <span className="lock">Locked</span>}

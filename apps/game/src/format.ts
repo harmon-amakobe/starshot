@@ -36,3 +36,13 @@ export const formatSpeed = (kmS: number, digits = 2): string => `${kmS.toFixed(d
 
 export const bodyName = (id: BodyId | string | undefined): string =>
   id && id in BODIES ? BODIES[id as BodyId].name : String(id ?? "");
+
+/** Digits needed to show a value exactly on a 10^-base grid, up to one more (the Fine grid). */
+const digitsFor = (x: number, base: number, fine: boolean): number =>
+  fine || Math.abs(x * 10 ** base - Math.round(x * 10 ** base)) > 1e-6 ? base + 1 : base;
+
+/** Aim angle as the controls show it: "129.1", or "75.93" on the Fine grid. */
+export const formatAimAngle = (deg: number, fine = false): string => deg.toFixed(digitsFor(deg, 1, fine));
+
+/** Aim speed as the controls show it: "9.80", or "2.982" on the Fine grid. */
+export const formatAimSpeed = (kmS: number, fine = false): string => kmS.toFixed(digitsFor(kmS, 2, fine));

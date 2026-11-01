@@ -6,9 +6,9 @@
 import { createEphemeris } from "@starshot/ephemeris";
 import { findHint } from "./hint.js";
 import type { SimRequest, SimResponse } from "./protocol.js";
-import { analyzeShot, simulateShot } from "./shot.js";
+import { analyzeShot, cachedEphemeris, simulateShot } from "./shot.js";
 
-const ephemeris = createEphemeris({ flatten: true });
+const ephemeris = cachedEphemeris(createEphemeris({ flatten: true }));
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 
 function handle(req: SimRequest): SimResponse {
