@@ -1,7 +1,7 @@
 import {createReplaySpeed} from './replay-speed-controls.js';
-import {currentUnits,unitNames,flightReading} from './system-units.js';
+import {currentUnits,unitNames,flightReading,distanceReading} from './system-units.js';
 export function createControls(api){
- const {root,state,flight,planetIds,moons,allIds,nameOf,parentOf,inspectWorld,sync:render,persist,announce,openPanel,closePanel,camera}=api;
+ const {root,state,flight,planetIds,moons,allIds,nameOf,parentOf,inspectWorld,sync:render,persist,announce,openPanel,closePanel,camera,mission:hostedMission}=api;
  const q=s=>root.querySelector(s),svg=(body,cls='')=>`<svg class="${cls}" viewBox="0 0 28 28" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
  const planetIcon=svg('<circle cx="14" cy="14" r="11" stroke-dasharray="1 4" opacity=".6"/><circle class="size-disc" cx="14" cy="14" r="7" fill="currentColor"/><path class="size-crescent" d="M15 8a6 6 0 0 0 0 12" stroke="#101823" opacity=".5"/>','planet-size-icon');
  const faster=svg('<path d="m5 7 8 7-8 7Zm10 0 8 7-8 7Z" fill="currentColor" stroke="none"/>');
@@ -14,7 +14,7 @@ export function createControls(api){
  const unitSwitch=document.createElement('button');unitSwitch.type='button';unitSwitch.className='units-cycle';unitSwitch.setAttribute('aria-description','Cycles Metric, Imperial and Light-time. Each mode remembers its units.');q('.deck-modes').before(unitSwitch);
  const inspection=q('.inspection-caption');inspection.innerHTML='<div class="inspection-heading"><strong class="inspection-name"></strong><small class="inspection-detail"></small></div>'+`<button data-close-inspection aria-label="Close close-up" title="Close close-up. Return to your previous view" aria-description="Returns to the camera view and zoom you had before inspecting this world. Escape also closes the close-up.">${svg('<path d="m8 8 12 12M20 8 8 20"/>')}</button>`;
  q('.deck-toggle').innerHTML=svg('<path d="m7 10 7 7 7-7"/>')+'<span class="deck-label">Flight deck</span><span class="deck-short" aria-hidden="true">Deck</span>';q('.deck-toggle').setAttribute('aria-label','Flight deck');
- const flightLabels=[['Launch Δv','Delta-v launch cost'],['Speed v∞','Hyperbolic excess speed at departure'],['Energy C3','C3 characteristic energy at departure']];
+ const flightLabels=hostedMission?[['Departure burn','Departure impulse'],['Parking height','Initial height above Earth'],['Approach zone','Lunar approach radius']]:[['Launch Δv','Delta-v launch cost'],['Speed v∞','Hyperbolic excess speed at departure'],['Energy C3','C3 characteristic energy at departure']];
  root.querySelectorAll('.science-page[data-page="1"] dt').forEach((n,i)=>{n.innerHTML=(n.querySelector('svg,i')?.outerHTML||'')+'<span>'+flightLabels[i][0]+'</span>';n.setAttribute('aria-label',flightLabels[i][1]);n.title=flightLabels[i][1];});
  q('.camera-mobile').outerHTML=`<button class="camera-cycle" aria-label="Change camera">${cameraIcons.follow}<span class="camera-cycle-label"></span></button>`;
  q('.sound-button').remove();
@@ -58,12 +58,14 @@ export function createControls(api){
  const missionButton=q('.mission');delete missionButton.dataset.panel;missionButton.dataset.missionToggle='true';missionButton.setAttribute('aria-controls','mission-deck');
  const mission=document.createElement('section');mission.id='mission-deck';mission.className='mission-deck';mission.setAttribute('aria-label','Mission deck');mission.hidden=true;q('.hud').append(mission);
  mission.innerHTML=`<header><span class="eyebrow">Mission deck</span><button data-mission-close aria-label="Collapse mission deck">⌃</button></header><div class="mission-content"><div><h3>First light</h3><p>Earth <span aria-hidden="true">→</span> Mars</p></div><dl><div><dt>Launch window</dt><dd>2 Nov 2026</dd></div><div><dt>Route</dt><dd>303 days</dd></div><div class="mission-scientific"><dt>Launch cost</dt><dd>3.62 km/s</dd></div></dl><button data-mission-replay>Replay flight <span aria-hidden="true">↗</span></button></div><p class="mission-footnote">Recorded flight · inspect the map while you travel</p>`;
+ if(hostedMission){mission.querySelector('h3').textContent='First leap';mission.querySelector('.mission-content p').textContent='Earth → Moon';mission.querySelectorAll('dd')[1].textContent=((flight.endEt-flight.startEt)/86400).toFixed(2)+' days';mission.querySelector('.mission-footnote').textContent='Current computed path · lunar approach zone';}
  function toggleMission(force){close();state.mission=force??!state.mission;render();if(state.mission&&root.clientHeight-q('.dock').offsetHeight-mission.offsetHeight<180&&state.deck){state.deck=false;render();}announce(state.mission?'Mission deck open. The map remains interactive.':'Mission deck collapsed.');}
  function update(){
   const units=currentUnits(state);root.dataset.units=units;
   if(unitSwitch.dataset.units!==units){unitSwitch.innerHTML=unitIcons[units]+'<span class="units-label">'+unitNames[units]+'</span>';unitSwitch.dataset.units=units;}
   const unitsLabel='Units: '+unitNames[units]+'. Switch to '+unitNames[nextUnits()];unitSwitch.setAttribute('aria-label',unitsLabel);unitSwitch.title=unitsLabel;unitSwitch.dataset.tooltip=unitsLabel;
-  const readings=[flightReading(flight.analysis.cost,units),flightReading(flight.analysis.speed,units),flightReading(flight.analysis.c3,units,true)];
+  const distance=value=>{const r=distanceReading(value,units);return {value:r.value,unit:r.short};};
+  const readings=hostedMission?[flightReading(hostedMission.deltaVKmS,units),distance(hostedMission.parkingAltitudeKm),distance(hostedMission.approachRadiusKm)]:[flightReading(flight.analysis.cost,units),flightReading(flight.analysis.speed,units),flightReading(flight.analysis.c3,units,true)];
   root.querySelectorAll('.science-page[data-page="1"] dd').forEach((n,i)=>{n.innerHTML=readings[i].value+' <small>'+readings[i].unit+'</small>';});
   q('.mission-scientific dd').textContent=readings[0].value+' '+readings[0].unit;
   const label=state.trueSize?'Realistic size':'Worlds enlarged',action=state.trueSize?'Use enlarged size':'Use realistic size',size=q('.size-control');

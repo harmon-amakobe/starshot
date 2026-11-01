@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { makeChargeSleeve, sizeChargeSleeve } from './charge-sleeve';
 export type Inspection = 'craft' | 'engine' | 'crew' | 'drone';
 const cream = new THREE.MeshStandardMaterial({ color: '#eee8d7', roughness: .38, metalness: .28 });
 const dark = new THREE.MeshStandardMaterial({ color: '#111f2b', roughness: .23, metalness: .6 });
@@ -13,24 +14,54 @@ function sphere(parent: THREE.Group, x: number, y: number, z: number, sx: number
 function bar(parent: THREE.Group, a: THREE.Vector3, b: THREE.Vector3, radius: number, material: THREE.Material) {
   const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, a.distanceTo(b), 12), material);
   mesh.position.copy(a).add(b).multiplyScalar(.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); parent.add(mesh);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()); parent.add(mesh); return mesh;
 }
 export function makeEngine() {
   const group = new THREE.Group();
-  for (const [x, r, tube, material] of [[-.24, .81, .12, cream], [0, .7, .055, amber], [.24, .81, .12, dark]] as const) {
+  const chargeMaterial = new THREE.MeshStandardMaterial({ color: '#dcf7ff', emissive: '#7ed5ec', emissiveIntensity: .15, roughness: .25, metalness: .35 });
+  group.userData.chargeMaterial = chargeMaterial; group.userData.ownedMaterials = [chargeMaterial]; group.userData.engine = true;
+  const chamber = makeChargeSleeve(); chamber.position.x = .24; chamber.rotation.z = Math.PI; group.add(chamber);
+  group.userData.chamber = chamber; sizeChargeSleeve(chamber, .48, .7);
+  for (const [x, r, tube, material] of [[-.24, .81, .12, cream], [0, .7, .075, chargeMaterial], [.24, .81, .12, dark]] as const) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(r, tube, 12, 72), material);
     ring.rotation.y = Math.PI / 2; ring.position.x = x; group.add(ring);
+    if (x === -.24) group.userData.aftRing = ring;
+    if (x === 0) group.userData.chargeRing = ring;
   }
   for (let i = 0; i < 8; i++) {
     const angle = i * Math.PI / 4, y = Math.cos(angle) * .81, z = Math.sin(angle) * .81;
-    bar(group, new THREE.Vector3(-.32, y, z), new THREE.Vector3(.32, y, z), .045, metal);
+    const strut = bar(group, new THREE.Vector3(-.32, y, z), new THREE.Vector3(.32, y, z), .045, metal);
+    strut.userData.engineStrut = true;
   }
   sphere(group, 0, 0, 0, .24, .3, .3, dark);
   for (let i = 0; i < 3; i++) {
     const a = i * Math.PI * 2 / 3;
-    bar(group, new THREE.Vector3(0, Math.cos(a) * .2, Math.sin(a) * .2), new THREE.Vector3(0, Math.cos(a) * .68, Math.sin(a) * .68), .035, amber);
+    bar(group, new THREE.Vector3(0, Math.cos(a) * .2, Math.sin(a) * .2), new THREE.Vector3(0, Math.cos(a) * .68, Math.sin(a) * .68), .035, chargeMaterial);
   }
   return group;
+}
+export function setVehicleCharge(vehicle: THREE.Group, value: number, firing = 0, extension = 0) {
+  const charge = Math.max(0, Math.min(1, value));
+  vehicle.traverse(part => {
+    if (!part.userData.engine) return;
+    (part.userData.aftRing as THREE.Object3D).position.x = -.24 - extension;
+    (part.userData.chargeRing as THREE.Object3D).position.x = -.12 - extension;
+    sizeChargeSleeve(part.userData.chamber as THREE.Group, .48 + extension, .7);
+    part.children.forEach(child => { if (child.userData.engineStrut) child.visible = extension < .1; });
+    (part.userData.chargeMaterial as THREE.MeshStandardMaterial).emissiveIntensity = .15 + charge * 2.4 + firing * 1.1;
+  });
+  const plume = vehicle.getObjectByName('engine-plume');
+  if (plume) { plume.visible = firing > 0; plume.scale.x = .8 + firing * .5; plume.position.x = -1.25 - extension; }
+}
+function makePlume() {
+  const group = new THREE.Group(); group.name = 'engine-plume'; group.visible = false;
+  const materials: THREE.Material[] = [];
+  for (const [radius, length, color, opacity] of [[.26, 2.7, '#7183cf', .08], [.18, 1.7, '#7ddff7', .25], [.1, .8, '#e9fcff', .8]] as const) {
+    const material = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }); materials.push(material);
+    const mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, length, 32), material);
+    mesh.rotation.z = Math.PI / 2; mesh.position.x = -length / 2; group.add(mesh);
+  }
+  group.userData.ownedMaterials = materials; return group;
 }
 export function makeDrone() {
   const group = new THREE.Group();
@@ -54,6 +85,7 @@ export function makeVehicle(kind: Inspection = 'craft') {
   sphere(group, .83, .1, 0, .5, .41, .49, glass);
   sphere(group, 1.13, -.13, .33, .09, .055, .055, amber);
   const engine = makeEngine(); engine.position.x = -.88; group.add(engine);
+  group.add(makePlume());
   for (const side of [-1, 1]) {
     const fin = new THREE.Mesh(new THREE.BoxGeometry(.75, .06, .4), cream);
     fin.position.set(-.25, -.16, side * .72); fin.rotation.x = side * -.2; group.add(fin);

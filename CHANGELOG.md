@@ -12,6 +12,14 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- A rear-ring charging gesture with an anchored collector, a cool field chamber and
+  release snap. The same engine can be charged in the hangar without changing flight.
+- Shared Follow, System and Free cameras, a north-facing lunar orbit view and measured
+  approach markers. The hosted Launch window preserves the current flight, clock and preferences.
+- A compact collapsed flight deck with horizontal fuel and angle readings, followed
+  by progress and Moon distance during flight.
+- Direct result controls and a level restart. The collector faces its Earth-relative
+  travel direction with a visual engine plume and unchanged physical impulse.
 - A playable 3D Earth-to-Moon design study, with pull-back aiming, a shared worker
   preview and flight path, a zoomable camera and an original procedural vehicle workshop.
 - An isolated Observatory prototype with the approved launch-window controls,

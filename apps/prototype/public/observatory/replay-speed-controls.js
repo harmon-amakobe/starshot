@@ -20,7 +20,7 @@ export function createReplaySpeed({root,state,clock,render,persist,announce}){
   const display=light?(real()?'Real time':concise(clock.apparentC(state))+'c'):state.science?scientific(rate):(exact?.name||'≈'+concise(rate/normal)+'×');
   q('.warp-label').textContent=display;
   const readout=q('.warp-display');readout.setAttribute('aria-label','Replay speed '+display+'. Reset to real time');readout.dataset.rate=String(rate);readout.dataset.pacing=clock.usingC(state)?'light':'time';readout.dataset.lightRate=clock.usingC(state)?String(state.lightRate):'';
-  q('.time-warp').title=display+' replay · '+scientific(rate)+'. '+(light?'1c covers one light-second of the recorded route per real second. This changes replay pacing, not the physical flight. ':'1× plays this trip in 24 seconds. ')+'Double-click for real time; keyboard: focus the readout and press Enter.';
+  q('.time-warp').title=display+' replay · '+scientific(rate)+'. '+(light?'1c covers one light-second of the recorded route per real second. This changes replay pacing, not the physical flight. ':'1× plays this trip in '+Math.round(clock.duration/normal)+' seconds. ')+'Double-click for real time; keyboard: focus the readout and press Enter.';
   q('[data-warp="-1"]').setAttribute('aria-disabled',String(!steps.some(s=>value(s,light)<current*(1-1e-10))));q('[data-warp="1"]').setAttribute('aria-disabled',String(!steps.some(s=>value(s,light)>current*(1+1e-10))));
   const chevrons=q('.warp-chevrons');if(chevrons.children.length!==steps.length)chevrons.innerHTML=steps.map(()=>'<i></i>').join('');
   [...chevrons.children].forEach((n,i)=>n.classList.toggle('lit',value(steps[i],light)<=current*(1+1e-10)));

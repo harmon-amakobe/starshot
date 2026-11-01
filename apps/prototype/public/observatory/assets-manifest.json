@@ -22,6 +22,24 @@
       "sourcePage": "https://www.solarsystemscope.com/textures/"
     },
     {
+      "file": "hosted-bridge.js",
+      "sha256": "bb335369d555d6054074b9c45be75cb62505049f82291f12ff9ba64f9f36c002",
+      "bytes": 4308,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Original hosted lunar mission and validated clock handoff."
+    },
+    {
+      "file": "hosted-mission.js",
+      "sha256": "0b7a7806d0e0097c9513827af04d777e350b5d5d827494c4dfdc9c66a1155365",
+      "bytes": 5874,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Original hosted lunar mission and validated clock handoff."
+    },
+    {
       "file": "ibm-plex-mono-400.woff2",
       "sha256": "88890da9e319a1630f5c7c0db3af2c43a90f58fe01ba1a59099385fe108ed09c",
       "bytes": 37240,
@@ -130,8 +148,8 @@
     },
     {
       "file": "replay-clock.js",
-      "sha256": "4fd107de28d25f0fafc1f85611eed0d894c020130775eaa4db84a02d9baffb0c",
-      "bytes": 2860,
+      "sha256": "73b45503da6def2150affc5fff6465a400f7864b3423bb1a1a10dade97faca25",
+      "bytes": 2886,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",
@@ -148,8 +166,8 @@
     },
     {
       "file": "replay-speed-controls.js",
-      "sha256": "42384f408d93f2eaa9df9b6a949af28c47f687f0c063fe5af820a6dc878b3ac5",
-      "bytes": 3957,
+      "sha256": "836355d3426fc63daf49f85b6ca4400e016aff95cf208ce32a97e8cccf8de900",
+      "bytes": 3992,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",
@@ -221,8 +239,8 @@
     },
     {
       "file": "system-controls.js",
-      "sha256": "c46023273f105ce81d47f59808e63d9b64a6e72edcd9b250fee3a96c8da0c359",
-      "bytes": 16435,
+      "sha256": "74fcb0b53141833270ddfdd680ad809125775a99eff74614a787aa36a5987b9a",
+      "bytes": 17215,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",
@@ -239,8 +257,8 @@
     },
     {
       "file": "system-main.js",
-      "sha256": "691d08a65ad5ba3f9ea3616e36f11cb80c90c6ecfb6eec56531441c0eec73c67",
-      "bytes": 48649,
+      "sha256": "77a586adb18c5207a8ff3f155c3abde276e1e5f3742d120bb458eb88501c3c14",
+      "bytes": 50927,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",

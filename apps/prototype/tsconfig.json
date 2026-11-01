@@ -6,5 +6,5 @@
     "types": ["vite/client"], "allowJs": true
   },
   "references": [{ "path": "../../packages/ephemeris" }, { "path": "../../packages/physics" }],
-  "include": ["src", "vite.config.ts", "public/observatory/system-astronomy.js"]
+  "include": ["src", "vite.config.ts", "public/observatory/system-astronomy.js", "public/observatory/replay-clock.js", "public/observatory/system-units.js"]
 }

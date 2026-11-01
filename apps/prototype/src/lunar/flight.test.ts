@@ -72,6 +72,9 @@ describe('Preview and launch ownership', () => {
     state = shotReducer(state, { type: 'ready', id: 0, flight });
     expect(state.phase).toBe('aim');
     state = shotReducer(state, { type: 'ready', id: 1, flight });
+    expect(state.phase).toBe('snap');
+    expect(state.launch).toBe(flight);
+    state = shotReducer(state, { type: 'complete-snap' });
     expect(state.phase).toBe('flight');
     expect(state.launch).toBe(flight);
   });
@@ -84,5 +87,16 @@ describe('Preview and launch ownership', () => {
     state = shotReducer(state, { type: 'ready', id: 1, flight });
     expect(state.preview).toBeNull();
     expect(state.pendingRelease).toBe(false);
+  });
+  it('invalidates a pending snap on cancel or restart', () => {
+    const ready = shotReducer(initial, { type: 'ready', id: 1, flight });
+    const snapping = shotReducer(ready, { type: 'release' });
+    const cancelled = shotReducer(snapping, { type: 'cancel' });
+    expect(shotReducer(cancelled, { type: 'complete-snap' }).phase).toBe('aim');
+    expect(cancelled.launch).toBeNull();
+    const restarted = shotReducer(snapping, { type: 'restart', request: requestFor(0, 0) });
+    expect(shotReducer(restarted, { type: 'ready', id: 1, flight })).toBe(restarted);
+    expect(shotReducer(restarted, { type: 'complete-snap' }).phase).toBe('aim');
+    expect(restarted.request.deltaVKmS).toBe(0);
   });
 });

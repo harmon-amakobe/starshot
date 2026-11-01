@@ -26,7 +26,7 @@ export function createReplayClock(flight){
   }
   return s.start+u*s.dt;
  }
- const normalRate=duration/24;
+ const normalRate=duration/(flight.playbackSeconds||24);
  const isLightContext=state=>state.science&&currentUnits(state)==='light';
  const usingC=state=>isLightContext(state)&&state.lightRate>0;
  function rate(state){return isLightContext(state)?(state.lightRate?state.lightRate*LIGHT_KM_S/speedAt(flight.startEt+state.progress*duration):1):(state.rate||normalRate);}
