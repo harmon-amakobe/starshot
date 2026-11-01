@@ -12,9 +12,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | PR0 on `starshot/pr0-bootstrap`, then `main` |
-| Shape | PR0, then 40 stacked pull requests in six bands (A to F) |
+| Shape | PR0 (with PR1 inside it), then 39 specs built as 19 PR groups in six bands (A to F), then one master review (D30) |
 | Date | 2026-11-01 |
-| Decisions | D12 to D29 in [../../decisions.md](../../decisions.md), on top of D1 to D11 |
+| Decisions | D12 to D30 in [../../decisions.md](../../decisions.md), on top of D1 to D11 |
 | Turnkey specs | Bands A and B. Bands C to F are outlines until their band planning sessions |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -73,6 +73,7 @@ interstellar chapter are later programs.
 | D27 | The copy standard and its gate, with the em dash, the en dash and the horizontal bar as hard failures |
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
 | D29 | astlo changes are made here first, offered to Mark as pull requests (astlo changes only), and pulled back from his releases once adopted; the Rust core stays Starshot's, with dependency-free ephemeris and topocentric parts he may use as a crate; tooling may depend on a licensed, validated astlo, the game never does |
+| D30 | Specs build as PR groups (one branch, one PR, one bounded review for one to four specs), two or three groups a session, PR1 inside PR0, and one master review of the whole stack at the end |
 
 Still binding from before: D1 and D2 (Mark's files untouched), D6 (2D physics; a level's
 preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
@@ -84,7 +85,7 @@ criterion without a recorded result in the PR body is not proven.
 
 | # | Criterion | Proof command | First proven by |
 |---|---|---|---|
-| AC1 | Every gate passes from a clean install, Rust included | `npm ci && STARSHOT_REQUIRE_RUST=1 npm run gates` exits 0 and ends `gates: N/N passed` | PR1; again at every PR |
+| AC1 | Every gate passes from a clean install, Rust included | `npm ci && STARSHOT_REQUIRE_RUST=1 npm run gates` exits 0 and ends `gates: N/N passed` | PR1, in PR0 (D30); again at every PR |
 | AC2 | The Rust workspace is formatted, lint-clean and tested | `cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked` exits 0 | PR6 |
 | AC3 | Planets stay within today's Horizons budgets at the fixture dates, from Rust, for Table 1 and for the rails | `cargo test -p starshot-ephemeris --locked --test horizons` | PR9, PR10 |
 | AC4 | Every rail is within 150 km of DE440 every 5 days from 1950 to 2150, the Moon included | `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` (every `ephem.validation/1` report has `pass: true`) and `cargo test -p starshot-ephemeris --locked --test rails` | PR8, PR10 |
@@ -93,7 +94,7 @@ criterion without a recorded result in the PR body is not proven.
 | AC7 | Energy and timing hold: a Sun-only 1 AU orbit closes within 10 km after one period; Earth's gravity switches on energy-consistently once; a 3-year preview takes under 400 ms in CI | `cargo test -p starshot-physics --locked` | PR11, PR12 |
 | AC8 | Every level's known solution reaches its target through the shipped core with the level's frozen settings, and every hint is deterministic | `cargo test -p starshot-game --locked --test levels` and `npx vitest run apps/game` | PR14, PR16; re-derived in PR18 and PR34 to PR36 |
 | AC9 | Size budgets hold: wasm under 64 KB gzip; first-load JavaScript under 300 KB gzip before textures; level 1's 1k textures under 300 KB | `node scripts/check-bundle-size.mjs` (gate `bundle-size`) | PR15 (wasm), PR25 (first load), PR26 (textures) |
-| AC10 | The game plays through on a phone, a desktop and a phone with reduced motion: a result, zero console errors, zero unnamed controls, zero targets under 44 px, and level 1 replayed offline | `npm run build && node scripts/verify-game.mjs` (CI job `verify-game`), with `--steps scripts/verify-steps/chapter-one.mjs` from PR34 | PR1 (in CI); PR31 (offline); PR34 to PR36 (the chapter) |
+| AC10 | The game plays through on a phone, a desktop and a phone with reduced motion: a result, zero console errors, zero unnamed controls, zero targets under 44 px, and level 1 replayed offline | `npm run build && node scripts/verify-game.mjs` (CI job `verify-game`), with `--steps scripts/verify-steps/chapter-one.mjs` from PR34 | PR1, in PR0 (D30, in CI); PR31 (offline); PR34 to PR36 (the chapter) |
 | AC11 | The copy standard holds everywhere it applies | `node scripts/check-copy-tells.mjs` exits 0, and ``LC_ALL=C.UTF-8 git grep -nP '[\x{2013}\x{2014}\x{2015}]' -- . ':!third_party' ':!python/astlo/astlo' ':!python/astlo/astlo-*.dist-info'; test $? -eq 1`` exits 0 | PR0; every PR |
 | AC12 | Every shipped file and dependency has an allowed licence and every asset is credited | `node scripts/check-licence.mjs && node scripts/check-dependency-licences.mjs && node scripts/check-assets.mjs && node scripts/gen-credits.mjs --check` | PR0 (files), PR5 (the rest) |
 | AC13 | Nothing private or secret in files, commit messages or PR bodies | `node scripts/check-secrets.mjs` with the local private-name list; the `commits` gate; the PR body through `node scripts/check-secrets.mjs --stdin` | Every PR; the `commits` gate from PR4 |
@@ -102,13 +103,13 @@ criterion without a recorded result in the PR body is not proven.
 | AC16 | The server accepts every golden replay and rejects tampered ones, running the same `.wasm` bytes the web ships | The function's test command, fixed in the Band E planning session; it compares the wasm's SHA-256 with `packages/core-wasm/pkg` | PR32 |
 | AC17 | Both sites load, and hashed assets are cached as immutable | `curl -sSfI https://playstarshot.com/` and `curl -sSfI https://harmon-amakobe.github.io/starshot/` return 200; a hashed asset's response carries `cache-control: public, max-age=31536000, immutable` | PR33 (and owner step G5) |
 | AC18 | The issues agree with the plan | `node scripts/sync-work.mjs --program v1-starshot --check` exits 0 (gate `work`) | PR4 |
-| AC19 | The workflows lint clean | `pipx run zizmor==1.31.1 --offline .github/` exits 0 (CI job `workflow-lint`) | PR1 |
+| AC19 | The workflows lint clean | `pipx run zizmor==1.31.1 --offline .github/` exits 0 (CI job `workflow-lint`) | PR1, in PR0 (D30) |
 
 ## The bands
 
 | Band | PRs | Goal | Ends with |
 |---|---|---|---|
-| A, foundations | PR1 to PR5 | CI hardened with one stable required check; GameScreen split under the size gate; PR text, commits and size checked; licences and assets gated | `verify-all` sweep; handoff |
+| A, foundations | PR1 (in PR0) to PR5 | CI hardened with one stable required check; GameScreen split under the size gate; PR text, commits and size checked; licences and assets gated | `verify-all` sweep; handoff |
 | B, the Rust core | PR6 to PR17 | One Rust core in wasm running the game, bit-identical across engines; rails pack and tool; TypeScript core retired | `verify-all` and `verify-physics`; handoff |
 | C, flight model | PR18 to PR24 | Rails as the game's source; fuel, capture, lock states, time map, launch windows, progression | Band C planning first; `verify-game` and `verify-physics`; handoff |
 | D, senses | PR25 to PR29 | three.js presenting as 2D, textures, sky, sound and haptics, settings | Band D planning first; `verify-game`; handoff |
@@ -119,15 +120,16 @@ criterion without a recorded result in the PR body is not proven.
 
 Size is an estimate of contentful lines added (lockfiles, fixture JSON, generated data
 and pure deletions excluded) and files touched, against the cap of about 400 lines or
-20 files (`PR_SIZE_CAP` in [../../../.claude/README.md](../../../.claude/README.md)).
-`check-pr-size.mjs` (PR4) warns above the cap and fails at twice it. Slugs are the
+20 files per spec (`PR_SIZE_CAP` in [../../../.claude/README.md](../../../.claude/README.md)).
+A PR group of n specs is held to n times the cap (D30), and `check-pr-size.mjs` (PR4)
+warns above that and fails at twice it. Slugs are the
 stable ids used in [03-work.yaml](03-work.yaml); the numbers of Bands C to F may change
 in their planning sessions.
 
 | PR | Slug | Title | Band | Size estimate | Depends on |
 |---|---|---|---|---|---|
 | PR0 | `v1-pr0-plan` | Plan, decisions D12 to D29, governance files and gates | trunk | well over the cap (deviation 1) | none |
-| PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: inside | PR0 |
+| PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in PR0 (D30) | PR0 |
 | PR2 | `v1-screen-split-render` | GameScreen split, render loop | A | about 500 lines (about 440 moved), 8 files: over, warns | PR1 |
 | PR3 | `v1-screen-split-state` | GameScreen split, state hooks | A | about 480 lines (about 400 moved), 9 files: over, warns | PR2 |
 | PR4 | `v1-process-checks` | Process checks | A | about 330 lines, 9 files: inside | PR1 |
@@ -172,6 +174,45 @@ The stack is linear in this order. A PR that depends on an earlier one that is n
 directly below it (PR16 on PR3, for example) is satisfied because everything below it is
 already in the branch it bases on.
 
+### PR groups (D30)
+
+The specs build as the groups below, in this order. A group is one branch, one pull
+request and one review for one to four consecutive specs, named for its first member
+and based on the previous group's branch. Each spec's own Branch line gives way to its
+group's row here. A session builds two or three groups; the session column is a
+guide, and the context budget decides. The groups of Bands C to F are provisional:
+each band's planning session confirms or regroups them before it builds.
+
+| Group | Members | Branch | Base | Session |
+|---|---|---|---|---|
+| PR0 | PR0, PR1 | `starshot/pr0-bootstrap` | `main` | the trunk; the owner reviews it |
+| PR2 | PR2, PR3 | `starshot/v1-pr02-screen-split` | `starshot/pr0-bootstrap` | A1 |
+| PR4 | PR4, PR5 | `starshot/v1-pr04-process-licence` | the PR2 group's | A1 |
+| PR6 | PR6 | `starshot/v1-pr06-rust-workspace` | the PR4 group's | B1 |
+| PR7 | PR7, PR8 | `starshot/v1-pr07-ephem-rails` | the PR6 group's | B1 |
+| PR9 | PR9, PR10 | `starshot/v1-pr09-ephemeris-crate` | the PR7 group's | B2 |
+| PR11 | PR11, PR12 | `starshot/v1-pr11-physics-crate` | the PR9 group's | B2 |
+| PR13 | PR13, PR14 | `starshot/v1-pr13-game-crate` | the PR11 group's | B3 |
+| PR15 | PR15 | `starshot/v1-pr15-core-wasm` | the PR13 group's | B3 |
+| PR16 | PR16, PR17 | `starshot/v1-pr16-cutover` | the PR15 group's | B3 |
+| PR18 | PR18, PR19 | `starshot/v1-pr18-rails-fuel` | the PR16 group's | C1 |
+| PR20 | PR20, PR21 | `starshot/v1-pr20-capture-cues` | the PR18 group's | C1 |
+| PR22 | PR22, PR23, PR24 | `starshot/v1-pr22-time-windows-saves` | the PR20 group's | C1 |
+| PR25 | PR25, PR26, PR27 | `starshot/v1-pr25-renderer` | the PR22 group's | D1 |
+| PR28 | PR28, PR29 | `starshot/v1-pr28-audio-settings` | the PR25 group's | D1 |
+| PR30 | PR30, PR31 | `starshot/v1-pr30-firebase` | the PR28 group's | E1 |
+| PR32 | PR32, PR33 | `starshot/v1-pr32-verify-hosting` | the PR30 group's | E1 |
+| PR34 | PR34, PR35, PR36 | `starshot/v1-pr34-levels` | the PR32 group's | F1 |
+| PR37 | PR37, PR38 | `starshot/v1-pr37-credits-release` | the PR34 group's | F1 |
+| PR39 | PR39, PR40 | `starshot/v1-pr39-store-astlo-kit` | the PR37 group's | F1 |
+| Master review | the whole stack | fixes on `starshot/v1-master-fixes` | the PR39 group's | last |
+
+Members are consecutive and every dependency in the table above sits in the same group
+or an earlier one, so the stack stays linear. Groups pair specs that share a domain and a review lens. Examples: the GameScreen
+split, the gates, the Python rails tool, each Rust crate, the cut-over with its
+deletion, the flight model, the renderer, the online pieces and the levels. PR6 and PR15 stand alone because each brings a new
+toolchain or a new runtime boundary. The master review is defined in D30.
+
 ## What PR0 carries
 
 PR0 is this plan's own pull request, on `starshot/pr0-bootstrap` (the bootstrap branch,
@@ -200,6 +241,10 @@ matches: copy and work tracking go to PR4, licences and credits to PR5, size to 
 - **Copy fixes** across the docs, `python/astlo/VERIFICATION.md` (Starshot's file) and
   the UI strings, so the copy gate starts green.
 - **Issues as code** (D23): `scripts/sync-work.mjs`, `scripts/lib/yaml-lite.mjs`, `scripts/lib/github-rest.mjs`, the fixture under `scripts/fixtures/work/`, the `track-work` skill and `docs/README.md`.
+- **CI hardening** (PR1's spec, built here by the owner's ruling, D30): least-privilege
+  workflows with SHA-pinned actions, the `checks`, `workflow-lint`, `dependency-review`
+  and `verify-game` jobs under the `gates` aggregator, Scorecard, Dependabot cooldowns,
+  and annotations and a job summary from `scripts/gates.mjs`.
 - **Commits:** the licence switch, the gates and the governance files landed as three
   signed-off commits authored by the owner (D24). The decisions, the plan, the
   directions document, a licence-label correction and the review fix pass follow in
@@ -217,13 +262,16 @@ the adversary checks, and what is out of scope. Branches are `starshot/v1-prNN-<
 with a two-digit number, and each bases on the branch of the PR directly below it. Every
 PR adds a line under `## [Unreleased]` in `CHANGELOG.md` when a player or a contributor
 would notice it. No PR touches a `version` field (AGENTS.md, non-negotiable 10).
-Re-locate by symbol; line numbers are anchors only.
+Re-locate by symbol; line numbers are anchors only. Since D30 a spec's Branch line gives
+way to its group's row in the [PR groups](#pr-groups-d30) table, which names the branch
+and its base.
 
 ## Band A: foundations (turnkey)
 
 ### PR1: CI hardening
 
-- **Branch** `starshot/v1-pr01-ci-hardening`, based on `starshot/pr0-bootstrap`.
+- **Branch** none: built on `starshot/pr0-bootstrap` as part of PR0 (#1), by the
+  owner's ruling (D30).
   **Issue** `v1-ci-hardening`. **Decisions** D28, AGENTS.md non-negotiables 4 and 9.
   **Size** about 330 lines, 11 files.
 - **Goal.** Every workflow runs with least privilege and SHA-pinned actions. The one
@@ -446,7 +494,7 @@ export function useFlightPlayback(input: {
 
 | File | Change |
 |---|---|
-| `scripts/check-pr-size.mjs` | New. Runs `git diff --numstat <base>...HEAD`; excludes `package-lock.json`, `Cargo.lock`, `**/uv.lock`, `**/fixtures/**/*.json`, `data/ephem/**`, `packages/core-wasm/pkg/**`, binary files (numstat `-`); counts added lines and changed files; prints both; warns (`::warning::` in Actions) above 400 lines or 20 files; exits 1 above 800 lines or 40 files. Base: `--base <ref>`, else `GITHUB_BASE_REF`, else `origin/main` |
+| `scripts/check-pr-size.mjs` | New. Runs `git diff --numstat <base>...HEAD`; excludes `package-lock.json`, `Cargo.lock`, `**/uv.lock`, `**/fixtures/**/*.json`, `data/ephem/**`, `packages/core-wasm/pkg/**`, binary files (numstat `-`); counts added lines and changed files; prints both. The group's member count n (D30) comes from `--members <n>`, else the number of distinct `PRnn` ids in the pull request title (read from `GITHUB_EVENT_PATH`), else 1. Warns (`::warning::` in Actions) above n times 400 lines or n times 20 files; exits 1 above twice that. Base: `--base <ref>`, else `GITHUB_BASE_REF`, else `origin/main` |
 | `scripts/check-commits.mjs` | New gate `commits` (group `hygiene`, fast). For each commit in `<base>..HEAD` (base as above): pipes `%an <%ae>%n%B` through `node scripts/check-secrets.mjs --stdin` and fails on any finding; warns when a commit has no `Signed-off-by:` (the DCO app is the enforcement) |
 | `scripts/gates.mjs` | Register `commits`; register `work` (`node scripts/sync-work.mjs --program v1-starshot --check`, group `hygiene`, fast) unless an entry that runs `scripts/sync-work.mjs` already exists |
 | `scripts/sync-work.mjs` | (PR0's.) `--check` with no `--program` checks every folder under `docs/plans/` that holds a `*work.yaml`, prints one line per program, and exits 1 if any disagrees with its lock. A new `--plans-dir <path>` (default `docs/plans`) lets the self-test point it elsewhere |
@@ -483,8 +531,8 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 - **Proof.** `npm run gates` exits 0 with `commits` and `work` listed.
   `node scripts/sync-work.mjs --self-test` passes, the two-program case included, and
   `node scripts/sync-work.mjs --check` (no program) checks every program under `docs/plans/`.
-  `node scripts/check-pr-size.mjs --base starshot/v1-pr03-screen-split-state` prints
-  this PR's counts. A scratch commit whose message contains a planted `ghp_` token makes
+  `node scripts/check-pr-size.mjs --base starshot/v1-pr02-screen-split --members 2`
+  prints this group's counts and its cap. A scratch commit whose message contains a planted `ghp_` token makes
   `node scripts/check-commits.mjs` exit 1 (then drop the commit). The `pr-size` job is
   green on the PR.
 - **Adversary checks.** No new token or secret is needed. Nothing writes to issues from
@@ -1306,9 +1354,10 @@ a script an agent writes and runs against `starshot-game`.
 
 ## Maintainability rules every PR obeys
 
-- **Size.** About 400 contentful lines or 20 files per PR (`PR_SIZE_CAP`), checked by
-  `check-pr-size.mjs` from PR4: it warns above the cap and fails at twice it. A spec that
-  expects more says so and names where it splits.
+- **Size.** About 400 contentful lines or 20 files per spec (`PR_SIZE_CAP`); a PR group
+  of n specs is held to n times that (D30). `check-pr-size.mjs` from PR4 warns above the
+  group's cap and fails at twice it. A spec that expects more says so and names where it
+  splits.
 - **No god files.** The `size` gate warns above 300 code lines and fails above 500 for
   `.ts`, `.tsx`, `.rs`, `.mjs` and `.css`; the baseline only shrinks; a `.tsx` file that
   exceeds two shape heuristics warns (D28). A component is a thin view; state lives in
@@ -1428,38 +1477,50 @@ Approaches considered and rejected, so nobody re-derives them.
 
 ## Session protocol
 
-Every build session follows this order, for the orchestrator and for builders.
+Every build session follows this order, for the orchestrator and for builders. A
+session builds two or three PR groups (D30); steps 2 to 8 run once per group.
 
 1. **Open with the audit.** Run `VCS_AUDIT` from [../../../.claude/README.md](../../../.claude/README.md)
    (`git status --short && git branch --show-current && git log --oneline -5 && git
    rev-list --count main..HEAD`) and `gh pr list`; compare with the SessionStart line.
    Read `AGENTS.md`, this plan, [05-deviation-log.md](05-deviation-log.md) and the
    decision log's newest entries.
-2. **Confirm the base.** The next PR's branch bases on the branch of the PR directly
-   below it in the table above; harness worktrees branch from `main`, so check before
-   building there (the `stacked-pr` skill).
-3. **Claim.** Post the claim comment on the PR's issue (D23; the `track-work` skill) and
-   set its status.
-4. **One builder at a time.** Spawn one `executor` with the spec's anchor, the absolute
-   repository path and the base; nobody else writes to that tree.
-5. **Review.** An `adversary` in a fresh context reviews the diff against
-   `.claude/rubrics/` and the spec's "Adversary checks"; `physics-auditor` joins for any
-   Band B or physics PR. The orchestrator closes the gaps.
+2. **Confirm the base.** The next group's branch bases on the previous group's branch in
+   the [PR groups](#pr-groups-d30) table; harness worktrees branch from `main`, so check
+   before building there (the `stacked-pr` skill).
+3. **Claim.** Post the claim comment on each member's issue (D23; the `track-work`
+   skill) and set its status.
+4. **One builder at a time.** Spawn one `executor` for the group, or one per member in
+   order when a member is large, with each spec's anchor, the absolute repository path
+   and the base; nobody else writes to that tree.
+5. **Review, bounded (D30).** One `adversary` pass in a fresh context against
+   `.claude/rubrics/` and each member's "Adversary checks". It also reads this plan's
+   deviation log and the PR body against the diff, and reports per directory which files
+   it opened. A domain lens joins only when the diff calls for it (`physics-auditor`,
+   `verification-driver`, `rules-reviewer`). No refuters by default: the orchestrator
+   judges each finding from the tree and closes the gaps. A delta pass runs only when the
+   fixes touched a physics number, a workflow, the harness or more than about 50
+   contentful lines.
 6. **Gates.** `npm run gates` (with `STARSHOT_REQUIRE_RUST=1` from PR6), plus
    `verify-physics` for crates, packages or fixtures and `verify-game` for anything a
    player sees; every command reported with its exit code.
 7. **Publish (orchestrator only).** Commit per D24 (the recipe in PR4's spec). Check the
    message and the PR body with `check-secrets.mjs --stdin` and `check-copy-tells.mjs
-   --stdin`. Push the branch by name, and open the PR against the branch below it with
-   `Part of #n` (or `Closes #n` for the PR that reaches `main`). Post the completion
-   comment, and run `node scripts/sync-work.mjs --apply` if `03-work.yaml` changed.
+   --stdin`. Push the branch by name, and open the PR against the previous group's
+   branch with `Part of #a, #b` for its members (or `Closes` for the PR that reaches
+   `main`). Post the completion comments, and run `node scripts/sync-work.mjs --apply` if
+   `03-work.yaml` changed.
 8. **Record.** Update the acceptance results in the PR body, any deviation in
-   [05-deviation-log.md](05-deviation-log.md), and the issue's status.
-9. **Close a band.** After its last PR: the `verify-all` sweep, a handoff, and for Bands
-   B to E the next band's planning session in a fresh session.
-10. **Hand off at the budget band.** When the session's context nears its limit, stop
-    after the current PR's publish step and write the handoff below; never start a PR
+   [05-deviation-log.md](05-deviation-log.md), and each issue's status.
+9. **Close a band.** After its last group: the `verify-all` sweep, a handoff, and for
+   Bands B to E the next band's planning session in a fresh session, which also confirms
+   that band's groups.
+10. **Hand off at the budget band.** At about 70% of the session's context, stop after
+    the current group's publish step and write the handoff below; never start a group
     the session cannot finish.
+11. **Master review, once, at the end (D30).** After the last group: the `verify-all`
+    sweep with every acceptance criterion's command and exit code, a multi-lens review of
+    the whole stack, a final fix group, then the owner's review and the one merge.
 
 ### Handoff template
 
@@ -1469,11 +1530,11 @@ The fields of the `handoff-prompt` skill, in its order. Read each value fresh at
 Repo: <abs path>. Stack tip: starshot/v1-pr<NN>-<topic> @ <short sha>.
 Base of the stack: starshot/pr0-bootstrap until PR0 merges, then main.
 Plan: docs/plans/v1-starshot/00-plan.md.
-Decisions: docs/decisions.md (D1..D29 resolved; do not re-litigate).
+Decisions: docs/decisions.md (D1..D30 resolved; do not re-litigate).
 Deviations: docs/plans/v1-starshot/05-deviation-log.md.
 Open-gate at close: <the line sh scripts/agent/open-gate.sh prints>.
-Done: PR0 <one line>; PR1 <one line>; ...; PR<k> <one line>.
-Next: PR<k+1> <title>. Spec: docs/plans/v1-starshot/00-plan.md#<anchor>. Issue: #<number>.
+Done: PR0 <one line>; group PR2 <one line>; ...; group PR<k> <one line>.
+Next: group PR<m> (PR<m>, PR<m+1>) <titles>. Specs: docs/plans/v1-starshot/00-plan.md#<anchor>, ... Issues: #<a>, #<b>.
 Owner steps it waits on: <ids from 04-ops-checklist.md, or none>.
 Routing: you are the orchestrator (top tier); route by "would anything be lost with the
 cheaper tier?"; roster in .claude/agents/; one builder at a time; adversary per PR
@@ -1493,6 +1554,6 @@ First commands:
 
 The settings, accounts, domain, Firebase projects, the message to Mark and the playtests
 are listed, grouped and ordered, with how to confirm each and which PRs wait on them, in
-[04-ops-checklist.md](04-ops-checklist.md). PR1 waits on G3 and G4. G1 and G5 are needed
+[04-ops-checklist.md](04-ops-checklist.md). PR0's CI hardening (PR1's spec) waits on G3 and G4. G1 and G5 are needed
 before PR4 and the Pages proof. After PR0 merges: G8 (the DCO app). Now: M1 to M4 (the
 domain and the reporting addresses) and K1 (Mark).

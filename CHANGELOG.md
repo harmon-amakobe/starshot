@@ -136,6 +136,8 @@ numbers will be added by an automated release step (planned), never by hand.
 - CI: the required `gates` check now fails when any of four jobs fails: the gate
   registry, zizmor on the workflows, dependency review, or the game's play-through in a
   headless browser. A failed gate shows as an annotation and in the job summary.
+- The plan's specs now build as PR groups, two or three a session, with one bounded
+  review per group and one master review of the whole stack at the end (D30).
 
 ### Fixed
 

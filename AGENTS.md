@@ -116,10 +116,12 @@ A wrong change in these is expensive or silent; plan first and say what you chec
 ## How agents work together
 
 The orchestrator holds the plan, routes work, reconciles and publishes; it does not
-build, except a small single-PR change it declares as such. Per PR it: reads the spec
-and confirms the base; spawns **one** builder; has the diff reviewed by an adversary in
-a fresh context against `.claude/rubrics/`; closes the gaps itself; runs the gates and
-the verifiers; pushes and opens the PR; updates the plan and logs.
+build, except a small single-PR change it declares as such. A pull request builds a
+group of one to four specs (D30). Per group it reads the specs, confirms the base and
+spawns **one** builder. An adversary reviews the diff in a fresh context against
+`.claude/rubrics/`, and the orchestrator closes the gaps itself. It runs the gates and
+the verifiers, pushes, opens the PR, and updates the plan and logs. The full multi-lens
+review waits for the master review at the program's end (D30).
 
 - **Route by one question:** would anything be lost with the cheaper tier? Anything
   short of a confident no goes up a tier. Tiers: originator `fable`, top `opus`,

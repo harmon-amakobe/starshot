@@ -612,6 +612,7 @@ origin, and the owner is the person submitting agent-written work.
 ## D25. Solo with agents until chapter one is playable
 
 *Date:* 2026-11-01. *Source:* owner's ruling.
+**Superseded in part by [D30](#d30-specs-build-in-groups-two-or-three-a-session-with-one-master-review-at-the-end) (2026-11-01, the owner's call): pull request sizing.**
 
 **Decision.** The owner builds with agents and does not promote the project or recruit
 contributors until chapter one is playable. Governance files, templates, labels and the
@@ -691,3 +692,53 @@ piecemeal, and let both projects grow together.
 
 **How it is enforced.** The `astlo-upstream` skill, the upstream kit of PR40, and the
 licence gate keeping `python/astlo/astlo` under `LicenseRef-astlo`.
+
+---
+
+## D30. Specs build in groups, two or three a session, with one master review at the end
+
+*Date:* 2026-11-01. *Source:* owner's ruling, modelled on how the owner runs another
+program.
+*Supersedes in part:* D25 (pull requests sized for one reviewer).
+
+**Decision.** The plan's specs stay as written, but they are built as PR groups. A group
+is one branch, one pull request and one review for one to four consecutive specs. It is
+named for its first member and based on the previous group's branch. The groups and
+their order are the table in the plan's
+[PR groups](plans/v1-starshot/00-plan.md#pr-groups-d30) section. PR1 (CI hardening)
+joins PR0 and has no branch of its own. A session builds two or three groups and hands
+off at about 70% of its context.
+
+Each group gets one bounded review:
+
+- One `adversary` pass on the top tier. It also reads the deviation log and the PR body
+  against the diff, and it reports, per directory, which files it opened and what it
+  found.
+- A domain lens only when the diff calls for it: `physics-auditor` for crates,
+  packages, fixtures or shot settings; `verification-driver` for anything a player
+  sees; `rules-reviewer` for `AGENTS.md`, `.claude/`, `scripts/agent/` or the gates.
+- No refuters by default. The orchestrator judges each finding from the tree, and
+  spawns one refuter only when a blocker would change the design.
+- A second adversary pass only over files the first did not open. A delta pass only
+  when the fixes touched a physics number, a workflow, the harness, or more than about
+  50 contentful lines.
+
+The deep review waits for the end. After the last group, one master review covers the
+whole stack. It runs the `verify-all` sweep on the top tip, with every acceptance
+criterion's command and exit code. It reviews the combined diff through several lenses:
+an adversary per band, `physics-auditor` over the crates and fixtures, `rules-reviewer`
+over the harness and `verification-driver` over chapter one. A final fix group closes
+what it finds. Then the owner reviews the stack and it merges once. A band still closes with its
+`verify-all` sweep and a handoff; that is a check, not the master review.
+
+The size cap (`PR_SIZE_CAP`) applies to each member spec. A group of n specs is held to
+n times the cap. The Definition of Done does not change: every group runs
+`npm run gates`, plus `verify-physics` and `verify-game` when its diff calls for them.
+
+**Why.** Each session gets more built. A review per spec cost more than the building it
+checked, and most of what it found was cheap to fix in place. One full review of the
+finished stack sees how the parts fit, which no single-spec review can.
+
+**Consequences.** PR0 (#1) carries the CI hardening. Every group PR names each member's
+issue (`Part of #a, #b`). PR4's size check reads the member count. Each spec's Branch
+line gives way to its group's branch in the group table.

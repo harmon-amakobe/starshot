@@ -56,7 +56,8 @@ epics:
         spec: docs/plans/v1-starshot/04-ops-checklist.md#github
         depends_on: [v1-pr0-plan]
         body: |
-          Step G8. From PR1 on, every commit is authored by the owner with a sign-off (D24).
+          Step G8. From the PR2 group on, the app checks that every commit is authored by
+          the owner with a sign-off (D24).
       - id: v1-ops-board
         title: "Owner: create the project board with its fields and views, and link it"
         labels: [kind:chore, area:harness, priority:p2, status:ready]
@@ -130,7 +131,7 @@ epics:
       the band's verification sweep and handoff are recorded.
     tasks:
       - id: v1-ci-hardening
-        title: "PR1: harden CI with pinned actions, an aggregator check, workflow lint and verify-game"
+        title: "PR1, built in PR0: harden CI with pinned actions, an aggregator check, workflow lint and verify-game"
         labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
@@ -139,6 +140,7 @@ epics:
         depends_on: [v1-pr0-plan]
         body: |
           Least privilege, SHA pins, one stable required check named gates, the layering gate.
+          Built in PR0 (#1) by the owner's ruling (D30).
       - id: v1-screen-split-render
         title: "PR2: move GameScreen's pure helpers and canvas loop into their own modules"
         labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]

@@ -16,7 +16,7 @@ what it does not. Change it in the same pull request as the mechanism it describ
 | `RESEARCH_SURFACE` | A Claude Code session with web access and the repo mounted; NASA/JPL Horizons is reachable for fixtures. |
 | `BROWSER_CHANNEL` | Headless Chromium through Playwright, driven by `scripts/verify-game.mjs` (phone, desktop and reduced-motion contexts). CI runs the same script in the `verify-game` job of `.github/workflows/ci.yml`, which installs Playwright for that run only. Playwright is not a project dependency. |
 | `PLANS_DIR` | `docs/plans/`; binding decisions in `docs/decisions.md`. |
-| `PR_SIZE_CAP` | About 400 contentful lines or 20 files per PR, excluding lockfiles and fixture JSON. |
+| `PR_SIZE_CAP` | About 400 contentful lines or 20 files per spec, excluding lockfiles and fixture JSON; a PR group of n specs is held to n times that (D30). |
 | `LARGE_FILE_CAP` | 300 lines: above it, anchored edits only. |
 | `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, copy, size, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
 | `COPY_STANDARD` | `docs/copy-standard.md` (D27), catalogue `scripts/copy-tells.json`; text typed into GitHub goes through `.github/workflows/copy-lint.yml`. |
