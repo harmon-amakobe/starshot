@@ -105,10 +105,9 @@ worker implementations are unchanged from the first playable publication.
 | `npx vitest run apps/prototype/src --reporter=dot` | Exit 0, 20 prototype tests passed |
 | `npm run verify:data -w @starshot/prototype` | Exit 0, 34 runtime files, orientation and JPL reference checks passed |
 | `node scripts/verify-game.mjs --url http://127.0.0.1:8767/` with external steps | Exit 0, 39 criteria across phone, desktop and reduced motion |
-| External focused browser scripts | Exit 0, 13 interaction and hosted flight handoff criteria |
 | External responsive browser script | Exit 0, 89 gauge, ring, touch and layout checks |
 | Final compact dashboard and error script | Exit 0, 14 compact, Scientific label and induced-error checks |
-| External recovery and standalone checks | Exit 0, checkpoint recovery, Hangar pause and standalone Observatory passed |
+| External standalone Observatory rerun | Exit 0, two standalone replay and navigation criteria passed |
 | `git diff --check` | Exit 0 |
 
 The browser checks cover 360 px and 390 px phones, an 844 by 390 landscape view,
@@ -116,7 +115,9 @@ a 791 px app panel, a 1440 px desktop and the Canvas fallback. Clean runs report
 no console errors, page errors, failed requests, page overflow, unnamed controls
 or targets below 44 px. The phone harness emitted four WebGL readback warnings.
 The induced-error check deliberately blocks a data request in its own context.
-Earlier ambiguous catalogue selectors were corrected before the final harness pass.
+Four recovery criteria passed in an earlier script before its catalogue selector
+failed and the command exited 1. The standalone rerun corrected that selector.
+The final full harness also corrected its catalogue selector and exited 0.
 
 Independent review checked 1,704 charged-ring bounds cases and 20,001 local-orbit
 marker samples. The largest marker step in that numerical sample was 0.04312 px.
