@@ -239,8 +239,8 @@
     },
     {
       "file": "system-main.js",
-      "sha256": "b2c7340066093d1275cb93b9cda6e0b2902fbe2f9d433d5f18c900c97b55ead5",
-      "bytes": 48487,
+      "sha256": "691d08a65ad5ba3f9ea3616e36f11cb80c90c6ecfb6eec56531441c0eec73c67",
+      "bytes": 48649,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",

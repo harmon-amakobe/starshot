@@ -12,6 +12,8 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- A playable 3D Earth-to-Moon design study, with pull-back aiming, a shared worker
+  preview and flight path, a zoomable camera and an original procedural vehicle workshop.
 - An isolated Observatory prototype with the approved launch-window controls,
   local assets, source credits and reproducible astronomy-data checks.
 - The Starshot game (`apps/game`): a slingshot across the real Solar System, built

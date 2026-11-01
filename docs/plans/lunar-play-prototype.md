@@ -1,6 +1,6 @@
 # Lunar play prototype
 
-Status: first playable design study, authorized by the owner.
+Status: first playable design study implemented and verified; ready for branch publication.
 
 ## Scope
 
@@ -64,4 +64,62 @@ this study follows the inherited tracking limitation until the owner enables the
 
 ## Deviations and evidence
 
-Record implementation limits and measured validation here as the study develops.
+The root of `apps/prototype` now hosts the level. The Observatory remains separate,
+with navigation in both menus. D19's three.js renderer owns the new surface; a Canvas
+fallback retains the flight loop without claiming 3D inspection there.
+
+The known shot starts at ET 846853269.184, a 6,571 km parking radius and a 225 degree
+phase in the instantaneous lunar plane. A 3.24 km/s prograde burn enters the fixed
+65,000 km approach zone after 1.582776944585 days. A 20 degree outward burn misses;
+a 20 degree inward burn impacts Earth. `apps/prototype/src/lunar/flight.test.ts`
+recomputes these cases with the level request. It also checks a grazing entry
+between accepted knots, stale responses and cancelled releases.
+
+The same test compares independent JPL probes below 0.1 km position error and
+0.000011 km/s velocity error. A tighter integration stays within 0.05 km over the
+seven-day path and 0.01 seconds at zone entry. Barycentre identity is checked below
+0.000001 km and 0.000000000001 km/s. These measure the adapter against its source
+model, not absolute lunar navigation accuracy. Global EMB positions still use the
+existing approximate Kepler ephemeris. The production Moon package remains future work.
+
+Weak pulls use two estimated local orbital periods, capped at one day, when their
+initial two-body apogee is below 100,000 km. The full force model computes that declared
+window. This avoids integrating repeated low orbits for seven days on every pointer
+move. Preview and launch retain that identical window. It is a local flight study,
+not proof that a craft can never leave Earth at a later date.
+
+The new stage uses linear radii, with an enlarged craft symbol. The original 1k JPEG
+textures are reused for iteration. Production KTX2 tiers and higher-resolution near
+surfaces are not built here. No atmospheric weather or landing terrain is claimed.
+The crew model is a design concept; the playable mass is the 700 kg collector.
+The seven-second replay uses a smooth time map. Event-specific production timing and
+capture burns remain outside this first slice. Reduced motion removes automatic
+camera zoom and starts in system framing while retaining essential flight progress.
+
+The final compiled entry measured 223.02 kB gzip JavaScript plus a 9.41 kB worker before
+textures, fonts and cached lunar data. This is build evidence, not a measured phone
+frame-rate claim.
+
+## Validation
+
+| Command | Result |
+| --- | --- |
+| `npm run gates` | Exit 0, 12 of 12 gates and 76 tests passed |
+| `npm run build:prototype` | Exit 0, TypeScript and Vite build passed |
+| `npx vitest run apps/prototype` | Exit 0, eight prototype tests passed |
+| `npm run verify:data -w @starshot/prototype` | Exit 0, runtime hashes and astronomy references passed |
+| `node scripts/verify-game.mjs --url http://127.0.0.1:8767/` with external steps | Exit 0, final phone, desktop and reduced-motion checks passed |
+| Focused external browser scripts | Exit 0, 32 touch, cancellation, layout and fallback checks passed |
+| Final footer and reduced-camera checks | Exit 0, no footer overlap; 56 fixed-camera flight samples passed |
+| `git diff --check` | Exit 0 |
+
+The browser pass exercised 360 px and 390 px phones, 844 by 390 landscape, a 768 px
+tablet and a 1440 px desktop. It covered Guide success, a miss, Earth impact, actual
+drag release, touch cancellation, keyboard aiming and the Observatory return link.
+No console errors, page errors, failed requests, page overflow or undersized control
+targets remained. Chromium reported screenshot-related ReadPixels GPU warnings.
+Headless frame-rate smoke results do not establish the mid-range phone target.
+
+The final reduced-motion camera uses one cached complete-flight envelope. A numerical
+test checks fixed framing; the browser independently held its centre and zoom constant
+from normal Guide and Launch controls through successful approach.

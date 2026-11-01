@@ -70,3 +70,8 @@ SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 path = "apps/prototype/public/observatory/system-icons.js"
 SPDX-FileCopyrightText = "2026 Lucide Icons and Contributors; 2013-present Cole Bemis; adaptations by starshot contributors"
 SPDX-License-Identifier = "LicenseRef-Lucide-Feather"
+
+[[annotations]]
+path = "apps/prototype/public/lunar/moon-rail.json"
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); assembled and last modified by starshot contributors"
+SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"

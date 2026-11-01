@@ -99,6 +99,12 @@ or atmospheric circulation. Realistic mode changes physical size, not these limi
 
 ## Validation evidence
 
+The approved Observatory was published on `starshot/look-prototype`: snapshot
+`42717a5`, followed by notice whitespace and hash cleanup in `ab15fba`.
+The publication passed all 12 gates and 68 tests. Packaged browser verification passed
+on phone, desktop and reduced-motion phone with exit 0. Asset and data checks exited 0.
+No pull request was opened, following the owner's earlier ask-before-PR instruction.
+
 The data preparation compares 207,651 withheld midpoint states against interpolation.
 The largest measured local error is 0.744 km. Phobos and Deimos remain below 0.006 km.
 The JavaScript evaluator also checks independent non-midpoint and endpoint probes.

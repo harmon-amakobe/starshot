@@ -51,7 +51,19 @@ None shipped yet. The starfield is drawn by code (`apps/game/src/render/starfiel
 
 ## Music
 
-None shipped yet. Sound effects will be generated in code (D15).
+No sampled soundtrack is shipped. The lunar study generates original pull, departure
+and arrival tones with Web Audio (`apps/prototype/src/audio.ts`).
+
+## Lunar vehicle study
+
+The collector, engine ring, crew cabin and companion drone are original procedural
+geometry in `apps/prototype/src/render/vehicle.ts`. No borrowed character models or
+generated raster images are used. The source code follows Apache-2.0.
+
+The level reuses the credited Earth and Moon maps and IBM Plex Mono fonts above.
+`apps/prototype/public/lunar/moon-rail.json` is an unchanged subset of the cached JPL
+Moon vectors. `apps/prototype/tools/extract-lunar-rail.mjs` records the source binary hash and retains
+all 713 knots and five independent reference probes. NASA/JPL data terms apply.
 
 ## Fonts
 
