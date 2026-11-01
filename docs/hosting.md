@@ -33,17 +33,16 @@ From then on, every merge into `main` republishes the game automatically.
 
 ### What the workflow does
 
-1. Runs the hygiene scan (`secrets`) on its own, with the optional private-name list
-   if you have set one (see [section c](#the-optional-private-name-list)).
-2. Installs the exact locked dependencies (`npm ci`).
-3. Runs every quality check (`npm run gates`). **If any check fails, nothing is
+1. Installs the exact locked dependencies (`npm ci`).
+2. Runs every quality check (`npm run gates`). **If any check fails, nothing is
    published**, so a broken build never replaces a working one.
-4. Builds the game (`npm run build`) into `apps/game/dist`.
-5. Uploads that folder and deploys it to Pages.
+3. Builds the game (`npm run build`) into `apps/game/dist`.
+4. Uploads that folder and deploys it to Pages.
 
-Nothing secret goes into the build. The one optional secret, the private-name list, is
-read only by the scan in step 1. Its only special permissions are the two GitHub needs
-for Pages (`pages: write` and `id-token: write`), granted to the deploy job alone.
+The Pages workflow uses no secrets at all (D7); the optional private-name list is read
+only by the CI workflow (see [section c](#the-optional-private-name-list)). Its only
+special permissions are the two GitHub needs for Pages (`pages: write` and
+`id-token: write`), granted to the deploy job alone.
 
 ### Make the checks required (recommended)
 
