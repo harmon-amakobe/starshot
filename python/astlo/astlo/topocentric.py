@@ -171,10 +171,16 @@ class Topocentric:
 
         #julian date comversion##
 
-        target_datetime = datetime.now(timezone.utc)
+        target_datetime = datetime.fromtimestamp(time.time() + ((dayss if dayss else 0)*86400), timezone.utc) #the requested time (now + days) not just now..Earth's rotation angle must match the time of the states
         jd, fr = jday(target_datetime.year, target_datetime.month, target_datetime.day,target_datetime.hour, target_datetime.minute, target_datetime.second)
 
         jd_full = jd + fr
+
+        if data==None: #astlo's own states are ecliptic J2000 but the GMST rotation below expects equatorial (x to the equinox, z to the celestial pole)
+            eps = np.radians(self.contin.earth_equator_rel_ecliptic) #obliquity 23.439291 degrees astlo.py
+            R_ECL_EQ = np.array([[1, 0, 0],[0, np.cos(eps), -np.sin(eps)],[0, np.sin(eps), np.cos(eps)]])
+            r_geocentric = list(R_ECL_EQ @ np.array(r_geocentric))
+
         gmst_theta_radians = self.eo.gmst_from_jd(jd_full)
 
         cos_t, sin_t = np.cos(gmst_theta_radians), np.sin(gmst_theta_radians)
