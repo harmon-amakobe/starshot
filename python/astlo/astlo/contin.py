@@ -2403,6 +2403,60 @@ class Contin(Astro):
 
 
 
+    def rk4steps(self,r=None,v=None,tt=None,days=None):
+        '''the looped rungekutta: repeats the 4th order step until days is reached so it really time steps the N-body system with custacce (Sol at index 0 then the 16 objects of self.values_tt, the same order rungekutta and custacce use). r and v are optional lists of 17 [X,Y,Z] vectors relative SSB in m and m/s (eg states from de440/astlohorizons). if both are None it starts from astlo's own states now (baryc_sun + barycentric). tt is the step and days how far to go, both strictly in days (default step 0.5 days). days can be negative.'''
+
+        if days==None:
+            raise ValueError('rk4steps needs days (how far to time step) strictly in days')
+
+        try:
+            days = float(days) #override
+            ttm = 0.5 if tt==None else abs(float(tt))
+        except ValueError:
+            raise ValueError(f'passed value type for days or tt is not supported: {days} ¦ {tt}')
+
+        if ttm==0:
+            raise ValueError('tt (the step in days) cannot be zero')
+
+        if r==None and v==None: #start from astlo's own states now
+            suun = self.baryc_sun()
+            pos = [[suun['X_s'],suun['Y_s'],suun['Z_s']]] #sol index 0
+            vel = [[suun['v_X'],suun['v_Y'],suun['v_Z']]]
+            for _ in self.values_tt:
+                obj = self.barycentric(_)
+                pos.append([obj['X_bary'],obj['Y_bary'],obj['Z_bary']])
+                vel.append([obj['v_X'],obj['v_Y'],obj['v_Z']])
+        else:
+            if not isinstance(r,list) or not isinstance(v,list) or len(r)!=17 or len(v)!=17:
+                raise ValueError('r and v should be lists of 17 [X,Y,Z] vectors (Sol first then the 16 internal objects) relative SSB in m and m/s')
+            pos = [[float(c) for c in itm] for itm in r]
+            vel = [[float(c) for c in itm] for itm in v]
+
+        steps = max(1,math.ceil(abs(days)/ttm))
+        delta_t = (days*86400)/steps #seconds..lands exactly on days
+
+        def accs(p): #net acceleration on all 17 objects. custacce does one target at a time
+            return [list(self.custacce(_,p)) for _ in range(17)]
+
+        def shift(base,slope,h): #base + (slope*h) for all 17 vectors
+            return [[base[i][k] + (slope[i][k]*h) for k in range(3)] for i in range(17)]
+
+        for _ in range(steps):
+            k1r = vel #position slope = velocity
+            k1v = accs(pos) #velocity slope = acceleration
+            k2r = shift(vel,k1v,delta_t/2)
+            k2v = accs(shift(pos,k1r,delta_t/2))
+            k3r = shift(vel,k2v,delta_t/2)
+            k3v = accs(shift(pos,k2r,delta_t/2))
+            k4r = shift(vel,k3v,delta_t)
+            k4v = accs(shift(pos,k3r,delta_t))
+            pos = [[pos[i][k] + ((delta_t/6)*(k1r[i][k] + (2*k2r[i][k]) + (2*k3r[i][k]) + k4r[i][k])) for k in range(3)] for i in range(17)]
+            vel = [[vel[i][k] + ((delta_t/6)*(k1v[i][k] + (2*k2v[i][k]) + (2*k3v[i][k]) + k4v[i][k])) for k in range(3)] for i in range(17)]
+
+        return {'desc':'the zeroth 0th index is Sol ¿Sun¿','new_pos_vectors':pos,'new_vel_vectors':vel,'new_acc_vectors':accs(pos),'delta_t':delta_t,'steps':steps,'days':days,'start':'astlo states now' if (r==None and v==None) else 'the given r and v','units':'m, m/s, m/s^2 relative SSB, J2000 ecliptic like the rest of astlo. delta_t in seconds'}
+
+
+
     def anmte(self,name: str=None,rt=None,real=None,baryc=None,itret=None): #itret can be used universally inside this method to tell/decide if to return or to print, baryc to activate barycentric logic..default is heliocentric.
         '''animates the orbits and current position of celestial object using seconds and AU'''
 
