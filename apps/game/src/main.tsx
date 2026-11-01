@@ -1,7 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App.js";
-import "./styles.css";
+import { CampaignApp as App } from "./campaign/CampaignApp";
+import '@starshot/presentation/base.css';
+import '@starshot/presentation/entry.css';
+import '@starshot/presentation/cloud.css';
+import './campaign/campaign.css';
 
 const root = document.getElementById("root");
 if (root) {

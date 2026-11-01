@@ -1,6 +1,6 @@
 # Game design
 
-Starshot is a slingshot game in orbit: pull back a slingshot on Earth, let go, and try
+Starshot is a slingshot game in orbit: extend the craft's engine ring, let go, and try
 to reach another planet. Everything in the flight is real: the planets are where NASA
 says they were (or will be) on that date, and your probe is pulled by the Sun and the
 planets all the way.
@@ -11,15 +11,14 @@ planets all the way.
    example "Mars, late 2026".
 2. **Choose a launch day** inside the window. The planets move to where they really are
    on that day.
-3. **Aim.** Pull back from Earth like a slingshot. The direction sets where the probe
-   goes; the length of the pull sets how fast it leaves Earth. A dotted line shows
-   exactly where it will fly.
-4. **Launch** and watch. The launch button waits until the dotted line for the aim on
-   screen has been computed, then flies exactly that line. Time speeds up in empty space
+3. **Aim.** Pull the rear engine ring away from the anchored collector. The direction
+   sets the heliocentric departure excess velocity; the length adds speed. A dotted
+   line shows exactly where it will fly.
+4. **Release** and watch. Release or Launch captures the final aim and waits until
+   its dotted path has been computed, then flies exactly that line. Time speeds up in empty space
    and slows down near planets so you can see close passes.
 5. **Score** stars, see your numbers (fuel cost, flight time, closest approach), then
-   try again, try for more stars, or move on. You can share a short text summary of
-   your result.
+   try again, replay the shot, try for more stars, or move on.
 
 The fun comes from a real orbital puzzle: you cannot aim straight at Mars, because Mars
 will have moved by the time you arrive. You aim ahead of it, and the Sun's gravity
@@ -32,29 +31,31 @@ reader.
 
 **Touch and mouse**
 
-- Drag back from Earth to aim; release to set the aim. Short taps are ignored.
-- Pinch (two fingers) or the mouse wheel to zoom; drag with two fingers, or with
-  Shift/Ctrl/Alt or the right mouse button held, to move the view.
-- Buttons for: one day earlier/later, a launch-date slider, fine angle and speed
-  steps, "fine steps" mode, hint, and launch.
-- During the flight: **Fast-forward** and **Skip to end**.
+- Pull the rear engine ring to aim; release to launch. Short taps are ignored.
+- Pinch or use the mouse wheel to zoom. Drag empty space to pan; hold Shift while
+  dragging to orbit the Free camera. Follow and System remain one button away.
+- Use the top mission deck for the launch date. The bottom flight deck has Overview,
+  Fine aim and Telemetry pages, with both swipe and button navigation.
+- During flight, use pause, the timeline and speed steps. Double-click the speed pill
+  for real time. Scientific Light-time uses apparent multiples of c for replay pacing.
 
 **Keyboard** (while aiming)
 
 | Key | Action |
 |---|---|
-| Left / Right arrow | Rotate the aim by 0.1° (Shift: 1°) |
-| Up / Down arrow | Speed up or slow down by 0.01 km/s (Shift: 0.1 km/s) |
-| Alt + arrow, or **F** | Fine steps: one tenth of the above |
-| `[` and `]` | Launch one day earlier or later |
-| Space or Enter | Launch |
-| H | Show a hint, then press again to use it |
-| R or 0 | Fit the view to the mission |
-| + and − | Zoom in and out |
-| Esc or S (during flight) | Skip to the end |
+| Left / Right arrow on the engine handle | Rotate the aim by 1° |
+| Up / Down arrow on the engine handle | Change departure excess speed by 0.05 km/s |
+| Fine aim number fields | Enter exact angles to 0.01° and speeds to 0.001 km/s |
+| Space or Enter on the engine handle | Launch the current aim |
+| Escape during a pull | Cancel the release |
+| Escape in a close-up or hangar | Return to the previous view |
+| Escape during ordinary play | Open the main menu |
+| Tab and Enter | Reach and activate every other labelled control |
 
-The key map is defined in `apps/game/src/ui/GameScreen.tsx`; if the two ever differ,
-the code is right and this table needs updating.
+The current controls live in `apps/game/src/campaign/`. The old `GameScreen.tsx`
+remains a reference and is not the default route. The compact dashboard retains
+Launch/Pause, cameras, units and detail toggles. Menus may scroll inside their own
+window; the game shell and flight deck do not scroll vertically.
 
 ## Scoring
 
@@ -73,6 +74,25 @@ Each mission awards up to three stars (`apps/game/src/scoring.ts`):
   parking orbit around Earth, the number real mission planners compare.
 - Progress (best stars and cheapest hit per level) is kept on the device only
   (`localStorage`). Each campaign level unlocks after earning a star on the one before.
+  Labelled playtest access can open all cards without granting stars or changing
+  those earned unlocks. Pilots keep independent progress and saved flights.
+
+## Presentation and physical state
+
+Simplified defaults to enlarged worlds and Light-time distances. Scientific defaults
+to realistic radii and Metric units. The unit pill also offers Imperial distances;
+independent world-size changes decouple sizing from detail mode. Planet centres,
+route samples and displayed linear distances stay in the campaign's flattened frame.
+
+The collector is an enlarged control symbol with a leader to physical departure at
+Earth centre. Its engine extension represents charge, while the fuel meter represents
+`deltaVFromLeo` as a percentage of the level's maximum departure burn. Earth escape
+still costs fuel at zero excess speed. The existing campaign does not simulate the
+local parking orbit used by the separate Moon study.
+
+Launch window, inspection and return share the current campaign session. Date changes
+are locked after launch. The next stage of inclination-based progression is not part
+of this integration; moving a 3D camera does not change this chapter's planar dynamics.
 
 ## Level philosophy
 

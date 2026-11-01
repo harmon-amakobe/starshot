@@ -38,13 +38,13 @@ planned next. Sections marked **Future** describe designs that are not built yet
   |                                                               |
   |   main thread (React UI)          Web Worker (sim.worker.ts)  |
   |   +--------------------+  aim     +-------------------------+ |
-  |   | input/ slingshot   |--------->| simulateShot()          | |
-  |   | ui/  buttons, HUD  |  preview | + level's frozen sim    | |
-  |   | render/ Canvas 2D  |<---------| analyzeShot()           | |
-  |   | scoring, progress  |  result  | findHint()              | |
+  |   | campaign/ gesture |--------->| simulateShot()          | |
+  |   | decks, profiles   |  preview | + level's frozen sim    | |
+  |   | Three + Canvas    |<---------| analyzeShot()           | |
+  |   | scoring, progress |  result  | findHint()              | |
   |   +--------------------+          +-------------------------+ |
   |            |                                                  |
-  |            v  localStorage (stars, best delta-v)              |
+  |            v  localStorage (canonical pilots and stars)       |
   +---------------------------------------------------------------+
                  |
                  v  npm run build -> apps/game/dist (static files)
@@ -92,8 +92,13 @@ planned next. Sections marked **Future** describe designs that are not built yet
   the HUD and scoring need.
 - `src/sim/sim.worker.ts` runs those on a background thread; `src/sim/useSimulation.ts`
   is the React side of that conversation.
-- `src/render/` draws the top-down view on a Canvas; `src/ui/` holds the buttons,
-  sliders, HUD and screens; `src/input/` turns drags and keys into an aim.
+- `src/campaign/` owns the default single-screen shell and persistent scene. Its
+  controller retains the original worker and scoring contracts. Entry, level,
+  Launch window and body inspection share a scene, ET and preferences.
+- The scene uses camera-relative coordinates in Three.js, with a Canvas fallback.
+  Both project the campaign's flattened ephemeris and the worker's Hermite path.
+  Body enlargement changes display radii, not centre positions or flight samples.
+  The old `src/ui/`, `src/input/` and most of `src/render/` remain as reference code.
 - `src/levels.ts`, `src/scoring.ts` and `src/progress.ts` hold the campaign, the star
   rules and saved progress. Each level names its settings (`sim`), its par and, where
   it differs from the default, its par tolerance and capture-zone size;
@@ -101,6 +106,34 @@ planned next. Sections marked **Future** describe designs that are not built yet
   runs.
 - `public/sw.js` caches the game's own files so it keeps working offline after the
   first visit.
+
+### Shared presentation and the lunar study
+
+`packages/presentation` contains the collector, engine chamber, crew pod, drone,
+icons, sound synthesis and entry timing. It imports no app. The original Moon study
+re-exports these modules and keeps its lunar controller in `apps/prototype`.
+The campaign never uses the study's limited-angle burn or local Earth-Moon frame.
+
+Credited imagery and astronomy presentation data remain canonical in
+`apps/prototype/public/observatory`. `apps/game/observatory-assets.ts` mounts that
+directory during development and copies it to the static build without a second
+checked-in media collection. Major moons are shown only inside the rail interval
+in `satellite-data.json`; no historical mission reuses a clamped modern moon pose.
+
+### Campaign persistence and ownership
+
+`src/campaign/session.ts` validates and copies a whitelisted canonical save. A
+sandbox save includes its original UTC window start, and hinted attempts retain
+their star cap. Restoration reconstructs `ShotRequest` from the level catalogue,
+then waits for a matching worker preview before restoring ET. It does not trust
+serialized simulation settings, paths or results.
+
+`src/campaign/profiles.ts` keeps these sessions and earned progress in the versioned
+campaign namespace. The first pilot may import the existing legacy progress key;
+it does not overwrite that key. Each release also owns a generation, so a late
+success or failure cannot launch or cancel a newer pilot's shot. The local cloud
+demo has a separate store, revisioned drafts and explicit conflict choices. It has
+no connection to Firebase or a real identity provider.
 
 ## Conventions: units, frames and time
 

@@ -1,8 +1,9 @@
 # @starshot/game
 
 The Starshot game prototype: a slingshot game in orbit across the real
-Solar System. Vite + React 19 + TypeScript, Canvas 2D, physics in a Web Worker.
-Fully static: no network requests, no external fonts or CDNs, no backend.
+Solar System. Vite + React 19 + TypeScript, Three.js with a Canvas fallback, and
+physics in a Web Worker. The default app is the integrated campaign shell.
+Fully static: packaged same-origin media and fonts, no CDNs or backend.
 
 ```sh
 npm run dev -w @starshot/game        # local dev server
@@ -31,10 +32,51 @@ under any repository name, a file share, a USB stick behind a static server).
 The aiming preview and the real launch run the **same** `simulateShot` with the
 level's own integrator settings (`level.sim`, carried inside the shot request;
 decision D6), so what you see is what you get. The level tests run it too.
-Previews are answered asynchronously, so Launch is enabled only while the
-preview on screen is for exactly the current aim (`src/sim/preview.ts`); it then
-launches that preview's own request, and a keyboard launch made while the
-preview is still computing waits for it.
+Previews are answered asynchronously. A ring release or Launch captures the final
+aim and waits for its matching preview (`src/sim/preview.ts`), then
+runs that explicit request. A generation token rejects cancelled work and responses
+from a previous pilot or mission, including responses to an identical shot.
+
+## Campaign shell
+
+The live menu, level, Launch window, inspection and hangar share one mounted renderer
+and worker. Play moves the camera into the current mission without reloading it.
+The level picker includes all four campaign missions and seven sandbox destinations.
+Labelled playtest access opens every card while preserving earned stars and unlocks.
+
+Pull the rear engine ring to aim in a full circle. The craft control symbol remains
+anchored while the field chamber extends. A leader connects that enlarged symbol to
+the physical departure at Earth centre. During flight the collector faces the
+heliocentric path. The chapter still uses flattened planet states for both display
+and simulation; rotating the 3D camera does not change orbital inclination.
+
+The bottom deck has Overview, Fine aim and Telemetry pages, accessible through
+buttons or swipes. Its compact dashboard keeps fuel, angle, units, detail mode,
+Launch/Pause and cameras. The top mission deck controls the launch date. Launch
+window uses the same scene and flight clock, with a return to the prior view.
+
+Simplified defaults to Light-time and enlarged bodies. Scientific defaults to Metric
+and realistic radii. A map size override decouples those choices for the pilot.
+Scientific Light-time speeds advance by integrated Hermite path length; they change
+replay pacing, not physical velocity. Double-click the speed pill for real time.
+
+Canonical credited textures, rotations and rings remain in
+`apps/prototype/public/observatory`. The Vite plugin serves them during development
+and copies them into the game's build. Major-moon rails cover late 2026 to 2027;
+historical or later missions show an availability note instead of clamping positions.
+Use `?renderer=canvas` to test the simpler fallback. The standalone Moon study stays
+in `apps/prototype`; it has its own local lunar dynamics and save namespace.
+
+Campaign pilots use `starshot.campaign.profiles.v1`. Saves retain the original
+sandbox window, canonical aim/day, phase, ET, hint use, preferences and earned
+progress. They never deserialize integrator settings or a trajectory. The first
+pilot may import `starshot.progress.v1`; the original key is not overwritten.
+The cloud-profile flow uses a separate, explicitly local demo store. Firebase
+authentication, cloud storage and app-store listings remain future work.
+
+The cloned read-only `window.__starshotCampaign` snapshot exposes request identity,
+preview/flight summaries, ownership, playback, camera and projected control bounds
+for browser verification. It has no game-state mutators.
 
 ## Layout
 
@@ -43,14 +85,14 @@ preview is still computing waits for it.
 | `src/levels.ts` | Campaign levels (real windows, pars, attractors) and the runtime sandbox. |
 | `src/levels.test.ts` | Every campaign level is solvable with the game's exact settings; pars are real and reachable; hints are deterministic and hit; the training zone; Grand Tour cannot reach Saturn without Jupiter. |
 | `src/scoring.ts` | Pure star rules (unit-tested in `scoring.test.ts`). |
-| `src/progress.ts` | Best stars per level in `localStorage["starshot.progress.v1"]`, guarded for blocked storage. |
+| `src/progress.ts` | Existing star-record rules and guarded legacy progress import. |
 | `src/sim/shot.ts` | Shot model shared by worker, hint finder and tests. |
 | `src/sim/hint.ts` | Hint: Lambert `bestDirectTransfer` over the window, nudged until the game simulator agrees (at most 240 simulations, no wall clock); curated shot for flyby levels. The aim is rounded to 0.01 degree and 0.001 km/s before it is checked, so the label is exactly what "Use hint" applies. |
 | `src/sim/preview.ts` | Launch gate: canonical shot key; Launch only for the preview of the aim on screen. |
 | `src/sim/sim.worker.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker; previews are latest-request-wins and throttled. |
-| `src/render/` | Linear top-down camera, Canvas 2D scene renderer, deterministic starfield. |
-| `src/input/useSlingshot.ts` | Pointer input: pull to aim, pinch/pan, wheel zoom, modifier-drag pan. |
-| `src/ui/` | Title, level select, game screen, HUD, controls, result overlay. |
+| `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. |
+| `packages/presentation/` | Shared collector, engine, crew pod, drone, charge sleeve, icons, audio and entry timing. |
+| `src/render/`, `src/input/`, `src/ui/` | Original 2D implementation retained as a reference; Hermite path construction is reused by the current renderer. |
 | `public/` | Icon, web manifest, a small same-origin service worker for offline play. |
 
 ## Levels

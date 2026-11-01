@@ -3,10 +3,11 @@
   "compilerOptions": {
     "rootDir": ".",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "tsBuildInfoFile": "node_modules/.tmp/tsconfig.tsbuildinfo",
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "references": [{ "path": "../../packages/ephemeris" }, { "path": "../../packages/physics" }],
-  "include": ["src", "vite.config.ts"]
+  "references": [{ "path": "../../packages/ephemeris" }, { "path": "../../packages/physics" }, { "path": "../../packages/presentation" }],
+  "include": ["src", "vite.config.ts", "observatory-assets.ts"]
 }

@@ -12,6 +12,16 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Added
 
+- The approved 3D shell integrated into the main game: all four campaign missions,
+  seven sandbox destinations, live entry, local pilots, local cloud-profile demo,
+  mission deck, paged flight deck, inspection, hangar and result loop.
+- Canonical campaign saves with original sandbox windows, hint penalties and
+  generation-guarded restoration. Existing legacy star records remain intact.
+- A shared presentation workspace for the collector, rear-ring engine, crew pod,
+  drone, icons, audio and entry timing. Both apps use the canonical observatory media.
+- Regression coverage for final-release identity, cancelled responses, restore
+  eligibility, saved-window reconstruction, free-view aiming, ring clearance,
+  entry continuity, close-up depth and replay speed stepping.
 - A live orbital entry menu with same-scene Play and Continue, local profiles and a
   level picker. A labelled cloud-profile demo previews sign-in, restoration, offline
   drafts, version conflicts and sign-out without contacting Firebase.

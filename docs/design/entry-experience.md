@@ -5,6 +5,10 @@ attention while the left side offers one primary action: Play or Continue. A loc
 profile appears in the corner. Levels and Profiles sit beside each other beneath
 Play; settings and sign-in have less visual weight. Stores remain explicit previews.
 
+The following composition notes first describe the standalone Moon study. The main
+game now adopts the same hierarchy and presentation through its campaign adapter;
+the frame and departure differences are recorded below.
+
 ## Composition and handoff
 
 The original close camera put Earth on its night side and hid the Moon. An elevated,
@@ -68,3 +72,31 @@ Palette, proportions and transition duration are adjustable design values. Canon
 requests, profile ownership and exact preview-to-flight identity are fixed contracts.
 The cloud adapter is an explicit replacement point for future authenticated services.
 Designed against 360 px and 390 px phones, 791 px windows, 1440 px desktop and landscape.
+
+## Campaign adoption
+
+`apps/game/src/campaign/CampaignApp.tsx` is the main game's default route. It keeps
+one scene and worker mounted through entry, play, menus, Launch window and inspection.
+The shared collector, charge chamber, icons, audio and entry timing live in
+`packages/presentation`; the Moon study re-exports them without changing its dynamics.
+
+Campaign departure starts at Earth centre with Earth's velocity plus the selected
+excess velocity. A declared enlarged control symbol and leader take the place of the
+Moon study's parking-orbit reference. Full-circle pull input is inverted through the
+current projected frame, and the craft faces heliocentric velocity during travel.
+The menu uses a close Earth portrait with an enlarged collector, then blends back to
+the saved Follow, System or Free camera. The portrait is presentation composition,
+not a new physical parking-orbit state.
+
+Campaign profile validation stores the original sandbox window and hint use along
+with aim, phase, time and preferences. Restoring a pilot recomputes its canonical
+request; neither paths nor simulation settings come from the saved document. A
+generation guard isolates responses across pilot and level changes, even when two
+pilots have the same shot key. The original legacy progress store remains intact.
+
+The campaign's Launch window is another view of the same renderer. It does not use
+the lunar Observatory iframe bridge, which has a different coordinate contract.
+The rings and sourced rotation data are shared; unavailable historical moon rails
+are hidden with a coverage note. The Canvas fallback retains gameplay, paths and
+sourced ring projections with simpler body and vehicle art. Its moon close-ups do
+not yet match the WebGL presentation.
