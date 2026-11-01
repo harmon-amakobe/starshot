@@ -87,10 +87,10 @@ class Astro:
         self.Venus_AU=0.7233
         self.Earth_AU=1.0000
         self.Mars_AU=1.5236
-        self.Vesta_AU=2.362
+        self.Vesta_AU=2.36117486  #2.362
         self.Ceres_AU=2.765
-        self.Pallas_AU=2.772
-        self.Hygiea_AU=3.140
+        self.Pallas_AU=2.76929312  #2.772
+        self.Hygiea_AU=3.15036774  #3.140
         self.Jupiter_AU=5.2034
         self.Saturn_AU=9.5371
         self.Uranus_AU=19.191
@@ -101,23 +101,25 @@ class Astro:
         self.Eris_AU=68
 
         #...SOLAR SYSTEM_P (year) in terms of Earth...
+        #..Mercury-Neptune (P,MO,i,w,omega,e,AU): NASA/JPL "Keplerian elements for approximate positions" Table 1 at J2000, 1800-2050 AD (https://ssd.jpl.nasa.gov/planets/approx_pos.html): MO=L-varpi, w=varpi-node, omega=node, P=360/(L rate) so the mean longitude moves at the JPL rate. EARTH is the Earth-Moon barycentre there.
+        #..Pluto(system barycentre),Ceres,Vesta,Pallas,Hygiea,Haumea,Makemake,Eris: JPL Horizons heliocentric ecliptic-J2000 osculating elements at 2026-11-01 00:00 TDB, P from a, MO carried back to J2000 with this P so M is exact on 2026-11-01. old values kept as comments.
 
-        self.Mercury_P=0.2408
-        self.Venus_P=0.6152
-        self.Earth_P=1.0000
-        self.Mars_P=1.8808
-        self.Vesta_P=3.63
-        self.Ceres_P=4.603
-        self.Pallas_P=4.62
-        self.Hygiea_P=5.56
-        self.Jupiter_P=11.8618
-        self.Saturn_P=29.4567
-        self.Uranus_P=84.021
-        self.Neptune_P=164.79
-        self.Pluto_P=247.92
-        self.Haumea_P=282
-        self.Makemake_P=307
-        self.Eris_P=561
+        self.Mercury_P=0.24085204  #0.2408
+        self.Venus_P=0.615210912  #0.6152
+        self.Earth_P=1.000039615  #1.0000
+        self.Mars_P=1.88088972  #1.8808
+        self.Vesta_P=3.628357412  #3.63
+        self.Ceres_P=4.600978891  #4.603
+        self.Pallas_P=4.608623462  #4.62
+        self.Hygiea_P=5.591904067  #5.56
+        self.Jupiter_P=11.862869921  #11.8618
+        self.Saturn_P=29.448659616  #29.4567
+        self.Uranus_P=84.019389887  #84.021
+        self.Neptune_P=164.793960719  #164.79
+        self.Pluto_P=246.804642364  #247.92
+        self.Haumea_P=282.909137467  #282
+        self.Makemake_P=307.979800634  #307
+        self.Eris_P=559.486722913  #561
         
         
         #...SOLAR SYSTEM_rP (perihelion) in terms of  earths AU..
@@ -154,114 +156,114 @@ class Astro:
 
         #...SOLAR SYSTEM_AU...
 
-        self.Mercury_AU=0.387
-        self.Venus_AU=0.723
-        self.Earth_AU=1.000
-        self.Mars_AU=1.524
-        self.Ceres_AU=2.765
-        self.Jupiter_AU=5.204
-        self.Saturn_AU=9.555
-        self.Uranus_AU=19.198
-        self.Neptune_AU=30.070
-        self.Pluto_AU=39.480
-        self.Haumea_AU=43.01
-        self.Makemake_AU=45.51
-        self.Eris_AU=67.730
+        self.Mercury_AU=0.38709927  #0.387
+        self.Venus_AU=0.72333566  #0.723
+        self.Earth_AU=1.00000261  #1.000
+        self.Mars_AU=1.52371034  #1.524
+        self.Ceres_AU=2.76622989  #2.765
+        self.Jupiter_AU=5.202887  #5.204
+        self.Saturn_AU=9.53667594  #9.555
+        self.Uranus_AU=19.18916464  #19.198
+        self.Neptune_AU=30.06992276  #30.070
+        self.Pluto_AU=39.34507041  #39.480
+        self.Haumea_AU=43.09425984  #43.01
+        self.Makemake_AU=45.60399946  #45.51
+        self.Eris_AU=67.89659047  #67.730
 
         #...SOLAR SYSTEM_MO degrees at NOON...
 
-        self.Mercury_MO=174.794242
-        self.Venus_MO=50.416750
-        self.Earth_MO=357.517380
-        self.Mars_MO=19.390430
-        self.Vesta_MO=292.980000
-        self.Ceres_MO=80.393460
-        self.Pallas_MO=31.500000
-        self.Hygiea_MO=2.800000
-        self.Jupiter_MO=20.020060
-        self.Saturn_MO=317.020680
-        self.Uranus_MO=142.590260
-        self.Neptune_MO=259.915840
-        self.Pluto_MO=14.862300
-        self.Haumea_MO=189.330000
-        self.Makemake_MO=138.970000
-        self.Eris_MO=194.830000
+        self.Mercury_MO=174.79252722  #174.794242
+        self.Venus_MO=50.37663232  #50.416750
+        self.Earth_MO=357.52688973  #357.517380
+        self.Mars_MO=19.39019754  #19.390430
+        self.Vesta_MO=338.30929  #292.980000
+        self.Ceres_MO=6.125359  #80.393460
+        self.Pallas_MO=349.196004  #31.500000
+        self.Hygiea_MO=349.874637  #2.800000
+        self.Jupiter_MO=19.66796068  #20.020060
+        self.Saturn_MO=317.35536592  #317.020680
+        self.Uranus_MO=142.28382821  #142.590260
+        self.Neptune_MO=259.91520804  #259.915840
+        self.Pluto_MO=15.353751  #14.862300
+        self.Haumea_MO=189.718279  #189.330000
+        self.Makemake_MO=139.06958  #138.970000
+        self.Eris_MO=194.71816  #194.830000
 
         #..SOLAR SYSTEM inclination degrees updated..
 
-        self.Mercury_i=6.97226  #7.00487
-        self.Venus_i=3.39111  #3.39471
-        self.Earth_i= 0.00005   #0.67148  #0.00005
-        self.Mars_i=1.84049  #1.85061
-        self.Vesta_i=7.14471   #7.134
-        self.Ceres_i=10.59534  #10.593
-        self.Pallas_i=34.91695  #34.841
-        self.Hygiea_i=3.836  #3.831
-        self.Jupiter_i=1.30381  #1.30530
-        self.Saturn_i=2.488  #2.48446
-        self.Uranus_i=0.77102  #0.76986
-        self.Neptune_i=1.770  #1.76917
-        self.Pluto_i=17.10261  #17.142
-        self.Haumea_i=28.20483  #28.208
-        self.Makemake_i=28.98136  #29.032
-        self.Eris_i=44.18486  #43.869
+        self.Mercury_i=7.00497902  #6.97226  #7.00487
+        self.Venus_i=3.39467605  #3.39111  #3.39471
+        self.Earth_i=-0.00001531  #0.00005  #0.67148  #0.00005
+        self.Mars_i=1.84969142  #1.84049  #1.85061
+        self.Vesta_i=7.143882  #7.14471  #7.134
+        self.Ceres_i=10.586988  #10.59534  #10.593
+        self.Pallas_i=34.934275  #34.91695  #34.841
+        self.Hygiea_i=3.824927  #3.836  #3.831
+        self.Jupiter_i=1.30439695  #1.30381  #1.30530
+        self.Saturn_i=2.48599187  #2.488  #2.48446
+        self.Uranus_i=0.77263783  #0.77102  #0.76986
+        self.Neptune_i=1.77004347  #1.770  #1.76917
+        self.Pluto_i=17.174686  #17.10261  #17.142
+        self.Haumea_i=28.208481  #28.20483  #28.208
+        self.Makemake_i=29.024343  #28.98136  #29.032
+        self.Eris_i=43.960636  #44.18486  #43.869
 
         #..SOLAR SYSTEM argument of perihelion degrees updated..
 
-        self.Mercury_w=33.62989 #29.12478
-        self.Venus_w=21.69870 #54.85229
-        self.Earth_w=354.19059 #114.20783
-        self.Mars_w=288.04621 #286.4623
-        self.Vesta_w=152.85332 #149.84
-        self.Ceres_w=75.54887 #72.58981
-        self.Pallas_w=310.94905 #310.15094
-        self.Hygiea_w=314.292 #312.3
-        self.Jupiter_w=273.39099 #274.1977
-        self.Saturn_w=338.890 #338.7169
-        self.Uranus_w=97.16090 #96.73436
-        self.Neptune_w=274.155 #273.24966
-        self.Pluto_w=111.60972 #113.76329
-        self.Haumea_w=239.94744 #238.78
-        self.Makemake_w=295.32924 #297.08
-        self.Eris_w=151.65608 #150.98
+        self.Mercury_w=29.12703035  #33.62989  #29.12478
+        self.Venus_w=54.92262463  #21.69870  #54.85229
+        self.Earth_w=102.93768193  #354.19059  #114.20783
+        self.Mars_w=286.4968315  #288.04621  #286.4623
+        self.Vesta_w=151.418698  #152.85332  #149.84
+        self.Ceres_w=73.143672  #75.54887  #72.58981
+        self.Pallas_w=310.993993  #310.94905  #310.15094
+        self.Hygiea_w=312.605312  #314.292  #312.3
+        self.Jupiter_w=274.25457074  #273.39099  #274.1977
+        self.Saturn_w=338.93645383  #338.890  #338.7169
+        self.Uranus_w=96.93735127  #97.16090  #96.73436
+        self.Neptune_w=273.18053653  #274.155  #273.24966
+        self.Pluto_w=113.046085  #111.60972  #113.76329
+        self.Haumea_w=240.540613  #239.94744  #238.78
+        self.Makemake_w=297.06245  #295.32924  #297.08
+        self.Eris_w=150.8446  #151.65608  #150.98
 
         #..SOLAR SYSTEM longitude of ascending node degrees updated..
 
-        self.Mercury_omega=47.94482 #48.33167
-        self.Venus_omega=76.60627 #76.68069
-        self.Earth_omega=84.52098 #348.73936
-        self.Mars_omega=49.52309 #49.57854
-        self.Vesta_omega=103.61757 #103.92
-        self.Ceres_omega=80.24006 #80.39320
-        self.Pallas_omega=172.79056 #173.12950
-        self.Hygiea_omega=283.217 #283.2
-        self.Jupiter_omega=100.49999 #100.55615
-        self.Saturn_omega=113.583 #113.71504
-        self.Uranus_omega=74.02425 #74.22988
-        self.Neptune_omega=131.774 #131.72169
-        self.Pluto_omega=110.27011 #110.30347
-        self.Haumea_omega=121.94644 #240.20
-        self.Makemake_omega=79.63639 #79.27
-        self.Eris_omega=35.88649 #35.95
+        self.Mercury_omega=48.33076593  #47.94482  #48.33167
+        self.Venus_omega=76.67984255  #76.60627  #76.68069
+        self.Earth_omega=0.0  #84.52098  #348.73936
+        self.Mars_omega=49.55953891  #49.52309  #49.57854
+        self.Vesta_omega=103.699515  #103.61757  #103.92
+        self.Ceres_omega=80.248693  #80.24006  #80.39320
+        self.Pallas_omega=172.887359  #172.79056  #173.12950
+        self.Hygiea_omega=283.086688  #283.217  #283.2
+        self.Jupiter_omega=100.47390909  #100.49999  #100.55615
+        self.Saturn_omega=113.66242448  #113.583  #113.71504
+        self.Uranus_omega=74.01692503  #74.02425  #74.22988
+        self.Neptune_omega=131.78422574  #131.774  #131.72169
+        self.Pluto_omega=110.335225  #110.27011  #110.30347
+        self.Haumea_omega=121.785687  #121.94644  #240.20
+        self.Makemake_omega=79.314901  #79.63639  #79.27
+        self.Eris_omega=35.991215  #35.88649  #35.95
 
         #...SOLAR SYSTEM_e...
 
-        self.Mercury_e=0.206
-        self.Venus_e=0.0068
-        self.Earth_e=0.0167
-        self.Mars_e=0.0934
-        self.Vesta_e=0.0902
-        self.Ceres_e=0.0791
-        self.Pallas_e=0.231
-        self.Hygiea_e=0.111
-        self.Jupiter_e=0.0484
-        self.Saturn_e=0.0542
-        self.Uranus_e=0.0472
-        self.Neptune_e=0.0086
-        self.Pluto_e=0.2488
-        self.Haumea_e=0.200
-        self.Makemake_e=0.160
-        self.Eris_e=0.440
+        self.Mercury_e=0.20563593  #0.206
+        self.Venus_e=0.00677672  #0.0068
+        self.Earth_e=0.01671123  #0.0167
+        self.Mars_e=0.0933941  #0.0934
+        self.Vesta_e=0.0902378  #0.0902
+        self.Ceres_e=0.07980769  #0.0791
+        self.Pallas_e=0.23071793  #0.231
+        self.Hygiea_e=0.10592216  #0.111
+        self.Jupiter_e=0.04838624  #0.0484
+        self.Saturn_e=0.05386179  #0.0542
+        self.Uranus_e=0.04725744  #0.0472
+        self.Neptune_e=0.00859048  #0.0086
+        self.Pluto_e=0.24805013  #0.2488
+        self.Haumea_e=0.19368483  #0.200
+        self.Makemake_e=0.15803161  #0.160
+        self.Eris_e=0.43893743  #0.440
 
         self.G_2=3.3365e-11 # self.G/2
         self.GM_S=1.32712440042e20  ##standard gravitational parameter for the sun  m3.s-2
