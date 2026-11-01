@@ -177,9 +177,12 @@ class Topocentric:
         jd_full = jd + fr
 
         if data==None: #astlo's own states are ecliptic J2000 but the GMST rotation below expects equatorial (x to the equinox, z to the celestial pole)
-            eps = np.radians(self.contin.earth_equator_rel_ecliptic) #obliquity 23.439291 degrees astlo.py
+            T_cy = (jd_full - 2451545.0)/36525.0 #julian centuries since J2000
+            p_A = np.radians((5029.0966*T_cy)/3600) #general precession in longitude J2000 -> equinox of date (GMST is measured from the equinox of date)..about 0.37 degrees in 2026
+            R_PREC = np.array([[np.cos(p_A), -np.sin(p_A), 0],[np.sin(p_A), np.cos(p_A), 0],[0, 0, 1]])
+            eps = np.radians(self.contin.earth_equator_rel_ecliptic - (0.0130042*T_cy)) #obliquity 23.439291 degrees astlo.py..mean obliquity of date
             R_ECL_EQ = np.array([[1, 0, 0],[0, np.cos(eps), -np.sin(eps)],[0, np.sin(eps), np.cos(eps)]])
-            r_geocentric = list(R_ECL_EQ @ np.array(r_geocentric))
+            r_geocentric = list(R_ECL_EQ @ (R_PREC @ np.array(r_geocentric)))
 
         gmst_theta_radians = self.eo.gmst_from_jd(jd_full)
 
