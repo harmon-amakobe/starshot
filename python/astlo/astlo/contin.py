@@ -83,7 +83,7 @@ class Contin(Astro):
 
         summation_tranSun_vector_X = -(((mercury*vallues[0]['X_helio'])+(venus*vallues[1]['X_helio'])+(earth*vallues[2]['X_helio'])+(mars*vallues[3]['X_helio'])+(ceres*vallues[5]['X_helio'])+(jupiter*vallues[8]['X_helio'])+(saturn*vallues[9]['X_helio'])+(uranus*vallues[10]['X_helio'])+(neptune*vallues[11]['X_helio'])+(pluto*vallues[12]['X_helio'])+(eris*vallues[15]['X_helio'])+(vesta*vallues[4]['X_helio'])+(pallas*vallues[6]['X_helio'])+(hygiea*vallues[7]['X_helio'])+(haumea*vallues[13]['X_helio'])+(makemake*vallues[14]['X_helio']))/total_mass)
 
-        summation_tranSun_vector_Y = -(((mercury*vallues[0]['Y_helio'])+(venus*vallues[1]['Y_helio'])+(earth*vallues[2]['Y_helio'])+(mars*vallues[3]['Y_helio'])+(ceres*vallues[5]['Y_helio'])+(jupiter*vallues[8]['Y_helio'])+(saturn*vallues[9]['Y_helio'])+(uranus*vallues[10]['Y_helio'])+(neptune*vallues[11]['Y_helio'])+(pluto*vallues[12]['Y_helio'])+(eris+vallues[15]['Y_helio'])+(vesta*vallues[4]['Y_helio'])+(pallas*vallues[6]['Y_helio'])+(hygiea*vallues[7]['Y_helio'])+(haumea*vallues[13]['Y_helio'])+(makemake*vallues[14]['Y_helio']))/total_mass)
+        summation_tranSun_vector_Y = -(((mercury*vallues[0]['Y_helio'])+(venus*vallues[1]['Y_helio'])+(earth*vallues[2]['Y_helio'])+(mars*vallues[3]['Y_helio'])+(ceres*vallues[5]['Y_helio'])+(jupiter*vallues[8]['Y_helio'])+(saturn*vallues[9]['Y_helio'])+(uranus*vallues[10]['Y_helio'])+(neptune*vallues[11]['Y_helio'])+(pluto*vallues[12]['Y_helio'])+(eris*vallues[15]['Y_helio'])+(vesta*vallues[4]['Y_helio'])+(pallas*vallues[6]['Y_helio'])+(hygiea*vallues[7]['Y_helio'])+(haumea*vallues[13]['Y_helio'])+(makemake*vallues[14]['Y_helio']))/total_mass)
 
         summation_tranSun_vector_Z = -(((mercury*vallues[0]['Z_helio'])+(venus*vallues[1]['Z_helio'])+(earth*vallues[2]['Z_helio'])+(mars*vallues[3]['Z_helio'])+(ceres*vallues[5]['Z_helio'])+(jupiter*vallues[8]['Z_helio'])+(saturn*vallues[9]['Z_helio'])+(uranus*vallues[10]['Z_helio'])+(neptune*vallues[11]['Z_helio'])+(pluto*vallues[12]['Z_helio'])+(eris*vallues[15]['Z_helio'])+(vesta*vallues[4]['Z_helio'])+(pallas*vallues[6]['Z_helio'])+(hygiea*vallues[7]['Z_helio'])+(haumea*vallues[13]['Z_helio'])+(makemake*vallues[14]['Z_helio']))/total_mass)
 
@@ -625,6 +625,10 @@ class Contin(Astro):
             else:
                 retu = super().orbits(name)
 
+            v_X_bary = retu['v_Xhelio'] + sun_barycentric['v_X'] #barycentric velocity = heliocentric velocity + the Sun's velocity about the SSB
+            v_Y_bary = retu['v_Yhelio'] + sun_barycentric['v_Y'] #(retu['v_X'] is the u_total perifocal velocity, not the SSB one)
+            v_Z_bary = retu['v_Zhelio'] + sun_barycentric['v_Z']
+
             #total_mass_u = (self.G*sun_barycentric['total_mass'])
             spec_uhelio = super().spec_uhelio(name)
 
@@ -635,7 +639,7 @@ class Contin(Astro):
             r_bary = math.sqrt(math.pow(X_bary,2)+math.pow(Y_bary,2)+math.pow(Z_bary,2)) # relative to SSB
             r_helio = math.sqrt(math.pow(retu['X_helio'],2)+math.pow(retu['Y_helio'],2)+math.pow(retu['Z_helio'],2)) #relative to heliocentric sun.
             #v_bary = math.sqrt(total_mass_u * ((2/(r_bary))-(1/(retu['a'])))) # the vis-viva equation..cant use the vis vuva to get barycentric velocity..
-            v_bary = math.sqrt(math.pow(retu['v_X'],2) + math.pow(retu['v_Y'],2) + math.pow(retu['v_Z'],2)) #the magnitude of the barycentric velocity vectors
+            v_bary = math.sqrt(math.pow(v_X_bary,2) + math.pow(v_Y_bary,2) + math.pow(v_Z_bary,2)) #the magnitude of the barycentric velocity vectors
             v_helio = math.sqrt(spec_uhelio * ((2/r_helio) - (1/retu['a']))) #heliocentric spee
             osculating_a = math.pow(((2/r_bary) - (math.pow(v_bary,2)/u_total)),-1) #live semi major axis a osculating element a...
 
@@ -643,9 +647,9 @@ class Contin(Astro):
             light_delay_sun_helio = r_helio/self.c_m_s
 
             ##angular momentum and energy E##
-            h_X = (Y_bary*retu['v_Z']) - (Z_bary*retu['v_Y']) #h SSB
-            h_Y = (Z_bary*retu['v_X']) - (X_bary*retu['v_Z'])
-            h_Z = (X_bary*retu['v_Y']) - (Y_bary*retu['v_X'])
+            h_X = (Y_bary*v_Z_bary) - (Z_bary*v_Y_bary) #h SSB
+            h_Y = (Z_bary*v_X_bary) - (X_bary*v_Z_bary)
+            h_Z = (X_bary*v_Y_bary) - (Y_bary*v_X_bary)
 
             energy_bary = (math.pow(v_bary,2)/2) - (u_total/r_bary)
             h_bary = math.sqrt(math.pow(h_X,2) + math.pow(h_Y,2) + math.pow(h_Z,2))
@@ -654,13 +658,13 @@ class Contin(Astro):
             #e_Y = 1/u_total*((v_bary**2-(u_total/r_bary))*(Y_bary - ((Y_bary*retu['v_Y'])*retu['v_Y'])))
             #e_Z = 1/u_total*((v_bary**2-(u_total/r_bary))*(Z_bary - ((Z_bary*retu['v_Z'])*retu['v_Z'])))
             list_r = [X_bary,Y_bary,Z_bary]
-            list_v = [retu['v_X'],retu['v_Y'],retu['v_Z']]
+            list_v = [v_X_bary,v_Y_bary,v_Z_bary]
             vec = Vectors()
             dot_r_v = vec.dot_vect(list_r,list_v)
 
-            e_X = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*X_bary - (dot_r_v*retu['v_X']))    #eccentric vector
-            e_Y = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*Y_bary - (dot_r_v*retu['v_Y']))
-            e_Z = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*Z_bary - (dot_r_v*retu['v_Z']))
+            e_X = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*X_bary - (dot_r_v*v_X_bary))    #eccentric vector
+            e_Y = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*Y_bary - (dot_r_v*v_Y_bary))
+            e_Z = (1/u_total)*((math.pow(v_bary,2)-(u_total/r_bary))*Z_bary - (dot_r_v*v_Z_bary))
             mgn_e = math.sqrt(math.pow(e_X,2) + math.pow(e_Y,2) + math.pow(e_Z,2))   #eccentric osculating element                          
             osc_i = math.degrees(math.acos(h_Z/h_bary)) % 360
             epsilon = 1e-8
@@ -758,7 +762,7 @@ class Contin(Astro):
                 dot_e_r = vectors.dot_vect(list_e,list_r)
                 magn_e_r = vectors.magn_vect(list_e,list_r)
                 true_anomaly = math.degrees(math.acos(dot_e_r/magn_e_r[4])) % 360
-                list_v = [retu['v_X'],retu['v_Y'],retu['v_Z']]
+                list_v = [v_X_bary,v_Y_bary,v_Z_bary]
                 dot_r_v = vectors.dot_vect(list_r,list_v)
                 if dot_r_v < 0: #object falling to perihelion
                     trv = 'falling to perihelion'
@@ -783,11 +787,11 @@ class Contin(Astro):
                 d_helio = math.sqrt(math.pow((retu['X_helio']-retu['X_E_helio']),2) + math.pow((retu['Y_helio']-retu['Y_E_helio']),2) + math.pow((retu['Z_helio']-retu['Z_E_helio']),2)) # relative to heliocentric sun
                 light_delay_bary = d_bary/self.c_m_s # light delay in seconds
                 light_delay_helio = d_helio/self.c_m_s # light delay relative to heliocenter._
-                return {'name':retu['N'],'X_helio':retu['X_helio'],'Y_helio':retu['Y_helio'],'Z_helio':retu['Z_helio'],'X_bary':X_bary,'Y_bary':Y_bary,'Z_bary':Z_bary,'X_E_bary':X_E_bary,'Y_E_bary':Y_E_bary,'Z_E_bary':Z_E_bary,'r_bary':r_bary,'v_bary':v_bary,'d_bary':d_bary,'light_delay_bary':light_delay_bary,'r_helio':r_helio,'v_helio':v_helio,'light_delay_helio':light_delay_helio,'light_delay_sun_bary':light_delay_sun_bary,'light_delay_sun_helio':light_delay_sun_helio,'d_helio':d_helio,'a':retu['a'],'b':retu['b'],'M':retu['M'],'E':retu['E'],'sun_baryc_X':sun_barycentric['X_s'],'sun_baryc_Y':sun_barycentric['Y_s'],'sun_baryc_Z':sun_barycentric['Z_s'],'r_sun_SSB':r_sun_SSB,'osc_a':osculating_a,'resp_day':retu['resp_day'],'v_X':retu['v_X'],'v_Y':retu['v_Y'],'v_Z':retu['v_Z'],'v_Xhelio':retu['v_Xhelio'],'v_Yhelio':retu['v_Yhelio'],'v_Zhelio':retu['v_Zhelio'],'h':h_bary,'h_X':h_X,'h_Y':h_Y,'h_Z':h_Z,'energy_bary':energy_bary,'energyhelio':retu['energy_helio'],'osc_i':osc_i,'e_X':e_X,'e_Y':e_Y,'e_Z':e_Z,'mgn_eccentricity':mgn_e,'Omega':Omega,'argof_periapsis':argof_periapsis,'true_anomaly':true_anomaly,'longof_periapsis':longof_periapsis,'argof_latitude':argof_latitude,'true_longitude':true_longitude,'osc_ihelio':retu['osc_i'],'mgn_eccentricityhelio':retu['mgn_eccentricity'],'Omegahelio':retu['Omega'],'osc_ahelio':retu['osc_a'],'argof_perihelion':retu['argumentof_perihelion'],'e_Xhelio':retu['e_X'],'e_Yhelio':retu['e_Y'],'e_Zhelio':retu['e_Z'],'true_anomalyhelio':retu['true_anomaly'],'longof_periapsishelio':retu['longof_periapsis'],'argof_latitudehelio':retu['argof_latitude'],'true_longitudehelio':retu['true_longitude'],'h_helio':retu['h'],'Unix_time':retu['Unix_time'],'mode':f'future¦past used with {days} days' if days else None,'sun_vX':sun_barycentric['v_X'],'sun_vY':sun_barycentric['v_Y'],'sun_vZ':sun_barycentric['v_Z']}
+                return {'name':retu['N'],'X_helio':retu['X_helio'],'Y_helio':retu['Y_helio'],'Z_helio':retu['Z_helio'],'X_bary':X_bary,'Y_bary':Y_bary,'Z_bary':Z_bary,'X_E_bary':X_E_bary,'Y_E_bary':Y_E_bary,'Z_E_bary':Z_E_bary,'r_bary':r_bary,'v_bary':v_bary,'d_bary':d_bary,'light_delay_bary':light_delay_bary,'r_helio':r_helio,'v_helio':v_helio,'light_delay_helio':light_delay_helio,'light_delay_sun_bary':light_delay_sun_bary,'light_delay_sun_helio':light_delay_sun_helio,'d_helio':d_helio,'a':retu['a'],'b':retu['b'],'M':retu['M'],'E':retu['E'],'sun_baryc_X':sun_barycentric['X_s'],'sun_baryc_Y':sun_barycentric['Y_s'],'sun_baryc_Z':sun_barycentric['Z_s'],'r_sun_SSB':r_sun_SSB,'osc_a':osculating_a,'resp_day':retu['resp_day'],'v_X':v_X_bary,'v_Y':v_Y_bary,'v_Z':v_Z_bary,'v_Xhelio':retu['v_Xhelio'],'v_Yhelio':retu['v_Yhelio'],'v_Zhelio':retu['v_Zhelio'],'h':h_bary,'h_X':h_X,'h_Y':h_Y,'h_Z':h_Z,'energy_bary':energy_bary,'energyhelio':retu['energy_helio'],'osc_i':osc_i,'e_X':e_X,'e_Y':e_Y,'e_Z':e_Z,'mgn_eccentricity':mgn_e,'Omega':Omega,'argof_periapsis':argof_periapsis,'true_anomaly':true_anomaly,'longof_periapsis':longof_periapsis,'argof_latitude':argof_latitude,'true_longitude':true_longitude,'osc_ihelio':retu['osc_i'],'mgn_eccentricityhelio':retu['mgn_eccentricity'],'Omegahelio':retu['Omega'],'osc_ahelio':retu['osc_a'],'argof_perihelion':retu['argumentof_perihelion'],'e_Xhelio':retu['e_X'],'e_Yhelio':retu['e_Y'],'e_Zhelio':retu['e_Z'],'true_anomalyhelio':retu['true_anomaly'],'longof_periapsishelio':retu['longof_periapsis'],'argof_latitudehelio':retu['argof_latitude'],'true_longitudehelio':retu['true_longitude'],'h_helio':retu['h'],'Unix_time':retu['Unix_time'],'mode':f'future¦past used with {days} days' if days else None,'sun_vX':sun_barycentric['v_X'],'sun_vY':sun_barycentric['v_Y'],'sun_vZ':sun_barycentric['v_Z']}
 
             else: ##if name==earth  
 
-                return {'name':retu['N'],'X_helio':retu['X_helio'],'Y_helio':retu['Y_helio'],'Z_helio':retu['Z_helio'],'X_bary':X_bary,'Y_bary':Y_bary,'Z_bary':Z_bary,'r_bary':r_bary,'v_bary':v_bary,'a':retu['a'],'b':retu['b'],'M':retu['M'],'E':retu['E'],'sun_baryc_X':sun_barycentric['X_s'],'sun_baryc_Y':sun_barycentric['Y_s'],'sun_baryc_Z':sun_barycentric['Z_s'],'r_helio':r_helio,'v_helio':v_helio,'light_delay_sun_bary':light_delay_sun_bary,'light_delay_sun_helio':light_delay_sun_helio,'r_sun_SSB':r_sun_SSB,'resp_day':retu['resp_day'],'osc_a':osculating_a,'v_X':retu['v_X'],'v_Y':retu['v_Y'],'v_Z':retu['v_Z'],'v_Xhelio':retu['v_Xhelio'],'v_Yhelio':retu['v_Yhelio'],'h':h_bary,'h_X':h_X,'h_Y':h_Y,'h_Z':h_Z,'energy_bary':energy_bary,'v_Zhelio':retu['v_Zhelio'],'osc_i':osc_i,'e_X':e_X,'e_Y':e_Y,'e_Z':e_Z,'mgn_eccentricity':mgn_e,'Omega':Omega,'argof_periapsis':argof_periapsis,'true_anomaly':true_anomaly,'longof_periapsis':longof_periapsis,'argof_latitude':argof_latitude,'true_longitude':true_longitude,'osc_ahelio':retu['osc_a'],'osc_ihelio':retu['osc_i'],'mgn_eccentricityhelio':retu['mgn_eccentricity'],'Omegahelio':retu['Omega'],'e_Xhelio':retu['e_X'],'e_Yhelio':retu['e_Y'],'e_Zhelio':retu['e_Z'],'argof_perihelion':retu['argumentof_perihelion'],'true_anomalyhelio':retu['true_anomaly'],'longof_periapsishelio':retu['longof_periapsis'],'argof_latitudehelio':retu['argof_latitude'],'true_longitudehelio':retu['true_longitude'],'energyhelio':retu['energy_helio'],'h_helio':retu['h'],'Unix_time':retu['Unix_time'],'mode':f'future¦past used with {days} days' if days else None,'sun_vX':sun_barycentric['v_X'],'sun_vY':sun_barycentric['v_Y'],'sun_vZ':sun_barycentric['v_Z']} #if mode is none then time was not used
+                return {'name':retu['N'],'X_helio':retu['X_helio'],'Y_helio':retu['Y_helio'],'Z_helio':retu['Z_helio'],'X_bary':X_bary,'Y_bary':Y_bary,'Z_bary':Z_bary,'r_bary':r_bary,'v_bary':v_bary,'a':retu['a'],'b':retu['b'],'M':retu['M'],'E':retu['E'],'sun_baryc_X':sun_barycentric['X_s'],'sun_baryc_Y':sun_barycentric['Y_s'],'sun_baryc_Z':sun_barycentric['Z_s'],'r_helio':r_helio,'v_helio':v_helio,'light_delay_sun_bary':light_delay_sun_bary,'light_delay_sun_helio':light_delay_sun_helio,'r_sun_SSB':r_sun_SSB,'resp_day':retu['resp_day'],'osc_a':osculating_a,'v_X':v_X_bary,'v_Y':v_Y_bary,'v_Z':v_Z_bary,'v_Xhelio':retu['v_Xhelio'],'v_Yhelio':retu['v_Yhelio'],'h':h_bary,'h_X':h_X,'h_Y':h_Y,'h_Z':h_Z,'energy_bary':energy_bary,'v_Zhelio':retu['v_Zhelio'],'osc_i':osc_i,'e_X':e_X,'e_Y':e_Y,'e_Z':e_Z,'mgn_eccentricity':mgn_e,'Omega':Omega,'argof_periapsis':argof_periapsis,'true_anomaly':true_anomaly,'longof_periapsis':longof_periapsis,'argof_latitude':argof_latitude,'true_longitude':true_longitude,'osc_ahelio':retu['osc_a'],'osc_ihelio':retu['osc_i'],'mgn_eccentricityhelio':retu['mgn_eccentricity'],'Omegahelio':retu['Omega'],'e_Xhelio':retu['e_X'],'e_Yhelio':retu['e_Y'],'e_Zhelio':retu['e_Z'],'argof_perihelion':retu['argumentof_perihelion'],'true_anomalyhelio':retu['true_anomaly'],'longof_periapsishelio':retu['longof_periapsis'],'argof_latitudehelio':retu['argof_latitude'],'true_longitudehelio':retu['true_longitude'],'energyhelio':retu['energy_helio'],'h_helio':retu['h'],'Unix_time':retu['Unix_time'],'mode':f'future¦past used with {days} days' if days else None,'sun_vX':sun_barycentric['v_X'],'sun_vY':sun_barycentric['v_Y'],'sun_vZ':sun_barycentric['v_Z']} #if mode is none then time was not used
 
 
 
@@ -999,7 +1003,7 @@ class Contin(Astro):
         objname = objname.upper()
 
         retu = super().orbits(objname,None,days) # if it can get the positive value, the  it can also get the negative value
-        baryc = self.baryc_sun()
+        baryc = self.baryc_sun(days) #the sun offset at the same time as the planet
         #total_mass_u = self.G*baryc['total_mass']
         u_total = super().u_total()
         spec_uhelio = super().spec_uhelio(objname)  #use suns paramter
@@ -1013,7 +1017,7 @@ class Contin(Astro):
         r_helio = math.sqrt(math.pow(retu['X_helio'],2) + math.pow(retu['Y_helio'],2) + math.pow(retu['Z_helio'],2))
 
         #v_bary = math.sqrt(total_mass_u * ((2/(r_bary))-(1/(retu['a']))))
-        v_bary = math.sqrt(math.pow(retu['v_X'],2) + math.pow(retu['v_Y'],2) + math.pow(retu['v_Z'],2))
+        v_bary = math.sqrt(math.pow(retu['v_Xhelio'] + baryc['v_X'],2) + math.pow(retu['v_Yhelio'] + baryc['v_Y'],2) + math.pow(retu['v_Zhelio'] + baryc['v_Z'],2)) #heliocentric velocity + the Sun's velocity about the SSB
         v_helio = math.sqrt(spec_uhelio * ((2/r_helio)-(1/retu['a'])))
         osculating_a = math.pow(((2/r_bary) - (math.pow(v_bary,2)/u_total)),-1)
 
