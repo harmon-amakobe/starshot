@@ -5,7 +5,9 @@ export class EntryPresentation {
   private started = 0;
   private duration = 0;
   setHome(home: boolean, now: number, reduced: boolean) {
-    this.from = this.amount; this.target = home ? 1 : 0; this.started = now;
+    this.from = this.amount;
+    this.target = home ? 1 : 0;
+    this.started = now;
     this.duration = reduced ? 0 : home ? 650 : 1100;
   }
   sample(now: number) {
