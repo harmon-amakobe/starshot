@@ -103,8 +103,8 @@
     },
     {
       "file": "NOTICE.txt",
-      "sha256": "0c33564ad07f6999e5bcc0af33f0a22b439bbcfb0bc1942dcb17082d712ae274",
-      "bytes": 8158,
+      "sha256": "2cab10eed05a9ea4dd8fdf38356588a65b3953bdf9b5742f8cb845031ed953f2",
+      "bytes": 8155,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
       "attribution": "starshot contributors",
@@ -203,7 +203,7 @@
     },
     {
       "file": "system-app.html",
-      "sha256": "5852309ab411afcaa8b67ab449558492650cd9aefe45d52c3ddbc87001027357",
+      "sha256": "d24901c9d8ddda3ab491d24ea50e42e446ed600491e9684d079c6facd64fd7de",
       "bytes": 42127,
       "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
       "licence": "Apache-2.0",
