@@ -1605,15 +1605,15 @@ class Contin(Astro):
         #Omega_a = math.radians(self.moons[sysname]['Omega_a'])
         #Omega_b = math.radians(self.moons[sysname]['Omega_b'])
       #  Omega = (Omega_a - (Omega_b*d))%(2*math.pi)
-        Omega = math.radians(self.moons[sysname]['Omega_a']) #the table is in degrees but cos/sin need radians
+        Omega = math.radians((self.moons[sysname]['Omega_a'] - (self.moons[sysname]['Omega_b']*d)) % 360) #the table is in degrees but cos/sin need radians..the node regresses
        # omega_a = math.radians(self.moons[sysname]['omega_a'])
        # omega_b = math.radians(self.moons[sysname]['omega_b'])
       #  omega = (omega_a + (omega_b*d)) % (2*math.pi)
-        omega = math.radians(self.moons[sysname]['omega_a'])
+        omega = math.radians((self.moons[sysname]['omega_a'] + (self.moons[sysname]['omega_b']*d)) % 360) #the perigee advances
         inclination = math.radians(self.moons[sysname]['i'])
 
         mean_motion = (2*math.pi)/(self.moons[sysname]['sidereal_p_s'])
-        mean_anomaly =  ((math.radians(mean_anom) + (mean_motion*delta_t))%(2*math.pi))
+        mean_anomaly =  ((math.radians(mean_anom) + (math.radians(self.moons[sysname]['mean_b'])*d))%(2*math.pi)) #anomalistic rate (mean_b) because the perigee moves now. the sidereal mean_motion above would double count it
         eccentric_anomaly = mean_anomaly
 
 
