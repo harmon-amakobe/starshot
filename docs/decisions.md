@@ -69,6 +69,7 @@ copied line would break both that trust and his licence.
 
 **Resolved 2026-10-31. Do not re-litigate.**
 **Source:** project brief.
+**Superseded by [D12](#d12-code-licence-apache-20-with-dco-cc-by-40-assets-and-a-trademark-policy) (2026-11-01, the owner's call).**
 
 **Decision.** Starshot's own code: MIT licence (permissive; does not affect the owner's
 private projects).
@@ -93,6 +94,7 @@ exclusions. The decision above is unchanged.
 
 **Resolved 2026-10-31. Do not re-litigate.**
 **Source:** project brief, backed by a fact (the astlo evaluation).
+**Superseded in part by [D17](#d17-positions-come-from-de440-derived-rails-validated-against-jpl) (2026-11-01, the owner's call).**
 
 **Decision.** Positions come from the JPL Table 1 TypeScript ephemeris, validated
 against Horizons. astlo data may be used only after it passes a validation gate
@@ -116,6 +118,7 @@ licence from Mark that allows it (D2).
 
 **Resolved 2026-10-31. Do not re-litigate.**
 **Source:** *(judgment)*.
+**Superseded in part by [D16](#d16-one-rust-core-adopted-now-without-a-staged-cut-over) and [D19](#d19-the-game-renders-with-threejs-on-webgl-2-presenting-as-2d-first) (2026-11-01, the owner's call).**
 
 **Decision.** Stack: TypeScript, npm workspaces monorepo, Vite + React, Canvas 2D for
 the game prototype; three.js/R3F reserved for a future 3D map app (`apps/orrery`, not
@@ -176,10 +179,11 @@ which build their requests the same way (`shotRequestFor`, `hintQueryFor`).
 
 **Resolved 2026-10-31. Do not re-litigate.**
 **Source:** project brief.
+**Revised by [D13](#d13-online-features-from-the-first-release-on-firebase) and [D21](#d21-hosting-firebase-hosting-with-a-github-pages-mirror) (2026-11-01, the owner's call).**
 
 **Decision.** Hosting: GitHub Pages via GitHub Actions; fully static; no backend, no
 secrets, no Firebase. A future leaderboard would use a separate, Starshot-only Firebase
-project with config injected at build time from repo Variables — never any private
+project with config injected at build time from repo Variables, never any private
 project's config.
 
 **Why.** Pages is free for public repositories, needs no server, and deploys straight
@@ -237,6 +241,8 @@ are scripts (not good intentions) keep changes honest, reviewable and safe to pu
 ---
 
 ## D10. astlo fixes are made here first, in `python/astlo`, shared pending Mark's permission
+
+**Revised by [D26](#d26-mark-macharia-hears-from-the-owner-now-astlo-is-a-partner-not-a-dependency) (2026-11-01, the owner's call): the owner contacts Mark now rather than after chapter one.**
 
 **Resolved 2026-11-01. The owner's call. Do not re-litigate.**
 **Source:** owner instruction. Revises D2 (the `third_party/astlo` rules are unchanged).
@@ -299,3 +305,361 @@ game's hint closes the gap with the simulator itself. The test still fails loudl
 aim drifts: 1.25 leaves about 10% headroom over the measured miss. This is a behaviour
 test of the Lambert-to-simulator hand-off, not one of the Horizons accuracy budgets in
 `packages/ephemeris/test`, which are unchanged.
+
+---
+
+## D12. Code licence: Apache-2.0, with DCO, CC BY 4.0 assets and a trademark policy
+
+*Date:* 2026-11-01. *Source:* owner's ruling (supersedes the MIT choice in D3; D3's
+scoping of Mark's files stays).
+
+**Decision.** Starshot's own code is licensed Apache-2.0. Original art, audio and
+screenshots are CC BY 4.0, credited in `CREDITS.md`. The name "Starshot", the logo and the
+icon are all rights reserved, with permitted uses set out in `TRADEMARK.md`. Contributions
+need a Developer Certificate of Origin sign-off (no contributor licence agreement). The
+repository uses the REUSE layout (`LICENSES/`, `REUSE.toml`) with `LicenseRef-astlo` for
+Mark Macharia's files and `LicenseRef-starshot-brand` for brand files.
+
+**Why.** Apache-2.0 adds a patent grant from every contributor that ends for anyone who
+sues, says in section 6 that the name is not licensed with the code, and settles inbound
+contribution terms in section 5. The switch costs nothing today because every Starshot
+commit is the owner's own work. Copyleft licences were rejected: GPL has a history of
+removals from the Apple App Store, and the real threat to the project is a confusingly
+named clone, which a trademark policy addresses and a code licence cannot.
+
+**Consequences.** `LICENSE` holds the Apache-2.0 text; the four `package.json` files say
+`Apache-2.0`; `NOTICE.md`, `README.md` and `CONTRIBUTING.md` are updated; nothing changes
+for `third_party/astlo/**`, `python/astlo/astlo/**` or its `.dist-info` (D2, D10).
+
+**How it is enforced.** The DCO GitHub app on every pull request; a licence gate that fails
+when a shipped file has no licence record; the trademark policy quoted in `README.md`.
+
+---
+
+## D13. Online features from the first release, on Firebase
+
+*Date:* 2026-11-01. *Source:* owner's ruling (revises the "no Firebase, Variables only"
+part of D7; D7's rule that no private project's configuration ever appears here stands).
+
+**Decision.** The first public release includes anonymous accounts and a leaderboard, on
+Firebase under the owner's personal Google account, with server-side replay verification
+that runs the same simulation core as the client. The web game plays fully offline without
+any of it. Two Firebase projects, development and production, each with its own budget and
+alerts and both on a billing account used by nothing else; a `demo-` project for the
+emulator suite locally and in CI. Protections, in this order: Security Rules that deny by
+default and are tested in CI; App Check (reCAPTCHA Enterprise on the web, App Attest and
+Play Integrity in the native apps, a debug token held only as a CI secret); API key
+restrictions to Firebase APIs and the game's domains; no Analytics link; a per-player write
+cooldown. The production web configuration (apiKey, authDomain, projectId, appId) is
+committed in one allow-listed file, because Firebase documents it as an identifier rather
+than a secret and the protections above are what make that true; local development
+defaults to the emulator, and preview builds use the development project through a
+build-time variable.
+
+**Why.** The owner wants to publish with Firebase and to share scores early; the scouts
+confirmed the configuration is safe to ship under the listed conditions.
+
+**Consequences.** Service-account keys, Admin SDK credentials, `.env` files, App Check debug
+tokens and any Gemini key are never committed. The `secrets` gate allow-lists exactly one
+configuration file and keeps rejecting Firebase configuration anywhere else.
+
+---
+
+## D14. Free and open, with no advertising or purchases
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** Starshot is free to play on every platform. No advertising, no in-app
+purchases, no paid edition. Donations or sponsorship may be accepted later without
+changing the game. Because the licence invites commercial reuse by others, assets under
+non-commercial licences are not used.
+
+**Why.** Simplest privacy and store compliance, no anti-cheat pressure beyond fairness, and
+a clear position for contributors.
+
+---
+
+## D15. Art, sound and music come from real imagery and open licences
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** Planets and the Sun use real imagery: the Solar System Scope set (CC BY 4.0)
+as the base, NASA's Scientific Visualization Studio Moon kit, NASA SDO for the Sun, and
+NASA and JPL imagery for cards. Stars come from a catalogue with a permissive licence (the
+Yale Bright Star Catalogue if its terms are confirmed, otherwise the HYG database as a
+separately licensed CC BY-SA data file). No Gaia-derived data (CC BY-NC), no ESA website
+images, no planetary maps whose author asks that copies not be hosted. Sound effects are
+generated in code. Music is original, commissioned, or CC BY from composers whose
+Content ID practice the owner accepts. Every shipped asset has a manifest entry with its
+source, licence, attribution and hash; `CREDITS.md` and the in-game credits are generated
+from it. AI-generated assets are not planned; using one would need a new decision.
+
+**Why.** The owner chose real imagery with CC or original music; NC terms conflict with
+D12 and D14.
+
+---
+
+## D16. One Rust core, adopted now, without a staged cut-over
+
+*Date:* 2026-11-01. *Source:* owner's ruling (supersedes the engine-language and layout
+parts of D5).
+
+**Decision.** The simulation, ephemeris evaluation, game rules, scoring, hint search and
+replay format live in one Rust core under `crates/`: `starshot-math` (the only place
+transcendental functions live, through the `libm` crate), `starshot-ephemeris`,
+`starshot-physics`, `starshot-game`, and thin binding crates `starshot-wasm` (wasm-bindgen)
+and `starshot-ffi` (UniFFI, when the native apps start). The web worker loads the wasm
+through a typed wrapper in `packages/core-wasm`; the replay-verification function on the
+server runs the same `.wasm` file the web shipped. No staged release with two engines: the
+TypeScript packages are the conformance oracle and are retired in the same program once
+the wasm passes every existing Horizons, physics and level test and gives identical bits
+across V8, JavaScriptCore and native. Replays carry canonical inputs (level id, launch
+day, aim as exact bits) and a `physicsVersion`.
+
+**Why.** Measured: the Rust core with a software maths library gave identical bits on
+every runtime tested (0 of 252 flights differed) where today's TypeScript differs between
+browser engines on 23 of 252 flights; wasm ran about 1.5 times faster; the native apps
+need a compiled core anyway. The owner ruled that nothing is live, so no dual-engine
+release is needed.
+
+**Consequences.** Changing physics needs the Rust toolchain; binding crates are pinned and
+upgraded deliberately; no `mul_add`, fast-math flags, relaxed SIMD or threads inside the
+simulation; `#![forbid(unsafe_code)]` in logic crates; an arm64 CI job proves the mobile
+builds match the wasm bits before scores from them are accepted; the worker protocol does
+not change.
+
+---
+
+## D17. Positions come from DE440-derived rails, validated against JPL
+
+*Date:* 2026-11-01. *Source:* owner's ruling (supersedes the "Table 1" naming in D4; D4's
+rule that data enters only through a validation gate stands).
+
+**Decision.** A Python tool at `tools/ephem/` (pyproject with a locked `uv.lock`, jplephem)
+generates Chebyshev rails from NASA's `de440s.bsp` for the eight planets (Sun-relative,
+ecliptic J2000, km) and the geocentric Moon at a 100 km tolerance (test budget 150 km),
+packed per decade and committed with an `ephem.validation/1` report. Earth's centre is
+derived from the Earth-Moon barycentre and the Moon. Table 1 stays as the fallback and as
+an independent cross-check in tests. Small bodies get per-level rails fitted to Horizons
+vectors; major moons come later from the satellite kernels. Stars are a curated table with
+per-star sources. Horizons is never called at runtime; fixtures record the API signature,
+the ephemeris source and the fetch date. Derived files name Starshot as the last modifier,
+as NAIF's rules require.
+
+**Why.** Table 1 has no Moon, degrades after 2050 (Saturn 27 arcminutes) and places Jupiter
+up to 1.86 million km from DE440; rails cost about 530 KB per century for planets and
+Moon, 6 to 11 KB per level, evaluate with adds and multiplies only (identical in every
+engine) and run faster than Table 1.
+
+---
+
+## D18. Flight model and progression economy for chapter one
+
+*Date:* 2026-11-01. *Source:* owner's rulings on the budget, the unlock rule and mass;
+the rest (judgment) by the orchestrator from the gameplay research, to be tuned by the
+prototypes named in the plan. Chapter one keeps the flattened world of D6; the 3D chapter
+gets its own decision.
+
+**Decision.**
+1. The fuel budget is delta-v burned from a 200 km parking orbit. Fuel is impulse: the
+   starting tank holds `J0 = 700 kg x 3.55 km/s`, so the 700 kg collector probe starts
+   with 3.55 km/s (escape plus a 10% reserve) and the 1,000 kg crewed craft with 0.7 times
+   that. The HUD shows km/s for the craft on the pad. Lighter craft go farther.
+2. Unlocks: first entry into a body's sphere of influence adds `u = sqrt(GM / r_SOI)` to
+   the tank permanently; a collector left in a stable orbit adds `2u` more, credited when
+   its beam reaches Earth on mission time (light time plus a collection period). A stable
+   orbit has periapsis above the body's safe altitude and apoapsis inside 0.49 Hill radii.
+   The close solar orbit at 20 solar radii ends chapter one with a chapter reward.
+3. Flight physics stays impulsive at the patched-conic boundary. The 1 g burn is drawn
+   around Earth from the same request and its real loss is charged from a precomputed
+   table; 2 g unlocks after a Jupiter flyby and 3 g after Saturn, as pacing.
+4. "Capture" means a loose capture at periapsis. The craft's computer times the burn at
+   periapsis; the hold sets only the amount, with detents at "captured" and "planned
+   orbit" and a soft floor at circular. Too little becomes a slower flyby; a crash is only
+   ever deliberate.
+5. Previews lock to the next sphere of influence, show the flyby inside it analytically
+   and one faded ghost leg; aim assist snaps to flybys that lead to the target; the next
+   leg is aimed in flight.
+6. Each lock state has a colour (Okabe-Ito sky blue for brake, orange for boost), an icon,
+   text, a sound and a haptic, so no channel carries the meaning alone.
+7. Time: an event-anchored time map gives every launch about 4 to 8 s of player time,
+   eased in log space, slowing into burns and encounters; reduced motion uses 0.6 of the
+   budget without changing the result.
+8. Chapter one is one-way for crews; no aerobraking (periapsis floors); the economy stays
+   under about 15 km/s from the parking orbit so launch windows keep mattering.
+
+**Why.** The literal budget (surface to orbit plus escape, spent from orbit) buys a 17 km/s
+hyperbolic excess and reaches a 0.1 AU solar dive on level one. The unlock rule rewards
+deep gravity wells and keeps the chapter inside the regime where slingshots matter.
+
+---
+
+## D19. The game renders with three.js on WebGL 2, presenting as 2D first
+
+*Date:* 2026-11-01. *Source:* owner's vision (3D presenting as 2D, real imagery), the
+renderer choice (judgment) from the visuals research. Supersedes the Canvas 2D and
+"three.js only for the orrery" parts of D5.
+
+**Decision.** three.js (r187 line) `WebGLRenderer` with imperative scene code owned by the
+game; React keeps the UI and DOM labels; rendering stays on the main thread and physics in
+its worker. Positions are converted camera-relative from float64 to float32 every frame.
+Distances stay linear; body sizes are exaggerated with a visible badge, a scale bar and a
+true-size toggle; textured planets appear in close-ups, cards and the map above a minimum
+radius. Shaders are small self-contained materials that can move to TSL later. Canvas 2D
+stays as the fallback for devices without WebGL 2 and as the accessibility reference.
+Textures ship as KTX2 (ETC1S for colour, UASTC for normals) in 512, 1k and 2k tiers with
+an optional 4k download and a WebP fallback; the first load stays under about 300 KB
+before textures. No full-screen bloom on the low tier.
+
+**Why.** Measured bundle floors: three.js WebGL 135 KB gzipped against 222 KB for the
+WebGPU renderer and 343 KB for Babylon; most target phones run WebGL 2 anyway. Sixteen 2k
+textures take about 170 MiB of GPU memory as WebP and about 21 MiB as KTX2.
+
+---
+
+## D20. The name stays Starshot; the domain is playstarshot.com
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** The game stays "Starshot". The owner registers `playstarshot.com` and
+`playstarshot.app` at Cloudflare Registrar in the owner's own account (auto-renew,
+two-factor authentication, registrar lock, privacy and DNSSEC on). Titles on the web and
+in the stores carry a qualifier such as "Starshot: the orbital slingshot game" to stay
+distinct from Starshot Games and Breakthrough Starshot. Before any store submission the
+owner runs the manual trademark searches (USPTO, EUIPO, WIPO, KIPI) and considers a KIPI
+filing in classes 9 and 41. `TRADEMARK.md` states the policy now.
+
+**Why.** Bare `starshot` is taken on every mainstream domain; `.game` renews at about
+$340 a year; `playstarshot.com` renews at about $10. The qualified name reads as one
+product rather than a claim on the word.
+
+---
+
+## D21. Hosting: Firebase Hosting with a GitHub Pages mirror
+
+*Date:* 2026-11-01. *Source:* owner's ruling (revises D7's "GitHub Pages only").
+
+**Decision.** Production is served by Firebase Hosting from the production project on the
+custom domain, deployed from CI on merges to `main`; preview channels on the development
+project for branches of this repository (forks get a downloadable build artifact instead,
+because they receive no credentials). GitHub Pages keeps building the same bundle as a
+mirror that any fork can reproduce. Hashed assets are served immutable, the app shell and
+service worker with `no-cache`; textures are hashed and cached with a budget. Static assets
+move to another CDN only if bandwidth cost or latency in Africa measured in production
+says so.
+
+**Why.** One console with the backend, preview deploys, and the owner's familiarity;
+the pay-as-you-go plan the leaderboard needs anyway charges about $0.15 per GB beyond the
+free 10 GB a month, which a budget alert watches.
+
+---
+
+## D22. Audience and privacy
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** The game is for teens and adults (13 and up); store ratings follow. Accounts
+are anonymous; display names come from a filtered list; no free text, no email, no
+analytics, no advertising identifiers. Anyone can play offline without an account. The
+leaderboard stores an anonymous id, the chosen display name and the shot.
+
+**Why.** Keeps the project outside child-specific consent rules in the United States and
+Kenya while remaining usable by younger players offline.
+
+---
+
+## D23. Work is tracked with GitHub issues, sub-issues and one project board
+
+*Date:* 2026-11-01. *Source:* owner's ruling (repository stays under the personal account
+for now) and the process research.
+
+**Decision.** The repository stays under the owner's personal account; moving to an
+organization is a later decision. GitHub Issues are turned on. Epics are parent issues
+labelled `kind:epic` with sub-issues (issue types are an organization feature and are not
+used). One user-owned Project with fields Status, Priority, Size, Area, Actor and Chapter,
+the built-in automations, and the views named in the plan. Issues are code: each program
+has `docs/plans/<program>/work.yaml` and `work.lock.json`, and `scripts/sync-work.mjs`
+(REST only, dry run by default) creates and updates labels, milestones, issues and
+sub-issue links; the orchestrator runs it, never a builder and never CI with a personal
+token. Conventions: every pull request names its issue (`Part of #n` inside a stack,
+`Closes #n` where the work reaches `main`); a status comment at claim and at completion;
+agents take only `agent-ready` issues; outside contributors claim by comment.
+
+**Why.** Works on a personal repository without GraphQL (blocked in these sessions) and
+without any token beyond the repository's own; keeps the plan and the board in step.
+
+---
+
+## D24. Agent commits are authored by the owner, with the agent as co-author
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** Commits made by agents on the owner's behalf are authored as
+`Harmon Amakobe <73005556+harmon-amakobe@users.noreply.github.com>`, carry
+`Signed-off-by:` from the owner (the owner directs the work, reviews it and takes
+responsibility for the certificate of origin; the orchestrator's publish step adds the
+line under this standing instruction), and carry a `Co-Authored-By:` trailer naming the
+agent and the session link. The DCO check applies to every pull request. Agents never
+add a sign-off for anyone else.
+
+**Why.** The DCO app matches the sign-off to the commit author, only a person can certify
+origin, and the owner is the person submitting agent-written work.
+
+---
+
+## D25. Solo with agents until chapter one is playable
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** The owner builds with agents and does not promote the project or recruit
+contributors until chapter one is playable. Governance files, templates, labels and the
+copy gate ship now so the door is ready; `good first issue` labels wait. Pull requests are
+sized for one reviewer.
+
+---
+
+## D26. Mark Macharia hears from the owner now; astlo is a partner, not a dependency
+
+*Date:* 2026-11-01. *Source:* owner's ruling.
+
+**Decision.** The owner contacts Mark now with the fixes in `python/astlo`, the
+verification, and the technical "directions for astlo" document kept at
+`docs/astlo/directions.md`. astlo is an authoring and education partner: a sky-position
+reference, a launch-window explorer once its Lambert solver works, a small-body
+propagator, and planet content; it is never a runtime dependency of the game. The shared
+`ephem.pack/1` and `ephem.validation/1` formats are the interface between the projects.
+Mark is credited in `README.md`, `NOTICE.md` and the game's credits with the name and
+handle he chooses. The personal message itself stays outside the repository.
+
+---
+
+## D27. The copy standard and its gate
+
+*Date:* 2026-11-01. *Source:* owner's ruling (em dashes banned everywhere; no AI tells).
+
+**Decision.** All prose and UI text follows the copy standard in `docs/copy-standard.md`:
+sentence case; short sentences; concrete nouns and numbers; no hype adjectives, filler
+adverbs, reflexive groups of three, rhetorical setups or chatbot residue; no emoji in
+docs, issues, pull requests or commits. The em dash (U+2014), the en dash (U+2013) and
+the horizontal bar (U+2015) are hard failures everywhere. `scripts/check-copy-tells.mjs`
+scans Markdown, UI strings in TypeScript and TSX (through the TypeScript parser, skipping
+comments), YAML templates and, through `--stdin`, issue and pull request bodies (a
+workflow) and commit messages (CI and the publish step). Exemptions: Mark's files,
+fixtures, lockfiles, the catalogue itself, code blocks, and lines carrying
+`copy-ok: <reason>`. Typographic fixes to resolved decision entries are allowed; their
+meaning is not changed.
+
+---
+
+## D28. Size and shape gates for maintainability
+
+*Date:* 2026-11-01. *Source:* owner's ruling (no god components, checked always).
+
+**Decision.** `scripts/check-file-size.mjs` warns above 300 code lines and fails above 500
+for `.ts`, `.tsx`, `.rs`, `.mjs` and `.css` files, with a baseline file that may only
+shrink (starting with `apps/game/src/ui/GameScreen.tsx`, `apps/game/src/styles.css` and
+`apps/game/src/render/draw.ts`). God-component heuristics (hook calls, state variables,
+props, cross-area imports) warn. A layering check keeps `packages/` from importing
+`apps/`, and anything from importing `python/` or `third_party/`. A dependency licence
+allow-list runs over the lockfiles. Splitting `GameScreen.tsx` is an early pull request
+of the program.
