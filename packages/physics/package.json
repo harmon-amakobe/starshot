@@ -1,6 +1,6 @@
 {
   "name": "@starshot/physics",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spacecraft trajectory physics for Starshot: adaptive Dormand-Prince integrator, patched launch model, encounters, Lambert solver.",
   "license": "Apache-2.0",
   "type": "module",
@@ -11,6 +11,6 @@
     "./lunar": "./src/lunar/index.ts"
   },
   "dependencies": {
-    "@starshot/ephemeris": "0.1.0"
+    "@starshot/ephemeris": "0.2.0"
   }
 }

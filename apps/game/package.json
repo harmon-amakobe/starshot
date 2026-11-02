@@ -1,6 +1,6 @@
 {
   "name": "@starshot/game",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@starshot/presentation": "*",
-    "@starshot/ephemeris": "0.1.0",
-    "@starshot/physics": "0.1.0",
+    "@starshot/ephemeris": "0.2.0",
+    "@starshot/physics": "0.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0"
