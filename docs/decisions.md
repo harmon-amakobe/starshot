@@ -792,3 +792,43 @@ style and proposed interaction details. The look prototype demonstrates the shel
 before adopting it in the game. D6's physics and preview agreement, D15's asset
 rules and D19's rendering constraints remain in force. Detailed timing, materials
 and sound composition remain adjustable during iteration.
+
+---
+
+## D33. Earth to Moon is the first mission, built on today's engine before the Rust core
+
+*Date:* 2026-11-02. *Source:* owner's ruling on when (directly after the PR2 group, on
+the current TypeScript engine, with the Rust core required to match it); the flight
+details (judgment) follow the approved lunar study. Amends the group order of D30's table
+and the Moon's place in PR34; refines D18's flattened chapter one for the Earth-Moon
+system. D16 and D17 stand.
+
+**Decision.** The Moon-first slice is built in the two groups after the PR2 group:
+PR3a (the flight) and PR3b (the campaign).
+
+- Earth to Moon is mission one, with the stable id `moonshot`. The planetary missions
+  keep their ids (`first-light`, `morning-star`, `big-game`, `grand-tour`) and follow it.
+- The lunar flight is an explicit typed variant beside the planetary shot. It is an
+  impulsive burn from a 200 km parking orbit (D18 item 1, the 3.55 km/s tank). Earth's
+  centre with Earth's own mass, the Moon and the Sun pull on the craft. Its frame and
+  units are named wherever it crosses a boundary.
+- The mission is planar in the Moon's own orbital plane at launch, not the ecliptic.
+  Flattening the Moon's orbit onto the ecliptic would move it by up to about 34,000 km,
+  so the flattened world of D6 and D18 applies to the planetary missions only.
+- The Moon's position comes from the cached JPL Horizons rail the lunar study validated
+  (five JPL probes within 0.1 km), moved into `packages/ephemeris` with its provenance.
+  The DE440 rails of PR8 replace it and keep its probes as a cross-check.
+- Success is first entry into the Moon's sphere of influence, as a hit is for the
+  planets. It is an encounter, not an orbit; capture stays with PR20.
+- The Rust core reproduces the lunar variant: PR11 to PR14 add its tests to their
+  conformance scope, and PR17 retires the TypeScript version only after the wasm matches
+  it. There is one engine at a time.
+
+**Why.** The owner wants a playable Moon-first campaign before the Rust core lands. The
+lunar study already has a measured flight model with tests against JPL probes, so the
+TypeScript version becomes one more oracle the Rust port is tested against, as the
+planetary code already is.
+
+**Consequences.** The group table gains PR3a, PR3b and PR3c (the stylesheet split,
+deviation 16) between the PR2 and PR4 groups. PR34 keeps the later Earth and Moon levels:
+an Earth-orbit lesson and a loose lunar capture. Mission numbers shift by one; ids do not.

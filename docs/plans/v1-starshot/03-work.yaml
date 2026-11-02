@@ -142,7 +142,7 @@ epics:
           Least privilege, SHA pins, one stable required check named gates, the layering gate.
           Built in PR0 (#1) by the owner's ruling (D30).
       - id: v1-screen-split-render
-        title: "PR2: move GameScreen's pure helpers and canvas loop into their own modules"
+        title: "PR2: format the campaign shell and delete the unmounted GameScreen (deviation 15)"
         labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
@@ -150,9 +150,10 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr2-gamescreen-split-render-loop
         depends_on: [v1-ci-hardening]
         body: |
-          Behaviour unchanged; verify-game and the level tests prove it.
+          Behaviour unchanged; verify-game and the level tests prove it. Built on the live
+          campaign shell: the unmounted GameScreen was deleted (deviation 15).
       - id: v1-screen-split-state
-        title: "PR3: move GameScreen's state into hooks and bring it under 300 lines"
+        title: "PR3: split the campaign shell into focused hooks and views under 300 lines"
         labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
@@ -160,7 +161,41 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr3-gamescreen-split-state-hooks
         depends_on: [v1-screen-split-render]
         body: |
-          GameScreen.tsx leaves the size baseline (D28).
+          CampaignApp.tsx and use-campaign.ts are split by responsibility with no change
+          in behaviour; the size baseline is empty (D28, deviation 15).
+      - id: v1-moon-flight
+        title: "PR3a: the Earth-to-Moon flight as a typed variant, with level data and tests"
+        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3a-moon-flight
+        depends_on: [v1-screen-split-state]
+        body: |
+          The lunar study's flight joins the engine beside the planetary shot, with the
+          Moon rail moved into packages/ephemeris and known solutions tested (D33).
+      - id: v1-moon-campaign
+        title: "PR3b: Moonshot first in the campaign, with progression and save migration"
+        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3b-moon-campaign
+        depends_on: [v1-moon-flight]
+        body: |
+          New pilots start at Moonshot and continue to First Light; old saves keep stars,
+          sessions and access (D33).
+      - id: v1-stylesheet-split
+        title: "PR3c: format and split the stylesheets, and warn on compressed lines"
+        labels: [kind:chore, area:game, priority:p2, status:ready, agent-ready]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3c-stylesheet-split
+        depends_on: [v1-moon-campaign]
+        body: |
+          About 4,400 lines of CSS in 75 physical lines become readable files under the
+          size gate, with no visual change (deviation 16).
       - id: v1-process-checks
         title: "PR4: Process checks: PR size, commit scan and the work gate"
         labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]

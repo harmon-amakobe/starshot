@@ -74,6 +74,9 @@ interstellar chapter are later programs.
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
 | D29 | astlo changes are made here first, offered to Mark as pull requests (astlo changes only), and pulled back from his releases once adopted; the Rust core stays Starshot's, with dependency-free ephemeris and topocentric parts he may use as a crate; tooling may depend on a licensed, validated astlo, the game never does |
 | D30 | Specs build as PR groups (one branch, one PR, one bounded review for one to four specs), two or three groups a session, PR1 inside PR0, and one master review of the whole stack at the end |
+| D31 | The name is always written starshot, in lowercase |
+| D32 | A playful observatory in a single-screen game shell; the world stays behind dismissable overlays and a translucent flight deck |
+| D33 | Earth to Moon is mission one (`moonshot`), built on today's engine in PR3a and PR3b before the Rust core, which must reproduce it; planar in the Moon's own orbital plane; success is entry into the Moon's sphere of influence |
 
 Still binding from before: D1 and D2 (Mark's files untouched), D6 (2D physics; a level's
 preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
@@ -132,6 +135,9 @@ in their planning sessions.
 | PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in PR0 (D30) | PR0 |
 | PR2 | `v1-screen-split-render` | GameScreen split, render loop | A | about 500 lines (about 440 moved), 8 files: over, warns | PR1 |
 | PR3 | `v1-screen-split-state` | GameScreen split, state hooks | A | about 480 lines (about 400 moved), 9 files: over, warns | PR2 |
+| PR3a | `v1-moon-flight` | Moon flight (D33) | A | about 450 lines, most moved from the lunar study: slightly over, warns | PR3 |
+| PR3b | `v1-moon-campaign` | Moon campaign (D33) | A | about 480 lines: over, warns | PR3a |
+| PR3c | `v1-stylesheet-split` | Stylesheet split (deviation 16) | A | about 250 contentful lines plus formatting and moves: over on files | PR3b |
 | PR4 | `v1-process-checks` | Process checks | A | about 330 lines, 9 files: inside | PR1 |
 | PR5 | `v1-licence-assets` | Licence and assets gates | A | about 400 lines, 10 files: at the cap | PR1 |
 | PR6 | `v1-rust-workspace` | Rust workspace and starshot-math | B | about 360 lines, 15 files: inside | PR1, PR5 |
@@ -177,12 +183,13 @@ already in the branch it bases on.
 ### PR groups (D30)
 
 The owner incorporated the approved design prototype into PR0 on 2026-11-02.
-The runtime now starts at `apps/game/src/campaign/CampaignApp.tsx`.
-Before the PR2 group, reconcile its legacy `GameScreen` file mapping with this
-active shell while preserving its behavior-only cleanup goal. The
-[main-game handoff](../main-game-handoff.md) records the accepted design,
-Moon-first campaign objective and required proof. This does not mark later
-core, flight, renderer or progression specs complete.
+The runtime now starts at `apps/game/src/campaign/CampaignApp.tsx`. The PR2
+group applied PR2 and PR3 to that shell and deleted the unmounted `GameScreen`
+(deviation 15). The [main-game handoff](../main-game-handoff.md) records the
+accepted design, Moon-first campaign objective and required proof. By D33 the
+Moon-first slice follows directly as the PR3a and PR3b groups, and PR3c formats
+and splits the stylesheets (deviation 16). This does not mark later core,
+flight, renderer or progression specs complete.
 
 The specs build as the groups below, in this order. A group is one branch, one pull
 request and one review for one to four consecutive specs, named for its first member
@@ -195,7 +202,10 @@ each band's planning session confirms or regroups them before it builds.
 |---|---|---|---|---|
 | PR0 | PR0, PR1 | `starshot/pr0-bootstrap` | `main` | the trunk; the owner reviews it |
 | PR2 | PR2, PR3 | `starshot/v1-pr02-screen-split` | `starshot/pr0-bootstrap` | A1 |
-| PR4 | PR4, PR5 | `starshot/v1-pr04-process-licence` | the PR2 group's | A1 |
+| PR3a | PR3a | `starshot/v1-pr03a-moon-flight` | the PR2 group's | A1 |
+| PR3b | PR3b | `starshot/v1-pr03b-moon-campaign` | the PR3a group's | A2 |
+| PR3c | PR3c | `starshot/v1-pr03c-stylesheets` | the PR3b group's | A2 |
+| PR4 | PR4, PR5 | `starshot/v1-pr04-process-licence` | the PR3c group's | A2 |
 | PR6 | PR6 | `starshot/v1-pr06-rust-workspace` | the PR4 group's | B1 |
 | PR7 | PR7, PR8 | `starshot/v1-pr07-ephem-rails` | the PR6 group's | B1 |
 | PR9 | PR9, PR10 | `starshot/v1-pr09-ephemeris-crate` | the PR7 group's | B2 |
@@ -398,6 +408,11 @@ New jobs in `ci.yml` (sketch):
 - **Goal.** Move the pure helpers and the canvas render loop out of
   `apps/game/src/ui/GameScreen.tsx` (1,025 lines, 914 code lines in
   `scripts/size-baseline.json`) with no change in behaviour, so PR3 can finish the split.
+- **As built (deviation 15).** `GameScreen.tsx` was never mounted after the prototype
+  joined PR0, so it was deleted with the modules only it used, and the goal applied to
+  the live shell: the line-compressed campaign code was formatted, and `buildPath`
+  moved to `apps/game/src/campaign/path.ts`. The file table below is the original
+  mapping, kept for the record.
 
 | File | Change |
 |---|---|
@@ -468,6 +483,11 @@ export function useFlightPlayback(input: {
   thin view under 300 code lines and leaves `scripts/size-baseline.json`. It must not trip
   the shape heuristics: more than 12 hook calls, more than 8 `useState`, more than 10
   props, imports from more than 3 areas.
+- **As built (deviation 15).** The same goal, applied to the live shell.
+  `CampaignApp.tsx` composes focused hooks and small views; `use-campaign.ts` composes
+  the session store, restore, release, result, hints and flight clock hooks, each with
+  ten or fewer members; `HomeMenu.tsx` and `FlightDeck.tsx` are split into panels and
+  deck parts. The module map is in `docs/architecture.md`. The baseline is empty.
 
 | File | Change |
 |---|---|
@@ -492,6 +512,95 @@ export function useFlightPlayback(input: {
   about ten members. GameScreen.tsx holds no physics or scoring logic. No behaviour
   changed (compare the verify-game reports of PR0's branch and this group's).
 - **Out of scope.** New features, copy changes, styles.
+
+### PR3a: Moon flight
+
+- **Branch** `starshot/v1-pr03a-moon-flight`, based on the PR2 group's.
+  **Issue** `v1-moon-flight`. **Decisions** D33, D6, D18, D17 (interim source), D16
+  (the Rust core must reproduce it). **Size** about 450 lines, most of them moved from
+  `apps/prototype/src/lunar/`, plus tests; slightly over, warns.
+- **Goal.** The Earth-to-Moon flight joins the game's engine as an explicit typed
+  variant beside the planetary shot, with the Moon mission's level data, known
+  solutions, par and hint. Nothing a player sees changes yet: PR3b puts the mission in
+  the campaign.
+
+| File | Change |
+|---|---|
+| `packages/ephemeris/data/moon-rail.json` | Moved, unchanged, from `apps/prototype/public/lunar/`. Exported as `@starshot/ephemeris/moon-rail.json`. `apps/prototype/tools/extract-lunar-rail.mjs`, the prototype's loader and tests, `REUSE.toml` and `CREDITS.md` point at the new path. No copy stays behind |
+| `packages/physics/src/lunar/earth-moon.ts` | Moved from `apps/prototype/src/lunar/model.ts`: the rail reader (Hermite, reusing `hermite` from `src/integrate` or wherever it lives today, never a second copy), Earth's centre and the Moon from the Earth-Moon barycentre (`createEphemeris({ flatten: false })`) and the rail, and the departure basis in the Moon's orbital plane at launch. Throws outside the rail's dates (2026-11-02 to 2027-08-31 TDB) |
+| `packages/physics/src/lunar/flight.ts` | Moved from `apps/prototype/src/lunar/flight.ts`: `LunarShotRequest`, `LUNAR_SIM_SETTINGS` (frozen; the study's values), `simulateLunar`, `sampleFlight`. Changes from the study, each named in the PR body: the flight stops at first entry into the Moon's sphere of influence instead of the 65,000 km study zone, and impact with Earth ends it as today |
+| `packages/physics/src/lunar/analysis.ts` | New: `analyzeLunar(model, request, flight)`. Hit is entry into the Moon's sphere of influence. At entry the closest approach is the two-body periapsis about the Moon (`periapsisKm` with `MOON_GM`), as `analyzeShot` does for planets. Bullseye is a hit with periapsis under 10 Moon radii. `deltaVKmS` is the burn. `flybys` is empty. `impact` names Earth when the craft falls back |
+| `packages/physics/src/lunar/constants.ts` | `EARTH_GM` reused from `launch.ts` (one source; if the study's 398600.43550702266 is needed to keep its oracle, say so and why), `MOON_GM` 4902.800118 (DE440), the Moon's radius 1,737.4 km, and `MOON_SOI_KM`: the Laplace sphere `a (GM_moon / GM_earth)^(2/5)` with the mean distance a = 384,400 km from the JPL satellite mean elements (https://ssd.jpl.nasa.gov/sats/elem/), about 66,190 km. Each value cites its source |
+| `packages/physics/test/lunar.test.ts` | Moved from `apps/prototype/src/lunar/flight.test.ts` and extended: the five JPL probes (position under 0.1 km, velocity under 1.1e-5 km/s), barycentre identity, out-of-range dates, weak pulls stay local, the integration tolerance check, a grazing entry between accepted knots, and the level's known success, miss and Earth impact flown with the level's frozen settings |
+| `apps/game/src/sim/shot.ts`, `sim/protocol.ts`, `sim/sim.worker.ts`, `sim/preview.ts` | `ShotRequest` becomes a union: the planetary request unchanged in fields and keys, and `{ kind: 'lunar', ... }`. Units and frames are named in the types. The worker dispatches on `kind`; it loads the rail with a dynamic import on the first lunar request so the planetary first load does not grow. `shotKey`, `previewForShot` and `launchGate` cover both. Preview, release, hint and tests use the same request |
+| `apps/game/src/levels.ts` | The Moon level (id `moonshot`, title "Moonshot") as a lunar variant of `Level`: window from 2026-11-02 for 27 days inside the rail, the 200 km parking orbit at phase 225 degrees in the lunar plane, burn up to 3.55 km/s (D18's tank) and angle within plus or minus 35 degrees of prograde, its frozen settings, a par from a recorded search (documented like the Grand Tour's), and a curated or searched hint. `LevelId` gains `moonshot`. It is not in `CAMPAIGN` yet |
+| `apps/game/src/sim/hint.ts` | A lunar hint: a deterministic grid over burn speed and angle on the window's days, under the existing 240-simulation budget, returning the cheapest hit at the precision the controls show |
+| `apps/game/src/levels.test.ts` | The Moon level's known success, miss and Earth impact through the game's request builder and worker path functions; its par is reproduced; its hint hits; the planetary tests are unchanged |
+| `docs/architecture.md` | The lunar variant: frame, units, where the Moon comes from, and why it is separate |
+
+- **Edge cases.** No planetary number changes: every planetary known solution, par and
+  hint test passes unedited. A lunar request outside the rail's dates is rejected at
+  the boundary with a clear error, never clamped or extrapolated. The rail and the
+  observatory's satellite file come from the same JPL query; the drawn Moon and the
+  physics Moon must agree within 1 km at the launch window (test).
+- **Proof.** `npm run gates`. `npx vitest run packages/physics apps/game`. The
+  `verify-physics` skill's checks for a new body. A `physics-auditor` review. Both app
+  builds; the prototype still flies its study.
+- **Out of scope.** Mission order, saves, the menu and the renderer (PR3b). Capture
+  (PR20). Earth's centre for planetary departures (PR20).
+
+### PR3b: Moon campaign
+
+- **Branch** `starshot/v1-pr03b-moon-campaign`, based on PR3a's.
+  **Issue** `v1-moon-campaign`. **Decisions** D33, D6, D18, D32.
+  **Size** about 480 lines; warns.
+- **Goal.** A new pilot starts at Moonshot and flies it in the approved shell. A hit
+  continues into First Light and the rest of the campaign in the same app, with the
+  same menus, deck, cameras and profiles. Old saves keep their stars, sessions and
+  access.
+
+| File | Change |
+|---|---|
+| `apps/game/src/levels.ts` | `MISSION_ORDER` (`moonshot`, `first-light`, `morning-star`, `big-game`, `grand-tour`) and `nextMission(id)`. Mission numbers come from the order, not a hand-typed field or an array index |
+| `apps/game/src/progress.ts`, `campaign/profiles.ts`, `campaign/session.ts`, `campaign/cloud.ts` | Pilots move to `starshot.campaign.profiles.v2` with an explicit earned-access list per pilot. Migration from v1 grants every mission the v1 rule had unlocked, keeps stars and the saved session, and never writes or deletes v1 or `starshot.progress.v1`. An invalid profile is dropped with a notice instead of resetting every pilot. Sessions validate per variant (a lunar aim is a burn, not an excess velocity) |
+| `campaign/` result and unlock path | Stars and access are recorded only for missions the pilot has earned; playtest access opens missions without recording stars, as the menu already says. Next mission follows `nextMission` |
+| `campaign/` aim controls | The lunar aim is burn speed and angle from prograde with the same ring, Fine aim inputs and keyboard steps, labelled as a burn |
+| `campaign/` scene | The Earth-Moon view: both bodies in opposing screen positions, north-facing and counterclockwise, the parking orbit, the Moon's orbit, the sphere of influence and the encounter cue; labels clear the craft, ring and art; the intro copy fades on the first pull. WebGL and Canvas. Ported from the study's pure geometry into `apps/game`, not imported from `apps/prototype` |
+| `docs/design/lunar-play.md`, `apps/game/README.md` | What the mission is and is not: an encounter, not an orbit |
+
+- **Proof.** `npm run gates`. Unit tests for the migration (a v1 save with stars on
+  First Light keeps First Light open and starred; a new pilot starts at Moonshot; a
+  playtest result records nothing) and for `nextMission`. A `verify-game` steps file
+  plays Moonshot to a hit, a miss and an Earth impact, retries, replays, continues to
+  First Light and switches pilots during a pending launch. It runs on phone portrait,
+  short landscape, desktop, reduced motion, WebGL and Canvas, and under a repository
+  subpath. It enters every level and checks for a visible scene. A `verification-driver`
+  review.
+- **Out of scope.** Capture, the time map, the launch-window screen, the 3D chapter.
+
+### PR3c: Stylesheet split
+
+- **Branch** `starshot/v1-pr03c-stylesheets`, based on PR3b's.
+  **Issue** `v1-stylesheet-split`. **Decisions** D28, D32. **Size** formatting and moves
+  are mechanical; about 250 contentful lines plus the check change; over on files.
+- **Goal.** The campaign and presentation stylesheets hold about 4,400 formatted lines
+  in 75 physical lines (deviation 16), so the size gate cannot see them. Format them
+  and split them by component under 300 lines each. Delete rules that match nothing in
+  any state the game reaches, and reuse the presentation package where the prototype's
+  CSS is identical. The size gate then reports compressed lines.
+
+| File | Change |
+|---|---|
+| `packages/presentation/src/base.css`, `entry.css`, `cloud.css` | Formatted with Prettier 3.6.2, then split into ordered files by component; the old entry points import them in the same order, so the cascade is unchanged |
+| `apps/game/src/campaign/campaign.css` | The same, beside the components it styles |
+| `apps/prototype/src/style.css`, `src/entry/*.css` | Rules identical to the package's are deleted in favour of the package import |
+| `scripts/check-file-size.mjs` and its fixtures | Warns on a line over 160 characters in `.ts`, `.tsx`, `.mjs` and `.css`, naming the file and the count, so line compression cannot hide a file's size again |
+
+- **Proof.** `npm run gates`. A `verify-game` steps file that records the computed style
+  of every element in `<main>` at the same steps as the PR2 group's probe, identical
+  before and after on phone, desktop and reduced motion, and the screenshots compared. A
+  `rules-reviewer` pass for the check change.
+- **Out of scope.** Visual changes of any kind.
 
 ### PR4: Process checks
 
@@ -916,6 +1025,8 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 - **Adversary checks.** Step counts match the TypeScript's on every conformance flight
   (a different count means a changed branch, not drift). The energy-consistent switch
   adds `2 mu / d` exactly as `simulate.ts` does. The timing test runs in CI.
+- **D33.** The conformance flights include the lunar variant's known success, miss and
+  Earth impact from PR3a, flown with its own settings and the Moon rail.
 - **Out of scope.** The shot model (PR13).
 
 ### PR13: Game crate, shots and replays
@@ -1029,11 +1140,11 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 | `apps/game/src/sim/hint.ts`, `apps/game/src/scoring.ts` | Delegate to the core; types unchanged |
 | `apps/game/src/levels.ts` | Becomes `LEVEL_COPY: Record<LevelId, { number, title, blurb }>` plus the physics fields read from `level_catalogue()`; the exported `Level` type and functions keep their names |
 | `apps/game/src/core.ts` | New: loads the wasm once per thread (`?url` import so Vite hashes it) and exposes the ready core to the main thread for drawing (`body_states`, `orbit_path`) |
-| `apps/game/src/ui/GameScreen.tsx` and the `ui/screen/` hooks | The map's planet positions and orbit paths come from `core.ts`; no physics change |
+| `apps/game/src/campaign/scene.ts`, `scene-geometry.ts` and `frame.ts` (the deleted `GameScreen.tsx` before deviation 15) | The map's planet positions and orbit paths come from `core.ts`; no physics change |
 | `apps/game/src/levels.test.ts`, `src/sim/preview.test.ts`, `src/scoring.test.ts` | Run against the core; a new test asserts the copy ids equal the catalogue ids |
 | `vitest.setup.ts` (new), `vitest.config.ts` | The setup file reads `packages/core-wasm/pkg/starshot_wasm_bg.wasm` with `readFile` and awaits `initCore(bytes)` once (the `--target web` glue accepts bytes); the config lists it in `setupFiles` |
-| `apps/game/src/App.tsx` | Calls `initCore()` once at start and holds `coreReady`. The title screen renders at once; the level select renders only when the core is ready; a load failure shows the existing error path |
-| `apps/game/src/ui/TitleScreen.tsx` | Takes `coreReady`; until it is true, the start control is disabled and a one-line "Loading physics" status sits in a polite live region |
+| `apps/game/src/campaign/CampaignApp.tsx` (the deleted `App.tsx` before deviation 15) | Calls `initCore()` once at start and holds `coreReady`. The title screen renders at once; the level select renders only when the core is ready; a load failure shows the existing error path |
+| `apps/game/src/campaign/MenuHome.tsx` (the deleted `TitleScreen.tsx` before deviation 15) | Takes `coreReady`; until it is true, the start control is disabled and a one-line "Loading physics" status sits in a polite live region |
 | `CONTRIBUTING.md` | Documents the three install commands (rustup, the `wasm32-unknown-unknown` target, `wasm-bindgen-cli` 0.2.130) and that `npm run build` and `npm run gates` need them from PR15 |
 | `apps/game/public/sw.js` | Caches the hashed `.wasm` like other hashed assets |
 | `apps/game/package.json` | Depends on `@starshot/core-wasm` |
@@ -1201,8 +1312,8 @@ a script an agent writes and runs against `starshot-game`.
   imperative scene code. Camera-relative positions converted from float64 each frame.
   Linear distances, enlarged body sizes with a visible badge, a scale bar and a
   true-size toggle. Canvas 2D kept as the fallback without WebGL 2 and as the
-  accessibility reference. `render/draw.ts` split into painters so it leaves the size
-  baseline. `docs/game-design.md` "Honest scale" updated (register R12) (D19).
+  accessibility reference. The Canvas fallback in `apps/game/src/campaign/scene.ts`
+  split into painters (`render/draw.ts` was deleted in the PR2 group, deviation 15). `docs/game-design.md` "Honest scale" updated (register R12) (D19).
 - **Acceptance.** AC9 first-load part: `node scripts/check-bundle-size.mjs` reports
   first-load JavaScript under 300 KB gzip. `verify-game` passes with WebGL 2 and with it
   disabled (the fallback). No planet label exists only in the canvas. Proof: those
@@ -1297,6 +1408,8 @@ a script an agent writes and runs against `starshot-game`.
 
 ### PR34: Levels, Earth and Moon
 
+- **D33.** Moonshot, the first Earth-to-Moon mission, is built in PR3a and PR3b. This
+  spec keeps the rest of the Earth and Moon levels.
 - **Goal.** Chapter one's opening: leaving Earth orbit, a Moon flyby and a loose lunar
   capture. Each is on a real date with a known solution flown by the core and a par from
   the window table, and the progression is wired.
@@ -1477,7 +1590,7 @@ Approaches considered and rejected, so nobody re-derives them.
 | The TypeScript tests of those packages | Rust tests plus the frozen conformance fixtures in `fixtures/conformance/` | PR9 to PR12; deleted in PR17 |
 | `tools/horizons/fetch_fixtures.py` | `tools/ephem` (`starshot-ephem fixtures`) | PR7 |
 | `apps/game/src/sim/shot.ts`, `hint.ts`, `scoring.ts` logic; `levels.ts` physics fields | `crates/starshot-game`, called through `@starshot/core-wasm`; the TypeScript files keep types, UI helpers and level copy | PR13, PR14, PR16 |
-| Canvas 2D as the primary renderer (`apps/game/src/render/draw.ts`) | three.js; Canvas 2D stays as the fallback, split into painters | PR25 |
+| Canvas 2D as the primary renderer (`apps/game/src/render/draw.ts`, deleted in the PR2 group) | three.js, already the campaign's renderer; Canvas 2D stays as the fallback in `campaign/scene.ts`, split into painters | PR25 |
 | The seeded random starfield | A real star catalogue; the seeded field stays for the fallback | PR27 |
 | Table 1 as the primary source | DE440 rails; Table 1 stays as the fallback and cross-check | PR10, PR18 |
 | `EPHEMERIS_VALID_UNTIL_ISO` (2050) | The pack's coverage (1950 to 2150) with Table 1 before 1950 | PR18 |
@@ -1485,7 +1598,7 @@ Approaches considered and rejected, so nobody re-derives them.
 | The MIT licence text | Apache-2.0; copies already received under MIT stay MIT for their holders | PR0 (D12) |
 | GitHub's default labels and `accessibility` | The prefixed taxonomy in `.github/labels.yml` (`accessibility` becomes `area:a11y`; `bug`, `enhancement`, `documentation` become `kind:bug`, `kind:feature`, `kind:docs`; `duplicate`, `invalid`, `wontfix`, `good first issue`, `help wanted` stay) | PR0, applied by the orchestrator's sync |
 | `localStorage["starshot.progress.v1"]` | A versioned save with migration and an export code | PR24 |
-| GameScreen.tsx's 1,025 lines | `apps/game/src/ui/screen/` modules and hooks | PR2, PR3 |
+| GameScreen.tsx's 1,025 lines | Deleted unmounted; the live `CampaignApp.tsx` split into `apps/game/src/campaign/` hooks and views (deviation 15) | PR2, PR3 |
 | GitHub Pages as the only host | Firebase Hosting for production; Pages as the mirror | PR33 |
 
 ## Session protocol

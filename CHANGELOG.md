@@ -132,6 +132,11 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Changed
 
+- Plan: by the owner's ruling D33, Earth to Moon becomes mission one, built in the
+  PR3a and PR3b groups on today's engine before the Rust core, which must reproduce it.
+  The stylesheets get their own group, PR3c (deviation 16).
+- Game: the unmounted legacy screen (`GameScreen.tsx` and the code only it used) is
+  deleted; the live campaign shell is unchanged (deviation 15).
 - Game: the campaign shell is split by responsibility, with no change in behaviour.
   `CampaignApp.tsx` composes focused hooks for the session, release, result, hints,
   restore, playback, menu, views and hangar, and renders small components. The
