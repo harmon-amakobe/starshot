@@ -13,6 +13,8 @@ numbers will be added by an automated release step (planned), never by hand.
 - Prepare the current game for Firebase Hosting and a GitHub Pages mirror (D34).
   One verified artifact, separate preview and production projects, keyless deploys,
   scoped offline releases, visible credits and clear local-profile copy.
+  Merging the release work into PR0 automatically deploys a development preview
+  to verify before the production merge to `main`.
   The remaining program resumes on a new trunk after the release stack lands.
 
 ### Added

@@ -8,18 +8,22 @@ ship in this preview. Firebase App Hosting is not needed for this Vite build.
 
 ## Build and deployment
 
-`.github/workflows/release.yml` is the Web release workflow. A push to `main` runs
-all gates, workflow lint and browser verification at the root and mirror paths.
+`.github/workflows/release.yml` is the Web release workflow. A push to `main` or
+`starshot/pr0-bootstrap` runs all gates, workflow lint and browser verification at
+the root and mirror paths.
 It also proves offline startup and the transition between two worker releases.
 Only then does it upload the files from `apps/game/dist`.
 
-Separate jobs deploy those same files to Firebase Hosting and GitHub Pages.
+On `main`, separate jobs deploy those same files to Firebase Hosting and GitHub Pages.
 Deployment jobs do not run the application build or restore dependency caches.
 Firebase uses short-lived Google credentials from Workload Identity Federation.
 There is no stored service-account key. The game itself has no Firebase SDK or key.
 
+Merging the release PR into `starshot/pr0-bootstrap` automatically deploys an
+expiring channel in the development project. It does not publish the Pages mirror.
+Verify that preview before merging PR0 into `main`.
 The workflow can also be dispatched with `target: preview` from a reviewed branch.
-It creates an expiring channel in the development project. `target: production`
+It uses the same isolated preview job and expiring channels. `target: production`
 and the Pages job accept only `main`. Production and preview are separate projects.
 The workflow does not accept arbitrary pull-request events or execute fork code
 with deployment access.
@@ -31,7 +35,8 @@ with deployment access.
 2. Require the `gates` check and a pull request on `main`. Block force pushes and deletions.
 3. Set Pages source to GitHub Actions. Leave its custom domain empty so it remains a mirror.
 4. Create `production`, `preview` and `github-pages` environments. Restrict production
-   and github-pages to `main`. Allow preview only for the branches the owner reviews.
+   and github-pages to `main`. Allow preview for `starshot/pr0-bootstrap` and other
+   branches the owner reviews.
 5. Create dedicated Firebase production and development projects and their default
    Hosting sites. This release uses static Hosting within its free allowance, with
    no billing upgrade, database, Authentication or Functions setup.
@@ -60,8 +65,10 @@ Grant Workload Identity User on that service account only to its GitHub provider
 
 The provider condition pins the numeric repository id and owner id. Production also
 pins `refs/heads/main`, the `production` environment and the release workflow path.
-Preview pins its own environment and manual workflow dispatch. Configure the GitHub
-environment branch policies as a second boundary. Do not grant an owner, editor,
+Preview pins its own environment and release workflow path. It accepts a push only
+from `refs/heads/starshot/pr0-bootstrap`, plus manual dispatch from explicitly allowed
+refs. Configure the GitHub environment branch policies as a second boundary.
+Do not grant an owner, editor,
 Firebase-wide administration or Authentication administration role.
 
 Use the current GitHub OIDC claims when creating the provider. Do not assume an old
@@ -74,11 +81,16 @@ to modify Firebase Authentication settings. Production deploys only Hosting.
 References: [Firebase CLI authentication](https://firebase.google.com/docs/cli#cli-ci-systems)
 and [Google's GitHub authentication action](https://github.com/google-github-actions/auth).
 
-## Preview before the first merge
+## Preview before production
 
 A workflow dispatch becomes available after the workflow exists on the default branch.
-Before the first merge, the orchestrator can use the same verified build with the
-signed-in Firebase CLI:
+The automatic push run on `starshot/pr0-bootstrap` does not need that default-branch
+step. Merge the release PR into PR0, wait for Web release to pass, then open the
+preview channel URL in its deployment log. Confirm `release.json` records the new
+PR0 commit and test the hosted game before merging PR0 into `main`.
+
+Before the release PR merges, the orchestrator can also stage the same verified build
+with the signed-in Firebase CLI:
 
 ```bash
 npm ci

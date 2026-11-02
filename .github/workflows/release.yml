@@ -3,7 +3,7 @@ name: Web release
 
 on:
   push:
-    branches: [main]
+    branches: [main, starshot/pr0-bootstrap]
   workflow_dispatch:
     inputs:
       target:
@@ -16,7 +16,7 @@ on:
 permissions: {}
 
 concurrency:
-  group: web-release-${{ github.event_name == 'workflow_dispatch' && inputs.target == 'preview' && github.ref || 'production' }}
+  group: web-release-${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && github.ref || 'production' }}
   cancel-in-progress: false
 
 jobs:
@@ -24,6 +24,7 @@ jobs:
     if: >-
       github.repository == 'harmon-amakobe/starshot' &&
       (github.ref == 'refs/heads/main' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
       (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -80,18 +81,19 @@ jobs:
     if: >-
       github.repository == 'harmon-amakobe/starshot' &&
       (github.ref == 'refs/heads/main' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
       (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'preview' && 'preview' || 'production' }}
+      name: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
     permissions:
       contents: read
       id-token: write # exchange this job's identity for a short-lived Hosting credential
     env:
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
       FIREBASE_TOOLS_VERSION: "15.34.2"
-      RELEASE_TARGET: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'preview' && 'preview' || 'production' }}
+      RELEASE_TARGET: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:

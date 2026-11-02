@@ -800,8 +800,10 @@ and sound composition remain adjustable during iteration.
 *Date:* 2026-11-02. *Source:* owner's release direction.
 
 **Decision.** Put the existing playable game on playstarshot.com using Firebase
-Hosting, with a GitHub Pages mirror. Stack the deployment work on PR0, verify it,
-then merge that stack into `main`. Create a new program PR0 from the released main
+Hosting, with a GitHub Pages mirror. Stack the deployment work on PR0. Merging the
+release PR into PR0 automatically deploys an isolated development preview. Verify
+that run and the hosted game before merging the stack into `main` for production.
+Create a new program PR0 from the released main
 for the remaining work.
 
 This is an early public preview with local profiles. D13's real accounts and
