@@ -1,15 +1,19 @@
 # v1-starshot: chapter one on the web, on one Rust core
 
-**Current sequence (D34):** first publish the existing game through the
-[current-game release](../current-game-release.md), stacked on PR0. After it lands,
-create a new program trunk from the released `main`. Review and import the saved
-PR2 branch and D33's Moon-first TypeScript direction there. The tables below retain
-the remaining feature scope; hosting this preview does not complete their future work.
-D34's revised Firebase-only choice supersedes their earlier Pages mirror requirements.
-D35 also supersedes automatic production deployment on main merge: stage a versioned
-candidate on beta, then explicitly promote its tested bytes. The current
-[hosting runbook](../../hosting.md) takes precedence over the historical release steps below.
-Reconcile those historical hosting steps when preparing the next program trunk.
+**Current sequence:** the new program trunk is `codex/v1-program-pr0`, based on
+`main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1`. The owner authorized
+publication of this PR0 and continued implementation on 2026-11-03. Publish the reviewed
+plan, then continue with the PR2 group above it. PR0 is a checkpoint; the program ends
+after implementation, verification and master review (D30).
+
+The [resumption ledger](06-resumption.md) governs every criterion and spec's current
+status. Preserve accepted gameplay from merged [PR16](https://github.com/harmon-amakobe/starshot/pull/16)
+and the 0.2.0 preparation from [PR17](https://github.com/harmon-amakobe/starshot/pull/17).
+Version preparation is not deployment evidence. Adapt the saved cleanup by symbol
+under [the current screen split spec](07-screen-split.md). D33 and D38 govern lunar
+behavior. D34 to D37 and the [hosting runbook](../../hosting.md) govern Firebase-only
+Hosting, reviewed beta refs, immutable candidates and owner-approved production
+promotion. Main merge alone does not deploy. Superseded mappings are marked below.
 
 The program plan: what chapter one delivers, the decisions it rests on, how each goal is
 proven, and the pull requests that build it. Research and its sources are in
@@ -22,11 +26,11 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 | | |
 |---|---|
 | Program | `v1-starshot` |
-| Trunk | PR0 on `starshot/pr0-bootstrap`, then `main` |
-| Shape | PR0 (with PR1 inside it), then 39 specs built as 19 PR groups in six bands (A to F), then one master review (D30) |
-| Date | 2026-11-01 |
-| Decisions | D12 to D30 in [../../decisions.md](../../decisions.md), on top of D1 to D11 |
-| Turnkey specs | Bands A and B. Bands C to F are outlines until their band planning sessions |
+| Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
+| Shape | New PR0, then 42 implementation specs in 22 PR groups across six bands, then one master review (D30); bootstrap PR0 and PR1 remain completed history |
+| Date | Started 2026-11-01; reconciled 2026-11-03 |
+| Decisions | [D1 to D38](../../decisions.md); later rulings govern their recorded supersessions |
+| Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
 editing, because lines drift.
@@ -46,7 +50,8 @@ NASA/JPL. The map is drawn with three.js presenting as 2D, with real imagery in 
 Canvas 2D as the fallback; sound is generated in code. The game plays fully offline.
 Online, players get an anonymous account and a leaderboard whose scores a server function
 re-flies with the same wasm the browser ran. It is served from Firebase Hosting at
-playstarshot.com, with a GitHub Pages mirror any fork can rebuild.
+playstarshot.com, with beta.playstarshot.com for stable testing and a reproducible
+static build for forks. D34 removed the hosted Pages mirror.
 
 Under the game, one Rust core in `crates/` replaces the TypeScript ephemeris and physics
 packages. It holds the ephemeris, the integrator, the launch model, Lambert, the shot
@@ -75,7 +80,7 @@ interstellar chapter are later programs.
 | D18 | Fuel budget 3.55 km/s from a 200 km orbit, fuel as impulse, `u_SOI` unlocks, impulsive physics with a drawn 1 g burn, capture at periapsis, one-leg previews, multi-channel cues, an event-anchored time map, chapter one under about 15 km/s |
 | D19 | three.js `WebGLRenderer` presenting as 2D, imperative scene code, camera-relative positions, linear distances with labelled enlarged sizes, KTX2 textures in tiers, Canvas 2D fallback, first load under about 300 KB before textures |
 | D20 | The name stays Starshot; the domain is playstarshot.com (and .app); qualified store titles; trademark searches before any store submission |
-| D21 | Firebase Hosting for production with previews for same-repository branches, and a GitHub Pages mirror |
+| D21 | Firebase Hosting; D34 removed Pages, D35 requires exact-artifact promotion and D37 requires the owner's production approval |
 | D22 | 13 and up; anonymous accounts, display names from a filtered list, no free text, email, analytics or advertising identifiers |
 | D23 | Issues on, epics as `kind:epic` with sub-issues, one user-owned project, issues as code synced by the orchestrator over REST |
 | D24 | Agent commits are authored by the owner, signed off at the publish step, with the agent as co-author |
@@ -92,14 +97,16 @@ preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
 ## Acceptance criteria
 
 Each criterion names the command that proves it and the PR that first makes it true. A
-criterion without a recorded result in the PR body is not proven.
+criterion without a recorded result in the PR body is not proven. The
+[global acceptance ledger](06-resumption.md#global-acceptance-ledger) records the base
+disposition of AC1 to AC19; a historic PR number alone does not establish completion.
 
 | # | Criterion | Proof command | First proven by |
 |---|---|---|---|
 | AC1 | Every gate passes from a clean install, Rust included | `npm ci && STARSHOT_REQUIRE_RUST=1 npm run gates` exits 0 and ends `gates: N/N passed` | PR1, in PR0 (D30); again at every PR |
 | AC2 | The Rust workspace is formatted, lint-clean and tested | `cargo fmt --all --check && cargo clippy --workspace --all-targets --locked -- -D warnings && cargo test --workspace --locked` exits 0 | PR6 |
 | AC3 | Planets stay within today's Horizons budgets at the fixture dates, from Rust, for Table 1 and for the rails | `cargo test -p starshot-ephemeris --locked --test horizons` | PR9, PR10 |
-| AC4 | Every rail is within 150 km of DE440 every 5 days from 1950 to 2150, the Moon included | `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` (every `ephem.validation/1` report has `pass: true`) and `cargo test -p starshot-ephemeris --locked --test rails` | PR8, PR10 |
+| AC4 | Every rail, including the geocentric Moon, is within 150 km of DE440 every 5 days from 1950 to 2150; tighter lunar probes and D38 conformance remain additional [ledger](06-resumption.md#lunar-acceptance-ledger) budgets | `uv run --project tools/ephem --locked pytest tools/ephem/tests -q` (every `ephem.validation/1` report has `pass: true`) and `cargo test -p starshot-ephemeris --locked --test rails` | PR8, PR10 |
 | AC5 | Table 1 stays within its arcminute budgets every 5 days from 1950 to 2050 | `cargo test -p starshot-ephemeris --locked --test dense_table1` | PR10 |
 | AC6 | The core gives identical bits in V8, JavaScriptCore, native x86_64 and native arm64 | `npx vitest run packages/core-wasm` (V8), `bun packages/core-wasm/scripts/bits-jsc.mjs` (JavaScriptCore), `cargo test -p starshot-math --locked --test golden` and `cargo test -p starshot-game --locked --test golden_replays` on x86_64 and in the `rust-arm64` CI job | PR6 (maths), PR15 (replays) |
 | AC7 | Energy and timing hold: a Sun-only 1 AU orbit closes within 10 km after one period; Earth's gravity switches on energy-consistently once; a 3-year preview takes under 400 ms in CI | `cargo test -p starshot-physics --locked` | PR11, PR12 |
@@ -112,7 +119,7 @@ criterion without a recorded result in the PR body is not proven.
 | AC14 | The TypeScript core is gone and nothing refers to it | `test ! -e packages/ephemeris && test ! -e packages/physics && ! git grep -n -e @starshot/ephemeris -e @starshot/physics -- apps crates packages scripts tools` | PR17 |
 | AC15 | Security Rules deny by default and allow only the documented writes | `npx firebase-tools emulators:exec --only firestore,storage --project demo-starshot "npx vitest run tests/rules"` exits 0 | PR30, PR31 |
 | AC16 | The server accepts every golden replay and rejects tampered ones, running the same `.wasm` bytes the web ships | The function's test command, fixed in the Band E planning session; it compares the wasm's SHA-256 with `packages/core-wasm/pkg` | PR32 |
-| AC17 | Both sites load, and hashed assets are cached as immutable | `curl -sSfI https://playstarshot.com/` and `curl -sSfI https://harmon-amakobe.github.io/starshot/` return 200; a hashed asset's response carries `cache-control: public, max-age=31536000, immutable` | PR33 (and owner step G5) |
+| AC17 | Firebase production and beta load with verified metadata and immutable hashed assets | `curl -sSfI https://playstarshot.com/` and `curl -sSfI https://beta.playstarshot.com/` return 200; fetch each `/release.json` and compare with candidate provenance; a hashed asset carries `cache-control: public, max-age=31536000, immutable`; run the verifier in [hosting.md](../../hosting.md) | PR33, repeated for promotion under D35 to D37 |
 | AC18 | The issues agree with the plan | `node scripts/sync-work.mjs --program v1-starshot --check` exits 0 (gate `work`) | PR4 |
 | AC19 | The workflows lint clean | `pipx run zizmor==1.31.1 --offline .github/` exits 0 (CI job `workflow-lint`) | PR1, in PR0 (D30) |
 
@@ -120,7 +127,7 @@ criterion without a recorded result in the PR body is not proven.
 
 | Band | PRs | Goal | Ends with |
 |---|---|---|---|
-| A, foundations | PR1 (in PR0) to PR5 | CI hardened with one stable required check; GameScreen split under the size gate; PR text, commits and size checked; licences and assets gated | `verify-all` sweep; handoff |
+| A, foundations | PR2 to PR5, including PR3a/b/c | Preserve completed CI; split the live campaign; close lunar evidence gaps; split styles; check PR text, commits, licences and assets | `verify-all` sweep; handoff |
 | B, the Rust core | PR6 to PR17 | One Rust core in wasm running the game, bit-identical across engines; rails pack and tool; TypeScript core retired | `verify-all` and `verify-physics`; handoff |
 | C, flight model | PR18 to PR24 | Rails as the game's source; fuel, capture, lock states, time map, launch windows, progression | Band C planning first; `verify-game` and `verify-physics`; handoff |
 | D, senses | PR25 to PR29 | three.js presenting as 2D, textures, sky, sound and haptics, settings | Band D planning first; `verify-game`; handoff |
@@ -139,10 +146,14 @@ in their planning sessions.
 
 | PR | Slug | Title | Band | Size estimate | Depends on |
 |---|---|---|---|---|---|
-| PR0 | `v1-pr0-plan` | Plan, decisions D12 to D30, governance files and gates, and PR1's CI hardening (D30) | trunk | well over the cap (deviation 1) | none |
-| PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in PR0 (D30) | PR0 |
-| PR2 | `v1-screen-split-render` | GameScreen split, render loop | A | about 500 lines (about 440 moved), 8 files: over, warns | PR1 |
-| PR3 | `v1-screen-split-state` | GameScreen split, state hooks | A | about 480 lines (about 400 moved), 9 files: over, warns | PR2 |
+| Bootstrap PR0 | `v1-pr0-plan` | Completed original plan, governance and gates, including PR1 | historical | deviation 1 | none |
+| PR0 | `v1-program-pr0` | Reconcile accepted gameplay, saved cleanup, remaining criteria and work map | trunk | documentation and work map | bootstrap PR0 |
+| PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in bootstrap PR0 (D30) | Bootstrap PR0 |
+| PR2 | `v1-screen-split-render` | Delete dead screen and extract live campaign shell | A | moves and deletions; current mapping in 07-screen-split.md | PR1, new PR0 |
+| PR3 | `v1-screen-split-state` | Split current campaign state and views | A | about 480 lines plus mechanical moves; current mapping in 07-screen-split.md | PR2 |
+| PR3a | `v1-moon-flight` | Complete remaining Moon flight acceptance | A | about 450 lines plus tests | PR3 |
+| PR3b | `v1-moon-campaign` | Complete Moon campaign proof and small-screen layout | A | about 480 lines | PR3a |
+| PR3c | `v1-stylesheet-split` | Format and split styles without visual changes | A | about 250 contentful lines plus mechanical moves | PR3b |
 | PR4 | `v1-process-checks` | Process checks | A | about 330 lines, 9 files: inside | PR1 |
 | PR5 | `v1-licence-assets` | Licence and assets gates | A | about 400 lines, 10 files: at the cap | PR1 |
 | PR6 | `v1-rust-workspace` | Rust workspace and starshot-math | B | about 360 lines, 15 files: inside | PR1, PR5 |
@@ -187,44 +198,38 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The owner incorporated the approved design prototype into PR0 on 2026-11-02.
-The runtime now starts at `apps/game/src/campaign/CampaignApp.tsx`.
-Before the PR2 group, reconcile its legacy `GameScreen` file mapping with this
-active shell while preserving its behavior-only cleanup goal. The
-[main-game handoff](../main-game-handoff.md) records the accepted design,
-Moon-first campaign objective and required proof. This does not mark later
-core, flight, renderer or progression specs complete.
-
-The specs build as the groups below, in this order. A group is one branch, one pull
-request and one review for one to four consecutive specs, named for its first member
-and based on the previous group's branch. Each spec's own Branch line gives way to its
-group's row here. A session builds two or three groups; the session column is a
-guide, and the context budget decides. The groups of Bands C to F are provisional:
-each band's planning session confirms or regroups them before it builds.
+The 42 implementation specs build in these 22 groups. Each group has one branch, one
+pull request and one bounded review. The preceding branch is its exact base. Only the
+new PR0 targets `main`; implementation continues above it after PR0 publication.
+Bands C to F remain provisional until detailed planning and readiness review.
+All spec dispositions are in [the resumption ledger](06-resumption.md#every-implementation-spec).
 
 | Group | Members | Branch | Base | Session |
 |---|---|---|---|---|
-| PR0 | PR0, PR1 | `starshot/pr0-bootstrap` | `main` | the trunk; the owner reviews it |
-| PR2 | PR2, PR3 | `starshot/v1-pr02-screen-split` | `starshot/pr0-bootstrap` | A1 |
-| PR4 | PR4, PR5 | `starshot/v1-pr04-process-licence` | the PR2 group's | A1 |
-| PR6 | PR6 | `starshot/v1-pr06-rust-workspace` | the PR4 group's | B1 |
-| PR7 | PR7, PR8 | `starshot/v1-pr07-ephem-rails` | the PR6 group's | B1 |
-| PR9 | PR9, PR10 | `starshot/v1-pr09-ephemeris-crate` | the PR7 group's | B2 |
-| PR11 | PR11, PR12 | `starshot/v1-pr11-physics-crate` | the PR9 group's | B2 |
-| PR13 | PR13, PR14 | `starshot/v1-pr13-game-crate` | the PR11 group's | B3 |
-| PR15 | PR15 | `starshot/v1-pr15-core-wasm` | the PR13 group's | B3 |
-| PR16 | PR16, PR17 | `starshot/v1-pr16-cutover` | the PR15 group's | B3 |
-| PR18 | PR18, PR19 | `starshot/v1-pr18-rails-fuel` | the PR16 group's | C1 |
-| PR20 | PR20, PR21 | `starshot/v1-pr20-capture-cues` | the PR18 group's | C1 |
-| PR22 | PR22, PR23, PR24 | `starshot/v1-pr22-time-windows-saves` | the PR20 group's | C1 |
-| PR25 | PR25, PR26, PR27 | `starshot/v1-pr25-renderer` | the PR22 group's | D1 |
-| PR28 | PR28, PR29 | `starshot/v1-pr28-audio-settings` | the PR25 group's | D1 |
-| PR30 | PR30, PR31 | `starshot/v1-pr30-firebase` | the PR28 group's | E1 |
-| PR32 | PR32, PR33 | `starshot/v1-pr32-verify-hosting` | the PR30 group's | E1 |
-| PR34 | PR34, PR35, PR36 | `starshot/v1-pr34-levels` | the PR32 group's | F1 |
-| PR37 | PR37, PR38, PR39 | `starshot/v1-pr37-release-prep` | the PR34 group's | F1 |
-| PR40 | PR40 | `starshot/v1-pr40-astlo-kit` | the PR37 group's | F1 |
-| Master review | the whole stack | fixes on `starshot/v1-master-fixes` | the PR40 group's | last |
+| PR0 | New program PR0 | `codex/v1-program-pr0` | `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` | reviewed trunk |
+| PR2 | PR2, PR3 | `codex/v1-pr02-screen-split` | `codex/v1-program-pr0` | A1 |
+| PR3a | PR3a | `codex/v1-pr03a-moon-flight` | `codex/v1-pr02-screen-split` | A1 |
+| PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-moon-flight` | A2 |
+| PR3c | PR3c | `codex/v1-pr03c-stylesheets` | `codex/v1-pr03b-moon-campaign` | A2 |
+| PR4 | PR4, PR5 | `codex/v1-pr04-process-licence` | `codex/v1-pr03c-stylesheets` | A2 |
+| PR6 | PR6 | `codex/v1-pr06-rust-workspace` | `codex/v1-pr04-process-licence` | B1 |
+| PR7 | PR7, PR8 | `codex/v1-pr07-ephem-rails` | `codex/v1-pr06-rust-workspace` | B1 |
+| PR9 | PR9, PR10 | `codex/v1-pr09-ephemeris-crate` | `codex/v1-pr07-ephem-rails` | B2 |
+| PR11 | PR11, PR12 | `codex/v1-pr11-physics-crate` | `codex/v1-pr09-ephemeris-crate` | B2 |
+| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr11-physics-crate` | B3 |
+| PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
+| PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
+| PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
+| PR20 | PR20, PR21 | `codex/v1-pr20-capture-cues` | `codex/v1-pr18-rails-fuel` | C1 |
+| PR22 | PR22, PR23, PR24 | `codex/v1-pr22-time-windows-saves` | `codex/v1-pr20-capture-cues` | C1 |
+| PR25 | PR25, PR26, PR27 | `codex/v1-pr25-renderer` | `codex/v1-pr22-time-windows-saves` | D1 |
+| PR28 | PR28, PR29 | `codex/v1-pr28-audio-settings` | `codex/v1-pr25-renderer` | D1 |
+| PR30 | PR30, PR31 | `codex/v1-pr30-firebase` | `codex/v1-pr28-audio-settings` | E1 |
+| PR32 | PR32, PR33 | `codex/v1-pr32-verify-hosting` | `codex/v1-pr30-firebase` | E1 |
+| PR34 | PR34, PR35, PR36 | `codex/v1-pr34-levels` | `codex/v1-pr32-verify-hosting` | F1 |
+| PR37 | PR37, PR38, PR39 | `codex/v1-pr37-release-prep` | `codex/v1-pr34-levels` | F1 |
+| PR40 | PR40 | `codex/v1-pr40-astlo-kit` | `codex/v1-pr37-release-prep` | F1 |
+| Master review | Whole stack | `codex/v1-master-fixes` | `codex/v1-pr40-astlo-kit` | last |
 
 Members are consecutive and every dependency in the table above sits in the same group
 or an earlier one, so the stack stays linear. Groups pair specs that share a domain and
@@ -236,8 +241,17 @@ Starshot's. The master review is defined in D30.
 
 ## What PR0 carries
 
-PR0 is this plan's own pull request, on `starshot/pr0-bootstrap` (the bootstrap branch,
-D8). The list below matches the PR0 commits; the PR2 group's builder confirms each path with
+The new `v1-program-pr0` task reconciles this plan, the current acceptance ledger, the
+current screen split spec, historical deviations, the ops status and the work map. It
+changes no gameplay or numbered decision. Its base and publication sequence are above.
+The owner authorized continued implementation, so the planning skill's default PR0 stop
+does not apply. The orchestrator publishes PR0, then starts the PR2 group.
+
+### Completed bootstrap PR0
+
+The following inventory records the original `v1-pr0-plan` on `starshot/pr0-bootstrap`
+(D8), now closed as completed. PR1 is also closed as completed. This inventory is
+historical context. The PR2 group's builder confirms each path with
 `git ls-files` before starting. A missing item is logged in
 [05-deviation-log.md](05-deviation-log.md) and joins the Band A PR whose topic it
 matches: copy and work tracking go to PR4, licences and credits to PR5, size to PR3.
@@ -272,14 +286,15 @@ matches: copy and work tracking go to PR4, licences and credits to PR5, size to 
   five more.
 
 PR0's commits after D24 follow it; the earlier bootstrap commits predate it, which is why
-the owner installs the DCO app only after PR0 merges ([04-ops-checklist.md](04-ops-checklist.md#github), G8).
+the original DCO installation was deferred until that merge. Its present installation
+status is unverified ([04-ops-checklist.md](04-ops-checklist.md#github), G8).
 
 ## How to read a turnkey spec
 
 Every Band A and Band B spec has the same parts. It says where the PR sits in the stack,
 the goal, the files with what changes in each, the symbols and sketches, and the edge
 cases. Then come the proof (tests and commands, each reported with its exit code), what
-the adversary checks, and what is out of scope. Branches are `starshot/v1-prNN-<topic>`
+the adversary checks, and what is out of scope. Branches are `codex/v1-prNN-<topic>`
 with a two-digit number, and each bases on the branch of the PR directly below it. Every
 PR adds a line under `## [Unreleased]` in `CHANGELOG.md` when a player or a contributor
 would notice it. No PR touches a `version` field (AGENTS.md, non-negotiable 10).
@@ -290,6 +305,10 @@ and its base.
 ## Band A: foundations (turnkey)
 
 ### PR1: CI hardening
+
+**Completed historical spec.** Preserve the current workflows and later deviations.
+This section records the bootstrap implementation; it does not reopen Pages setup or
+override the current release lane. The `v1-ci-hardening` issue stays closed as completed.
 
 - **Branch** none: built on `starshot/pr0-bootstrap` as part of PR0 (#1), by the
   owner's ruling (D30).
@@ -403,7 +422,12 @@ New jobs in `ci.yml` (sketch):
 
 ### PR2: GameScreen split, render loop
 
-- **Branch** `starshot/v1-pr02-screen-split-render`, based on PR1's.
+**Superseded file mapping.** The original `ui/screen/` table and sketches below remain
+historical. [07-screen-split.md](07-screen-split.md) is the current executable spec for
+PR2 and PR3. It deletes the unmounted screen and splits the live campaign. Saved
+extractions are references; preserve accepted D38 behavior and current renderer paths.
+
+- **Branch** `codex/v1-pr02-screen-split`, based on `codex/v1-program-pr0` (group PR2).
   **Issue** `v1-screen-split-render`. **Decisions** D28, D6.
   **Size** about 500 lines, most of them moved; warns, does not fail.
 - **Goal.** Move the pure helpers and the canvas render loop out of
@@ -472,7 +496,11 @@ export function useFlightPlayback(input: {
 
 ### PR3: GameScreen split, state hooks
 
-- **Branch** `starshot/v1-pr03-screen-split-state`, based on PR2's.
+**Superseded file mapping.** Use [07-screen-split.md](07-screen-split.md) for the current
+campaign files, hook boundaries, ownership guards and verification. The legacy table
+below records the original scope only. No `ui/screen/` hooks are to be created.
+
+- **Branch** `codex/v1-pr02-screen-split`, based on `codex/v1-program-pr0` (group PR2).
   **Issue** `v1-screen-split-state`. **Decisions** D28, D6.
   **Size** about 480 lines, most of them moved; warns.
 - **Goal.** Move GameScreen's state and handlers into hooks. `GameScreen.tsx` becomes a
@@ -504,9 +532,109 @@ export function useFlightPlayback(input: {
   changed (compare the verify-game reports of PR0's branch and this group's).
 - **Out of scope.** New features, copy changes, styles.
 
+### PR3a: Moon flight
+
+**Original saved mapping.** Restored from `611a9d81cbfecfbdfa5549d4962e472e492eed5a`.
+The [lunar ledger](06-resumption.md#lunar-acceptance-ledger) governs remaining work and
+accepted D38 differences. Preserve delivered gameplay and current file ownership.
+
+- **Branch** `codex/v1-pr03a-moon-flight`, based on `codex/v1-pr02-screen-split` (group PR3a).
+  **Issue** `v1-moon-flight`. **Decisions** D33, D6, D18, D17 (interim source), D16
+  (the Rust core must reproduce it). **Size** about 450 lines, most of them moved from
+  `apps/prototype/src/lunar/`, plus tests; slightly over, warns.
+- **Goal.** The Earth-to-Moon flight joins the game's engine as an explicit typed
+  variant beside the planetary shot, with the Moon mission's level data, known
+  solutions, par and hint. Nothing a player sees changes yet: PR3b puts the mission in
+  the campaign.
+
+| File | Change |
+|---|---|
+| `packages/ephemeris/data/moon-rail.json` | Moved, unchanged, from `apps/prototype/public/lunar/`. Exported as `@starshot/ephemeris/moon-rail.json`. `apps/prototype/tools/extract-lunar-rail.mjs`, the prototype's loader and tests, `REUSE.toml` and `CREDITS.md` point at the new path. No copy stays behind |
+| `packages/physics/src/lunar/earth-moon.ts` | Moved from `apps/prototype/src/lunar/model.ts`: the rail reader (Hermite, reusing `hermite` from `src/integrate` or wherever it lives today, never a second copy), Earth's centre and the Moon from the Earth-Moon barycentre (`createEphemeris({ flatten: false })`) and the rail, and the departure basis in the Moon's orbital plane at launch. Throws outside the rail's dates (2026-11-02 to 2027-08-31 TDB) |
+| `packages/physics/src/lunar/flight.ts` | Moved from `apps/prototype/src/lunar/flight.ts`: `LunarShotRequest`, `LUNAR_SIM_SETTINGS` (frozen; the study's values), `simulateLunar`, `sampleFlight`. Changes from the study, each named in the PR body: the flight stops at first entry into the Moon's sphere of influence instead of the 65,000 km study zone, and impact with Earth ends it as today |
+| `packages/physics/src/lunar/analysis.ts` | New: `analyzeLunar(model, request, flight)`. Hit is entry into the Moon's sphere of influence. At entry the closest approach is the two-body periapsis about the Moon (`periapsisKm` with `MOON_GM`), as `analyzeShot` does for planets. Bullseye is a hit with periapsis under 10 Moon radii. `deltaVKmS` is the burn. `flybys` is empty. `impact` names Earth when the craft falls back |
+| `packages/physics/src/lunar/constants.ts` | `EARTH_GM` reused from `launch.ts` (one source; if the study's 398600.43550702266 is needed to keep its oracle, say so and why), `MOON_GM` 4902.800118 (DE440), the Moon's radius 1,737.4 km, and `MOON_SOI_KM`: the Laplace sphere `a (GM_moon / GM_earth)^(2/5)` with the mean distance a = 384,400 km from the JPL satellite mean elements (https://ssd.jpl.nasa.gov/sats/elem/), about 66,190 km. Each value cites its source |
+| `packages/physics/test/lunar.test.ts` | Moved from `apps/prototype/src/lunar/flight.test.ts` and extended: the five JPL probes (position under 0.1 km, velocity under 1.1e-5 km/s), barycentre identity, out-of-range dates, weak pulls stay local, the integration tolerance check, a grazing entry between accepted knots, and the level's known success, miss and Earth impact flown with the level's frozen settings |
+| `apps/game/src/sim/shot.ts`, `sim/protocol.ts`, `sim/sim.worker.ts`, `sim/preview.ts` | `ShotRequest` becomes a union: the planetary request unchanged in fields and keys, and `{ kind: 'lunar', ... }`. Units and frames are named in the types. The worker dispatches on `kind`; it loads the rail with a dynamic import on the first lunar request so the planetary first load does not grow. `shotKey`, `previewForShot` and `launchGate` cover both. Preview, release, hint and tests use the same request |
+| `apps/game/src/levels.ts` | The Moon level (id `moonshot`, title "Moonshot") as a lunar variant of `Level`: window from 2026-11-02 for 27 days inside the rail, the 200 km parking orbit at phase 225 degrees in the lunar plane, burn up to 3.55 km/s (D18's tank) and angle within plus or minus 35 degrees of prograde, its frozen settings, a par from a recorded search (documented like the Grand Tour's), and a curated or searched hint. `LevelId` gains `moonshot`. It is not in `CAMPAIGN` yet |
+| `apps/game/src/sim/hint.ts` | A lunar hint: a deterministic grid over burn speed and angle on the window's days, under the existing 240-simulation budget, returning the cheapest hit at the precision the controls show |
+| `apps/game/src/levels.test.ts` | The Moon level's known success, miss and Earth impact through the game's request builder and worker path functions; its par is reproduced; its hint hits; the planetary tests are unchanged |
+| `docs/architecture.md` | The lunar variant: frame, units, where the Moon comes from, and why it is separate |
+
+- **Edge cases.** No planetary number changes: every planetary known solution, par and
+  hint test passes unedited. A lunar request outside the rail's dates is rejected at
+  the boundary with a clear error, never clamped or extrapolated. The rail and the
+  observatory's satellite file come from the same JPL query; the drawn Moon and the
+  physics Moon must agree within 1 km at the launch window (test).
+- **Proof.** `npm run gates`. `npx vitest run packages/physics apps/game`. The
+  `verify-physics` skill's checks for a new body. A `physics-auditor` review. Both app
+  builds; the prototype still flies its study.
+- **Out of scope.** Mission order, saves, the menu and the renderer (PR3b). Capture
+  (PR20). Earth's centre for planetary departures (PR20).
+
+### PR3b: Moon campaign
+
+**Original saved mapping.** The [lunar ledger](06-resumption.md#lunar-acceptance-ledger)
+governs current ownership, browser proof and the short-phone refinement. The existing
+`missions.ts` and v2 saves remain authoritative; this table records historical scope.
+
+- **Branch** `codex/v1-pr03b-moon-campaign`, based on `codex/v1-pr03a-moon-flight` (group PR3b).
+  **Issue** `v1-moon-campaign`. **Decisions** D33, D6, D18, D32.
+  **Size** about 480 lines; warns.
+- **Goal.** A new pilot starts at Moonshot and flies it in the approved shell. A hit
+  continues into First Light and the rest of the campaign in the same app, with the
+  same menus, deck, cameras and profiles. Old saves keep their stars, sessions and
+  access.
+
+| File | Change |
+|---|---|
+| `apps/game/src/levels.ts` | `MISSION_ORDER` (`moonshot`, `first-light`, `morning-star`, `big-game`, `grand-tour`) and `nextMission(id)`. Mission numbers come from the order, not a hand-typed field or an array index |
+| `apps/game/src/progress.ts`, `campaign/profiles.ts`, `campaign/session.ts`, `campaign/cloud.ts` | Pilots move to `starshot.campaign.profiles.v2` with an explicit earned-access list per pilot. Migration from v1 grants every mission the v1 rule had unlocked, keeps stars and the saved session, and never writes or deletes v1 or `starshot.progress.v1`. An invalid profile is dropped with a notice instead of resetting every pilot. Sessions validate per variant (a lunar aim is a burn, not an excess velocity) |
+| `campaign/` result and unlock path | Stars and access are recorded only for missions the pilot has earned; playtest access opens missions without recording stars, as the menu already says. Next mission follows `nextMission` |
+| `campaign/` aim controls | The lunar aim is burn speed and angle from prograde with the same ring, Fine aim inputs and keyboard steps, labelled as a burn |
+| `campaign/` scene | The Earth-Moon view: both bodies in opposing screen positions, north-facing and counterclockwise, the parking orbit, the Moon's orbit, the sphere of influence and the encounter cue; labels clear the craft, ring and art; the intro copy fades on the first pull. WebGL and Canvas. Ported from the study's pure geometry into `apps/game`, not imported from `apps/prototype` |
+| `docs/design/lunar-play.md`, `apps/game/README.md` | What the mission is and is not: an encounter, not an orbit |
+
+- **Proof.** `npm run gates`. Unit tests for the migration (a v1 save with stars on
+  First Light keeps First Light open and starred; a new pilot starts at Moonshot; a
+  playtest result records nothing) and for `nextMission`. A `verify-game` steps file
+  plays Moonshot to a hit, a miss and an Earth impact, retries, replays, continues to
+  First Light and switches pilots during a pending launch. It runs on phone portrait,
+  short landscape, desktop, reduced motion, WebGL and Canvas, and under a repository
+  subpath. It enters every level and checks for a visible scene. A `verification-driver`
+  review.
+- **Out of scope.** Capture, the time map, the launch-window screen, the 3D chapter.
+
+### PR3c: Stylesheet split
+
+**Current maintenance scope.** Recount current files before formatting. Preserve the
+accepted orbital controls and release-version styles added after the saved branch.
+
+- **Branch** `codex/v1-pr03c-stylesheets`, based on `codex/v1-pr03b-moon-campaign` (group PR3c).
+  **Issue** `v1-stylesheet-split`. **Decisions** D28, D32. **Size** formatting and moves
+  are mechanical; about 250 contentful lines plus the check change; over on files.
+- **Goal.** The campaign and presentation stylesheets hold about 4,400 formatted lines
+  in 75 physical lines (deviation 16), so the size gate cannot see them. Format them
+  and split them by component under 300 lines each. Delete rules that match nothing in
+  any state the game reaches, and reuse the presentation package where the prototype's
+  CSS is identical. The size gate then reports compressed lines.
+
+| File | Change |
+|---|---|
+| `packages/presentation/src/base.css`, `entry.css`, `cloud.css` | Formatted with Prettier 3.6.2, then split into ordered files by component; the old entry points import them in the same order, so the cascade is unchanged |
+| `apps/game/src/campaign/campaign.css` | The same, beside the components it styles |
+| `apps/prototype/src/style.css`, `src/entry/*.css` | Rules identical to the package's are deleted in favour of the package import |
+| `scripts/check-file-size.mjs` and its fixtures | Warns on a line over 160 characters in `.ts`, `.tsx`, `.mjs` and `.css`, naming the file and the count, so line compression cannot hide a file's size again |
+
+- **Proof.** `npm run gates`. A `verify-game` steps file that records the computed style
+  of every element in `<main>` at the same steps as the PR2 group's probe, identical
+  before and after on phone, desktop and reduced motion, and the screenshots compared. A
+  `rules-reviewer` pass for the check change.
+- **Out of scope.** Visual changes of any kind.
+
 ### PR4: Process checks
 
-- **Branch** `starshot/v1-pr04-process-checks`, based on PR3's.
+- **Branch** `codex/v1-pr04-process-licence`, based on `codex/v1-pr03c-stylesheets` (group PR4).
   **Issue** `v1-process-checks`. **Decisions** D23, D24, D25, D27, D30.
   **Size** about 330 lines, 9 files.
 - **Goal.** The size cap becomes a check, commit messages get the secrets scan, the issues
@@ -520,7 +648,7 @@ export function useFlightPlayback(input: {
 | `scripts/gates.mjs` | Register `commits`; register `work` (`node scripts/sync-work.mjs --program v1-starshot --check`, group `hygiene`, fast) unless an entry that runs `scripts/sync-work.mjs` already exists |
 | `scripts/sync-work.mjs` | (PR0's.) `--check` with no `--program` checks every folder under `docs/plans/` that holds a `*work.yaml`, prints one line per program, and exits 1 if any disagrees with its lock. A new `--plans-dir <path>` (default `docs/plans`) lets the self-test point it elsewhere |
 | `scripts/fixtures/work/plans/` | Two fixture programs: `agrees/` (a `work.yaml` and a matching `work.lock.json`) and `drifts/` (a lock that names a slug the YAML lacks). `--self-test` asserts that `--check --program agrees --plans-dir scripts/fixtures/work/plans` passes, and that `--check --plans-dir scripts/fixtures/work/plans` exits 1 naming `drifts` |
-| `.github/workflows/ci.yml` | New job `pr-size` (`pull_request` only; `contents: read`; full-history checkout; `node scripts/check-pr-size.mjs --base "origin/${GITHUB_BASE_REF}"`) added to the aggregator's `needs` |
+| `.github/workflows/ci.yml` | New always-running job `pr-size` with `contents: read`, added to the aggregator's `needs`. Only its checkout and validation steps use `if: github.event_name == 'pull_request'`; checkout has full history and validation runs `node scripts/check-pr-size.mjs --base "origin/${GITHUB_BASE_REF}"`. Like `dependency-review`, the job succeeds on push without validating PR size; a skipped job still fails the aggregator (deviation 12). Prove both PR and push paths |
 | `CONTRIBUTING.md` | New section "Claiming work, the board and status comments": `agent-ready` issues are for agents through the orchestrator; outside contributors claim by comment; `Part of #n` inside a stack and `Closes #n` where the work reaches `main`; the two status comment templates below |
 | `.claude/skills/stacked-pr/SKILL.md` | New section "Commit authorship (D24)" with the publish recipe below, unless the skill already carries it |
 | `.claude/README.md` | `GATE_COMMANDS` row lists `commits` and `work` |
@@ -530,7 +658,7 @@ export function useFlightPlayback(input: {
 Status comments (D23), posted by the orchestrator:
 
 ```text
-Claimed. Branch starshot/v1-prNN-<topic>. Spec: docs/plans/v1-starshot/00-plan.md#<anchor>.
+Claimed. Branch codex/v1-prNN-<topic>. Spec: docs/plans/v1-starshot/00-plan.md#<anchor>.
 Done in #<pr>. Gates: <n>/<n> passed, exit 0. Evidence: <one line per proof command>.
 ```
 
@@ -552,9 +680,9 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 - **Proof.** `npm run gates` exits 0 with `commits` and `work` listed.
   `node scripts/sync-work.mjs --self-test` passes, the two-program case included, and
   `node scripts/sync-work.mjs --check` (no program) checks every program under `docs/plans/`.
-  `node scripts/check-pr-size.mjs --base starshot/v1-pr02-screen-split --members 2`
+  `node scripts/check-pr-size.mjs --base codex/v1-pr03c-stylesheets --members 2`
   prints this group's counts and its cap.
-  `GITHUB_HEAD_REF=starshot/v1-pr04-process-licence node scripts/check-pr-size.mjs --base starshot/v1-pr02-screen-split`
+  `GITHUB_HEAD_REF=codex/v1-pr04-process-licence node scripts/check-pr-size.mjs --base codex/v1-pr03c-stylesheets`
   prints n = 2, and with an unlisted head branch it prints n = 1. A scratch commit whose
   message contains a planted `ghp_` token makes
   `node scripts/check-commits.mjs` exit 1 (then drop the commit). The `pr-size` job is
@@ -567,7 +695,7 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 
 ### PR5: Licence and assets gates
 
-- **Branch** `starshot/v1-pr05-licence-assets`, based on PR4's.
+- **Branch** `codex/v1-pr04-process-licence`, based on `codex/v1-pr03c-stylesheets` (group PR4).
   **Issue** `v1-licence-assets`. **Decisions** D12, D14, D15, D28.
   **Size** about 400 lines, 10 files.
 - **Goal.** Dependencies are checked against a licence allow-list. Every shipped asset
@@ -604,6 +732,13 @@ node scripts/check-copy-tells.mjs --stdin --kind commit < <message-file>
 
 ## Band B: the Rust core (turnkey)
 
+Before assigning each builder, reconcile its files and types with the
+[Rust proof supplement](06-resumption.md#rust-and-later-proof-boundaries). Capture D38
+lunar requests and golden states before porting; include both apps in cutover and
+retirement. Historical `GameScreen` references mean the active campaign modules after
+PR2. The 150 km planetary pack budget never relaxes lunar probes. Record the readiness
+check in the issue; remove `agent-ready` if a concrete file or acceptance gap remains.
+
 Rules for every Band B PR, from D16:
 
 - Logic crates carry `#![forbid(unsafe_code)]`.
@@ -618,7 +753,7 @@ Rules for every Band B PR, from D16:
 
 ### PR6: Rust workspace and starshot-math
 
-- **Branch** `starshot/v1-pr06-rust-workspace`, based on PR5's.
+- **Branch** `codex/v1-pr06-rust-workspace`, based on `codex/v1-pr04-process-licence` (group PR6).
   **Issue** `v1-rust-workspace`. **Decisions** D16, D28. **Size** about 380 lines,
   16 files, plus the generated golden file.
 - **Goal.** A Cargo workspace with a pinned toolchain and one maths crate, the only place
@@ -676,7 +811,7 @@ special values `0`, `-0`, `1` and `-1` where valid.
 
 ### PR7: Ephemeris tool and Horizons fixtures
 
-- **Branch** `starshot/v1-pr07-ephem-tool`, based on PR6's.
+- **Branch** `codex/v1-pr07-ephem-rails`, based on `codex/v1-pr06-rust-workspace` (group PR7).
   **Issue** `v1-ephem-tool`. **Decisions** D17, D4. **Size** about 430 lines, 15 files.
 - **Goal.** One Starshot-owned Python project for ephemeris work, replacing
   `tools/horizons/`, with a Horizons client that records what Horizons said about itself,
@@ -716,7 +851,7 @@ special values `0`, `-0`, `1` and `-1` where valid.
 
 ### PR8: DE440 rails pack
 
-- **Branch** `starshot/v1-pr08-ephem-rails`, based on PR7's.
+- **Branch** `codex/v1-pr07-ephem-rails`, based on `codex/v1-pr06-rust-workspace` (group PR7).
   **Issue** `v1-ephem-rails`. **Decisions** D17, D29. **Size** about 450 lines, 17 files,
   plus 31 generated data files.
 - **Goal.** Fit Chebyshev rails from `de440s.bsp` for 1950 to 2150, write them as an
@@ -803,7 +938,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR9: Ephemeris crate
 
-- **Branch** `starshot/v1-pr09-ephemeris-crate`, based on PR8's.
+- **Branch** `codex/v1-pr09-ephemeris-crate`, based on `codex/v1-pr07-ephem-rails` (group PR9).
   **Issue** `v1-ephemeris-crate`. **Decisions** D16, D17, D4. **Size** about 520 lines
   (about 190 of tests), 18 files; warns.
 - **Goal.** `starshot-ephemeris` reproduces today's `@starshot/ephemeris`: time scales,
@@ -841,7 +976,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR10: Rails reader
 
-- **Branch** `starshot/v1-pr10-rails-reader`, based on PR9's.
+- **Branch** `codex/v1-pr09-ephemeris-crate`, based on `codex/v1-pr07-ephem-rails` (group PR9).
   **Issue** `v1-rails-reader`. **Decisions** D17. **Size** about 430 lines, 8 files.
 - **Goal.** Read the decade files in Rust, evaluate positions and velocities with adds
   and multiplies only, derive Earth's centre and the heliocentric Moon, and check Table 1
@@ -870,7 +1005,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR11: Physics crate, integrator and Lambert
 
-- **Branch** `starshot/v1-pr11-physics-core`, based on PR10's.
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr09-ephemeris-crate` (group PR11).
   **Issue** `v1-physics-core`. **Decisions** D16, D11. **Size** about 450 lines, 13 files.
 - **Goal.** Port `dopri5`, `gravity`, `hermite`, `launch` and `lambert` from
   `packages/physics/src/` to `crates/starshot-physics`, with today's tests and a
@@ -902,7 +1037,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR12: Physics crate, simulate
 
-- **Branch** `starshot/v1-pr12-physics-simulate`, based on PR11's.
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr09-ephemeris-crate` (group PR11).
   **Issue** `v1-physics-simulate`. **Decisions** D16, D6, D11. **Size** about 460 lines,
   6 files; warns.
 - **Goal.** Port `simulate` with encounter detection, the energy-consistent switch-on of
@@ -931,7 +1066,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR13: Game crate, shots and replays
 
-- **Branch** `starshot/v1-pr13-game-shot`, based on PR12's.
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
   **Issue** `v1-game-shot`. **Decisions** D16, D6. **Size** about 430 lines, 11 files.
 - **Goal.** Port the shot model of `apps/game/src/sim/shot.ts` and add the replay format
   with canonical inputs and a physics version.
@@ -956,7 +1091,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `starshot/v1-pr14-game-levels`, based on PR13's.
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.
@@ -983,7 +1118,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR15: core-wasm package and bit identity
 
-- **Branch** `starshot/v1-pr15-core-wasm`, based on PR14's.
+- **Branch** `codex/v1-pr15-core-wasm`, based on `codex/v1-pr13-game-crate` (group PR15).
   **Issue** `v1-core-wasm`. **Decisions** D16. **Size** about 520 lines, 19 files;
   warns.
 - **Goal.** Compile the core to wasm, wrap it in a typed TypeScript package, and prove
@@ -1027,7 +1162,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR16: Worker cut-over
 
-- **Branch** `starshot/v1-pr16-worker-cutover`, based on PR15's.
+- **Branch** `codex/v1-pr16-cutover`, based on `codex/v1-pr15-core-wasm` (group PR16).
   **Issue** `v1-worker-cutover`. **Decisions** D16, D6. **Size** about 520 lines,
   19 files; warns.
 - **Goal.** The physics worker and the map run on `@starshot/core-wasm`. The worker
@@ -1067,7 +1202,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR17: Retire the TypeScript core
 
-- **Branch** `starshot/v1-pr17-retire-ts-core`, based on PR16's.
+- **Branch** `codex/v1-pr16-cutover`, based on `codex/v1-pr15-core-wasm` (group PR16).
   **Issue** `v1-retire-ts-core`. **Decisions** D16. **Size** about 180 lines added, about
   2,100 deleted, about 35 files; over on files, deletions and path updates only.
 - **Goal.** Delete `packages/ephemeris` and `packages/physics` and every reference to
@@ -1296,25 +1431,26 @@ a script an agent writes and runs against `starshot-game`.
 
 ### PR33: Hosting
 
-**Release-order update (D35):** the following outline is historical. Production now
-requires explicit promotion of a tested beta candidate from main, as described in
-[hosting.md](../../hosting.md). D34 removed the hosted Pages mirror.
-
-- **Goal.** CI deploys to Firebase Hosting on merges to `main` (environment
-  `production`). Same-repository branches get preview channels (environment `preview`),
-  and forks get a downloadable build artifact. `firebase.json` sets the headers: hashed
-  assets immutable, the app shell and service worker `no-cache`, and a CSP that allows
-  the Firebase and reCAPTCHA origins and `wasm-unsafe-eval`. Also
-  `/.well-known/security.txt`, the custom domain, and Pages kept as the mirror (D21).
-- **Acceptance.** AC17. The deploy credential is federated, or a development-only
-  Hosting key if the trial fails (F11). Production holds no key.
-- **Owner steps.** M1 to M7, F10, F11, G10.
+- **Current goal.** Reconcile new wasm, rails and backend assets with the existing D34
+  to D37 release lane. Audit `firebase.json`, `apps/game/public/sw.js`,
+  `scripts/verify-web-release.mjs` and `.github/workflows/release.yml` against the
+  [hosting runbook](../../hosting.md). Preserve cache ownership, immutable candidates,
+  downgrade guards, CSP, security.txt and owner-approved production promotion.
+- **Acceptance.** AC17 on Firebase production and beta, exact artifact/digest checks,
+  offline replay and update isolation. Record source, build id and served version.
+  Federated credentials must still pin numeric repository and owner ids, workflow,
+  environment and reviewed refs. Keep existing branch trust; no key fallback.
+- **Owner steps.** Reverify G10, M6, F10 and F11 when the change requires them. Keep
+  existing domains, projects and credentials. Paid backend activation and permission
+  expansion need a concrete review; source and emulator work continue independently.
+  Pages and main-push production deployment are superseded.
 
 ### PR34: Levels, Earth and Moon
 
-- **Goal.** Chapter one's opening: leaving Earth orbit, a Moon flyby and a loose lunar
-  capture. Each is on a real date with a known solution flown by the core and a par from
-  the window table, and the progression is wired.
+- **Current goal.** Add the later Earth-orbit lesson and loose lunar capture content.
+  Moonshot is already mission one under D33/D38; preserve its encounter behavior and
+  stable id. Each added lesson has a real date, a known core-flown solution and a par
+  from the window table, with progression wired into the existing campaign.
 - **Acceptance.** AC8 for the new levels. A `verify-game` steps file
   `scripts/verify-steps/chapter-one.mjs` that plays level 1 to a result (AC10). Proof:
   `cargo test -p starshot-game --locked --test levels`, `verify-game --steps`.
@@ -1344,14 +1480,19 @@ requires explicit promotion of a tested beta candidate from main, as described i
 
 ### PR38: Release lane
 
-- **Goal.** A `workflow_dispatch` job that reads `## [Unreleased]`, picks the bump from
-  a `Bump:` line, rewrites the heading with the version and date, bumps every version
-  field (npm workspaces and the Cargo workspace), and opens a release PR. A second job
-  tags `vX.Y.Z` when that PR merges. Environment `release` (AGENTS.md non-negotiable 10,
-  register R26).
-- **Acceptance.** A dry run on a scratch branch produces the expected diff. The version
-  guard hook still denies hand edits. Proof: the workflow's dry-run output in the PR.
-- **Owner steps.** G4's second switch, G10.
+- **Current goal.** Extend the existing CI proposal, prepare-release and immutable
+  candidate/promotion tools for new npm and Cargo workspaces. Read
+  `scripts/release/proposal.mjs`, `versions.mjs`, `cli.mjs`,
+  `.github/workflows/prepare-release.yml` and `.github/workflows/release.yml` before
+  specifying edits. D35 to D37 govern; merging a release PR or pushing a tag does not
+  deploy production. Preserve the hand-written Unreleased content (R26).
+- **Acceptance.** A dry run includes every new version-bearing workspace. The version
+  guard still denies hand edits. Candidate retries reuse their original bytes;
+  promotion rejects digest/source/version mismatches, downgrades and beta disagreement,
+  and waits for the owner's approval. Record exact commands and exit codes in the
+  detailed Band F spec before assigning it.
+- **Owner steps.** Reverify existing G4/G10 permissions if needed. Keep current
+  environments and token rights unless a reviewed change requires otherwise.
 
 ### PR39: Store preparation
 
@@ -1492,7 +1633,7 @@ Approaches considered and rejected, so nobody re-derives them.
 | The TypeScript tests of those packages | Rust tests plus the frozen conformance fixtures in `fixtures/conformance/` | PR9 to PR12; deleted in PR17 |
 | `tools/horizons/fetch_fixtures.py` | `tools/ephem` (`starshot-ephem fixtures`) | PR7 |
 | `apps/game/src/sim/shot.ts`, `hint.ts`, `scoring.ts` logic; `levels.ts` physics fields | `crates/starshot-game`, called through `@starshot/core-wasm`; the TypeScript files keep types, UI helpers and level copy | PR13, PR14, PR16 |
-| Canvas 2D as the primary renderer (`apps/game/src/render/draw.ts`) | three.js; Canvas 2D stays as the fallback, split into painters | PR25 |
+| Canvas 2D as the primary renderer (`apps/game/src/render/draw.ts`) | Delete the unmounted renderer in PR2; keep live `campaign/scene.ts` Canvas fallback | PR2; remaining renderer work PR25 |
 | The seeded random starfield | A real star catalogue; the seeded field stays for the fallback | PR27 |
 | Table 1 as the primary source | DE440 rails; Table 1 stays as the fallback and cross-check | PR10, PR18 |
 | `EPHEMERIS_VALID_UNTIL_ISO` (2050) | The pack's coverage (1950 to 2150) with Table 1 before 1950 | PR18 |
@@ -1500,13 +1641,15 @@ Approaches considered and rejected, so nobody re-derives them.
 | The MIT licence text | Apache-2.0; copies already received under MIT stay MIT for their holders | PR0 (D12) |
 | GitHub's default labels and `accessibility` | The prefixed taxonomy in `.github/labels.yml` (`accessibility` becomes `area:a11y`; `bug`, `enhancement`, `documentation` become `kind:bug`, `kind:feature`, `kind:docs`; `duplicate`, `invalid`, `wontfix`, `good first issue`, `help wanted` stay) | PR0, applied by the orchestrator's sync |
 | `localStorage["starshot.progress.v1"]` | A versioned save with migration and an export code | PR24 |
-| GameScreen.tsx's 1,025 lines | `apps/game/src/ui/screen/` modules and hooks | PR2, PR3 |
-| GitHub Pages as the only host | Firebase Hosting for production; Pages as the mirror | PR33 |
+| GameScreen.tsx's 1,025 lines | Delete the unmounted island; split the live campaign under [07-screen-split.md](07-screen-split.md) | PR2, PR3 |
+| GitHub Pages as the only host | Completed Firebase-only Hosting under D34; preserve production and beta | PR33 audits remaining release integration |
 
 ## Session protocol
 
 Every build session follows this order, for the orchestrator and for builders. A
-session builds two or three PR groups (D30); steps 2 to 8 run once per group.
+session builds two or three PR groups (D30); steps 2 to 8 run once per group. The owner
+authorized continuation after this PR0 publication. Read [06-resumption.md](06-resumption.md)
+before every group and [07-screen-split.md](07-screen-split.md) before PR2.
 
 1. **Open with the audit.** Run `VCS_AUDIT` from [../../../.claude/README.md](../../../.claude/README.md)
    (`git status --short && git branch --show-current && git log --oneline -5 && git
@@ -1555,10 +1698,11 @@ session builds two or three PR groups (D30); steps 2 to 8 run once per group.
 The fields of the `handoff-prompt` skill, in its order. Read each value fresh at close.
 
 ```text
-Repo: <abs path>. Stack tip: starshot/v1-pr<NN>-<topic> @ <short sha>.
-Base of the stack: starshot/pr0-bootstrap until PR0 merges, then main.
+Repo: <abs path>. Stack tip: codex/v1-pr<NN>-<topic> @ <short sha>.
+Base of the stack: codex/v1-program-pr0 at its recorded base; then main after merge.
 Plan: docs/plans/v1-starshot/00-plan.md.
-Decisions: docs/decisions.md (D1..D30 resolved; do not re-litigate).
+Decisions: docs/decisions.md (D1..D38, including recorded supersessions).
+Ledger: docs/plans/v1-starshot/06-resumption.md.
 Deviations: docs/plans/v1-starshot/05-deviation-log.md.
 Open-gate at close: <the line sh scripts/agent/open-gate.sh prints>.
 Done: PR0 <one line>; group PR2 <one line>; ...; group PR<k> <one line>.
@@ -1583,6 +1727,7 @@ First commands:
 
 The settings, accounts, domain, Firebase projects, the message to Mark and the playtests
 are listed, grouped and ordered, with how to confirm each and which PRs wait on them, in
-[04-ops-checklist.md](04-ops-checklist.md). PR0's CI hardening (PR1's spec) waits on G3 and G4. G1 and G5 are needed
-before PR4 and the Pages proof. After PR0 merges: G8 (the DCO app). Now: M1 to M4 (the
-domain and the reporting addresses) and K1 (Mark).
+[04-ops-checklist.md](04-ops-checklist.md). Issues and the main/release-tag rulesets
+are active. Reverify environment and IAM settings before relevant changes. DCO, the
+project board, mail forwarding and contact with Mark remain unverified. Backend source
+and emulator work can proceed; paid activation or permission expansion needs review.

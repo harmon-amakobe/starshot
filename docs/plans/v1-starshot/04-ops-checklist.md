@@ -1,111 +1,131 @@
-# v1-starshot: what only the owner can do
+# v1-starshot: owner steps and verified ops status
 
-Steps with no gate: they happen in a settings page, a registrar or a console, so no
-script can do or check them for you. They are grouped by where you click, in the order
-to do them. Each says how to confirm it worked and which pull requests wait on it
-(PR ids are those of [00-plan.md](00-plan.md#the-pull-requests)). Click-by-click detail
-for Pages and the ruleset is also in [../../hosting.md](../../hosting.md).
+This checklist distinguishes observed state from settings still needing verification.
+Stable step ids remain for the work map. D34 to D37 and the
+[hosting runbook](../../hosting.md) govern deployment. Keep the existing production
+and development Hosting projects and numeric OIDC identity pins. Source and emulator
+work are authorized; paid activation or permission expansion needs concrete review.
 
-Never paste a password, token, key file or personal email address into the repository,
-an issue or a pull request. Values that are identifiers rather than secrets (the
-Firebase web configuration, D13) go only where a step below says.
+The 2026-11-03 opening audit found a standalone public repository with Issues on,
+Pages off, and active main and release-tag rulesets. It did not reverify environment
+reviewers, environment branch policies, IAM bindings, budgets or backend service state.
+
+At 2026-11-03 01:27 Africa/Nairobi, read-only fetches of
+[production metadata](https://playstarshot.com/release.json) and
+[beta metadata](https://beta.playstarshot.com/release.json) returned HTTP 200 and 0.1.0,
+source `64c4b12a542770960b935439aec47e3d47947b99`, build
+`4374bc44ad803dbcf26dc586`. These are observations at that time, not a claim about
+later deployment. Main at `7f325a61b77a43c98d95a7644d7d03834829b1a1` contains accepted
+gameplay and 0.2.0 preparation through merged PR16/17. Staging was still in progress;
+no 0.2.0 production deployment is asserted here.
+
+Never place passwords, tokens, key files or personal contact details in the repository,
+issues or PR text. Public Firebase identifiers follow D13's one-file allow-list.
+Hosting deployment credentials confer no authority to administer backend products.
 
 ## GitHub
 
-| # | Step | Where to click | How to confirm | Blocks |
-|---|---|---|---|---|
-| G1 | Turn on Issues (off on this fork) | Repository, Settings, General, Features: tick **Issues** | `curl -s https://api.github.com/repos/harmon-amakobe/starshot` shows `"has_issues": true` | The orchestrator's first `node scripts/sync-work.mjs --apply` (D23), so every issue on the board |
-| G2 | Replace the About description and add topics (R17) | Repository home page, the gear beside **About**. Suggested text: "A slingshot game across the real Solar System, with open orbital-mechanics code. Apache-2.0. Includes separately owned, all-rights-reserved Python code in third_party/ and python/astlo/; see NOTICE.md." Topics: `game`, `orbital-mechanics`, `typescript`, `rust`, `webassembly`, `accessibility` | The About box shows the new text; it no longer says the game is built on astlo | Nothing; it corrects a public claim |
-| G3 | Enable Actions on the fork | **Actions** tab: "I understand my workflows, go ahead and enable them" | The Actions tab lists CI, Pages and astlo | Every CI proof from PR0 on |
-| G4 | Read-only default token; no PRs from Actions yet | Settings, Actions, General, Workflow permissions: **Read repository contents and packages permissions**; leave **Allow GitHub Actions to create and approve pull requests** off until PR38 | `gh api repos/harmon-amakobe/starshot/actions/permissions/workflow` shows `"default_workflow_permissions": "read"` | PR0's CI hardening (PR1's spec, D30; the workflows assume it); PR38 turns the second switch on |
-| G5 | Pages source | Settings, Pages, Source: **GitHub Actions** | After PR0 merges, <https://harmon-amakobe.github.io/starshot/> loads (it returned 404 on 2026-11-01) | The Pages mirror (D21) and acceptance criterion AC17 |
-| G6 | Ruleset on `main` | Settings, Rules, Rulesets, **New branch ruleset**: target the default branch; require a pull request; require the status check `gates`; block force pushes; restrict deletions. The copy-lint workflow's `copy` check may be added to the ruleset once it has run on a pull request | Open any PR: `gates` shows as **Required** | Enforcement of every gate; nothing fails without it, but nothing is enforced either |
-| G7 | Code security | Settings, Code security: **Dependency graph on** (off by default on a fork; CI's `dependency-review` job fails without it); push protection **on**; private vulnerability reporting **on**; Dependabot alerts and security updates **on**; CodeQL **default setup** for GitHub Actions, JavaScript and TypeScript, Python. After PR6 merges, add Rust to CodeQL | The Security tab lists CodeQL runs; a test push of a fake key is blocked | PR0's `dependency-review` job, so its `gates` check; the Scorecard workflow (PR0, D30) reports these; `SECURITY.md` promises private reporting |
-| G8 | Install the DCO app, after PR0 merges | <https://github.com/apps/dco>: install on this repository only. Wait until PR0 has merged: PR0's earlier commits predate D24 and carry no sign-off | The next PR shows a **DCO** check | D24 enforcement from the PR2 group on |
-| G9 | Create the project board and link it | Your profile, Projects, **New project**, Table, name "Starshot". Fields: Status (Triage, Ready, In progress, In review, Done, Won't do), Priority (P0, P1, P2, P3), Size (XS, S, M, L, XL), Area (one option per `area:` label), Actor (Human, Agent, Either), Chapter (Chapter 1: web). Views: Board (by Status, open items), Backlog (table grouped by Area, sorted by Priority), Epics (filter `label:kind:epic`), Roadmap (by Chapter), Agent queue (filter `label:agent-ready` and Status Ready). Workflows: keep "closed to Done" and "merged to Done"; turn on "item added sets Triage", auto-archive Done after 30 days, and the one auto-add workflow for `is:issue,pr` in this repository. Then the repository's **Projects** tab, **Link a project** | A new issue appears on the board within a minute | The board views named in D23. `sync-work.mjs` sets project fields only with a token that can reach the project; otherwise it prints what it would have set |
-| G10 | Environments | Settings, Environments, **New environment**: `production` (deployment branches: `main` only), `preview` (any branch), `release` (`main` only, required reviewer: you). Later: `e2e`, `firebase-prod` (`main` only), and `appstore` and `play` (tags only) for the native program | Each is listed with its branch rule | `production` and `preview`: PR33. `release`: PR38. `e2e` and `firebase-prod`: PR30 to PR32 |
-| G11 | Optional: allow auto-merge | Settings, General, Pull Requests: **Allow auto-merge** | The option shows on a PR | Nothing in this program |
-| G12 | Optional: the private-name secret | Settings, Secrets and variables, Actions, **New repository secret** `STARSHOT_PRIVATE_NAMES` (comma-separated); see [../../hosting.md](../../hosting.md#the-optional-private-name-list) | The CI log's `secrets` line reports private-name hashes | Nothing; it widens the hygiene scan |
+| # | Current status and remaining action | Evidence or verification | Blocks |
+|---|---|---|---|
+| G1 | Issues enabled; use the existing repository | [Repository API](https://api.github.com/repos/harmon-amakobe/starshot), opening audit | First live work sync needs a working owner credential; offline check alone proves no parity |
+| G2 | About/topics not reverified; correct only claims that remain stale | Inspect the [repository](https://github.com/harmon-amakobe/starshot); preserve separate astlo ownership | No implementation |
+| G3 | Actions already run; this is a standalone repository under D36 | Existing [Actions](https://github.com/harmon-amakobe/starshot/actions); verify relevant run results | CI proof |
+| G4 | Workflow permission settings not reverified; existing release lane is authoritative | Read `actions/permissions/workflow` and compare with [hosting.md](../../hosting.md); keep least privilege | A change needing new token permissions |
+| G5 | Pages is off and remains off under D34 | Repository API observation; AC17 now covers Firebase production and beta | Nothing; no Pages setup |
+| G6 | Main ruleset 26381131 and release-tag ruleset 26385757 active | [Main rules](https://github.com/harmon-amakobe/starshot/rules/26381131), [release-tag rules](https://github.com/harmon-amakobe/starshot/rules/26385757); reverify before changes | Preserve PR/gates and immutable release protections |
+| G7 | Code security settings not fully reverified | Read Dependency graph, push protection, private reporting, Dependabot and CodeQL status; add Rust coverage when supported and needed | Relevant CI/security claims |
+| G8 | DCO installation unverified | Check the next PR's DCO check or installed app; owner-authored sign-off remains required by D24 regardless | DCO enforcement evidence |
+| G9 | Project board creation/linkage unverified | Inspect the owner's project for Status, Priority, Size, Area, Actor and Chapter fields and board/backlog/epic/roadmap/agent views | Board parity only; issue work can proceed |
+| G10 | Existing environments must be inspected, not recreated | Verify production owner review with no admin bypass and main-only deployment, release main-only, and preview reviewed-ref restrictions against D37 and [hosting.md](../../hosting.md#production-approval) | Deployment or environment changes |
+| G11 | Auto-merge optional and unverified | Inspect repository setting if needed | Nothing |
+| G12 | Private-name secret optional and unverified | Existing secret metadata or hygiene result; never print its value | Nothing; expands hygiene coverage only |
 
 ## Domain and email
 
-The domain scout's safety steps, condensed. Prices were read on 2026-11-01; confirm them
-in the cart.
+Production and beta HTTPS already serve the game. Registration, renewal, mail delivery
+and the second domain were not reverified. Do not repurchase domains or replace working
+DNS merely because the original plan described initial setup.
 
-| # | Step | Where to click | How to confirm | Blocks |
-|---|---|---|---|---|
-| M1 | Register `playstarshot.com` and `playstarshot.app` (D20) | Cloudflare dashboard, Domain Registration, **Register Domains**, in your own account with an email address you control long term (not one that forwards through these domains). Turn on two-factor authentication first and keep the recovery codes offline. If the cart price is above the standard price (about US$10.46 a year for .com; about US$8.20, then US$14.20, for .app), the name is premium: stop | `https://rdap.org/domain/playstarshot.com` shows Cloudflare as registrar and `client transfer prohibited` | PR33 (custom domain); the contact addresses in M3 |
-| M2 | Keep the defaults on | Auto-renew on with a card that will not expire soon; verify the registrant email the day it arrives (an unverified email leads to a hold); registrar lock on; WHOIS redaction on (the default); add a calendar reminder 60 days before expiry | The domain's overview page shows auto-renew and the lock | Nothing directly; losing the domain would block everything public |
-| M3 | Forward the project addresses | Cloudflare, the domain, Email, **Email Routing**: create `security@`, `hello@` and `conduct@` on playstarshot.com, each forwarding to an inbox you control. The destination address never goes into the repository | Send a test message to each; it arrives | The reporting contacts in `CODE_OF_CONDUCT.md`, `SECURITY.md` and `TRADEMARK.md` (PR0) work only once this is done |
-| M4 | SPF and DMARC | Email Routing adds the MX and SPF records. Add one TXT record at `_dmarc` with `v=DMARC1; p=reject` (the domain receives mail only) | `dig +short TXT _dmarc.playstarshot.com` prints the record | Nothing; it stops others spoofing the address |
-| M5 | DNSSEC | Cloudflare, the domain, DNS, Settings: **Enable DNSSEC**, after the records above exist | The DNS settings page shows DNSSEC active | Nothing |
-| M6 | The records Firebase asks for (at PR33) | Firebase console, Hosting, **Add custom domain** `playstarshot.com`; copy each record the wizard shows into Cloudflare DNS: the ownership TXT at the apex (keep it permanently; it also authorises certificate renewal), the A records (remove any other A, AAAA or CNAME on the same name), the ACME challenge TXT if the wizard asks, and `www`. Set each Firebase record to **DNS only** (grey cloud) | The Hosting page says the domain is connected and the certificate is active | PR33 |
-| M7 | The second domain (at PR33) | Cloudflare, `playstarshot.app`, Rules, **Redirect rule** to `https://playstarshot.com` with the path kept | `curl -sI https://playstarshot.app/` shows a 301 to playstarshot.com | PR33 |
+| # | Current status and remaining action | Verification | Blocks |
+|---|---|---|---|
+| M1 | Confirm ownership of existing domains and whether the optional .app domain was acquired | Registrar account and public registration record; keep private details out of logs | A new domain change |
+| M2 | Confirm renewal, registrar lock and recovery access | Owner checks the registrar account | Domain continuity |
+| M3 | Project address forwarding unverified | Owner checks security, hello and conduct routing and explicitly sends delivery tests if desired | Claims that reporting mail works |
+| M4 | Mail DNS unverified | Check MX/SPF/DMARC against actual routing; preserve working records | Mail hardening |
+| M5 | DNSSEC unverified | Check registrar/DNS state | No implementation |
+| M6 | Existing production and beta custom domains respond over HTTPS | Compare fresh metadata and Firebase domain/certificate state before any DNS edit | Future Hosting changes needing DNS |
+| M7 | .app redirect status unverified | Read HTTP redirect if the domain exists; preserve path behavior | Optional second domain only |
 
 ## Firebase and Google Cloud
 
-Do these before PR30. Names below are examples: project ids must be globally unique, so
-add a suffix and check it is free.
+`playstarshot-prod` serves production; `playstarshot-dev` serves beta and previews.
+These are existing isolated Hosting projects documented in [hosting.md](../../hosting.md).
+The historical create-project, key-fallback and automatic-main-deploy steps are superseded.
+Do not add Auth, Firestore, Storage, Functions or billing permissions to a Hosting identity
+without a reviewed need.
 
-| # | Step | Where to click | How to confirm | Blocks |
-|---|---|---|---|---|
-| F1 | A billing account used by nothing else | Google Cloud console, Billing, **Create account** | Billing, Account management lists only Starshot's projects | F2; free allowances are shared per billing account, so sharing would mix bills |
-| F2 | Two projects: development and production (D13) | Firebase console, **Add project** twice, for example `starshot-dev-<suffix>` and `starshot-prod-<suffix>`; no organisation or folder shared with other work; **turn Google Analytics off** when asked; link both to F1's account | Project settings, Integrations: Google Analytics not linked | PR30 to PR33 |
-| F3 | Budgets and alerts | Billing, **Budgets and alerts**: one budget per project with alerts at 50%, 90% and 100%. Amounts are your call; budgets alert, they do not cap. Consider the documented billing kill switch on the development project | The budgets are listed | PR30 |
-| F4 | Pay-as-you-go plan on both projects | Firebase console, Usage and billing, **Modify plan**: Blaze | The plan shows Blaze | PR32 (Functions) and PR33 (Hosting beyond the free 10 GB a month) |
-| F5 | One web app per project | Project settings, Your apps, **Add app**, Web | Each project lists one web app | PR30 copies the production apiKey, authDomain, projectId and appId into the one allow-listed file; the development values go into the `preview` environment's Variables as `VITE_FIREBASE_*` |
-| F6 | Restrict the browser API keys | Google Cloud console, APIs and Services, Credentials, the browser key of each project: API restrictions = Firebase-related APIs only (never the Generative Language API); application restrictions = HTTP referrers for playstarshot.com, playstarshot.app, the preview channel domain and `localhost` | Each key shows both restrictions | PR31 |
-| F7 | App Check with reCAPTCHA Enterprise | Google Cloud console, Security, reCAPTCHA Enterprise: create a key for the game's domains; Firebase console, App Check: register the web app with it. Watch the metrics for about a week, then enforce on Firestore, Storage and Functions. Create one debug token for CI and store it only as the secret `APP_CHECK_DEBUG_TOKEN` in the `e2e` environment | App Check metrics show verified requests | PR31; enforcement before the first public leaderboard |
-| F8 | Sign-in method and authorised domains | Authentication, Sign-in method: enable **Anonymous**. Settings, Authorized domains: playstarshot.com, playstarshot.app, the project's default Hosting domains; `localhost` on the development project only | Both lists show the entries | PR31 |
-| F9 | Firestore and Storage, deny-all first | Build, Firestore Database, **Create database** in production mode, in a region you choose (it cannot change later); the same for Storage | The Rules tab shows a deny-all rule | PR30 deploys the tested rules over it |
-| F10 | Hosting site and custom domain (production) | Hosting, **Get started**, then M6 | `curl -sI https://playstarshot.com/` returns 200 after PR33's first deploy | PR33 |
-| F11 | Deploy credentials without stored keys first | Google Cloud console, IAM, Workload Identity Federation: one pool per project with a GitHub provider whose condition pins the repository `harmon-amakobe/starshot` (and, for production, the `main` ref or the `production` environment); one deploy service account per project with only the roles it deploys (Hosting first). If the Firebase CLI refuses the federated credential in PR33's trial, create a Hosting-only key for the **development** project only and store it as an environment secret in `preview`. Production never holds a key | PR33's deploy jobs succeed | PR33 |
-| F12 | Leave Analytics unlinked (D22) | Nothing to click; do not accept prompts to link Analytics | Project settings, Integrations: not linked | D22 |
+| # | Current status and remaining action | Verification | Blocks |
+|---|---|---|---|
+| F1 | Billing-account arrangement unverified | Owner inspects project billing; review costs before paid activation | Paid services only |
+| F2 | Retain existing isolated projects; inspect backend suitability during Band E planning | Compare existing project ids and service state with the detailed backend spec | Backend activation, not emulator work |
+| F3 | Budgets/alerts unverified | Owner reviews limits and alerts before paid activation; alerts are not spending caps | Paid services |
+| F4 | Billing plan unverified; no automatic Blaze upgrade | Review a concrete Functions/backend deployment and its costs | Paid backend deployment |
+| F5 | Backend web-app configuration unverified | Inspect registered apps when PR30 needs them; production public config stays in D13's allow-listed file | Real account connection |
+| F6 | Browser-key restrictions unverified | Inspect keys used by the planned backend; restrict APIs/referrers to reviewed requirements | Public backend activation |
+| F7 | App Check unverified | Prepare source/emulator integration first; review registration/enforcement and any CI secret need separately | Public leaderboard activation |
+| F8 | Anonymous Auth and authorized domains unverified | Confirm required service/domain configuration before activation | Real sign-in |
+| F9 | Firestore/Storage existence, regions and Rules unverified | Build deny-by-default source and emulator tests first; review region and deployment before creating services | Real data service |
+| F10 | Hosting sites/domains exist and serve metadata | Fresh production/beta `release.json`, immutable headers, offline/update verification and exact candidate provenance | Promotion proof |
+| F11 | Existing federation is the required credential path; current IAM bindings not reverified | Preserve numeric repository/owner ids, exact workflow path, environment and ref conditions. Production stays main-only; preview stays within existing reviewed refs. Compare provider and service-account bindings with [hosting.md](../../hosting.md) before change | Any permission/deployment change |
+| F12 | Analytics remains outside D22 scope; current console state unverified | Confirm no Analytics link when reviewing backend setup | D22 evidence |
+
+No stored-key fallback is authorized. The new program trunk uses the existing manual
+reviewed-ref beta path. Main push, a tag or a new branch name does not grant production
+authority. Preserve immutable candidate registration, digest checks, downgrade guards and
+the D37 owner approval. Recheck served metadata after staging or promotion.
 
 ## Optional: npm organisation
 
-| # | Step | Where to click | How to confirm | Blocks |
-|---|---|---|---|---|
-| N1 | Hold the `starshot` npm scope | npmjs.com, your avatar, **Add organization**, free plan, name `starshot`. Nothing is published | `https://www.npmjs.com/org/starshot` shows your organisation | Nothing |
+| # | Action | Verification | Blocks |
+|---|---|---|---|
+| N1 | Scope reservation remains optional; publish nothing as part of this checklist | Owner account if relevant | Nothing |
 
 ## Mark Macharia (D26)
 
-| # | Step | Where | How to confirm | Blocks |
-|---|---|---|---|---|
-| K1 | Send Mark the fixes and the directions | Your own channel to Mark. Link `python/astlo/`, `python/astlo/VERIFICATION.md`, [../../astlo/directions.md](../../astlo/directions.md) and the `astlo-fixed-wheel` artifact of the astlo workflow. Ask which name and handle he wants in the credits. The message itself stays outside the repository | Note the date (not the content) in the governance epic's issue | PR37 uses the name and handle he chooses; if he objects to `python/astlo/`, the `astlo-upstream` skill describes its removal (D10) |
-| K2 | Open the upstream pull requests (D29) | Mark's repository on GitHub, when PR40's kit has produced the patch series, the report and a draft body per topic (at the latest when chapter one is done). One pull request per topic, astlo changes only. When he adopts one, the orchestrator pins his release and drops Starshot's copy of that change | Each pull request is listed in the governance epic's issue | Nothing in Starshot waits on his answer |
+| # | Action and status | Verification | Blocks |
+|---|---|---|---|
+| K1 | Owner contact and preferred credit remain unverified. Only the owner contacts Mark about fixes and directions | Record only the contact date and permitted credit choice in the issue | Final chosen attribution in PR37 |
+| K2 | Only the owner submits upstream topics after PR40 prepares the kit | Record upstream PR links when they exist | No Starshot implementation waits on a reply |
 
 ## Playtests for the prototypes
 
-| # | Step | Where | How to confirm | Blocks |
-|---|---|---|---|---|
-| P1 | Run the feel prototypes with real players | Five to ten testers, in person or remote, for gameplay prototypes 2, 3, 4 and 6 ([00-plan.md](00-plan.md#prototypes-before-bands-c-and-d)); prototype 5 is a script an agent runs | Results recorded in the Band C planning session's notes, with the success test of each | Band C's build |
-| P2 | Pull-back feel with sound and haptics | The same testers, on an Android phone and an iPhone, prototype 1 | Recorded in the Band D planning notes | PR28 |
+| # | Action | Evidence | Blocks |
+|---|---|---|---|
+| P1 | Run the gameplay trials with five to ten testers; preserve all quantitative criteria in the [resumption ledger](06-resumption.md#rust-and-later-proof-boundaries) | Record measured success rates and failures in Band C planning | Criteria requiring human evidence; continue independent source work |
+| P2 | Test pull, audio and haptic cues on Android and iPhone | Record physical-device evidence in Band D planning | PR28's human/phone evidence |
+
+Browser automation does not establish physical-phone frame time or player success rates.
+Keep 60 fps and 100 ms preview evidence outstanding until measured.
 
 ## Before any store submission (a later program)
 
-| # | Step | Where | How to confirm | Blocks |
-|---|---|---|---|---|
-| T1 | Trademark searches (D20) | USPTO Trademark Search (<https://tmsearch.uspto.gov/>), EUIPO eSearch plus (<https://euipo.europa.eu/eSearch/>), WIPO Global Brand Database (<https://branddb.wipo.int/>) and KIPI's search service, for STARSHOT in classes 9, 28 and 41; then decide on a KIPI filing in classes 9 and 41 | A short note of the results in the issue (no legal advice in the repository) | Any store listing |
-| T2 | Developer accounts | Apple Developer Program (US$99 a year, <https://developer.apple.com/programs/>) and a Google Play developer account, in the publisher's name you choose | Both accounts are active | The native program, not this one |
+| # | Action | Verification | Blocks |
+|---|---|---|---|
+| T1 | Owner reviews trademark searches under D20 before a listing | Dated source-backed findings; no new search claimed here | Store submission |
+| T2 | Owner arranges developer accounts for the native program | Active account evidence, with costs reviewed then | Native publication only |
 
 ## Which pull requests wait on which steps
 
-| PR | Waits on |
+| Work | Remaining dependency |
 |---|---|
-| PR0 merge | G3 (CI runs) |
-| The board views | G9 |
-| The Pages proof (AC17) | G5 |
-| PR0 (CI hardening, D30) | G3, G4, G7's dependency graph (for `dependency-review`); G6 makes `gates` binding; G7 feeds Scorecard |
-| The PR2 group onward (DCO) | G8 |
-| PR4 | G1 (the first sync writes the lock the `work` gate reads) |
-| PR6 | G7 adds Rust to CodeQL after it merges |
-| PR28 | P2 |
-| Band C build | P1 |
-| PR30 | F1, F2, F3, F5, F9, G10 (`e2e`, `firebase-prod`) |
-| PR31 | F6, F7, F8 |
-| PR32 | F4 |
-| PR33 | M1 to M6, F10, F11, G10 (`production`, `preview`) |
-| PR37 | K1 (the name and handle) |
-| After PR40 | K2 |
-| PR38 | G4's second switch, G10 (`release`) |
+| New PR0 publication | Real issue sync/lock and CI; existing main rules remain enforced |
+| PR2 group onward | D24 sign-off; verify G8 enforcement without delaying independent implementation |
+| PR4 | Real work-map sync, then work gate; G1 is already satisfied |
+| PR6 | Relevant Rust CI and code-security coverage |
+| Band C and PR28 | P1/P2 human evidence for their measured criteria |
+| PR30/31 source | Detailed Band E spec and emulator proofs; no billing activation required |
+| PR30 to PR32 deployment | Concrete owner review of required F1 to F9 services/permissions, then their verification |
+| PR33 | Reverify G10, M6, F10/F11 for actual changes; preserve D34 to D37 |
+| PR37 | K1 for preferred credit, plus asset provenance |
+| PR38 | Extend existing release source; reverify G4/G10 only if permissions change |
+| After PR40 | K2, owner only |
