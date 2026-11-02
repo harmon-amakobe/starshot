@@ -21,24 +21,39 @@ epics:
     title: "Foundations and governance"
     labels: [kind:epic, area:harness, priority:p1]
     body: |
-      The program plan, the decisions D12 to D30, the governance files and gates (PR0),
-      and the one-time steps only the owner can take. Done when PR0 has merged and every
+      Completed bootstrap governance plus the new program PR0 reconciliation,
+      and the remaining owner steps. Done when the new PR0 has merged and every
       owner task below is closed or explicitly deferred.
       Plan: docs/plans/v1-starshot/00-plan.md. Owner steps: docs/plans/v1-starshot/04-ops-checklist.md.
     tasks:
       - id: v1-pr0-plan
         title: "PR0: program plan, decisions D12 to D30, governance files and gates"
-        labels: [kind:docs, area:docs, priority:p1, status:claimed]
+        labels: [kind:chore, area:harness, priority:p1]
+        state: closed
+        reason: completed
         size: XL
         priority: p1
         actor: Agent
         spec: docs/plans/v1-starshot/00-plan.md#what-pr0-carries
         depends_on: []
         body: |
-          Lands the plan, the decision entries and the governance scaffolding with every
-          gate green. Exceeds the size cap by design (deviation 1).
+          Completed historical bootstrap PR0 (#1), including governance, gates and PR1.
+          Its identity remains closed. New reconciliation is v1-program-pr0.
+      - id: v1-program-pr0
+        title: "PR0: resume V1 from accepted orbital gameplay and reconcile remaining work"
+        labels: [kind:docs, area:docs, priority:p1, status:claimed, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/06-resumption.md
+        depends_on: [v1-pr0-plan, v1-ci-hardening]
+        body: |
+          Reconcile the saved cleanup, accepted D38 gameplay, remaining criteria and
+          current ops on codex/v1-program-pr0 from main at 7f325a61b77a43c98d95a7644d7d03834829b1a1.
+          Publish the reviewed PR0 and continue implementation above it. Sync the real
+          issue map and lock; preserve historic identities and do not infer deployment.
       - id: v1-ops-github
-        title: "Owner: turn on Issues, Actions, Pages, the ruleset and code security"
+        title: "Owner: verify remaining GitHub security and environment settings"
         labels: [kind:chore, area:ci, priority:p1, status:ready]
         size: S
         priority: p1
@@ -46,9 +61,10 @@ epics:
         spec: docs/plans/v1-starshot/04-ops-checklist.md#github
         depends_on: []
         body: |
-          Steps G1 to G7 and G10 of the ops checklist. Each step says how to confirm it.
+          Steps G1 to G7 and G10. Issues and branch/tag rulesets are active; Pages is off.
+          Reverify permissions and code security without recreating current settings.
       - id: v1-ops-dco
-        title: "Owner: install the DCO app after PR0 merges"
+        title: "Owner: verify DCO installation and sign-off enforcement"
         labels: [kind:chore, area:harness, priority:p1, status:ready]
         size: XS
         priority: p1
@@ -70,7 +86,7 @@ epics:
           Step G9: fields Status, Priority, Size, Area, Actor and Chapter; five views; the
           built-in workflows.
       - id: v1-ops-domain
-        title: "Owner: register playstarshot.com and playstarshot.app and forward the project addresses"
+        title: "Owner: verify domain ownership, renewal and project address forwarding"
         labels: [kind:chore, area:brand, priority:p1, status:ready]
         size: S
         priority: p1
@@ -78,10 +94,10 @@ epics:
         spec: docs/plans/v1-starshot/04-ops-checklist.md#domain-and-email
         depends_on: []
         body: |
-          Steps M1 to M5 (D20). The reporting addresses in the governance files work only
-          once forwarding is on.
+          Steps M1 to M5 (D20). Production and beta domains serve the game; registrar,
+          renewal and mail-forwarding status remain unverified.
       - id: v1-ops-firebase
-        title: "Owner: create the two Firebase projects with budgets, keys and App Check"
+        title: "Owner: review remaining backend activation and cloud permission needs"
         labels: [kind:chore, area:game, priority:p2, status:ready]
         size: M
         priority: p2
@@ -89,7 +105,9 @@ epics:
         spec: docs/plans/v1-starshot/04-ops-checklist.md#firebase-and-google-cloud
         depends_on: []
         body: |
-          Steps F1 to F12 (D13). Needed before PR30.
+          Steps F1 to F12 (D13). Existing isolated Hosting projects stay in place.
+          Source and emulator work are authorized; paid activation and permission
+          expansion require review. Current IAM/environment settings need rechecking.
       - id: v1-ops-mark
         title: "Owner: send Mark the fixes, the verification and the directions document"
         labels: [kind:chore, area:astlo, priority:p1, status:ready]
@@ -126,13 +144,16 @@ epics:
     title: "Band A: foundations"
     labels: [kind:epic, area:ci, priority:p1]
     body: |
-      CI hardening, the GameScreen split, the process checks, and the licence and assets
-      gates. Done when PR1 to PR5 have merged into the stack, npm run gates exits 0, and
+      Preserve completed CI; split the live campaign, close lunar evidence gaps, split
+      styles and add process/licence/assets checks. Done when PR2 to PR5 including
+      PR3a/b/c have merged into the stack, npm run gates exits 0, and
       the band's verification sweep and handoff are recorded.
     tasks:
       - id: v1-ci-hardening
         title: "PR1, built in PR0: harden CI with pinned actions, an aggregator check, workflow lint and verify-game"
-        labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
+        labels: [kind:chore, area:harness, priority:p1]
+        state: closed
+        reason: completed
         size: M
         priority: p1
         actor: Agent
@@ -142,17 +163,18 @@ epics:
           Least privilege, SHA pins, one stable required check named gates, the layering gate.
           Built in PR0 (#1) by the owner's ruling (D30).
       - id: v1-screen-split-render
-        title: "PR2: move GameScreen's pure helpers and canvas loop into their own modules"
+        title: "PR2: remove the dead screen and split the current campaign shell"
         labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
         actor: Agent
         spec: docs/plans/v1-starshot/00-plan.md#pr2-gamescreen-split-render-loop
-        depends_on: [v1-ci-hardening]
+        depends_on: [v1-ci-hardening, v1-program-pr0]
         body: |
-          Behaviour unchanged; verify-game and the level tests prove it.
+          Follow 07-screen-split.md. Delete only confirmed dead callers and extract the
+          live shell from current code. Preserve accepted lunar, release and save behavior.
       - id: v1-screen-split-state
-        title: "PR3: move GameScreen's state into hooks and bring it under 300 lines"
+        title: "PR3: split current campaign state and views under 300 lines"
         labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
@@ -160,7 +182,46 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr3-gamescreen-split-state-hooks
         depends_on: [v1-screen-split-render]
         body: |
-          GameScreen.tsx leaves the size baseline (D28).
+          Follow 07-screen-split.md. Preserve effect order, one worker and renderer,
+          D38 parking, canonical requests and owner guards. Compare the full browser
+          baseline and remove the dead-file size entries.
+      - id: v1-moon-flight
+        title: "PR3a: close remaining lunar flight, search and precision requirements"
+        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3a-moon-flight
+        depends_on: [v1-screen-split-state]
+        body: |
+          Shared lunar physics and rails already exist. Follow the lunar ledger in
+          06-resumption.md: bounded 240-simulation search, real-SOI grazing regression,
+          fixed-frame conformance, drawn Moon within 1 km and bundle-load proof.
+          Fix the focused satellite overlay coordinate defect with a regression.
+      - id: v1-moon-campaign
+        title: "PR3b: complete lunar campaign browser proof and short-phone layout"
+        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3b-moon-campaign
+        depends_on: [v1-moon-flight]
+        body: |
+          Preserve delivered Moon-first order, v2 migration, D38 date/phase controls
+          and Plan/YOLO release. Follow 06-resumption.md for the complete browser matrix
+          and the 390x664 layout fix, without overwriting accepted gameplay.
+      - id: v1-stylesheet-split
+        title: "PR3c: format and split the stylesheets, and warn on compressed lines"
+        labels: [kind:chore, area:game, priority:p2, status:ready, agent-ready]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3c-stylesheet-split
+        depends_on: [v1-moon-campaign]
+        body: |
+          Recount current compressed CSS, format and split by component with identical
+          cascade and computed styles. Preserve new orbital and release-version rules.
+          Add the compressed-line warning and its fixtures (deviation 16).
       - id: v1-process-checks
         title: "PR4: Process checks: PR size, commit scan and the work gate"
         labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
@@ -191,7 +252,9 @@ epics:
       One Rust core for ephemeris, physics and game rules, compiled to wasm for the web
       worker, proven bit-identical across V8, JavaScriptCore and native, then the
       TypeScript core is retired (D16, D17). Done when PR6 to PR17 have merged into the
-      stack and the band's verification sweep and handoff are recorded.
+      stack and the band's verification sweep and handoff are recorded. Before each
+      builder, check its file/type mapping and D38 golden cases against 06-resumption.md;
+      remove agent-ready if concrete details remain unsettled.
     tasks:
       - id: v1-rust-workspace
         title: "PR6: add the Cargo workspace, starshot-math with golden bits, and the Rust gates"
@@ -225,7 +288,7 @@ epics:
           1950 to 2150, 100 km tier, every body within 150 km of DE440 every 5 days.
       - id: v1-ephemeris-crate
         title: "PR9: port time, bodies and Table 1 to starshot-ephemeris with the Horizons budgets"
-        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
+        labels: [kind:physics, area:ephemeris, priority:p1, status:blocked]
         size: L
         priority: p1
         actor: Agent
@@ -235,7 +298,7 @@ epics:
           Same budgets as today's TypeScript test; a conformance fixture from the TypeScript side.
       - id: v1-rails-reader
         title: "PR10: read the rails pack in Rust, derive Earth's centre and check Table 1 densely"
-        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
+        labels: [kind:physics, area:ephemeris, priority:p1, status:blocked]
         size: M
         priority: p1
         actor: Agent
@@ -245,7 +308,7 @@ epics:
           Closes the fixture under-sampling gap (register R18).
       - id: v1-physics-core
         title: "PR11: port the integrator, gravity, Hermite, launch and Lambert to starshot-physics"
-        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
+        labels: [kind:physics, area:physics, priority:p1, status:blocked]
         size: M
         priority: p1
         actor: Agent
@@ -255,7 +318,7 @@ epics:
           All transcendental maths through starshot-math.
       - id: v1-physics-simulate
         title: "PR12: port simulate with energy, timing and conformance tests"
-        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
+        labels: [kind:physics, area:physics, priority:p1, status:blocked]
         size: L
         priority: p1
         actor: Agent
@@ -265,7 +328,7 @@ epics:
           Matches the TypeScript flights within 1 km over 14 years.
       - id: v1-game-shot
         title: "PR13: port the shot model and add the replay format with a physics version"
-        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        labels: [kind:feature, area:game, priority:p1, status:blocked]
         size: M
         priority: p1
         actor: Agent
@@ -275,7 +338,7 @@ epics:
           Canonical inputs carry exact bits (D16).
       - id: v1-game-levels
         title: "PR14: port levels, scoring and the hint search with every known solution"
-        labels: [kind:level, area:levels, priority:p1, status:ready, agent-ready]
+        labels: [kind:level, area:levels, priority:p1, status:blocked]
         size: L
         priority: p1
         actor: Agent
@@ -285,7 +348,7 @@ epics:
           Every level test of today passes in Rust with the same numbers.
       - id: v1-core-wasm
         title: "PR15: build the wasm core and prove identical bits in V8, JavaScriptCore and native"
-        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        labels: [kind:feature, area:physics, priority:p1, status:blocked]
         size: L
         priority: p1
         actor: Agent
@@ -295,7 +358,7 @@ epics:
           Golden replays compared bit for bit; a size budget for the wasm.
       - id: v1-worker-cutover
         title: "PR16: run the physics worker and the map on the wasm core"
-        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        labels: [kind:feature, area:game, priority:p1, status:blocked]
         size: L
         priority: p1
         actor: Agent
@@ -305,7 +368,7 @@ epics:
           The worker protocol does not change; preview still equals launch (D6).
       - id: v1-retire-ts-core
         title: "PR17: delete the TypeScript ephemeris and physics packages"
-        labels: [kind:chore, area:physics, priority:p1, status:ready, agent-ready]
+        labels: [kind:chore, area:physics, priority:p1, status:blocked]
         size: M
         priority: p1
         actor: Agent
@@ -459,7 +522,7 @@ epics:
     body: |
       Firebase with deny-by-default rules tested in CI, anonymous accounts, a leaderboard
       whose scores a server function verifies with the same wasm, and Firebase Hosting
-      with a Pages mirror (D13, D21, D22). Outlines until the Band E planning session.
+      reconciled with D34 to D37 (D13, D21, D22). Outlines until Band E planning.
     tasks:
       - id: v1-firebase-foundation
         title: "PR30: add the Firebase configuration, the emulator and rules tests in CI"
@@ -492,7 +555,7 @@ epics:
         body: |
           Blocked on the Band E planning session.
       - id: v1-hosting
-        title: "PR33: deploy to Firebase Hosting with previews, headers and the custom domain"
+        title: "PR33: reconcile new assets and backend work with the existing Hosting lane"
         labels: [kind:feature, area:ci, priority:p2, status:blocked]
         size: M
         priority: p2
@@ -500,7 +563,9 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr33-hosting
         depends_on: [v1-firebase-foundation]
         body: |
-          Blocked on the Band E planning session and the domain steps.
+          Detail remaining source changes in Band E planning. Preserve Firebase-only
+          production/beta, immutable candidates, numeric OIDC identity pins and owner
+          approval. Audit cache/CSP/offline behavior for wasm and rails.
 
   - id: v1-band-f
     title: "Band F: chapter one content and release"
@@ -551,7 +616,7 @@ epics:
         body: |
           Blocked on the Band F planning session and Mark's choice of credit.
       - id: v1-release-lane
-        title: "PR38: open release PRs from the Unreleased changelog section and tag on merge"
+        title: "PR38: extend the existing CI release lane for new workspaces"
         labels: [kind:chore, area:ci, priority:p2, status:blocked]
         size: M
         priority: p2
@@ -559,7 +624,8 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr38-release-lane
         depends_on: [v1-ci-hardening]
         body: |
-          Blocked on the Band F planning session.
+          Detail remaining workspace/version/provenance work in Band F planning.
+          CI proposals and exact promotion already exist; preserve D35 to D37.
       - id: v1-store-prep
         title: "PR39: write the store preparation notes"
         labels: [kind:docs, area:docs, priority:p3, status:blocked]
