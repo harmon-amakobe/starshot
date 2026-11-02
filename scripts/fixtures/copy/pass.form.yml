@@ -1,0 +1,20 @@
+# A comment may say seamless {U+2014} it is never read.
+name: Bug report
+description: Something in the game does not work as documented.
+title: "Bug: "
+labels: ["kind:bug", "status:triage"]
+body:
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Phone
+        - Desktop
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      placeholder: "Mars was 2 degrees off on 2026-11-02."
+    validations:
+      required: true

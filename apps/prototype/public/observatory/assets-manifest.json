@@ -1,0 +1,324 @@
+{
+  "schema": 1,
+  "description": "Runtime hashes and provenance for the approved observatory study. See NOTICE.txt and repository CREDITS.md.",
+  "assets": [
+    {
+      "file": "controls-layout.css",
+      "sha256": "88baead768d629533b00ab905900422dd9e96c715b341a378841af48b442c715",
+      "bytes": 16114,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "earth-1k.jpg",
+      "sha256": "23170041261dcfa319da7feefa953a523d848733d2957cd45a775ccff6976575",
+      "bytes": 63566,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_earth_daymap.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "hosted-bridge.js",
+      "sha256": "bb335369d555d6054074b9c45be75cb62505049f82291f12ff9ba64f9f36c002",
+      "bytes": 4308,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Original hosted lunar mission and validated clock handoff."
+    },
+    {
+      "file": "hosted-mission.js",
+      "sha256": "0b7a7806d0e0097c9513827af04d777e350b5d5d827494c4dfdc9c66a1155365",
+      "bytes": 5874,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Original hosted lunar mission and validated clock handoff."
+    },
+    {
+      "file": "ibm-plex-mono-400.woff2",
+      "sha256": "88890da9e319a1630f5c7c0db3af2c43a90f58fe01ba1a59099385fe108ed09c",
+      "bytes": 37240,
+      "source": "https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n5ig.ttf",
+      "licence": "OFL-1.1",
+      "attribution": "Copyright 2017 IBM Corp. Reserved Font Name Plex.",
+      "changes": "Lossless WOFF2 conversion of the complete source font; all 995 glyphs retained.",
+      "sourcePage": "https://github.com/IBM/plex"
+    },
+    {
+      "file": "ibm-plex-mono-500.woff2",
+      "sha256": "9ec14a4dce503e2f07f2e38e5329b547048e63b31783061b856ccc3799ef18f3",
+      "bytes": 38212,
+      "source": "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJ8lc.ttf",
+      "licence": "OFL-1.1",
+      "attribution": "Copyright 2017 IBM Corp. Reserved Font Name Plex.",
+      "changes": "Lossless WOFF2 conversion of the complete source font; all 995 glyphs retained.",
+      "sourcePage": "https://github.com/IBM/plex"
+    },
+    {
+      "file": "ibm-plex-mono-700.woff2",
+      "sha256": "872fd52c8868b26b096f5803d1062819d37242ef75886bd1d7dfd887ef12f9e5",
+      "bytes": 38532,
+      "source": "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3pQP8lc.ttf",
+      "licence": "OFL-1.1",
+      "attribution": "Copyright 2017 IBM Corp. Reserved Font Name Plex.",
+      "changes": "Lossless WOFF2 conversion of the complete source font; all 995 glyphs retained.",
+      "sourcePage": "https://github.com/IBM/plex"
+    },
+    {
+      "file": "jupiter-1k.jpg",
+      "sha256": "a089eaa54817f834b7d299fdacfee9723f103d36005bd259142343363ed1b406",
+      "bytes": 68225,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "mars-1k.jpg",
+      "sha256": "70d7663ab765133c1c581cc34cca59660332281216f9e3cbd9d0bcad674949e8",
+      "bytes": 83691,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_mars.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "mercury-1k.jpg",
+      "sha256": "1f02ba6a96caa5244e178a1b258d333bcbfe1cd3fbfdb2678f8e79edc7e2aa28",
+      "bytes": 105846,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_mercury.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "moon-1k.jpg",
+      "sha256": "b246064f217f8d479df78c49c7c8595a8f5fbda008a72fd539978d2e121e0109",
+      "bytes": 139068,
+      "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg",
+      "licence": "LicenseRef-NASA-Media",
+      "attribution": "NASA's Scientific Visualization Studio / LRO / LROC",
+      "changes": "Original 1k NASA image; body-fixed projection and lighting at runtime.",
+      "sourcePage": "https://svs.gsfc.nasa.gov/4720/"
+    },
+    {
+      "file": "neptune-1k.jpg",
+      "sha256": "0cb3f6ecf9d4ab732b6888fd662af9e602bae73a36883308f750f86cc36ede3b",
+      "bytes": 19675,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_neptune.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "NOTICE.txt",
+      "sha256": "2cab10eed05a9ea4dd8fdf38356588a65b3953bdf9b5742f8cb845031ed953f2",
+      "bytes": 8155,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "planet-assets.json",
+      "sha256": "c8cae9ce0cbbbb8ffd799f26059d063fffdf2f765f40de9d58791a80ca75bbb8",
+      "bytes": 6075,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "precise-flight.json",
+      "sha256": "d47b3978434ac9de255a0010d53ff455cc274e7d68a74ed8dde4cf834bacbed2",
+      "bytes": 25191,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "replay-clock.js",
+      "sha256": "73b45503da6def2150affc5fff6465a400f7864b3423bb1a1a10dade97faca25",
+      "bytes": 2886,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "replay-model.js",
+      "sha256": "9d2c43712cf161288fbf0dcb64787a81fcdc281a635976faa2f062ee726115c1",
+      "bytes": 4281,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "replay-speed-controls.js",
+      "sha256": "836355d3426fc63daf49f85b6ca4400e016aff95cf208ce32a97e8cccf8de900",
+      "bytes": 3992,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "satellite-data.json",
+      "sha256": "a115588c0c6c2a0458043265ca3749fcfb1af866e4870de411f7a87674e3f996",
+      "bytes": 21020,
+      "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
+      "licence": "LicenseRef-NASA-JPL-Data",
+      "attribution": "NASA/JPL-Caltech; assembled and last modified by starshot contributors",
+      "changes": "Cached geometric states or extracted reference orientation constants. Query provenance and validation fixtures are in tools/fixtures."
+    },
+    {
+      "file": "satellite-states.bin",
+      "sha256": "f194a198f5c3ae84562af5502775b6a9d1719fc065782f1a4f4f484d7635c567",
+      "bytes": 11632488,
+      "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
+      "licence": "LicenseRef-NASA-JPL-Data",
+      "attribution": "NASA/JPL-Caltech; assembled and last modified by starshot contributors",
+      "changes": "Cached geometric states or extracted reference orientation constants. Query provenance and validation fixtures are in tools/fixtures."
+    },
+    {
+      "file": "saturn-1k.jpg",
+      "sha256": "8ec6f156c41582a27f3102a1bcc910c768e8923a977e1f09908a9a96e71cff9d",
+      "bytes": 31869,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_saturn.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "shell-preview.html",
+      "sha256": "05acb96b52aead8c4d5afcde713a44a9b2504516405bf8f0b122b1e00f3d6521",
+      "bytes": 359,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "solar-renderer.js",
+      "sha256": "f3748af46ee170d734b8604e3eca8526282156f77bf583bf785dd2b1653a1f42",
+      "bytes": 4706,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-app.html",
+      "sha256": "d24901c9d8ddda3ab491d24ea50e42e446ed600491e9684d079c6facd64fd7de",
+      "bytes": 42127,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-astronomy.js",
+      "sha256": "2211540951d19ad67c15287b27ea077c6b07b404fb2243219066487e883dddda",
+      "bytes": 3089,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-controls.js",
+      "sha256": "74fcb0b53141833270ddfdd680ad809125775a99eff74614a787aa36a5987b9a",
+      "bytes": 17215,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-icons.js",
+      "sha256": "53dbabc216fafe13d12f5b0d6c44c9d0021f2e4fae0abe2844e103376de3e91f",
+      "bytes": 2315,
+      "source": "https://lucide.dev/license",
+      "licence": "LicenseRef-Lucide-Feather",
+      "attribution": "Lucide Icons and Contributors; Cole Bemis; adaptations by starshot contributors",
+      "changes": "Local compact SVG drawings and replacement shim; Lucide and Feather notices retained conservatively."
+    },
+    {
+      "file": "system-main.js",
+      "sha256": "77a586adb18c5207a8ff3f155c3abde276e1e5f3742d120bb458eb88501c3c14",
+      "bytes": 50927,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-orientation.json",
+      "sha256": "3bb4309377220ffb04c66cd8b4888ec11056ae76fe86897a4b87cbb72932629e",
+      "bytes": 18003,
+      "source": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00011.tpc",
+      "licence": "LicenseRef-NASA-JPL-Data",
+      "attribution": "NASA/JPL-Caltech; assembled and last modified by starshot contributors",
+      "changes": "Cached geometric states or extracted reference orientation constants. Query provenance and validation fixtures are in tools/fixtures."
+    },
+    {
+      "file": "system-rings.js",
+      "sha256": "25eb1cc8ef8f157608d38864049e0ef5be9e42a8d5cd6727b5679250f0ea1ecd",
+      "bytes": 3502,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-units.js",
+      "sha256": "ad33a7a238abddf810a3575e33fd12eb945053efec9d8936f3805aecbd2a6255",
+      "bytes": 2221,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "system-worker.js",
+      "sha256": "c4a6b69d42f4d888e1e9c84ca33c7b360935e729c43c78da5338eda8fe4d0523",
+      "bytes": 1953,
+      "source": "https://github.com/harmon-amakobe/starshot/tree/starshot/look-prototype/apps/prototype",
+      "licence": "Apache-2.0",
+      "attribution": "starshot contributors",
+      "changes": "Approved local observatory study, packaged with relative assets."
+    },
+    {
+      "file": "uranus-1k.jpg",
+      "sha256": "e6f686ed1ab73613431818d0d0f194023a286dbff8539e76ffccac3f7f82cf33",
+      "bytes": 15432,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_uranus.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    },
+    {
+      "file": "venus-1k.jpg",
+      "sha256": "5b5ac0d35472ced2ae7e0b557fc2c6709576d66cbcbb0abe479ed1884fff2bcb",
+      "bytes": 34395,
+      "source": "https://www.solarsystemscope.com/textures/download/2k_venus_atmosphere.jpg",
+      "licence": "CC-BY-4.0",
+      "attribution": "Solar System Scope / INOVE",
+      "changes": "Resized to 1024 x 512 and encoded as JPEG; sphere projection and lighting at runtime.",
+      "sourcePage": "https://www.solarsystemscope.com/textures/"
+    }
+  ]
+}

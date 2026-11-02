@@ -1,0 +1,8 @@
+{
+  "note": "Code lines (blank and comment-only lines excluded) of the files that were over the 500-line limit when D28 was adopted. Entries may only go down: node scripts/check-file-size.mjs --update lowers them and drops files back under the limit.",
+  "files": {
+    "apps/game/src/render/draw.ts": 559,
+    "apps/game/src/styles.css": 1125,
+    "apps/game/src/ui/GameScreen.tsx": 914
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'502'",
+        "CENTER": "'500@599'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'10912'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "c1d780863dcc96e43542cc749a7ce21853b156bfed4e813376a7ecc28fc9c042",
+      "header": "*******************************************************************************\n Revised: Mar 12, 2021           Europa / (Jupiter)                         502\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 1560.8   +- 0.3    Density (g cm^-3)= 3.013 +- 0.005\n  GM   (km^3/s^2)        = 3202.7121+- 0.0054 Geometric Albedo = 0.67 +/- 0.03  \n                                              V(1,0)           = -1.41\n\n SATELLITE ORBIT (at J2000.0 epoch, 2000-Jan-1.5):\n  Semi-major axis, a (km) ~ 671,000           Orbital period   ~ 3.55 d\n  Eccentricity, e         ~ 0.00981        Rotational period   = Synchronous\n  Inclination, i  (deg)   ~ 0.462\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:41:52 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Europa (502)                    {source: jup365_merged}\nCenter body name: Jupiter (599)                   {source: jup365_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 10912 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 71492.0, 71492.0, 66854.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'502'",
+      "CENTER": "'500@599'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "62145e7456718c36b054b9229312178188b37394c072c7b6c1032b70d9103e9d",
+    "header": "*******************************************************************************\n Revised: Mar 12, 2021           Europa / (Jupiter)                         502\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 1560.8   +- 0.3    Density (g cm^-3)= 3.013 +- 0.005\n  GM   (km^3/s^2)        = 3202.7121+- 0.0054 Geometric Albedo = 0.67 +/- 0.03  \n                                              V(1,0)           = -1.41\n\n SATELLITE ORBIT (at J2000.0 epoch, 2000-Jan-1.5):\n  Semi-major axis, a (km) ~ 671,000           Orbital period   ~ 3.55 d\n  Eccentricity, e         ~ 0.00981        Rotational period   = Synchronous\n  Inclination, i  (deg)   ~ 0.462\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:41:57 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Europa (502)                    {source: jup365_merged}\nCenter body name: Jupiter (599)                   {source: jup365_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 71492.0, 71492.0, 66854.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'502'",
+      "CENTER": "'500@599'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "d2c61d127735b92e01b983d8ec9d0c16ad4bd3c34d796f85aad488205d281c57",
+    "header": "*******************************************************************************\n Revised: Mar 12, 2021           Europa / (Jupiter)                         502\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 1560.8   +- 0.3    Density (g cm^-3)= 3.013 +- 0.005\n  GM   (km^3/s^2)        = 3202.7121+- 0.0054 Geometric Albedo = 0.67 +/- 0.03  \n                                              V(1,0)           = -1.41\n\n SATELLITE ORBIT (at J2000.0 epoch, 2000-Jan-1.5):\n  Semi-major axis, a (km) ~ 671,000           Orbital period   ~ 3.55 d\n  Eccentricity, e         ~ 0.00981        Rotational period   = Synchronous\n  Inclination, i  (deg)   ~ 0.462\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:52:52 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Europa (502)                    {source: jup365_merged}\nCenter body name: Jupiter (599)                   {source: jup365_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 71492.0, 71492.0, 66854.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

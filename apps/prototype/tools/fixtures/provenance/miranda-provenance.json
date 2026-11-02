@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'705'",
+        "CENTER": "'500@799'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'27414'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "e84b05af5fd062492fe134ac4fa7c6402a0f1ca174c4be4427d4699205ce3b32",
+      "header": "*******************************************************************************\n Revised: Sep 24, 2025             Miranda / (Uranus)                       705\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 240x234.2x232.9   Density (g cm^-3)   =  1.18 +- 0.05\n  GM (km^3/s^2)         =  4.3   +- 0.2     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +3.6 \n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 129.8 (10^3)    Orbital period      =  1.413 d\n  Eccentricity, e         =   0.0027        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 175.78\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:24 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Miranda (705)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 27414 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'705'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "4ac8e148c1ee9c004e92d7ce45f922d555a75d0144321d45f0e8d8f11780d0be",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Miranda / (Uranus)                       705\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 240x234.2x232.9   Density (g cm^-3)   =  1.18 +- 0.05\n  GM (km^3/s^2)         =  4.3   +- 0.2     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +3.6 \n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 129.8 (10^3)    Orbital period      =  1.413 d\n  Eccentricity, e         =   0.0027        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 175.78\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:38 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Miranda (705)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'705'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "d14764f33c505b707e03af5f9c4864cb9c0edb6e57dce235dbab87525fb67341",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Miranda / (Uranus)                       705\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 240x234.2x232.9   Density (g cm^-3)   =  1.18 +- 0.05\n  GM (km^3/s^2)         =  4.3   +- 0.2     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +3.6 \n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 129.8 (10^3)    Orbital period      =  1.413 d\n  Eccentricity, e         =   0.0027        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 175.78\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:12 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Miranda (705)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

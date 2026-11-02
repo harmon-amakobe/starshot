@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'808'",
+        "CENTER": "'500@899'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'34526'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "400033cd3cf616254dc620d197cf7e817d5b873eb8b84ae76ca18d9cdf575a8c",
+      "header": "*******************************************************************************\n Revised: Jul 08, 2026            Proteus  / (Neptune)                      808\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 208 +- 8       Mean density (g cm^-3)= 1.03 +- 0.97\n  GM (km^3/s^2)          = 2.58 +- 2.42   Geometric Albedo      = 0.06 \n                                          V(1,0)                = +5.6 \n\n SATELLITE ORBITAL DATA (mean values wrt Laplace plane):\n  Semi-major axis, a (km)= 117600         Orbital period      = 1.122315 d\n  Eccentricity, e        = 0.0            Rotational period   = \n  Inclination, i  (deg)  = 0.55\n\n Fir to all reported measurements to date (Voyager 2, ground, HST)\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:59 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Proteus (808)                   {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 34526 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'808'",
+      "CENTER": "'500@899'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "ead201492fb7034e4d6214a96b32f8232b93ed5b41de7996db24c8a8d793eba2",
+    "header": "*******************************************************************************\n Revised: Jul 08, 2026            Proteus  / (Neptune)                      808\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 208 +- 8       Mean density (g cm^-3)= 1.03 +- 0.97\n  GM (km^3/s^2)          = 2.58 +- 2.42   Geometric Albedo      = 0.06 \n                                          V(1,0)                = +5.6 \n\n SATELLITE ORBITAL DATA (mean values wrt Laplace plane):\n  Semi-major axis, a (km)= 117600         Orbital period      = 1.122315 d\n  Eccentricity, e        = 0.0            Rotational period   = \n  Inclination, i  (deg)  = 0.55\n\n Fir to all reported measurements to date (Voyager 2, ground, HST)\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:45:11 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Proteus (808)                   {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'808'",
+      "CENTER": "'500@899'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "f23eb0cbc119ed9a0f83c898ed72b0e5cc9861607127f3424c3909bf3fa292f8",
+    "header": "*******************************************************************************\n Revised: Jul 08, 2026            Proteus  / (Neptune)                      808\n\n SATELLITE PHYSICAL PROPERTIES:\n  Mean radius (km)       = 208 +- 8       Mean density (g cm^-3)= 1.03 +- 0.97\n  GM (km^3/s^2)          = 2.58 +- 2.42   Geometric Albedo      = 0.06 \n                                          V(1,0)                = +5.6 \n\n SATELLITE ORBITAL DATA (mean values wrt Laplace plane):\n  Semi-major axis, a (km)= 117600         Orbital period      = 1.122315 d\n  Eccentricity, e        = 0.0            Rotational period   = \n  Inclination, i  (deg)  = 0.55\n\n Fir to all reported measurements to date (Voyager 2, ground, HST)\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:15 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Proteus (808)                   {source: nep098_merged}\nCenter body name: Neptune (899)                   {source: nep098_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 24764.0, 24764.0, 24341.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

@@ -1,0 +1,49 @@
+# A small program for sync-work.mjs --self-test. It exercises every field the schema
+# allows, so a parser change that drops one fails the self-test.
+program: fixture-program
+milestone: "Chapter 0: fixture"
+project: 7
+
+epics:
+  - id: fx-epic
+    title: "Daily challenge"
+    labels: [kind:epic, area:game]
+    body: |
+      What a player gets, and the acceptance criteria for the whole epic.
+
+      Done when a daily level loads from the date on every device.
+    tasks:
+      - id: fx-seed
+        title: "Seed a daily level from the date"
+        labels: [kind:feature, area:levels, agent-ready]
+        size: S
+        priority: p2
+        actor: Agent
+        spec: docs/plans/fixture-program/plan.md#pr1
+        depends_on: []
+        body: |
+          The same date gives the same level on every device.
+      - id: fx-share
+        title: "Share a daily result as text"
+        labels: [kind:feature, area:game]
+        size: XS
+        priority: p3
+        actor: Either
+        spec: docs/plans/fixture-program/plan.md#pr2
+        depends_on: [fx-seed]
+  - id: fx-docs
+    title: "Explain the daily challenge"
+    labels: [kind:epic, area:docs]
+    body: |
+      A help page for the daily challenge.
+    tasks:
+      - id: fx-help
+        title: "Write the daily challenge help page"
+        labels: [kind:docs, area:docs, priority:p3]
+        size: XS
+        priority: p3
+        actor: Human
+        spec: docs/plans/fixture-program/plan.md#pr3
+        depends_on: [fx-share]
+        state: closed
+        reason: not_planned

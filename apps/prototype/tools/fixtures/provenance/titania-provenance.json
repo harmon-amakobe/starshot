@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'703'",
+        "CENTER": "'500@799'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'4452'"
+      },
+      "signature": {
+        "version": "1.2",
+        "source": "NASA/JPL Horizons API"
+      },
+      "sha256": "7186520a0439fc60cb30c3a00af49fc326a83c6c5ecf4ecacefc2419f8e5b0e7",
+      "header": "*******************************************************************************\n Revised: Sep 24, 2025             Titania / (Uranus)                       703\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 788.9  +- 1.8     Density (g cm^-3)   =  1.65 +- 0.03\n  GM (km^3/s^2)         = 222.8  +- 4.1     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +1.02\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 435.8 (10^3)    Orbital period      = 8.706 d\n  Eccentricity, e         =   0.0022        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:15 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Titania (703)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 4452 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'703'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "cff621601fcd73199f09e31d75f41f86947e496fd48327e2a2cca9de46c36756",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Titania / (Uranus)                       703\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 788.9  +- 1.8     Density (g cm^-3)   =  1.65 +- 0.03\n  GM (km^3/s^2)         = 222.8  +- 4.1     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +1.02\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 435.8 (10^3)    Orbital period      = 8.706 d\n  Eccentricity, e         =   0.0022        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:44:19 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Titania (703)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'703'",
+      "CENTER": "'500@799'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "9a8316cd855e3ccb00801ac36e87a5b1a5073d23bf3c7711896bba60ab551412",
+    "header": "*******************************************************************************\n Revised: Sep 24, 2025             Titania / (Uranus)                       703\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)           = 788.9  +- 1.8     Density (g cm^-3)   =  1.65 +- 0.03\n  GM (km^3/s^2)         = 222.8  +- 4.1     Geometric Albedo    =  0.27 \n                                            V(1,0)              = +1.02\n\n SATELLITE ORBITAL DATA (mean elements referred to equatorial plane & IAU pole)\n  Semi-major axis, a (km) = 435.8 (10^3)    Orbital period      = 8.706 d\n  Eccentricity, e         =   0.0022        Rotational period   = Synchronous\n  Inclination, i  (deg)   = 179.90\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:53:09 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Titania (703)                   {source: ura184_merged}\nCenter body name: Uranus (799)                    {source: ura184_merged}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 25559.0, 25559.0, 24973.0 km    {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

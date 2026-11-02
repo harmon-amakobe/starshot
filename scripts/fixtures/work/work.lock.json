@@ -1,0 +1,7 @@
+{
+  "program": "fixture-program",
+  "issues": {
+    "fx-epic": { "number": 11, "id": 2000011, "node_id": "I_fixture11" },
+    "fx-seed": { "number": 12, "id": 2000012, "node_id": "I_fixture12" }
+  }
+}

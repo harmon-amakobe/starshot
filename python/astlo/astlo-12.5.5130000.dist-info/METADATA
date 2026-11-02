@@ -1,0 +1,91 @@
+Metadata-Version: 2.4
+Name: astlo
+Version: 12.5.5130000
+Summary: A Real-time and still developing Astronomy/Astrophysics/celestial orbital mechanics engine
+Home-page: https://github.com/iamnothimbutwe
+Author: macharia/@iamnothimbutwe Github and Gitlab
+Author-email: astlospacesystems@gmail.com
+License: Copyright (c) 2026. All rights reserved
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: COPYRIGHT
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Scientific/Engineering :: Astronomy :: Astrophysics
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: plotext
+Requires-Dist: rich
+Requires-Dist: click
+Requires-Dist: numpy
+Requires-Dist: matplotlib
+Requires-Dist: sgp4
+Requires-Dist: requests
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# astlo
+
+**A real-time and still developing Astronomy/Astrophysics/celestial orbital mechanics engine**
+An extensible curently focused on orbital mechanics library for tracking the debris/.
+CLI + SDK.
+Written in pure Python (with future matplotlib/numpy support)
+
+*Copyright © 2026 Mark Macharia [@iamnothimbutwe both on Github and Gitlab/Macharia]
+*All rights reserved.
+
+*Unauthorized copying, modification, distribution, or commercial use of this software (or substantial portions of it) is strictly prohibited without express written permission from the author.
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+
+
+### Features
+
+- Real-time **barycentric** (SSB) and **heliocentric** position, velocity and gravitational acceleration vectors for **16 bodies**:
+  - Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
+  - Ceres, Vesta, Pallas, Hygiea, Haumea, Makemake, Eris
+  - real-time position vectors of the Sun relative to the SSB barycenter due to all major planets. Although every celestial object accounts for the SSB.
+- **Perifocal (xy)**, **Heliocentric position vectors and position vectors relative SSB.
+- Distances in **meters, kilometers, AU**
+- **Light delay** (seconds + minutes) from Earth,SSB and Heliocenter
+- Orbital velocity using real time velocity vectors relative SSB (m/s and km/s)
+- **Mean anomaly** and **Eccentric anomaly**
+- Full orbital period animation using **days + AU and seconds + AU**
+- **Parallax angle**, distance in **parsecs**, **light years**
+- **Specific orbital energy (E)** → automatically classifies orbit type:
+  - Circle / Ellipse / Parabola / Hyperbola
+- Terminal **orbit plotting** (eccentric orbits) using plotext
+- Clean, colored terminal output with tables.
+
+
+Future plans:
+- Full 3D visualization (Z-plane)
+- Real-time matplotlib animations
+- REST API
+
+### Contacts
+- Email markmacgh@gmail.com/hecateare@gmail.com
+- Github and Gitlab both @iamnothimbutwe
+
+>...**astlo was and is being developed on Linux from a mobile phone**...
+
+### Project Status
+- Pure Python (no numpy,astropy,matplotlib) but numpy will be integrated later..
+- Real-time barycentric shifts implemented
+- SSB + Heliocentric + perifocal for full periods                     - Terminal plotting with plotext: in some orbits like Eris, Because Er
+is has a massive orbital inclination i approx 44°, it is "diving" deep below the ecliptic plane. the program only plots X and Y, you will be looking at the shadow of the orbit, not the actual 3D length. some of the distance is shifted to the Z axis.                               - numpy and matplotlib for Z axis to be integrated later
+
+### Installation
+
+```
+??If anyone wants it, contact me and i will send the compiled whl for installation
+use pip install 'whl' to install the whl once recieved
+

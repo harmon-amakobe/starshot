@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/presentation" },
+    { "path": "packages/ephemeris" },
+    { "path": "packages/physics" },
+    { "path": "apps/game" },
+    { "path": "apps/prototype" }
+  ]
+}

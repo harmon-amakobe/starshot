@@ -1,0 +1,75 @@
+{
+  "queries": [
+    {
+      "request": {
+        "format": "json",
+        "MAKE_EPHEM": "'YES'",
+        "EPHEM_TYPE": "'VECTORS'",
+        "VEC_TABLE": "'2'",
+        "VEC_CORR": "'NONE'",
+        "OUT_UNITS": "'KM-S'",
+        "REF_PLANE": "'ECLIPTIC'",
+        "REF_SYSTEM": "'ICRF'",
+        "TIME_TYPE": "'TDB'",
+        "CSV_FORMAT": "'YES'",
+        "COMMAND": "'402'",
+        "CENTER": "'500@499'",
+        "START_TIME": "'JD2461346.500800740905'",
+        "STOP_TIME": "'JD2461649.215786621906'",
+        "STEP_SIZE": "'30694'"
+      },
+      "signature": {
+        "source": "NASA/JPL Horizons API",
+        "version": "1.2"
+      },
+      "sha256": "38db21f1f77f4f3f7ed5cf2b66d3c7523088bd9772259e2ddc342143f5ef5f50",
+      "header": "*******************************************************************************\n Revised: Jun 02, 2025             Deimos / (Mars)                          402\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)             = 7.8 x 6.0 x 5.1 Density (g cm^-3)   =  1.76 +- 0.30\n  Mass (10^20 kg )        = 1.80 (10^-5)    Geometric Albedo    =  0.06 \n                               (+- 0.15)    V(1,0)              = +12.89\n\n SATELLITE ORBITAL DATA:\n  Semi-major axis, a (km) = 23.4632(10^3)   Orbital period      = 1.263 d\n  Eccentricity, e         =  0.00033        Rotational period   = Synchronous\n  Inclination, i  (deg)   =  1.791\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:41:15 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Deimos (402)                    {source: mar099}\nCenter body name: Mars (499)                      {source: mar099}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:09.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:43.9641 TDB\nStep-size       : 30694 steps\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 3396.19, 3396.19, 3376.2 km     {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+    }
+  ],
+  "probeQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'402'",
+      "CENTER": "'500@499'",
+      "TLIST": "'2461350.675240396056 2461472.830121363513 2461616.860700786114'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "9c74d6ae7f29f4fd4ec40ddcdf6bd95ec807148c20a4ec6fd5e12951d7d10fb7",
+    "header": "*******************************************************************************\n Revised: Jun 02, 2025             Deimos / (Mars)                          402\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)             = 7.8 x 6.0 x 5.1 Density (g cm^-3)   =  1.76 +- 0.30\n  Mass (10^20 kg )        = 1.80 (10^-5)    Geometric Albedo    =  0.06 \n                               (+- 0.15)    V(1,0)              = +12.89\n\n SATELLITE ORBITAL DATA:\n  Semi-major axis, a (km) = 23.4632(10^3)   Orbital period      = 1.263 d\n  Eccentricity, e         =  0.00033        Rotational period   = Synchronous\n  Inclination, i  (deg)   =  1.791\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:41:30 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Deimos (402)                    {source: mar099}\nCenter body name: Mars (499)                      {source: mar099}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-06 04:12:20.7702 TDB\nStop  time      : A.D. 2027-Jul-30 08:39:24.5479 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 3396.19, 3396.19, 3376.2 km     {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  },
+  "endpointQuery": {
+    "request": {
+      "format": "json",
+      "MAKE_EPHEM": "'YES'",
+      "EPHEM_TYPE": "'VECTORS'",
+      "VEC_TABLE": "'2'",
+      "VEC_CORR": "'NONE'",
+      "OUT_UNITS": "'KM-S'",
+      "REF_PLANE": "'ECLIPTIC'",
+      "REF_SYSTEM": "'ICRF'",
+      "TIME_TYPE": "'TDB'",
+      "CSV_FORMAT": "'YES'",
+      "COMMAND": "'402'",
+      "CENTER": "'500@499'",
+      "TLIST": "'2461346.500789166894 2461346.500800740905 2461649.215786621906 2461649.215798195917'"
+    },
+    "signature": {
+      "source": "NASA/JPL Horizons API",
+      "version": "1.2"
+    },
+    "sha256": "7849dd260c64224cb5a402e9c395db1761b18c178b7ee69b66653a4de9db3643",
+    "header": "*******************************************************************************\n Revised: Jun 02, 2025             Deimos / (Mars)                          402\n\n SATELLITE PHYSICAL PROPERTIES:\n  Radius (km)             = 7.8 x 6.0 x 5.1 Density (g cm^-3)   =  1.76 +- 0.30\n  Mass (10^20 kg )        = 1.80 (10^-5)    Geometric Albedo    =  0.06 \n                               (+- 0.15)    V(1,0)              = +12.89\n\n SATELLITE ORBITAL DATA:\n  Semi-major axis, a (km) = 23.4632(10^3)   Orbital period      = 1.263 d\n  Eccentricity, e         =  0.00033        Rotational period   = Synchronous\n  Inclination, i  (deg)   =  1.791\n*******************************************************************************\n\n\n*******************************************************************************\nEphemeris / API_USER Sun Nov  1 06:52:50 2026 Pasadena, USA      / Horizons\n*******************************************************************************\nTarget body name: Deimos (402)                    {source: mar099}\nCenter body name: Mars (499)                      {source: mar099}\nCenter-site name: BODY CENTER\n*******************************************************************************\nStart time      : A.D. 2026-Nov-02 00:01:08.1840 TDB\nStop  time      : A.D. 2027-Aug-31 17:10:44.9641 TDB\nStep-size       : DISCRETE TIME-LIST\n*******************************************************************************\nCenter geodetic : 0.0, 0.0, 0.0                   {W-lon(deg),Lat(deg),Alt(km)}\nCenter cylindric: 0.0, 0.0, 0.0                   {W-lon(deg),Dxy(km),Dz(km)}\nCenter radii    : 3396.19, 3396.19, 3376.2 km     {Equator_a, b, pole_c}\nOutput units    : KM-S\nCalendar mode   : Mixed Julian/Gregorian\nOutput type     : GEOMETRIC cartesian states\nOutput format   : 2 (position and velocity)\nReference frame : Ecliptic of J2000.0\n*******************************************************************************\n            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,                     VX,                     VY,                     VZ,\n**************************************************************************************************************************************************************************************************\n"
+  }
+}

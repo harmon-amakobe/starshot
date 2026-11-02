@@ -1,0 +1,9 @@
+fix(physics): stop the preview when the probe hits a planet
+
+The preview kept integrating after an impact. It now stops at the surface.
+
+# Please enter the commit message for your changes! Lines starting
+# with '#' will be ignored.
+Signed-off-by: A Person <12345+person@users.noreply.github.com>
+Co-Authored-By: An Agent! <noreply@anthropic.com>
+Claude-Session: https://example.com/session!

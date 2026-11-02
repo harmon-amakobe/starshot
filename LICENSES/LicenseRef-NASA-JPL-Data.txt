@@ -1,0 +1,8 @@
+NASA/JPL data
+
+Files under this reference are data produced by NASA/JPL: Horizons API responses and
+values derived from the DE440 planetary ephemeris published by NAIF. NASA material is
+generally not subject to copyright in the United States. The data is used with
+attribution to NASA/JPL-Caltech and carries no endorsement by NASA. Where a file is a
+derived or trimmed version of a NAIF kernel, the file names Starshot as its last
+modifier, as NAIF's rules require. See CREDITS.md.

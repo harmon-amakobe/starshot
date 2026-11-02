@@ -1,0 +1,583 @@
+# Issues as code for the v1-starshot program (D23).
+#
+# scripts/sync-work.mjs reads this file and creates or updates the labels, the
+# milestone, one issue per epic and task, and the sub-issue links, through the GitHub
+# REST API. It is a dry run by default; only the orchestrator runs it with --apply,
+# never a builder and never CI with a personal token. The issue numbers and REST ids
+# it creates are recorded in docs/plans/v1-starshot/work.lock.json, which it writes.
+# D23 names the file work.yaml; this program keeps the numbered name 03-work.yaml so the
+# plan's files sort in reading order. Titles and bodies pass the copy gate.
+#
+# Schema (governance research, section D3): each epic has id, title, labels, body and
+# tasks; each task has id, title, labels, size, priority, actor, spec, depends_on and a
+# short body. Ids are stable slugs and are never reused. A task maps to one pull
+# request (PR ids in 00-plan.md), except the owner's tasks in the first epic.
+
+program: v1-starshot
+milestone: "Chapter 1: web"
+
+epics:
+  - id: v1-governance
+    title: "Foundations and governance"
+    labels: [kind:epic, area:harness, priority:p1]
+    body: |
+      The program plan, the decisions D12 to D30, the governance files and gates (PR0),
+      and the one-time steps only the owner can take. Done when PR0 has merged and every
+      owner task below is closed or explicitly deferred.
+      Plan: docs/plans/v1-starshot/00-plan.md. Owner steps: docs/plans/v1-starshot/04-ops-checklist.md.
+    tasks:
+      - id: v1-pr0-plan
+        title: "PR0: program plan, decisions D12 to D30, governance files and gates"
+        labels: [kind:docs, area:docs, priority:p1, status:claimed]
+        size: XL
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#what-pr0-carries
+        depends_on: []
+        body: |
+          Lands the plan, the decision entries and the governance scaffolding with every
+          gate green. Exceeds the size cap by design (deviation 1).
+      - id: v1-ops-github
+        title: "Owner: turn on Issues, Actions, Pages, the ruleset and code security"
+        labels: [kind:chore, area:ci, priority:p1, status:ready]
+        size: S
+        priority: p1
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#github
+        depends_on: []
+        body: |
+          Steps G1 to G7 and G10 of the ops checklist. Each step says how to confirm it.
+      - id: v1-ops-dco
+        title: "Owner: install the DCO app after PR0 merges"
+        labels: [kind:chore, area:harness, priority:p1, status:ready]
+        size: XS
+        priority: p1
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#github
+        depends_on: [v1-pr0-plan]
+        body: |
+          Step G8. From the PR2 group on, the app checks that every commit carries a
+          Signed-off-by line matching its author; agent work is authored by the owner (D24).
+      - id: v1-ops-board
+        title: "Owner: create the project board with its fields and views, and link it"
+        labels: [kind:chore, area:harness, priority:p2, status:ready]
+        size: S
+        priority: p2
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#github
+        depends_on: []
+        body: |
+          Step G9: fields Status, Priority, Size, Area, Actor and Chapter; five views; the
+          built-in workflows.
+      - id: v1-ops-domain
+        title: "Owner: register playstarshot.com and playstarshot.app and forward the project addresses"
+        labels: [kind:chore, area:brand, priority:p1, status:ready]
+        size: S
+        priority: p1
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#domain-and-email
+        depends_on: []
+        body: |
+          Steps M1 to M5 (D20). The reporting addresses in the governance files work only
+          once forwarding is on.
+      - id: v1-ops-firebase
+        title: "Owner: create the two Firebase projects with budgets, keys and App Check"
+        labels: [kind:chore, area:game, priority:p2, status:ready]
+        size: M
+        priority: p2
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#firebase-and-google-cloud
+        depends_on: []
+        body: |
+          Steps F1 to F12 (D13). Needed before PR30.
+      - id: v1-ops-mark
+        title: "Owner: send Mark the fixes, the verification and the directions document"
+        labels: [kind:chore, area:astlo, priority:p1, status:ready]
+        size: XS
+        priority: p1
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#mark-macharia-d26
+        depends_on: [v1-pr0-plan]
+        body: |
+          Step K1 (D26). The message stays outside the repository; record only the date.
+          Later upstream pull requests follow D29 (step K2).
+      - id: v1-ops-playtests
+        title: "Owner: run the feel prototypes with five to ten testers"
+        labels: [kind:chore, area:game, priority:p2, status:ready]
+        size: M
+        priority: p2
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#playtests-for-the-prototypes
+        depends_on: []
+        body: |
+          Steps P1 and P2. Band C waits on P1; PR28 waits on P2.
+      - id: v1-ops-trademark
+        title: "Owner: trademark searches before any store submission"
+        labels: [kind:chore, area:brand, priority:p3, status:ready]
+        size: S
+        priority: p3
+        actor: Human
+        spec: docs/plans/v1-starshot/04-ops-checklist.md#before-any-store-submission-a-later-program
+        depends_on: []
+        body: |
+          Step T1 (D20). Not needed for the web release.
+
+  - id: v1-band-a
+    title: "Band A: foundations"
+    labels: [kind:epic, area:ci, priority:p1]
+    body: |
+      CI hardening, the GameScreen split, the process checks, and the licence and assets
+      gates. Done when PR1 to PR5 have merged into the stack, npm run gates exits 0, and
+      the band's verification sweep and handoff are recorded.
+    tasks:
+      - id: v1-ci-hardening
+        title: "PR1, built in PR0: harden CI with pinned actions, an aggregator check, workflow lint and verify-game"
+        labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr1-ci-hardening
+        depends_on: [v1-pr0-plan]
+        body: |
+          Least privilege, SHA pins, one stable required check named gates, the layering gate.
+          Built in PR0 (#1) by the owner's ruling (D30).
+      - id: v1-screen-split-render
+        title: "PR2: move GameScreen's pure helpers and canvas loop into their own modules"
+        labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr2-gamescreen-split-render-loop
+        depends_on: [v1-ci-hardening]
+        body: |
+          Behaviour unchanged; verify-game and the level tests prove it.
+      - id: v1-screen-split-state
+        title: "PR3: move GameScreen's state into hooks and bring it under 300 lines"
+        labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr3-gamescreen-split-state-hooks
+        depends_on: [v1-screen-split-render]
+        body: |
+          GameScreen.tsx leaves the size baseline (D28).
+      - id: v1-process-checks
+        title: "PR4: Process checks: PR size, commit scan and the work gate"
+        labels: [kind:chore, area:ci, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr4-process-checks
+        depends_on: [v1-ci-hardening]
+        body: |
+          The size cap becomes a check, commit messages get the secrets scan, and the
+          issues file becomes a gate (D23, D24).
+      - id: v1-licence-assets
+        title: "PR5: Assets manifest and the dependency licence gate"
+        labels: [kind:chore, area:harness, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr5-licence-and-assets-gates
+        depends_on: [v1-ci-hardening]
+        body: |
+          Every dependency has an allowed licence and every asset a manifest entry;
+          CREDITS.md is generated from the manifest (D12, D15, D28).
+
+  - id: v1-band-b
+    title: "Band B: the Rust core"
+    labels: [kind:epic, area:physics, priority:p1]
+    body: |
+      One Rust core for ephemeris, physics and game rules, compiled to wasm for the web
+      worker, proven bit-identical across V8, JavaScriptCore and native, then the
+      TypeScript core is retired (D16, D17). Done when PR6 to PR17 have merged into the
+      stack and the band's verification sweep and handoff are recorded.
+    tasks:
+      - id: v1-rust-workspace
+        title: "PR6: add the Cargo workspace, starshot-math with golden bits, and the Rust gates"
+        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr6-rust-workspace-and-starshot-math
+        depends_on: [v1-ci-hardening, v1-licence-assets]
+        body: |
+          Includes the arm64 job that compares the golden maths bits.
+      - id: v1-ephem-tool
+        title: "PR7: add tools/ephem with a Horizons client that records its source, and refresh the fixtures"
+        labels: [kind:feature, area:ephemeris, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr7-ephemeris-tool-and-horizons-fixtures
+        depends_on: [v1-ci-hardening, v1-licence-assets]
+        body: |
+          Adds the Moon and Earth's centre to the fixtures; replaces tools/horizons.
+      - id: v1-ephem-rails
+        title: "PR8: generate and commit the DE440 rails pack with its validation reports"
+        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr8-de440-rails-pack
+        depends_on: [v1-ephem-tool]
+        body: |
+          1950 to 2150, 100 km tier, every body within 150 km of DE440 every 5 days.
+      - id: v1-ephemeris-crate
+        title: "PR9: port time, bodies and Table 1 to starshot-ephemeris with the Horizons budgets"
+        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr9-ephemeris-crate
+        depends_on: [v1-rust-workspace]
+        body: |
+          Same budgets as today's TypeScript test; a conformance fixture from the TypeScript side.
+      - id: v1-rails-reader
+        title: "PR10: read the rails pack in Rust, derive Earth's centre and check Table 1 densely"
+        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr10-rails-reader
+        depends_on: [v1-ephem-rails, v1-ephemeris-crate]
+        body: |
+          Closes the fixture under-sampling gap (register R18).
+      - id: v1-physics-core
+        title: "PR11: port the integrator, gravity, Hermite, launch and Lambert to starshot-physics"
+        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr11-physics-crate-integrator-and-lambert
+        depends_on: [v1-ephemeris-crate]
+        body: |
+          All transcendental maths through starshot-math.
+      - id: v1-physics-simulate
+        title: "PR12: port simulate with energy, timing and conformance tests"
+        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr12-physics-crate-simulate
+        depends_on: [v1-physics-core]
+        body: |
+          Matches the TypeScript flights within 1 km over 14 years.
+      - id: v1-game-shot
+        title: "PR13: port the shot model and add the replay format with a physics version"
+        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr13-game-crate-shots-and-replays
+        depends_on: [v1-physics-simulate]
+        body: |
+          Canonical inputs carry exact bits (D16).
+      - id: v1-game-levels
+        title: "PR14: port levels, scoring and the hint search with every known solution"
+        labels: [kind:level, area:levels, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr14-game-crate-levels-scoring-and-hints
+        depends_on: [v1-game-shot]
+        body: |
+          Every level test of today passes in Rust with the same numbers.
+      - id: v1-core-wasm
+        title: "PR15: build the wasm core and prove identical bits in V8, JavaScriptCore and native"
+        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr15-core-wasm-package-and-bit-identity
+        depends_on: [v1-game-levels]
+        body: |
+          Golden replays compared bit for bit; a size budget for the wasm.
+      - id: v1-worker-cutover
+        title: "PR16: run the physics worker and the map on the wasm core"
+        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr16-worker-cut-over
+        depends_on: [v1-core-wasm, v1-screen-split-state]
+        body: |
+          The worker protocol does not change; preview still equals launch (D6).
+      - id: v1-retire-ts-core
+        title: "PR17: delete the TypeScript ephemeris and physics packages"
+        labels: [kind:chore, area:physics, priority:p1, status:ready, agent-ready]
+        size: M
+        priority: p1
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr17-retire-the-typescript-core
+        depends_on: [v1-worker-cutover, v1-rails-reader]
+        body: |
+          Fixtures move to fixtures/; docs and skills point at the crates.
+
+  - id: v1-band-c
+    title: "Band C: flight model and progression"
+    labels: [kind:epic, area:game, priority:p2]
+    body: |
+      Rails as the game's source, fuel as impulse, capture at periapsis, lock states with
+      cues on every channel, the time map, the launch-window screen and progression (D17,
+      D18). Specs are outlines until the Band C planning session makes them turnkey; that
+      session needs the playtest results of prototypes 2 to 6.
+    tasks:
+      - id: v1-rails-default
+        title: "PR18: fly the game on DE440 rails and re-derive pars, hints and known solutions"
+        labels: [kind:physics, area:levels, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr18-fly-on-de440-rails
+        depends_on: [v1-retire-ts-core]
+        body: |
+          Blocked on the Band C planning session.
+      - id: v1-craft-fuel
+        title: "PR19: add craft, impulse fuel and the minimum-pull ring"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr19-craft-and-fuel
+        depends_on: [v1-rails-default]
+        body: |
+          Blocked on the Band C planning session.
+      - id: v1-soi-capture
+        title: "PR20: add sphere-of-influence events, the Moon, and capture at periapsis"
+        labels: [kind:physics, area:physics, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr20-spheres-of-influence-and-capture
+        depends_on: [v1-craft-fuel]
+        body: |
+          Blocked on the Band C planning session and prototype 3.
+      - id: v1-lock-cues
+        title: "PR21: add preview lock states, the ghost leg, aim assist and their cues"
+        labels: [kind:feature, area:a11y, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr21-lock-states-and-cues
+        depends_on: [v1-soi-capture]
+        body: |
+          Blocked on the Band C planning session and prototype 4.
+      - id: v1-time-map
+        title: "PR22: replace the flight clock with the event-anchored time map"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr22-time-map
+        depends_on: [v1-soi-capture]
+        body: |
+          Blocked on the Band C planning session and prototype 2.
+      - id: v1-window-screen
+        title: "PR23: add the launch-window table and the snapping date slider"
+        labels: [kind:feature, area:levels, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr23-launch-window-screen
+        depends_on: [v1-rails-default]
+        body: |
+          Blocked on the Band C planning session and prototype 6.
+      - id: v1-progression
+        title: "PR24: add unlocks, collectors, g levels, a versioned save and an export code"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr24-progression-and-saves
+        depends_on: [v1-soi-capture, v1-craft-fuel]
+        body: |
+          Blocked on the Band C planning session and prototype 5.
+
+  - id: v1-band-d
+    title: "Band D: senses"
+    labels: [kind:epic, area:game, priority:p2]
+    body: |
+      three.js presenting as 2D with a Canvas 2D fallback, real textures with tiers, a
+      real sky, procedural sound and haptics, and settings (D15, D19). Outlines until the
+      Band D planning session.
+    tasks:
+      - id: v1-three-renderer
+        title: "PR25: render the map with three.js, keep Canvas 2D as the fallback"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr25-threejs-renderer
+        depends_on: [v1-worker-cutover]
+        body: |
+          Blocked on the Band D planning session.
+      - id: v1-textures
+        title: "PR26: build KTX2 texture tiers from pinned sources with manifest entries"
+        labels: [kind:feature, area:brand, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr26-textures
+        depends_on: [v1-three-renderer, v1-licence-assets]
+        body: |
+          Blocked on the Band D planning session.
+      - id: v1-sky
+        title: "PR27: draw a real star catalogue and a licensed Milky Way"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr27-stars-and-sky
+        depends_on: [v1-three-renderer, v1-licence-assets]
+        body: |
+          Blocked on the Band D planning session and the star catalogue's licence check.
+      - id: v1-audio-haptics
+        title: "PR28: add procedural sound and haptics with their visual and text twins"
+        labels: [kind:feature, area:a11y, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr28-audio-and-haptics
+        depends_on: [v1-lock-cues]
+        body: |
+          Blocked on the Band D planning session and prototype 1.
+      - id: v1-settings
+        title: "PR29: add the settings screen and split styles.css by feature"
+        labels: [kind:feature, area:a11y, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr29-settings
+        depends_on: [v1-audio-haptics, v1-textures]
+        body: |
+          Blocked on the Band D planning session.
+
+  - id: v1-band-e
+    title: "Band E: online"
+    labels: [kind:epic, area:game, priority:p2]
+    body: |
+      Firebase with deny-by-default rules tested in CI, anonymous accounts, a leaderboard
+      whose scores a server function verifies with the same wasm, and Firebase Hosting
+      with a Pages mirror (D13, D21, D22). Outlines until the Band E planning session.
+    tasks:
+      - id: v1-firebase-foundation
+        title: "PR30: add the Firebase configuration, the emulator and rules tests in CI"
+        labels: [kind:feature, area:ci, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr30-firebase-foundation
+        depends_on: [v1-process-checks, v1-licence-assets]
+        body: |
+          Blocked on the Band E planning session and the owner's Firebase steps.
+      - id: v1-auth-leaderboard
+        title: "PR31: add anonymous accounts, display names and the leaderboard rules"
+        labels: [kind:feature, area:game, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr31-accounts-and-leaderboard
+        depends_on: [v1-firebase-foundation]
+        body: |
+          Blocked on the Band E planning session.
+      - id: v1-replay-verify
+        title: "PR32: verify submitted replays on the server with the shipped wasm"
+        labels: [kind:feature, area:physics, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr32-replay-verification
+        depends_on: [v1-auth-leaderboard, v1-core-wasm, v1-progression]
+        body: |
+          Blocked on the Band E planning session.
+      - id: v1-hosting
+        title: "PR33: deploy to Firebase Hosting with previews, headers and the custom domain"
+        labels: [kind:feature, area:ci, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr33-hosting
+        depends_on: [v1-firebase-foundation]
+        body: |
+          Blocked on the Band E planning session and the domain steps.
+
+  - id: v1-band-f
+    title: "Band F: chapter one content and release"
+    labels: [kind:epic, area:levels, priority:p2]
+    body: |
+      Chapter one's levels from Earth orbit to a close solar orbit, each with a known
+      solution test; the credits; the release lane; the store notes; the astlo upstream
+      kit (D29). Outlines until the Band F planning session.
+    tasks:
+      - id: v1-levels-moon
+        title: "PR34: add the Earth orbit and Moon levels with known solutions"
+        labels: [kind:level, area:levels, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr34-levels-earth-and-moon
+        depends_on: [v1-progression, v1-lock-cues, v1-time-map, v1-window-screen]
+        body: |
+          Blocked on the Band F planning session.
+      - id: v1-levels-inner
+        title: "PR35: add the Venus and Mars levels with known solutions"
+        labels: [kind:level, area:levels, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr35-levels-venus-and-mars
+        depends_on: [v1-levels-moon]
+        body: |
+          Blocked on the Band F planning session.
+      - id: v1-levels-outer
+        title: "PR36: add the Jupiter, Saturn and close solar orbit levels"
+        labels: [kind:level, area:levels, priority:p2, status:blocked]
+        size: L
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr36-levels-outer-planets-and-the-sun
+        depends_on: [v1-levels-inner]
+        body: |
+          Blocked on the Band F planning session.
+      - id: v1-credits
+        title: "PR37: Credits screen from the manifest"
+        labels: [kind:feature, area:docs, priority:p2, status:blocked]
+        size: S
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr37-credits
+        depends_on: [v1-textures, v1-sky, v1-audio-haptics]
+        body: |
+          Blocked on the Band F planning session and Mark's choice of credit.
+      - id: v1-release-lane
+        title: "PR38: open release PRs from the Unreleased changelog section and tag on merge"
+        labels: [kind:chore, area:ci, priority:p2, status:blocked]
+        size: M
+        priority: p2
+        actor: Agent
+        spec: docs/plans/v1-starshot/00-plan.md#pr38-release-lane
+        depends_on: [v1-ci-hardening]
+        body: |
+          Blocked on the Band F planning session.
+      - id: v1-store-prep
+        title: "PR39: write the store preparation notes"
+        labels: [kind:docs, area:docs, priority:p3, status:blocked]
+        size: S
+        priority: p3
+        actor: Either
+        spec: docs/plans/v1-starshot/00-plan.md#pr39-store-preparation
+        depends_on: [v1-hosting, v1-credits]
+        body: |
+          Blocked on the Band F planning session.
+      - id: v1-astlo-upstream-kit
+        title: "PR40: astlo upstream kit with the patch series, the report and draft PR bodies"
+        labels: [kind:chore, area:astlo, priority:p2, status:blocked]
+        size: S
+        priority: p2
+        actor: Either
+        spec: docs/plans/v1-starshot/00-plan.md#pr40-astlo-upstream-kit
+        depends_on: [v1-ephem-rails]
+        body: |
+          Regenerates what D29 offers Mark from the python/astlo commits. Blocked on the
+          Band F planning session.

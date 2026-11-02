@@ -1,0 +1,29 @@
+{
+  "name": "@starshot/prototype",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 8767 --strictPort",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "preview": "vite preview --host 127.0.0.1 --port 8767 --strictPort",
+    "verify:data": "node tools/verify-assets.mjs && node tools/verify-system-data.mjs && node tools/verify-precise-flight.mjs"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.183.1",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.5"
+  },
+  "dependencies": {
+    "@starshot/presentation": "*",
+    "@starshot/ephemeris": "^0.1.0",
+    "@starshot/physics": "^0.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "version": "0.1.0"
+}

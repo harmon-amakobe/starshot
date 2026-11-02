@@ -1,0 +1,123 @@
+# Labels for issues and pull requests (D23). scripts/sync-work.mjs creates and updates
+# them on GitHub from this file; it never deletes a label. `from` renames an old label
+# in place, so its issues keep it.
+
+# kind: what the issue is
+- name: "kind:bug"
+  color: "d73a4a"
+  description: Something does not work as documented
+- name: "kind:feature"
+  color: "a2eeef"
+  description: A new behaviour or a change to an existing one
+- name: "kind:level"
+  color: "0e8a16"
+  description: A level on a real launch window
+- name: "kind:physics"
+  color: "5319e7"
+  description: Starshot disagrees with NASA/JPL, or a physics model changes
+- name: "kind:docs"
+  color: "0075ca"
+  description: Documentation only
+- name: "kind:chore"
+  color: "c5def5"
+  description: Upkeep with no change a player or package user notices
+- name: "kind:proposal"
+  color: "d4c5f9"
+  description: A proposed change of direction, for the owner to rule on (GOVERNANCE.md)
+- name: "kind:epic"
+  color: "3e4b9e"
+  description: A parent issue whose sub-issues hold the work
+
+# area: where the work lands
+- name: "area:game"
+  color: "1d76db"
+  description: The game in apps/game
+- name: "area:levels"
+  color: "1d76db"
+  description: Levels, pars, hints and their known solutions
+- name: "area:physics"
+  color: "1d76db"
+  description: The flight simulator, launch model and Lambert solver
+- name: "area:ephemeris"
+  color: "1d76db"
+  description: Planet positions, time scales and the Horizons fixtures
+- name: "area:a11y"
+  color: "1d76db"
+  description: Keyboard, screen reader, reduced motion, contrast and touch targets
+  from: "accessibility"
+- name: "area:harness"
+  color: "1d76db"
+  description: Agents, hooks, skills, rubrics and gates
+- name: "area:ci"
+  color: "1d76db"
+  description: GitHub Actions, Pages and release workflows
+- name: "area:docs"
+  color: "1d76db"
+  description: Documentation and the decision log
+- name: "area:brand"
+  color: "1d76db"
+  description: Name, logo, icon and the trademark policy
+- name: "area:astlo"
+  color: "1d76db"
+  description: python/astlo and the evaluation of Mark Macharia's astlo
+
+# priority: how soon
+- name: "priority:p0"
+  color: "b60205"
+  description: Broken for everyone; drop other work
+- name: "priority:p1"
+  color: "d93f0b"
+  description: Next up
+- name: "priority:p2"
+  color: "fbca04"
+  description: Planned
+- name: "priority:p3"
+  color: "e4e669"
+  description: Someday
+
+# status: where the issue stands before work starts; progress lives on the project board
+- name: "status:triage"
+  color: "ededed"
+  description: New; waiting for a triager to label it
+- name: "status:needs-info"
+  color: "f9d0c4"
+  description: Waiting for the reporter; closed after 14 days without a reply
+- name: "status:ready"
+  color: "c2e0c6"
+  description: Labelled and specified; free to claim
+- name: "status:claimed"
+  color: "bfd4f2"
+  description: Someone has claimed it; see the assignee
+- name: "status:blocked"
+  color: "e99695"
+  description: Waiting on another issue or an owner decision
+
+# community: names GitHub surfaces to new contributors
+- name: "good first issue"
+  color: "7057ff"
+  description: Small and fully specified; a good start
+- name: "help wanted"
+  color: "008672"
+  description: The owner would welcome a contributor here
+
+# agents
+- name: "agent-ready"
+  color: "6f42c1"
+  description: Acceptance criteria written, files named, no owner decision pending
+- name: "ai-assisted"
+  color: "c39bd3"
+  description: The contribution discloses AI help
+- name: "needs-copy-edit"
+  color: "fef2c0"
+  description: The text breaks the copy standard (docs/copy-standard.md)
+
+# outcome: GitHub's own labels, kept
+- name: "duplicate"
+  color: "cfd3d7"
+  description: This issue or pull request already exists
+- name: "invalid"
+  color: "e4e669"
+  description: This does not seem right
+- name: "wontfix"
+  color: "ffffff"
+  description: This will not be worked on

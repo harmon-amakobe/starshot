@@ -1,0 +1,44 @@
+# Scorecard: the OpenSSF supply-chain checks (pinned actions, token permissions, branch
+# protection and others), published to the OpenSSF API and to this repository's code
+# scanning alerts. It is not a required check: it scores main, not a pull request.
+# Publishing results limits what the job may contain (no run steps, approved actions
+# only), so it has exactly these three steps.
+name: Scorecard
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "27 4 * * 1"
+  workflow_dispatch:
+
+# Nothing by default; the one job asks for what its steps need.
+permissions: {}
+
+# A newer run scores a newer tree, so an older one in flight has nothing left to add.
+concurrency:
+  group: scorecard-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scorecard:
+    name: scorecard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write # upload-sarif adds the results to code scanning
+      id-token: write # scorecard-action signs the results it publishes to OpenSSF
+      actions: read # upload-sarif reads this run's details
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: results.sarif

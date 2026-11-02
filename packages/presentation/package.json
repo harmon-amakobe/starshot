@@ -1,0 +1,28 @@
+{
+  "name": "@starshot/presentation",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./vehicle": "./src/vehicle.ts",
+    "./charge-sleeve": "./src/charge-sleeve.ts",
+    "./engine-geometry": "./src/engine-geometry.ts",
+    "./audio": "./src/audio.ts",
+    "./icons": "./src/icons.tsx",
+    "./pull-pose": "./src/pull-pose.ts",
+    "./engine-demo": "./src/engine-demo.ts",
+    "./presentation": "./src/presentation.ts",
+    "./base.css": "./src/base.css",
+    "./entry.css": "./src/entry.css",
+    "./cloud.css": "./src/cloud.css"
+  },
+  "dependencies": {
+    "three": "^0.187.0",
+    "react": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.183.1",
+    "@types/react": "^19.3.0"
+  },
+  "version": "0.1.0"
+}

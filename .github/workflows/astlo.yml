@@ -1,0 +1,61 @@
+# astlo: builds the fixed astlo wheel from python/astlo and tests it offline against
+# NASA/JPL Horizons fixtures, whenever that folder changes (D10). python/astlo/astlo is
+# Mark Macharia's code, all rights reserved and not under Starshot's Apache-2.0
+# licence; this job only packages and tests it. Nothing in the game or the TypeScript
+# packages uses it. It needs no secrets, and the token is read-only.
+name: astlo
+
+on:
+  pull_request:
+    paths:
+      - "python/astlo/**"
+      - ".github/workflows/astlo.yml"
+  push:
+    branches: [main]
+    paths:
+      - "python/astlo/**"
+      - ".github/workflows/astlo.yml"
+  workflow_dispatch:
+
+# Nothing by default; the one job asks for what its steps need.
+permissions: {}
+
+concurrency:
+  group: astlo-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  wheel:
+    name: astlo wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Build the wheel (standard library only)
+        run: python -I python/astlo/build_wheel.py --outdir "$RUNNER_TEMP/dist"
+      - name: Print the wheel's sha256
+        run: sha256sum "$RUNNER_TEMP"/dist/astlo-*+starshot.*-py3-none-any.whl
+      # Uploaded before pip fetches anything from PyPI, so no third-party code has run
+      # on this machine when the artifact is sealed; its sha256 is in the step above.
+      # The +starshot local label in the file name marks a patched build PyPI refuses.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: astlo-fixed-wheel
+          path: ${{ runner.temp }}/dist/astlo-*+starshot.*-py3-none-any.whl
+          if-no-files-found: error
+          retention-days: 30
+      # Its dependencies are unpinned on purpose: Mark's wheel declares them, and this job
+      # tests the wheel as a user would install it.
+      - name: Install it in a fresh virtualenv, dependencies from PyPI
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/python" -m pip install "$RUNNER_TEMP"/dist/astlo-*+starshot.*-py3-none-any.whl
+      - name: Test against the committed Horizons fixtures (offline)
+        run: '"$RUNNER_TEMP/venv/bin/python" -I -m unittest discover -s python/astlo/tests -v'

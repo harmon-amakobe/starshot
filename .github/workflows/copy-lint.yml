@@ -1,0 +1,105 @@
+# copy-lint: checks the text of issues, comments and pull request descriptions against
+# the copy standard (D27, docs/copy-standard.md) and keeps one bot comment per thread
+# up to date. Issues get the needs-copy-edit label and are never blocked; a pull request
+# description that fails gets a failing check.
+#
+# pull_request_target and issue_comment run with this repository's token even for
+# forks, so the job checks out the base branch (the default branch for issues and
+# comments) and never runs code from the pull request. The text reaches the checker
+# through environment variables, never through an expression inside a script. zizmor
+# flags both triggers; .github/zizmor.yml ignores those two lines, on these two facts.
+name: copy-lint
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+  pull_request_target:
+    types: [opened, edited]
+
+permissions: {}
+
+concurrency:
+  group: copy-lint-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  copy:
+    name: copy
+    # Bot text (Dependabot release notes, this workflow's own comment) is not ours to edit.
+    if: github.event.sender.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write # the bot comment and the needs-copy-edit label on an issue
+      pull-requests: write # the bot comment on a pull request
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          persist-credentials: false
+          # The checker, its catalogue and fixtures, and the standard its self-test reads.
+          sparse-checkout: |
+            scripts
+            docs
+
+      - name: Check the text
+        id: check
+        env:
+          KIND: ${{ github.event_name == 'pull_request_target' && 'pr' || github.event_name == 'issue_comment' && 'comment' || 'issue' }}
+          TITLE: ${{ github.event_name != 'issue_comment' && (github.event.pull_request.title || github.event.issue.title) || '' }}
+          BODY: ${{ github.event.comment.body || github.event.pull_request.body || github.event.issue.body }}
+        run: |
+          if [ ! -f scripts/check-copy-tells.mjs ]; then
+            echo "The base branch has no copy checker yet."
+            echo "status=skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          printf '%s\n\n%s\n' "$TITLE" "$BODY" > "$RUNNER_TEMP/text.md"
+          set +e
+          node scripts/check-copy-tells.mjs --stdin --kind "$KIND" --report "$RUNNER_TEMP/comment.md" < "$RUNNER_TEMP/text.md"
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "status=pass" >> "$GITHUB_OUTPUT" ;;
+            1) echo "status=fail" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$code" ;;
+          esac
+
+      - name: Update the comment and the label
+        if: steps.check.outputs.status == 'pass' || steps.check.outputs.status == 'fail'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          STATUS: ${{ steps.check.outputs.status }}
+        with:
+          script: |
+            const fs = require("node:fs");
+            const marker = "<!-- starshot-copy-lint -->";
+            const body = fs.readFileSync(`${process.env.RUNNER_TEMP}/comment.md`, "utf8");
+            const failed = process.env.STATUS === "fail";
+            const event = context.eventName;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const mine = comments.find((c) => c.user?.type === "Bot" && c.body?.includes(marker));
+            // A clean reply must not overwrite a report about the description above it.
+            if (mine && (failed || event !== "issue_comment")) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            } else if (!mine && failed) {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+            const onIssue = event === "issues" || (event === "issue_comment" && !context.payload.issue.pull_request);
+            if (onIssue && failed) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: ["needs-copy-edit"] });
+            } else if (event === "issues" && !failed) {
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name: "needs-copy-edit" });
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
+            }
+            if (event === "pull_request_target" && failed) {
+              core.setFailed("The pull request description breaks the copy standard; the comment on the pull request lists each line.");
+            }

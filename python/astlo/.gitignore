@@ -1,0 +1,5 @@
+# Build and test outputs; the bench writes its own outputs in a scratch directory.
+__pycache__/
+*.pyc
+dist/
+hz_cache/

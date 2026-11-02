@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".", "noEmit": true, "jsx": "react-jsx",
+    "tsBuildInfoFile": "node_modules/.tmp/tsconfig.tsbuildinfo",
+    "types": ["vite/client"], "allowJs": true
+  },
+  "references": [{ "path": "../../packages/ephemeris" }, { "path": "../../packages/physics" }, { "path": "../../packages/presentation" }],
+  "include": ["src", "vite.config.ts", "public/observatory/system-astronomy.js", "public/observatory/replay-clock.js", "public/observatory/system-units.js"]
+}

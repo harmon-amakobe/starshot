@@ -1,0 +1,72 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-}\"; [ -n \"$d\" ] || d=$(git rev-parse --show-toplevel 2>/dev/null); f=\"$d/scripts/agent/open-gate.sh\"; [ -f \"$f\" ] || exit 0; exec env BASH_ENV= ENV= sh \"$f\"'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-}\"; [ -n \"$d\" ] || d=$(git rev-parse --show-toplevel 2>/dev/null); f=\"$d/scripts/agent/guard-destructive-git.sh\"; [ -f \"$f\" ] || exit 0; exec env BASH_ENV= ENV= sh \"$f\"'",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-}\"; [ -n \"$d\" ] || d=$(git rev-parse --show-toplevel 2>/dev/null); f=\"$d/scripts/agent/guard-protected-paths.sh\"; [ -f \"$f\" ] || exit 0; exec env BASH_ENV= ENV= sh \"$f\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-}\"; [ -n \"$d\" ] || d=$(git rev-parse --show-toplevel 2>/dev/null); f=\"$d/scripts/agent/snapshot-ref.sh\"; [ -f \"$f\" ] || exit 0; exec env BASH_ENV= ENV= sh \"$f\"'",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'd=\"${CLAUDE_PROJECT_DIR:-}\"; [ -n \"$d\" ] || d=$(git rev-parse --show-toplevel 2>/dev/null); f=\"$d/scripts/agent/stop-gates.sh\"; [ -f \"$f\" ] || exit 0; exec env BASH_ENV= ENV= sh \"$f\"'",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/service-account*.json)"
+    ]
+  }
+}

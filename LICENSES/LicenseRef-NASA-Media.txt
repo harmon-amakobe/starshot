@@ -1,0 +1,13 @@
+NASA media usage guidelines
+
+Source: https://www.nasa.gov/nasa-brand-center/images-and-media/
+Source asset: https://svs.gsfc.nasa.gov/4720/
+
+This reference identifies the NASA Moon texture, not a new licence granted by
+starshot. NASA imagery, texture maps and related media generally are not subject
+to copyright in the United States. NASA's media usage guidelines remain the source
+of applicable conditions. Any third-party copyright notice remains authoritative.
+
+Credit: NASA's Scientific Visualization Studio.
+The map uses Lunar Reconnaissance Orbiter and Lunar Reconnaissance Orbiter Camera
+data. No NASA insignia are used. NASA does not endorse starshot.

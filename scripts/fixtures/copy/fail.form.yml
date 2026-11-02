@@ -1,0 +1,14 @@
+# A comment may say seamless {U+2014} it is never read.
+name: Rocket report {U+1F680}
+description: Tell us everything!
+labels: ["kind:bug", "status:triage"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened {U+2014} briefly
+      placeholder: Delve into the details
+  - type: markdown
+    attributes:
+      value: |
+        Our seamless form.

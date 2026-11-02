@@ -1,0 +1,13 @@
+# zizmor configuration for the workflow-lint job (ci.yml).
+#
+# copy-lint.yml needs pull_request_target and issue_comment: it comments on text that
+# people type into GitHub. It checks out the base branch only and passes the text
+# through environment variables, as its header explains. The ignores are keyed to those
+# two lines, unlike an inline comment, which would also hide a dangerous trigger added
+# later to the same block. If the lines move, zizmor fails: replace both keys with the
+# new line numbers, and never add a key.
+rules:
+  dangerous-triggers:
+    ignore:
+      - copy-lint.yml:16
+      - copy-lint.yml:18
