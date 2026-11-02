@@ -230,7 +230,10 @@ jobs:
           fi
   publish:
     needs: [plan, firebase]
-    if: github.ref == 'refs/heads/main' && needs.plan.outputs.action == 'promote'
+    # Promotion deliberately skips build/register; do not inherit their skipped status.
+    if: >-
+      !cancelled() && needs.plan.result == 'success' && needs.firebase.result == 'success' &&
+      github.ref == 'refs/heads/main' && needs.plan.outputs.action == 'promote'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: release
