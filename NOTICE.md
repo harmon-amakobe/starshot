@@ -42,9 +42,11 @@ is set out in [TRADEMARK.md](TRADEMARK.md).
 `third_party/astlo/**` is **astlo**, copyright (c) Mark Macharia
 ([@iamnothimbutwe](https://github.com/iamnothimbutwe)). **All rights reserved.**
 
-- It is here only because this repository is a GitHub fork of
-  [iamnothimbutwe/astlopublic](https://github.com/iamnothimbutwe/astlopublic). Mark's
-  original files were moved into that folder, **unmodified** (decision D1).
+- These files came from
+  [iamnothimbutwe/astlopublic](https://github.com/iamnothimbutwe/astlopublic) when
+  Starshot began as a GitHub fork. Mark's original files were moved into this folder,
+  **unmodified** (D1). The GitHub fork relationship was later detached (D36).
+  His authorship and the files' licence terms are unchanged.
 - Starshot's licences do **not** apply to those files. Their terms are Mark's own; see
   `third_party/astlo/LICENSE` and the notices inside his files. In short, copying,
   modification and distribution need his written permission.
