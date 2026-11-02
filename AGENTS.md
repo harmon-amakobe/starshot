@@ -9,7 +9,7 @@ Every agent surface loads this file. Adapters (`CLAUDE.md`,
 A slingshot game in orbit, across the real Solar System, plus the open
 orbital-mechanics packages behind it. Planet positions come from NASA/JPL's Keplerian
 elements, validated against JPL Horizons; flights are integrated, not faked. Public
-repository, a fork of Mark Macharia's astlo history (D1). Code is Apache-2.0, original
+standalone repository preserving Mark Macharia's astlo history (D1, D36). Code is Apache-2.0, original
 media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 
 | Path | What lives there |

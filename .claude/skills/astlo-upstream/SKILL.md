@@ -23,6 +23,10 @@ warnings until they are updated.
 
 ## Sync upstream (mirror, never edit)
 
+Starshot is a standalone GitHub repository (D36). The `upstream` Git remote remains
+the source for the selective sync below. Import reviewed changes through a PR;
+do not merge the entire upstream tree to synchronize GitHub's commit counts.
+
 ```bash
 git remote get-url upstream 2>/dev/null || git remote add upstream https://github.com/iamnothimbutwe/astlopublic.git
 git fetch upstream
@@ -120,5 +124,5 @@ git format-patch <import commit>..HEAD -o <scratch dir> -- python/astlo/astlo py
 Remove `python/astlo/`, `.github/workflows/astlo.yml` and the D10 email exemption in
 `scripts/check-secrets.mjs` in one PR, and update the docs that mention them
 (`git grep -n python/astlo`). Removing files does not remove them from history or from
-existing forks, and GitHub does not let a fork of a public repository be made private;
-the owner decides anything beyond the removal. `third_party/astlo/` stays.
+existing copies. The owner decides anything beyond the removal.
+`third_party/astlo/` stays.

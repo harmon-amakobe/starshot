@@ -132,9 +132,9 @@ use the game to plan a real spacecraft. The packages themselves can also work in
 
 Starshot was inspired by **astlo**, an orbital-mechanics engine that Mark Macharia
 ([@iamnothimbutwe](https://github.com/iamnothimbutwe)) built, impressively, on a phone.
-This repository is a GitHub fork of his public repository,
-[iamnothimbutwe/astlopublic](https://github.com/iamnothimbutwe/astlopublic), so his
-history is kept.
+Starshot began as a GitHub fork of
+[iamnothimbutwe/astlopublic](https://github.com/iamnothimbutwe/astlopublic).
+It is now a standalone GitHub repository and preserves that history and attribution.
 
 - **His original files are untouched.** They live in `third_party/astlo/`, exactly as
   he published them. They are "all rights reserved", so Starshot does not modify or

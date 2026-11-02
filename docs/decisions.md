@@ -23,6 +23,10 @@ in code comments, plans and pull requests.
 **Resolved 2026-10-31. Do not re-litigate.**
 **Source:** owner instruction.
 
+**Superseded in part by D36.** Starshot is now a standalone GitHub repository.
+D1's requirements to preserve the inherited history, attribution and pristine
+`third_party/astlo` mirror remain.
+
 **Decision.** Fork of Mark's repo by owner instruction; Mark's files live unchanged in
 `third_party/astlo`.
 
@@ -881,3 +885,24 @@ credits at right. Save-schema versions remain
 separate. D33's future game program and D21's measurement requirement remain intact.
 The [versioned release plan](plans/current-game-release/versioned-releases.md) and
 [hosting runbook](hosting.md) define verification and recovery.
+
+---
+
+## D36. Starshot is a standalone GitHub repository with selective astlo updates
+
+*Date:* 2026-11-02. *Source:* owner's instruction to leave the GitHub fork network.
+
+**Decision.** Detach Starshot from GitHub's astlo fork network after backing up the
+repository metadata. Preserve the Git history, source, tags, attribution and licence
+notices. Keep the `upstream` remote for reviewed updates through the `astlo-upstream`
+skill. D2, D10, D26 and D29 continue to govern the original mirror, patched Python
+source and upstream contributions. This changes only D1's active GitHub fork status.
+
+**Why.** Starshot has its own game and release process while retaining its origin
+and a supported path for astlo updates.
+
+**Consequences.** Verify repository identity, GitHub settings and release provenance
+after detachment. Existing candidate versions remain bound to their original records
+and artifacts. This notice correction belongs to a future build; it does not rebuild
+or replace the tested 0.1.0 candidate. Selective imports may preserve upstream content
+without merging all upstream ancestry or original root paths.

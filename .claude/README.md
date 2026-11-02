@@ -10,7 +10,7 @@ what it does not. Change it in the same pull request as the mechanism it describ
 |---|---|
 | `PRODUCT` | Starshot: a slingshot game across the real Solar System (React + Three.js with Canvas 2D fallback, on Firebase Hosting) plus the open orbital-mechanics packages behind it (`@starshot/ephemeris`, `@starshot/physics`). |
 | `REPO_ABS_PATH` | Per machine; never committed, because this repository is public. The orchestrator resolves it with `git rev-parse --show-toplevel` and pins that absolute path in every subagent prompt. |
-| `DEFAULT_BRANCH` | `main` (fork of Mark Macharia's astlo history, D1). |
+| `DEFAULT_BRANCH` | `main` (standalone repository retaining Mark Macharia's astlo history, D1, D36). |
 | `VCS_AUDIT` | `git status --short && git branch --show-current && git log --oneline -5 && git rev-list --count main..HEAD`; for open work, `gh pr list`. The SessionStart gate prints the same facts. |
 | `CONTEXT_TOOL` | None wired. Restore points come from platform checkpoints plus `refs/snapshots/*`. If a session recorder is added later, it ships with its four open-gate probes (enabled, authenticated, capturing, synced). |
 | `RESEARCH_SURFACE` | A Claude Code session with web access and the repo mounted; NASA/JPL Horizons is reachable for fixtures. |
@@ -66,15 +66,14 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - CI generates release proposals, and the parity gate checks their shape. It cannot
   prove that every matching version edit came from CI; the validated proposal path
   and review enforce that ownership. Automatic PR creation remains optional and off.
-- CI enforcement on `main` depends on the owner enabling Actions on the fork and branch
-  protection with the CI check required (documented in `docs/hosting.md`).
+- CI enforcement on `main` uses enabled Actions and a ruleset requiring the CI check.
+  Preserve these settings during repository recovery (documented in `docs/hosting.md`).
 - Singleton and tier rules in the roster are advisory: nothing enforces them.
 - CI runs the `secrets` gate without the private-name list unless the owner sets the
   `STARSHOT_PRIVATE_NAMES` secret, and a pull request from a fork never gets it.
 - The copy gate cannot see text typed straight into GitHub. The `copy-lint` workflow
-  checks issues, comments and pull request descriptions after they are posted; until
-  Actions and Issues are on for this repository, nothing checks them. Review comments
-  are not checked. Generated release notes come from the copy-checked changelog;
+  checks issues, comments and pull request descriptions after they are posted.
+  Review comments are not checked. Generated release notes come from the copy-checked changelog;
   later manual edits to a published release body are outside that gate.
 - The copy gate's `warn` rules and the size gate's god-component signs are heuristics
   with estimated limits (D27, D28). They print and pass; only review acts on them.
