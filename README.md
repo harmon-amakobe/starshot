@@ -5,11 +5,6 @@
 [![Live version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fplaystarshot.com%2Frelease.json&query=%24.version&prefix=v&label=live&color=635bff)](https://playstarshot.com)
 [![Beta version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fbeta.playstarshot.com%2Frelease.json&query=%24.version&prefix=v&label=beta&color=d97706)](https://beta.playstarshot.com)
 
-Version badges read the game currently served. Badges can take a few minutes to
-refresh. For an immediate
-check, open the [live manifest](https://playstarshot.com/release.json) or
-[beta manifest](https://beta.playstarshot.com/release.json).
-
 **A slingshot game in orbit, across the real Solar System.**
 
 Pull back the slingshot, let go, and watch your probe fly to Mars, Venus, Jupiter or
