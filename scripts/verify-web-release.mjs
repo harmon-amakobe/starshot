@@ -19,7 +19,13 @@ const template = readFileSync(join(dist, 'sw.js'), 'utf8');
 const version = JSON.parse(/^const RELEASE = (.*);$/m.exec(template)[1]);
 const inventory = JSON.parse(/^const INVENTORY = (.*);$/m.exec(template)[1]);
 const metadata = JSON.parse(readFileSync(join(dist, 'release.json'), 'utf8'));
-const nextVersion = `${metadata.version.split('-')[0]}-verification.next`;
+const [major, minor, patch] = metadata.version.split('-')[0].split('.').map(Number);
+const nextVersion = metadata.version.replace(/^\d+\.\d+\.\d+/, `${major}.${minor}.${patch + 1}`);
+const channelLabels = { development: 'Development', beta: 'Beta', preview: 'Preview', candidate: '' };
+assert(Object.hasOwn(channelLabels, metadata.kind), 'known compiled release kind');
+const expectedLabel = fullVersion => `Version ${fullVersion.split('-')[0]}${channelLabels[metadata.kind] ? ` · ${channelLabels[metadata.kind]}` : ''}`;
+const oldLabel = expectedLabel(metadata.version), nextLabel = expectedLabel(nextVersion);
+assert.notEqual(oldLabel, nextLabel, 'the next fixture must have a different readable version');
 const nextBuild = createHash('sha256').update(version + '-next').digest('hex').slice(0, 24);
 const changedPath = 'observatory/system-orientation.json';
 const oldData = readFileSync(join(dist, changedPath), 'utf8');
@@ -86,6 +92,23 @@ async function ready(page, target) {
     await page.reload({ waitUntil: 'load' });
   }
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+}
+
+async function openBuildDetails(page, fullVersion) {
+  await page.getByRole('button', { name: 'About and credits' }).click();
+  assert.equal(await page.locator('[data-about-version]').innerText(), expectedLabel(fullVersion));
+  const details = page.locator('.release-build-details');
+  assert.equal(await details.getAttribute('open'), null, 'build details start collapsed');
+  await details.locator('summary').focus();
+  await details.locator('summary').press('Enter');
+  await page.locator('[data-full-version]').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('[data-full-version]').innerText(), fullVersion,
+    'Build details identifies the running compiled game');
+}
+
+async function checkFullVersion(page, fullVersion) {
+  await openBuildDetails(page, fullVersion);
+  await page.getByRole('button', { name: 'Back', exact: false }).click();
 }
 
 async function menuLayout(page, label) {
@@ -156,15 +179,15 @@ try {
     page = await playContext.newPage();
     await ready(page, target);
     console.log(`web-release: ${base} installed release ready`);
-    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${metadata.version}`);
+    assert.equal(await page.locator('[data-release-version]').innerText(), oldLabel);
     assert.equal(await page.locator('.entry-top').getByRole('link', { name: 'Kobe', exact: true }).getAttribute('href'), 'https://limitedsightfullvision.com');
     assert.equal(await page.locator('.release-footer').getByRole('link', { name: 'GitHub', exact: true }).getAttribute('href'), 'https://github.com/harmon-amakobe/starshot');
     assert.equal(await page.locator('.release-source').textContent(), 'View source on GitHub');
     assert.equal(await page.locator('.release-source a').count(), 1);
     assert.equal(await page.locator('.entry-top .entry-mark,.entry-top .entry-build').count(), 0);
     await menuLayout(page, label);
-    await page.getByRole('button', { name: 'About and credits' }).click();
-    assert.equal(await page.locator('[data-about-version]').innerText(), `Version ${metadata.version}`);
+    await openBuildDetails(page, metadata.version);
+    await page.screenshot({ path: join(out, `${label}-build-details.png`) });
     await page.getByRole('navigation', { name: 'Credits and support' }).waitFor();
     await page.getByRole('navigation', { name: 'Credits and support' }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: join(out, `${label}-credits.png`) });
@@ -179,6 +202,8 @@ try {
     }, otherCache);
     await playContext.setOffline(true);
     await page.reload({ waitUntil: 'load' });
+    assert.equal(await page.locator('[data-release-version]').innerText(), oldLabel);
+    await checkFullVersion(page, metadata.version);
     await page.getByRole('button', { name: /^(Play|Continue)$/ }).click();
     await page.getByRole('button', { name: /^Pull engine ring to aim/ }).waitFor({ timeout: 30_000 });
     await page.getByRole('button', { name: 'Launch', exact: true }).click();
@@ -194,8 +219,9 @@ try {
     await waitForRegistration(page, 'waiting');
     // Return to the menu without reloading the old compiled application.
     await page.getByRole('button', { name: 'Open main menu', exact: true }).click();
-    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${metadata.version}`,
+    assert.equal(await page.locator('[data-release-version]').innerText(), oldLabel,
       'waiting updates cannot relabel the running game');
+    await checkFullVersion(page, metadata.version);
     const networkMetadata = await (await playContext.request.get(target + 'release.json')).json();
     assert.equal(networkMetadata.version, nextVersion, 'the server already has a different version');
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), oldData,
@@ -209,8 +235,9 @@ try {
     console.log(`web-release: ${base} next worker active`);
     page = await playContext.newPage();
     await ready(page, target);
-    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${nextVersion}`,
+    assert.equal(await page.locator('[data-release-version]').innerText(), nextLabel,
       'the activated release displays its own compiled version');
+    await checkFullVersion(page, nextVersion);
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), newData,
       'next launch receives the updated mutable data');
     assert(await page.evaluate(() => caches.has('unrelated-application')), 'other apps keep their caches');
@@ -219,7 +246,8 @@ try {
     await playContext.setOffline(true);
     await page.reload({ waitUntil: 'load' });
     await page.getByRole('button', { name: /^(Play|Continue)$/ }).waitFor();
-    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${nextVersion}`);
+    assert.equal(await page.locator('[data-release-version]').innerText(), nextLabel);
+    await checkFullVersion(page, nextVersion);
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), newData);
     await page.screenshot({ path: join(out, `${label}-updated-offline.png`) });
     await playContext.close();
