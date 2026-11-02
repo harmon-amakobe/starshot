@@ -21,9 +21,8 @@ without any details, and we will follow up.
 
 ## What is in scope
 
-- The game as published at <https://playstarshot.com> and the mirror at
-  <https://harmon-amakobe.github.io/starshot/>, and its
-  source in `apps/game`.
+- The game as published at <https://playstarshot.com>, its Firebase preview
+  deployments and its source in `apps/game`.
 - The packages in `packages/`, the tools in `tools/`, the scripts in `scripts/`, and
   the GitHub Actions workflows in `.github/workflows/`.
 
@@ -51,8 +50,8 @@ run by `npm run gates` and by CI) scans every file for these.
 
 The build needs no credential. Firebase Hosting deployment uses short-lived
 credentials from GitHub OIDC and Google Workload Identity Federation, restricted to
-the deployment environment and project. No service-account key is stored. GitHub
-Pages uses its own scoped deployment token. Project and provider identifiers live
+the deployment environment and project. No service-account key is stored.
+Project and provider identifiers live
 in environment Variables, as described in [docs/hosting.md](docs/hosting.md).
 
 The current public preview has local profiles, not real accounts or cloud saves.

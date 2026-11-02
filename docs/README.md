@@ -17,7 +17,7 @@ people start from the README at the root.
 | [architecture.md](architecture.md) | How the packages, the physics worker and the game fit together |
 | [game-design.md](game-design.md) | How the game plays: the loop, the controls, the levels, the scoring |
 | [design/entry-experience.md](design/entry-experience.md) | The live orbital menu, local profiles and simulated cloud-profile interaction design |
-| [hosting.md](hosting.md) | Firebase Hosting, the Pages mirror, keyless deployment, previews and rollback |
+| [hosting.md](hosting.md) | Firebase Hosting, keyless deployment, previews, domain setup and rollback |
 | [astlo-evaluation.md](astlo-evaluation.md) | What testing Mark Macharia's astlo against NASA/JPL found |
 | [astlo/directions.md](astlo/directions.md) | Technical directions for astlo as a partner project (D26) |
 
@@ -25,9 +25,10 @@ people start from the README at the root.
 
 | Document | What it is |
 |---|---|
-| [plans/v1-starshot/](plans/v1-starshot/) | The current program: the plan, its research, the work list (`03-work.yaml`), the owner's checklist and the deviation log |
+| [plans/v1-starshot/](plans/v1-starshot/) | The remaining program: the plan, research, work list (`03-work.yaml`), owner's checklist and deviation log |
 | [plans/pr0-bootstrap.md](plans/pr0-bootstrap.md) | The record of the bootstrap pull request (D8) |
-| [plans/current-game-release.md](plans/current-game-release.md) | Publish the existing game before the remaining program, with proof and merge order (D34) |
+| [plans/current-game-release.md](plans/current-game-release.md) | The active release: publish the existing game and verify its domain before the first main merge (D34) |
+| [plans/current-game-release/work.yaml](plans/current-game-release/work.yaml) | The release epic and task, tracked separately from the remaining program |
 | [plans/entry-experience-prototype.md](plans/entry-experience-prototype.md) | Entry prototype scope, save ownership, camera handoff and verification |
 | [plans/campaign-ux-integration.md](plans/campaign-ux-integration.md) | Integration of the approved shell with all existing campaign missions and sandbox destinations |
 | [plans/main-game-handoff.md](plans/main-game-handoff.md) | Implementation handoff after the prototype joins PR0: active-shell cleanup and a Moon-first main campaign |
@@ -58,6 +59,7 @@ people start from the README at the root.
 | `node scripts/check-licence.mjs` | The licence gate |
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |
 | `node scripts/verify-game.mjs` | Drives the built game in a headless browser on phone and desktop sizes |
+| `node scripts/verify-web-release.mjs` | Verifies offline flight, worker updates and cache ownership at the root and a portable subpath |
 
 ### sync-work.mjs
 
