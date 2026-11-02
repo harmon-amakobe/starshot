@@ -1,5 +1,12 @@
 # Main-game implementation handoff
 
+**Release interlude (D34):** the owner now requests publication of the current game
+before the remaining program. Follow [current-game-release.md](current-game-release.md)
+for the immediate stack. The saved `starshot/v1-pr02-screen-split` branch includes
+the refactor and D33's approved Moon-first TypeScript sequence. Review and reconcile
+it on the next program PR0 after release. Its D33 direction supersedes this older
+handoff's requirement that Moon-first wait for Rust; do not discard the saved work.
+
 ## Owner direction and starting point
 
 Build the main game from the approved design, with Earth to Moon as its first

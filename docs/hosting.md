@@ -1,241 +1,153 @@
-# Hosting and publishing Starshot
+# Hosting and publishing starshot
 
-Plain answers to the practical questions: how to put the game online, whether it can
-run straight from the repository, how to keep private things private, and what comes
-later (a custom domain, the Play Store).
+This release targets Firebase Hosting for the static game at
+<https://playstarshot.com>, with a mirror at
+<https://harmon-amakobe.github.io/starshot/>. D34 brings this release forward.
+The remaining v1 program is still planned; cloud accounts and a leaderboard do not
+ship in this preview. Firebase App Hosting is not needed for this Vite build.
 
-**Short version:** switch on GitHub Actions, set Pages to "GitHub Actions", merge to
-`main`, and the game appears at **<https://harmon-amakobe.github.io/starshot/>**. It is
-free, there is no server to run, and nothing secret is involved.
+## Build and deployment
 
----
+`.github/workflows/release.yml` is the Web release workflow. A push to `main` runs
+all gates, workflow lint and browser verification at the root and mirror paths.
+It also proves offline startup and the transition between two worker releases.
+Only then does it upload the files from `apps/game/dist`.
 
-## (a) What is the easiest way to publish it?
+Separate jobs deploy those same files to Firebase Hosting and GitHub Pages.
+Deployment jobs do not run the application build or restore dependency caches.
+Firebase uses short-lived Google credentials from Workload Identity Federation.
+There is no stored service-account key. The game itself has no Firebase SDK or key.
 
-**GitHub Pages, from this repository, using the workflow that is already included**
-(`.github/workflows/pages.yml`). GitHub Pages is free for public repositories. The game
-is a set of static files (HTML, JavaScript, CSS), so there is no server, no database
-and no Firebase to set up (decision D7).
+The workflow can also be dispatched with `target: preview` from a reviewed branch.
+It creates an expiring channel in the development project. `target: production`
+and the Pages job accept only `main`. Production and preview are separate projects.
+The workflow does not accept arbitrary pull-request events or execute fork code
+with deployment access.
 
-### One-time setup (about five minutes)
+## One-time settings
 
-1. **Turn on Actions.** Forks start with GitHub Actions switched off. Open the
-   repository's **Actions** tab and click the button to enable workflows ("I understand
-   my workflows, go ahead and enable them").
-2. **Point Pages at Actions.** Go to **Settings → Pages**. Under *Build and deployment*,
-   set **Source** to **GitHub Actions**.
-3. **Publish.** Merge a pull request into `main` (or push to `main`). The **Pages**
-   workflow runs. You can also start it by hand: **Actions → Pages → Run workflow**.
-4. **Open the game** at <https://harmon-amakobe.github.io/starshot/> once the workflow
-   shows a green tick. The first deploy can take a minute or two to appear.
+1. Enable Actions and Dependency graph. Keep default workflow permissions read-only.
+   Dependency review must run; do not waive its failure to get a green PR.
+2. Require the `gates` check and a pull request on `main`. Block force pushes and deletions.
+3. Set Pages source to GitHub Actions. Leave its custom domain empty so it remains a mirror.
+4. Create `production`, `preview` and `github-pages` environments. Restrict production
+   and github-pages to `main`. Allow preview only for the branches the owner reviews.
+5. Create dedicated Firebase production and development projects and their default
+   Hosting sites. This release uses static Hosting within its free allowance, with
+   no billing upgrade, database, Authentication or Functions setup.
+6. Configure the identities below and add the environment variables. Connect the
+   custom domain only to production Hosting.
 
-From then on, every merge into `main` republishes the game automatically.
+The Firebase projects are `playstarshot-prod` and `playstarshot-dev`. Their default
+Hosting site ids match their project ids. These names are public deployment identifiers.
+Every CLI command still supplies `--project` explicitly; there is no implicit CLI alias.
 
-### What the workflow does
-
-1. Installs the exact locked dependencies (`npm ci`).
-2. Runs every quality check (`npm run gates`). **If any check fails, nothing is
-   published**, so a broken build never replaces a working one.
-3. Builds the game (`npm run build`) into `apps/game/dist`.
-4. Uploads that folder and deploys it to Pages.
-
-The Pages workflow uses no secrets at all (D7); the optional private-name list is read
-only by the CI workflow (see [section c](#the-optional-private-name-list)). Its only
-special permissions are the two GitHub needs for Pages (`pages: write` and
-`id-token: write`), granted to the deploy job alone.
-
-### Make the checks required (recommended)
-
-The **CI** workflow (`.github/workflows/ci.yml`) runs the same checks on every pull
-request. To make sure nothing reaches `main` without passing them:
-
-1. Let CI run once (open any pull request), so GitHub knows the check's name.
-2. Go to **Settings → Rules → Rulesets → New branch ruleset** (or the older
-   **Settings → Branches → Add rule**), target the `main` branch, and turn on:
-   - **Require a pull request before merging**;
-   - **Require status checks to pass**, adding the check named **`gates`**;
-   - **Block force pushes** and **Restrict deletions**.
-
-The required check stays **`gates`** however many jobs CI grows. It is a small job that
-fails when any of four jobs failed, was cancelled or was skipped: `checks` (the gate
-registry), `workflow-lint` (zizmor, a security linter for workflow files),
-`dependency-review` and `verify-game` (the play-through in a headless browser). On
-`main`, `dependency-review` still runs but skips its steps, because a push has nothing
-to compare, so it passes. It needs the dependency graph on (Settings, Code security).
-
-A third workflow, **astlo** (`.github/workflows/astlo.yml`), runs only when something
-under `python/astlo/` changes. It builds the fixed astlo wheel
-(`astlo-12.5.5130000+starshot.1-py3-none-any.whl`; the `+starshot` label marks a
-patched build, which PyPI refuses), prints its sha256 in the log, and keeps it as a
-downloadable artifact named `astlo-fixed-wheel` (open the run under **Actions**, then
-**Artifacts**) before it installs anything from PyPI. Then it tests the wheel against
-NASA/JPL data. It needs no secrets. Do not make its
-check required: on a pull request that does not touch `python/astlo/` it never runs,
-and a required check that never runs blocks the merge.
-
-Two more workflows are not required checks either. **Scorecard** scores `main` after a
-merge and once a week, never a pull request. **copy-lint** runs when a description is
-opened or edited, not on each push, so a new commit would wait for it forever.
-
-### If something goes wrong
-
-| What you see | What to do |
+| Environment variable | Value |
 |---|---|
-| No workflow ran after merging | Actions are still disabled on the fork: see step 1 |
-| The deploy step says the branch "is not allowed to deploy to github-pages" | **Settings → Environments → github-pages → Deployment branches**: allow `main` |
-| The workflow is green but the page shows 404 | Check **Settings → Pages → Source** is "GitHub Actions"; wait a minute and refresh |
-| The workflow is red at "gates" | Open the run's log: the last lines name the failing check and how to fix it |
+| `FIREBASE_PROJECT_ID` | The environment's dedicated Firebase project id |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | The full Google workload identity provider resource name |
+| `GCP_DEPLOY_SERVICE_ACCOUNT` | That project's Hosting deployment service account |
 
----
+These are GitHub environment Variables, not secrets and not Vite build variables.
+Configure both `production` and `preview`. `github-pages` needs no Google variables.
 
-## (b) Can it run directly from the repository?
+## Keyless deployment identity
 
-**Yes, in the sense that matters:** GitHub Pages serves the game built from this
-repository by its own CI, so the repository *is* the source of the website. There is
-nothing else to host.
+Use a separate deployment service account and workload identity pool per project.
+The account needs Firebase Hosting administration, Service Usage Consumer and API
+Keys Viewer for the CLI's project lookup. Grant these only on the target project.
+Grant Workload Identity User on that service account only to its GitHub provider principal.
 
-Two things to know:
+The provider condition pins the numeric repository id and owner id. Production also
+pins `refs/heads/main`, the `production` environment and the release workflow path.
+Preview pins its own environment and manual workflow dispatch. Configure the GitHub
+environment branch policies as a second boundary. Do not grant an owner, editor,
+Firebase-wide administration or Authentication administration role.
 
-- **Opening `index.html` on github.com shows source code, not the game.** The game has
-  to be built first, and Pages does that for you.
-- **The game needs to be served by a web server; double-clicking a file will not
-  work.** Its physics runs in a *module Web Worker*, and browsers refuse to start those
-  from `file://` pages. Any web server works, including a tiny local one.
+Use the current GitHub OIDC claims when creating the provider. Do not assume an old
+subject string format. The workflow's exact resource names are configured through
+Variables, so no credential or account email is embedded in the application.
 
-### On your own computer
+The preview command passes `--no-authorized-domains`: this static game does not need
+to modify Firebase Authentication settings. Production deploys only Hosting.
+
+References: [Firebase CLI authentication](https://firebase.google.com/docs/cli#cli-ci-systems)
+and [Google's GitHub authentication action](https://github.com/google-github-actions/auth).
+
+## Preview before the first merge
+
+A workflow dispatch becomes available after the workflow exists on the default branch.
+Before the first merge, the orchestrator can use the same verified build with the
+signed-in Firebase CLI:
 
 ```bash
-npm ci          # once
-npm run dev     # live development server; open the address it prints
+npm ci
+npm run gates
+node scripts/verify-game.mjs --out <temporary-directory>/root
+node scripts/verify-game.mjs --base /starshot/ --out <temporary-directory>/mirror
+node scripts/verify-web-release.mjs
+firebase hosting:channel:deploy release-check --expires 7d --no-authorized-domains --project playstarshot-dev --non-interactive
 ```
 
-To try the production build exactly as Pages will serve it:
+Playwright must resolve outside the product dependencies. CI installs its pinned
+version globally. Keep screenshots and logs outside the repository. Open the preview
+URL returned by Firebase and verify entry, an actual mission, saves and About links.
+Do not interpret a successful upload as proof that the game works.
 
-```bash
-npm run build
-npm run preview                                   # or, with no Node at all:
-python3 -m http.server 8080 --directory apps/game/dist
-```
+## Domain and caching
 
-### On other hosts
+Add playstarshot.com in the production site's Firebase Hosting console. Copy the
+exact ownership, address and certificate records Firebase provides to the DNS host.
+Do not guess those records or replace unrelated mail records. Keep ownership records
+needed for renewal. Wait until Firebase reports the certificate and domain active.
+If adding `www`, use Firebase's redirect-domain option to point at the apex.
 
-The built folder `apps/game/dist` is plain static files, and it uses relative paths, so
-it works from any address or sub-folder. You can upload it to:
+`firebase.json` sends security headers and revalidates HTML, the worker and unhashed
+observatory assets. Vite's hashed `/assets/` files are immutable for one year.
+There is no catch-all rewrite: missing assets return 404 rather than HTML.
+The relative Vite base supports `/starshot/` on the Pages mirror.
+Pages does not support the custom response headers in `firebase.json`; verify both
+hosts, and do not claim their headers are identical.
 
-- **Netlify** or **Cloudflare Pages**: build command `npm run build`, publish directory
-  `apps/game/dist`, Node version 22.
-- **itch.io**: zip the *contents* of `apps/game/dist` (so `index.html` is at the top of
-  the zip), upload it as an HTML game, and tick "This file will be played in the
-  browser".
-- Any other static host or your own web server.
+The build generates a scoped worker cache and a content digest in `release.json`.
+A complete release, including required astronomy data, downloads in the background.
+Offline play is ready after the worker finishes installing. Failed or partial
+installation leaves online play available and does not replace an existing worker.
+Updates wait for all existing game tabs to close. A flight controlled by an installed
+worker keeps matching code and data. The worker does not take over a first visit that
+started before installation. Browser storage can be cleared or evicted; local saves
+are not a backup.
 
----
+References: [Hosting configuration](https://firebase.google.com/docs/hosting/full-config)
+and [custom domains](https://firebase.google.com/docs/hosting/custom-domain).
 
-## (c) How do we keep private information private?
+## Verify production and recover
 
-**Starshot needs nothing private.** It has no server, no accounts, no API keys and no
-passwords. Keep it that way:
+After a successful Web release, compare `release.json` at playstarshot.com, the
+production project's default Hosting URL and the Pages mirror. They must identify
+the same build. Check entry and a mission on phone and desktop, the credits links,
+offline startup after installation, and a fresh browser profile.
 
-- **Never put another project's configuration here.** A Firebase web configuration (the
-  `apiKey`, `projectId` and similar values) is not a password: it is designed to be
-  visible in a website. But it does identify a specific project, so pasting a private
-  project's configuration into this public repository would point strangers at that
-  project. Starshot must never use any private project's configuration (decision D7).
-- **If a leaderboard or other online feature is added later:**
-  1. Create a **separate Firebase project used only for Starshot**.
-  2. Store its web configuration as **repository Variables** (**Settings → Secrets and
-     variables → Actions → Variables** tab), and have the Pages workflow pass them to the
-     build as `VITE_...` environment variables. They then exist only in the built site,
-     never in a file in the repository.
-  3. Protect the data with **Firestore security rules** (players can write only their
-     own, well-formed scores) and **App Check** (only the real Starshot site can call
-     the backend). Re-check submitted scores on the server by re-running the shot with
-     the same physics code (see [architecture.md](architecture.md#future-a-leaderboard)).
-  4. **Never commit a service-account key** (a JSON file containing `private_key`).
-     Those *are* secrets. Deploy with short-lived credentials from GitHub Actions
-     instead.
-- **Switch on GitHub's protections:** **Settings → Code security** (called *Advanced
-  Security* on some accounts): enable **Secret scanning** and **Push protection**, which
-  blocks many kinds of secret at push time. Enable **Private vulnerability reporting**
-  too (see [SECURITY.md](../SECURITY.md)).
-- **Keep your email out of commits:** in GitHub, **Settings → Emails**, tick "Keep my
-  email addresses private" and "Block command line pushes that expose my email", and
-  use the `...@users.noreply.github.com` address in `git config user.email` for this
-  repository.
-- **The repository checks itself.** The `secrets` gate (`scripts/check-secrets.mjs`) runs
-  in CI and before every deploy. It looks for keys and tokens, Firebase-style
-  configuration, personal emails, personal file paths and the names of private
-  projects, and fails the build if it finds any. The private-name part needs a list,
-  which is never committed: see the next section.
-- **If something slips through anyway:** rotate the secret first, then remove it. The
-  steps are in [SECURITY.md](../SECURITY.md#if-a-secret-is-committed-by-mistake).
+A failure to load entry, launch a mission or fetch an asset is a rollback trigger.
+Restore the previous verified release in Firebase Hosting's release history. For a
+coordinated rollback on both hosts, revert through a PR and redeploy `main`.
+The workflow retains the exact `web-release` artifact for 14 days. Never clear pilot
+storage as part of rollback. Visit online and let the restored worker finish its
+download; confirm it is installed or waiting in browser developer tools. Then close
+all game tabs and reopen. A first reopen may still use the old worker while downloading
+the restored one, so closing before installation finishes is not sufficient.
+The release plan records the [merge order](plans/current-game-release.md#shipping-order).
 
-### The optional private-name list
+## The optional private-name list
 
-The scan can only look for names it knows, and writing the names of private projects
-into this public repository would publish them. So the list stays outside it, in two
-places you control:
+`STARSHOT_PRIVATE_NAMES` is an optional GitHub secret containing private names the
+hygiene checker should reject. Only CI's standalone secrets gate reads it, before
+installing packages. It is never passed to the app or deployment jobs.
+Without it, the ordinary credential, email and private-path rules still run.
 
-- **On your computer:** the file `.git/info/private-names` in your clone, one name per
-  line. Git never commits anything under `.git/`.
-- **In GitHub Actions:** a repository secret. Go to **Settings → Secrets and variables
-  → Actions → Secrets** tab → **New repository secret**, name it
-  `STARSHOT_PRIVATE_NAMES`, and enter the names separated by commas. The CI workflow
-  passes it to the scan step alone, before any dependency is installed; the Pages
-  workflow uses no secrets at all (D7).
+## Later releases
 
-Both are optional. Without a list the scan still runs every other rule and its summary
-says "private-name rule off". GitHub gives no secrets to pull requests from forks, so
-those run without the list; a name in one is caught by the run on `main` after the
-merge, which is why the local file matters too. Findings are printed shortened, because
-a public repository's CI logs are public, and GitHub also masks the secret's value.
-
----
-
-## (d) Can it have its own domain name?
-
-Yes, optionally. GitHub Pages supports custom domains with free HTTPS.
-
-1. Buy a domain from any registrar.
-2. In **Settings → Pages → Custom domain**, enter it (for example `play.example.com`)
-   and save.
-3. At your registrar, add the DNS records GitHub shows:
-   - for a sub-domain such as `play.example.com`: a `CNAME` record pointing to
-     `harmon-amakobe.github.io`;
-   - for a bare domain such as `example.com`: the `A` records `185.199.108.153`,
-     `185.199.109.153`, `185.199.110.153` and `185.199.111.153` (check GitHub's Pages
-     documentation for the current list).
-4. Once the check passes, tick **Enforce HTTPS**.
-5. Recommended: **verify the domain** in your GitHub account settings (Settings → Pages
-   → *Add a domain*), so nobody else can claim it on GitHub.
-
-No code change is needed: the game uses relative paths, and with an Actions-based
-deploy GitHub keeps the custom domain in the Pages settings rather than in a file.
-
----
-
-## (e) Could it go on the Google Play Store later?
-
-Yes, optionally, without rewriting anything, as a **Trusted Web Activity** (TWA). A
-TWA is a thin Android app that opens the website full-screen, without browser bars.
-Google's **Bubblewrap** tool generates it.
-
-What it needs:
-
-- **A web app manifest and a service worker:** Starshot already has both
-  (`apps/game/public/manifest.webmanifest` and `apps/game/public/sw.js`), so it can be
-  installed and works offline.
-- **A domain you control at its root.** Android checks a file at
-  `https://<domain>/.well-known/assetlinks.json` to prove the app and the site belong
-  together. On the default address that file would have to live at the root of
-  `harmon-amakobe.github.io`, which this repository does not control, so in practice a
-  **custom domain** (section d) is the clean route.
-- **A Google Play developer account** (a one-time registration fee).
-- **An app signing key, kept safe and never committed to this repository.** Losing it
-  means losing the ability to update the app; leaking it lets others impersonate it.
-
-The rough steps: install Bubblewrap on your own computer (it needs Java and the Android
-SDK, which it can download for you), run `bubblewrap init --manifest
-https://<your-domain>/manifest.webmanifest`, then `bubblewrap build`, publish the
-`assetlinks.json` it prints, and upload the generated app bundle in the Play Console.
-This would be its own pull request and its own decision entry.
+The remaining program retains its Firebase accounts, replay verification, leaderboard,
+Rust core and content work. Each service gets its own minimum permissions when it is
+implemented. Native store packaging and billing upgrades require their own scope.
+No such feature is needed to publish this browser preview.

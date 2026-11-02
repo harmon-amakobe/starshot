@@ -15,4 +15,7 @@ test-results/
 *.key
 service-account*.json
 firebase-debug.log
+debug.log
+.firebase/
+gha-creds-*.json
 .firebaserc

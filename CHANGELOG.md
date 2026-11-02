@@ -10,6 +10,11 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ## [Unreleased]
 
+- Prepare the current game for Firebase Hosting and a GitHub Pages mirror (D34).
+  One verified artifact, separate preview and production projects, keyless deploys,
+  scoped offline releases, visible credits and clear local-profile copy.
+  The remaining program resumes on a new trunk after the release stack lands.
+
 ### Added
 
 - A main-game handoff for the approved prototype in PR0, with active-shell cleanup,

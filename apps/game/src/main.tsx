@@ -15,10 +15,10 @@ if (root) {
   );
 }
 
-// Offline support: cache the static build after the first visit (production only).
-if (import.meta.env.PROD && "serviceWorker" in navigator && location.protocol === "https:") {
+// Secure localhost also exercises the shipped worker in the release verifier.
+if (import.meta.env.PROD && "serviceWorker" in navigator && window.isSecureContext) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./", updateViaCache: "none" }).catch(() => {
       // Offline caching is a bonus; the game works without it.
     });
   });

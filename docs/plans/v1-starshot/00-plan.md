@@ -1,5 +1,11 @@
 # v1-starshot: chapter one on the web, on one Rust core
 
+**Current sequence (D34):** first publish the existing game through the
+[current-game release](../current-game-release.md), stacked on PR0. After it lands,
+create a new program trunk from the released `main`. Review and import the saved
+PR2 branch and D33's Moon-first TypeScript direction there. The tables below remain
+the v1 scope; hosting this preview does not complete their future work.
+
 The program plan: what chapter one delivers, the decisions it rests on, how each goal is
 proven, and the pull requests that build it. Research and its sources are in
 [01-research.md](01-research.md). Every contradiction found on the way, with its ruling,
@@ -995,7 +1001,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 | `package.json` (root) | `build` becomes `npm run build -w @starshot/core-wasm && npm run build -w @starshot/game`; `dev` runs the core build first too; `typecheck` and `test` keep their commands and run after the core build in the gates |
 | `scripts/gates.mjs` | New gate `core-wasm` (group `code`: `npm run build -w @starshot/core-wasm`) registered before `typecheck`; `typecheck`, `test` and `build` (now the root `build`) follow it; registers `bundle-size`. From this PR Rust is required to build from source: PR6's skip ends and `STARSHOT_REQUIRE_RUST` becomes a no-op. When `cargo`, the `wasm32-unknown-unknown` target or `wasm-bindgen` is missing, `core-wasm`, `typecheck`, `test` and `build` fail with one message naming the three install commands: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh`, `rustup target add wasm32-unknown-unknown`, `cargo install --locked wasm-bindgen-cli --version 0.2.130` |
 | `.github/workflows/ci.yml` | `checks`, `verify-game` and the new job `bits-jsc` run `.github/actions/setup-rust-wasm` (PR6) before any npm build. `bits-jsc`: `oven-sh/setup-bun` pinned, `npm ci`, `npm run build -w @starshot/core-wasm`, `bun packages/core-wasm/scripts/bits-jsc.mjs`; it joins the aggregator's `needs`. `rust-arm64` runs the golden tests |
-| `.github/workflows/pages.yml` | The `build` job runs `.github/actions/setup-rust-wasm` before `npm run gates` and `npm run build`, so the published bundle carries the wasm the gates tested |
+| `.github/workflows/release.yml` | The `build` job runs `.github/actions/setup-rust-wasm` before `npm run gates`, so both published sites carry the wasm the gates tested. D34 replaced the old Pages workflow |
 | `CHANGELOG.md` | `[Unreleased]` |
 
 - **Edge cases.** PR6's promise of skips for contributors without Rust ends here, and

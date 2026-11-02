@@ -107,12 +107,17 @@ jobs:
           echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
       - run: playwright install --with-deps chromium
       - run: node scripts/verify-game.mjs --out "$RUNNER_TEMP/verify-game"
+      - run: node scripts/verify-game.mjs --base /starshot/ --out "$RUNNER_TEMP/verify-mirror"
+      - run: node scripts/verify-web-release.mjs --out "$RUNNER_TEMP/verify-offline"
       # Kept on failure too: the screenshots are how a red run gets diagnosed.
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: verify-game-screenshots
-          path: ${{ runner.temp }}/verify-game
+          path: |
+            ${{ runner.temp }}/verify-game
+            ${{ runner.temp }}/verify-mirror
+            ${{ runner.temp }}/verify-offline
           retention-days: 7
 
   gates:
