@@ -2,6 +2,7 @@ import { BODIES, PLANET_IDS, type BodyId, type Vec3 } from '@starshot/ephemeris'
 import { geometry, ringGeometry, rotate, ephemeris } from './scene-geometry';
 import { EMPTY_FRAME, type SceneState, type SceneFrame } from './scene-types';
 import type { SceneData } from './scene-data';
+import { bodyName } from './session';
 export const colours: Record<string, string> = {
   sun: '#fff1cf',
   mercury: '#b6b3ab',
@@ -64,7 +65,7 @@ export function makeFrame(
     const enlarged = state.focus ? trueRadius : symbol * (1 - state.home) + trueRadius * state.home;
     return {
       id,
-      name: id === 'sun' ? 'Sol' : BODIES[id].name,
+      name: bodyName(id),
       point: project(ephemeris.state(id, state.et).r),
       radius: enlarged,
     };

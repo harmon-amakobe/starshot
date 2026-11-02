@@ -96,7 +96,38 @@ planned next. Sections marked **Future** describe designs that are not built yet
   `campaign/CampaignApp.tsx` is the shell, `campaign/use-campaign.ts` its controller and
   `campaign/scene.ts` the persistent scene. The controller retains the original worker
   and scoring contracts. Entry, level, Launch window and body inspection share a scene,
-  ET and preferences.
+  ET and preferences. The campaign map below says where each part lives.
+
+#### The campaign modules
+
+`CampaignApp.tsx` only composes hooks and renders. Each hook has one job, and shared
+refs pass between hooks as arguments. Hook order is effect order, so the call order
+in `CampaignApp.tsx` and `use-campaign.ts` is part of the behaviour.
+
+| Module | Job |
+|---|---|
+| `pilot-session.ts` | Binds the selected pilot to the controller, the cloud demo and autosave |
+| `use-campaign.ts` | The controller: composes the hooks below around one worker |
+| `session-store.ts` | The session, its mission and canonical shot; `change` updates a ref first |
+| `flight-clock.ts` | The flight on screen and its clock; tick, seek, replay and retry |
+| `use-release.ts` | Aim and day edits, and the release that launches the matching preview (D6) |
+| `use-result.ts` | Scores a finished flight and records its stars once |
+| `use-hints.ts` | Finds and applies the measured guide |
+| `use-restore.ts` | Restores a save, owns the visit epoch and owner token, rebuilds the flight |
+| `autosave.ts` | Saves every 1.2 s and on `pagehide` when the guard allows |
+| `use-menu.ts`, `mission-header.ts` | Menu, play and hidden UI; the mission deck and caption |
+| `use-camera-views.ts`, `use-hangar.ts` | Map, body focus and selection; the hangar and demo ring |
+| `escape.ts`, `default-focus.ts` | Escape backs out one step; focus returns to the deck |
+| `flight-audio.ts`, `reduced-motion.ts`, `fonts.ts` | Sound, the motion setting, Plex font faces |
+| `scene-view.ts`, `use-view.ts` | The scene's input each render and the render loop that ticks the clock |
+| `debug-hook.ts` | The read-only `window.__starshotCampaign` record for browser checks |
+
+The views are small components: `FlightDeck.tsx` with `DeckControls.tsx` and
+`DeckPages.tsx`; `HomeMenu.tsx` with `MenuHome.tsx` and one file per menu panel; and
+`MissionDeck.tsx`, `FocusTitle.tsx`, `IntroCaption.tsx`, `AimHandle.tsx`, `BodyPopup.tsx`,
+`MapTools.tsx`, `ResultCard.tsx` and `Hangar.tsx`. Pure decisions such as the Escape
+choice, the autosave guard and the playback rate are unit-tested in
+`campaign/shell.test.ts`.
 - The scene uses camera-relative coordinates in Three.js, with a Canvas fallback.
   Both project the campaign's flattened ephemeris and the worker's Hermite path.
   Body enlargement changes display radii, not centre positions or flight samples.

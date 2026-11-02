@@ -1,7 +1,13 @@
 import { shotRequestFor } from '../levels';
 import { shotKey } from '../sim/preview';
+import type { ShotResponse } from '../sim/protocol';
 import { launchEtForDay, normalizeDeg, vInfFromAim, type Aim, type ShotRequest } from '../sim/shot';
 import { missionFor, type Session } from './session';
+/** The preview and launch parity key (D6): a launch that summarises differently is refused. */
+export const summaryOf = (res: ShotResponse | null) =>
+  res
+    ? `${shotKey(res.shot)}|${res.analysis.hit}|${res.analysis.endEt}|${res.analysis.closestKm}|${res.analysis.flybys.map((f) => `${f.body}@${f.t}`).join(',')}`
+    : null;
 export function finalRequest(save: Session, value: Aim = save.aim) {
   const level = missionFor(save),
     aim = {

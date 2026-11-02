@@ -1,13 +1,18 @@
 import { useRef, useState, type PointerEvent, type RefObject, type WheelEvent } from 'react';
 import type { SceneFrame, SceneState } from './scene-types';
-import type { CampaignController } from './use-campaign';
+import type { SessionStore } from './session-store';
+import type { Release } from './use-release';
 import type { Aim } from '../sim/shot';
 import { aimFromPull } from './contracts';
+export interface GestureGame {
+  store: Pick<SessionStore, 'session' | 'level' | 'preferences'>;
+  release: Pick<Release, 'pending' | 'aim' | 'launch' | 'cancel'>;
+  hydrating: boolean;
+}
 export function useGestures(
-  c: CampaignController,
+  c: GestureGame,
   frame: RefObject<SceneFrame>,
   inspect: boolean,
-  demo: (value: number) => void,
   sound: (kind: 'pull' | 'launch', n?: number) => void,
 ) {
   const [lock, setLock] = useState<SceneState['lock']>(null),
@@ -31,13 +36,13 @@ export function useGestures(
     setPulling(false);
     setLock(null);
     if (d && !cancelled && d.moved) {
-      sound('launch', d.last.speedKmS / c.level.vInfMaxKmS);
-      c.launch(final ?? d.last);
-    } else if (cancelled) c.cancel();
+      sound('launch', d.last.speedKmS / c.store.level.vInfMaxKmS);
+      c.release.launch(final ?? d.last);
+    } else if (cancelled) c.release.cancel();
   };
   const aimAt = (e: PointerEvent) => {
     const d = drag.current;
-    if (!d) return c.session.aim;
+    if (!d) return c.store.session.aim;
     if (Math.hypot(e.clientX - d.start[0], e.clientY - d.start[1]) >= 4) d.moved = true;
     if (!d.moved) return d.last;
     const dx = e.clientX - d.offset[0] - d.anchor[0],
@@ -46,13 +51,19 @@ export function useGestures(
     const angleDeg = aimFromPull(dx, dy, d.rotation, d.orbit);
     d.last = {
       angleDeg,
-      speedKmS: Math.max(0, Math.min(1, (distance - d.rest) / d.travel)) * c.level.vInfMaxKmS,
+      speedKmS: Math.max(0, Math.min(1, (distance - d.rest) / d.travel)) * c.store.level.vInfMaxKmS,
     };
     return d.last;
   };
   const ring = {
     onPointerDown(e: PointerEvent<HTMLButtonElement>) {
-      if (drag.current || e.button !== 0 || c.pending || c.hydrating || c.session.phase !== 'aim')
+      if (
+        drag.current ||
+        e.button !== 0 ||
+        c.release.pending ||
+        c.hydrating ||
+        c.store.session.phase !== 'aim'
+      )
         return;
       e.preventDefault();
       e.stopPropagation();
@@ -67,9 +78,12 @@ export function useGestures(
         offset: [e.clientX - f.grip[0], e.clientY - f.grip[1]],
         travel: f.travel,
         rotation: f.rotation,
-        orbit: c.session.preferences.camera === 'free' ? [...c.session.preferences.orbit] : [0, 0],
+        orbit:
+          c.store.session.preferences.camera === 'free'
+            ? [...c.store.session.preferences.orbit]
+            : [0, 0],
         rest,
-        last: c.session.aim,
+        last: c.store.session.aim,
       };
       setLock({
         heightKm: f.heightKm,
@@ -83,7 +97,7 @@ export function useGestures(
     onPointerMove(e: PointerEvent<HTMLButtonElement>) {
       if (drag.current?.pointer !== e.pointerId) return;
       e.preventDefault();
-      c.aim(aimAt(e));
+      c.release.aim(aimAt(e));
     },
     onPointerUp(e: PointerEvent<HTMLButtonElement>) {
       if (drag.current?.pointer !== e.pointerId) return;
@@ -101,8 +115,8 @@ export function useGestures(
   const zoom = (factor: number) => {
     if (drag.current) return;
     const f = frame.current;
-    c.preferences({
-      camera: inspect ? c.session.preferences.camera : 'follow',
+    c.store.preferences({
+      camera: inspect ? c.store.session.preferences.camera : 'follow',
       heightKm: Math.max(1000, Math.min(2e11, f.heightKm * factor)),
       pan: [...f.centre],
     });
@@ -125,7 +139,7 @@ export function useGestures(
       if (!old) return;
       const next: [number, number] = [e.clientX, e.clientY],
         f = frame.current,
-        p = c.session.preferences;
+        p = c.store.session.preferences;
       if (points.current.size > 1) {
         const other = [...points.current].find(([id]) => id !== e.pointerId)?.[1];
         if (other)
@@ -134,7 +148,7 @@ export function useGestures(
               Math.max(10, Math.hypot(next[0] - other[0], next[1] - other[1])),
           );
       } else if (inspect || e.shiftKey)
-        c.preferences({
+        c.store.preferences({
           camera: inspect ? p.camera : 'free',
           heightKm: f.heightKm,
           pan: [...f.centre],
@@ -150,7 +164,7 @@ export function useGestures(
           dx =
             ((-(next[0] - old[0]) * f.heightKm) / f.height - Math.sin(b) * Math.sin(a) * dy) /
             Math.cos(b);
-        c.preferences({
+        c.store.preferences({
           camera: 'free',
           heightKm: f.heightKm,
           pan: [f.centre[0] + dx, f.centre[1] + dy],
@@ -173,6 +187,6 @@ export function useGestures(
     zoom,
     cancel: () => finish(true),
     isDragging: () => !!drag.current,
-    demo,
   };
 }
+export type Gestures = ReturnType<typeof useGestures>;

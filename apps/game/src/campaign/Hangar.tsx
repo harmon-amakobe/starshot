@@ -1,5 +1,6 @@
 import { Icon } from '@starshot/presentation/icons';
 import type { Inspection } from '@starshot/presentation/vehicle';
+import type { HangarState } from './use-hangar';
 const parts = {
   craft: [
     'The collector',
@@ -102,5 +103,30 @@ export function Hangar({
         </div>
       </section>
     </>
+  );
+}
+export function HangarButton({ open }: { open: () => void }) {
+  return (
+    <button className="pill c-hangar-button" onClick={open}>
+      <Icon name="craft" />
+      Hangar
+    </button>
+  );
+}
+/** The engine demonstration ring, drawn at the engine's grip on screen. */
+export function DemoRing({
+  grip,
+  handlers,
+}: {
+  grip: [number, number];
+  handlers: HangarState['ring'];
+}) {
+  return (
+    <button
+      className="c-ring-handle c-demo-ring"
+      style={{ left: grip[0], top: grip[1] }}
+      aria-label="Pull engine demonstration ring"
+      {...handlers}
+    />
   );
 }

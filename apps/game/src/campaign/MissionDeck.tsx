@@ -1,13 +1,20 @@
 import { BODIES, dateFromEt } from '@starshot/ephemeris';
 import { Icon } from '@starshot/presentation/icons';
 import { DAY, daysBetweenIso } from '../sim/shot';
-import type { CampaignController } from './use-campaign';
+import type { SessionStore } from './session-store';
+import type { Hints } from './use-hints';
+import type { Release } from './use-release';
+/** The mission's route and brief, its launch date, and the guide once one is found. */
 export function MissionDeck({
   c,
   open,
   toggle,
 }: {
-  c: CampaignController;
+  c: {
+    store: Pick<SessionStore, 'session' | 'level' | 'shot'>;
+    release: Pick<Release, 'pending' | 'day'>;
+    hints: Pick<Hints, 'hint' | 'apply'>;
+  };
   open: boolean;
   toggle: () => void;
 }) {
@@ -16,16 +23,16 @@ export function MissionDeck({
       <button className="pill c-mission-toggle" aria-expanded={open} onClick={toggle}>
         <span className="c-earth-dot" />
         <span className="c-mission-label">
-          <b className="c-mission-short-title">{c.level.title}</b>
+          <b className="c-mission-short-title">{c.store.level.title}</b>
           <span className="c-mission-route">
             Earth <span>→</span>
-            {c.level.requiredFlyby && (
+            {c.store.level.requiredFlyby && (
               <>
-                {BODIES[c.level.requiredFlyby].name}
+                {BODIES[c.store.level.requiredFlyby].name}
                 <span>→</span>
               </>
             )}
-            {BODIES[c.level.target].name}
+            {BODIES[c.store.level.target].name}
           </span>
         </span>
         <Icon name="down" />
@@ -34,15 +41,15 @@ export function MissionDeck({
         <div className="c-mission-body">
           <div>
             <span className="eyebrow">
-              {c.level.sandbox ? 'Open Solar System' : `Mission ${c.level.number}`}
+              {c.store.level.sandbox ? 'Open Solar System' : `Mission ${c.store.level.number}`}
             </span>
-            <b>{c.level.title}</b>
-            <p>{c.level.blurb}</p>
+            <b>{c.store.level.title}</b>
+            <p>{c.store.level.blurb}</p>
             <p>
-              {c.level.captureZoneScale && c.level.captureZoneScale > 1
+              {c.store.level.captureZoneScale && c.store.level.captureZoneScale > 1
                 ? 'Training zone: 3× the real sphere of influence. Later missions use the real capture zone.'
-                : c.level.requiredFlyby
-                  ? `A ${BODIES[c.level.requiredFlyby].name} flyby earns the skill star. Aim for the final target.`
+                : c.store.level.requiredFlyby
+                  ? `A ${BODIES[c.store.level.requiredFlyby].name} flyby earns the skill star. Aim for the final target.`
                   : 'Reach the target, save fuel and aim for a close approach.'}
             </p>
           </div>
@@ -51,30 +58,34 @@ export function MissionDeck({
             <input
               aria-label="Launch date (UTC)"
               type="date"
-              min={c.level.window.startIso}
-              max={dateFromEt(c.shot.launchEt + (c.level.window.days - c.session.day) * DAY)
+              min={c.store.level.window.startIso}
+              max={dateFromEt(
+                c.store.shot.launchEt + (c.store.level.window.days - c.store.session.day) * DAY,
+              )
                 .toISOString()
                 .slice(0, 10)}
-              value={dateFromEt(c.shot.launchEt).toISOString().slice(0, 10)}
-              disabled={c.session.phase !== 'aim' || c.pending}
+              value={dateFromEt(c.store.shot.launchEt).toISOString().slice(0, 10)}
+              disabled={c.store.session.phase !== 'aim' || c.release.pending}
               onChange={(e) => {
-                if (e.target.value) c.day(daysBetweenIso(c.level.window.startIso, e.target.value));
+                if (e.target.value)
+                  c.release.day(daysBetweenIso(c.store.level.window.startIso, e.target.value));
               }}
             />
             <span>
-              Day {c.session.day + 1} of {c.level.window.days + 1}
+              Day {c.store.session.day + 1} of {c.store.level.window.days + 1}
             </span>
           </label>
-          {c.hint && (
+          {c.hints.hint && (
             <div className="c-guide">
-              <b>{c.hint.hits ? 'Guide ready' : 'Closest guide'}</b>
+              <b>{c.hints.hint.hits ? 'Guide ready' : 'Closest guide'}</b>
               <span>
-                {c.hint.aim.angleDeg.toFixed(2)}° · {c.hint.aim.speedKmS.toFixed(3)} km/s
+                {c.hints.hint.aim.angleDeg.toFixed(2)}° · {c.hints.hint.aim.speedKmS.toFixed(3)}{' '}
+                km/s
               </span>
               <button
                 className="primary"
-                disabled={c.session.phase !== 'aim' || c.pending}
-                onClick={c.applyGuide}
+                disabled={c.store.session.phase !== 'aim' || c.release.pending}
+                onClick={c.hints.apply}
               >
                 Apply guide
               </button>

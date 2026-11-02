@@ -1,4 +1,4 @@
-import { BODIES, createEphemeris, type PlanetId } from '@starshot/ephemeris';
+import { BODIES, createEphemeris, type BodyId, type PlanetId } from '@starshot/ephemeris';
 import { CAMPAIGN, SANDBOX_TARGETS, sandboxLevel, type Level, type LevelId } from '../levels';
 import { daysBetweenIso, launchEtForDay, normalizeDeg, type Aim } from '../sim/shot';
 export type Units = 'light' | 'metric' | 'imperial';
@@ -170,5 +170,7 @@ export function distanceText(km: number, units: Units) {
   const distance = units === 'imperial' ? km / 1.609344 : km;
   return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: distance < 10 ? 2 : 0 }).format(distance)} ${units === 'imperial' ? 'mi' : 'km'}`;
 }
+/** On-screen body names: the shell calls the Sun "Sol", where the ephemeris says "Sun". */
+export const bodyName = (id: BodyId) => (id === 'sun' ? 'Sol' : BODIES[id].name);
 export const missionName = (s: Session) =>
   s.levelId === 'sandbox' ? `Earth to ${BODIES[s.target].name}` : missionFor(s).title;

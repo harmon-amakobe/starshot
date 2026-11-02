@@ -1,5 +1,7 @@
 import { sampleAt, type SimulationResult } from '@starshot/physics';
 import type { ShotResponse } from '../sim/protocol';
+import { DAY } from '../sim/shot';
+import { unitOf, type Preferences } from './session';
 const nodes = [0, -0.5384693101056831, 0.5384693101056831, -0.906179845938664, 0.906179845938664];
 const weights = [
   0.5688888888888889, 0.4786286704993665, 0.4786286704993665, 0.2369268850561891,
@@ -97,4 +99,23 @@ export function stepRate(effective: number, steps: number[], direction: number) 
   return direction > 0
     ? (steps.find((n) => n > effective * (1 + 1e-10)) ?? Math.max(effective, steps.at(-1)!))
     : (steps.filter((n) => n < effective * (1 - 1e-10)).at(-1) ?? Math.min(effective, steps[0]!));
+}
+/** Default playback speed in ET seconds per second: any flight plays in 4 to 9 seconds. */
+export const defaultRate = (f: ShotResponse) =>
+  (f.analysis.endEt - f.shot.launchEt) /
+  Math.max(4, Math.min(9, 2.5 + f.analysis.flightDays / 200));
+/** The flight clock after `seconds` of play, clamped to the end of the flight. */
+export function advanceEt(f: ShotResponse, p: Preferences, et: number, seconds: number) {
+  const light = p.scientific && unitOf(p) === 'light';
+  if (light && p.lightRate > 0) {
+    const clock = clockFor(f);
+    return clock.etAtDistance(clock.distanceAt(et) + seconds * p.lightRate * 299792.458);
+  }
+  const rate = light ? 1 : p.rate || defaultRate(f);
+  // Default speed slows near an encounter so a flyby can be seen.
+  const close = f.analysis.flybys.some((e) => Math.abs(e.t - et) < 4 * DAY);
+  return Math.min(
+    f.analysis.endEt,
+    et + seconds * rate * (p.rate === 0 && !p.scientific && close ? 0.28 : 1),
+  );
 }

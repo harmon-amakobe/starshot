@@ -1,119 +1,38 @@
 import { useRef, useState, type Ref } from 'react';
-import { BODIES, dateFromEt, norm } from '@starshot/ephemeris';
-import { deltaVFromLeo, sampleAt } from '@starshot/physics';
+import { BODIES } from '@starshot/ephemeris';
+import { deltaVFromLeo } from '@starshot/physics';
 import { Icon } from '@starshot/presentation/icons';
-import type { CampaignController } from './use-campaign';
-import { distanceText, unitOf, type CameraMode } from './session';
-import type { SceneFrame } from './scene-types';
-import { stepRate } from './playback';
-export function UnitButton({ c }: { c: CampaignController }) {
-  const p = c.session.preferences,
-    unit = unitOf(p),
-    names = { light: 'Light-time', metric: 'Metric', imperial: 'Imperial' };
-  return (
-    <button
-      className="pill c-units"
-      aria-label={`Units: ${names[unit]}. Change units`}
-      onClick={() => {
-        const order = ['light', 'metric', 'imperial'] as const;
-        c.preferences({
-          units: {
-            ...p.units,
-            [p.scientific ? 'science' : 'simple']: order[(order.indexOf(unit) + 1) % 3]!,
-          },
-        });
-      }}
-    >
-      {unit === 'light' ? (
-        <Icon name="wave" />
-      ) : (
-        <b className="unit-symbol">{unit === 'metric' ? 'km' : 'mi'}</b>
-      )}
-      <span>{names[unit]}</span>
-    </button>
-  );
+import { ModeButtons, UnitButton } from './DeckControls';
+import { FineAimPage, OverviewPage, TelemetryPage } from './DeckPages';
+import type { Playback } from './flight-clock';
+import type { CameraMode } from './session';
+import type { SessionStore } from './session-store';
+import type { FlightView } from './use-campaign';
+import type { Hints } from './use-hints';
+import type { Release } from './use-release';
+
+/** The parts of the controller the deck reads and drives. */
+export interface DeckGame {
+  store: Pick<SessionStore, 'session' | 'level' | 'preferences' | 'pause'>;
+  view: Pick<FlightView, 'active' | 'flight' | 'clock' | 'score'>;
+  release: Pick<Release, 'pending' | 'aim' | 'launch'>;
+  playback: Pick<Playback, 'retry' | 'seek'>;
+  hints: Pick<Hints, 'busy'>;
+  hydrating: boolean;
 }
-export function ModeButtons({ c }: { c: CampaignController }) {
-  const p = c.session.preferences;
-  return (
-    <div className="c-modes" role="group" aria-label="Instrument detail">
-      {[false, true].map((scientific) => (
-        <button
-          key={String(scientific)}
-          className={`${p.scientific === scientific ? 'selected' : ''} ${p.expanded && p.scientific === scientific ? 'pill' : 'icon-only'}`}
-          aria-label={scientific ? 'Scientific' : 'Simplified'}
-          aria-pressed={p.scientific === scientific}
-          title={scientific ? 'Scientific' : 'Simplified'}
-          onClick={() =>
-            c.preferences({ scientific, ...(p.sizeLinked ? { trueSize: scientific } : {}) })
-          }
-        >
-          <Icon name={scientific ? 'orbit' : 'face'} />
-          {p.expanded && p.scientific === scientific && (
-            <span>{scientific ? 'Scientific' : 'Simplified'}</span>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
-export function SpeedPill({ c }: { c: CampaignController }) {
-  const p = c.session.preferences,
-    f = c.active,
-    base = f
-      ? (f.analysis.endEt - f.shot.launchEt) /
-        Math.max(4, Math.min(9, 2.5 + f.analysis.flightDays / 200))
-      : 86400;
-  const light = p.scientific && unitOf(p) === 'light';
-  const steps = light
-    ? [0, 0.25, 0.5, 0.75, 1, 2, 5, 10, 25, 100, 300]
-    : p.scientific
-      ? [1, 60, 3600, 86400, 864000, 8640000, 86400000, 1e9]
-      : [1, base, base * 2, base * 3, base * 5, base * 10];
-  const value = light ? p.lightRate : p.rate,
-    effective = light ? value : value || base,
-    multiple = effective / base;
-  const label = light
-    ? value === 0
-      ? 'Real time'
-      : `${value}c`
-    : value === 1
-      ? 'Real time'
-      : p.scientific
-        ? `${(effective / 86400).toPrecision(3)} day/s`
-        : `${multiple < 0.01 ? multiple.toPrecision(2) : Number(multiple.toFixed(2))}x`;
-  const step = (direction: number) => {
-    const next = stepRate(effective, steps, direction);
-    c.preferences(light ? { lightRate: next } : { rate: next === base ? 0 : next });
-  };
-  return (
-    <div
-      className="pill c-speed"
-      aria-label="Trip speed"
-      title="Double-click for real time"
-      onDoubleClick={() => c.preferences({ rate: 1, lightRate: 0 })}
-    >
-      <button aria-label="Decrease trip speed" onClick={() => step(-1)}>
-        <span aria-hidden="true">◂</span>
-      </button>
-      <output>{label}</output>
-      <button aria-label="Increase trip speed" onClick={() => step(1)}>
-        <span aria-hidden="true">▸▸</span>
-      </button>
-    </div>
-  );
-}
+
+/** The bottom sheet: compact status, three swipeable pages, the timeline and the actions. */
 export function FlightDeck({
   c,
-  frame,
+  targetDistance,
   deck,
   camera,
   map,
   openMap,
   guide,
 }: {
-  c: CampaignController;
-  frame: SceneFrame;
+  c: DeckGame;
+  targetDistance: number;
   deck: Ref<HTMLElement>;
   camera: (mode: CameraMode) => void;
   map: boolean;
@@ -122,32 +41,31 @@ export function FlightDeck({
 }) {
   const [page, setPage] = useState(0),
     swipe = useRef(0),
-    p = c.session.preferences,
-    aim = c.session.phase === 'aim',
-    response = c.active;
-  const dv = deltaVFromLeo(c.session.aim.speedKmS),
-    fuel = (dv / deltaVFromLeo(c.level.vInfMaxKmS)) * 100;
-  const status = c.pending
+    p = c.store.session.preferences,
+    aim = c.store.session.phase === 'aim',
+    response = c.view.active;
+  const dv = deltaVFromLeo(c.store.session.aim.speedKmS),
+    fuel = (dv / deltaVFromLeo(c.store.level.vInfMaxKmS)) * 100;
+  const status = c.release.pending
     ? 'Preparing launch'
     : !response
       ? 'Updating path'
       : response.analysis.hit
-        ? `${BODIES[c.level.target].name} approach lined up`
-        : `This path misses ${BODIES[c.level.target].name}`;
-  const compactStatus = c.pending
+        ? `${BODIES[c.store.level.target].name} approach lined up`
+        : `This path misses ${BODIES[c.store.level.target].name}`;
+  const compactStatus = c.release.pending
     ? 'Wait'
-    : c.session.phase === 'result'
-      ? `${c.score?.stars ?? 0} ★`
+    : c.store.session.phase === 'result'
+      ? `${c.view.score?.stars ?? 0} ★`
       : aim
         ? response
           ? response.analysis.hit
             ? 'Ready'
             : 'Miss'
           : 'Updating'
-        : c.session.paused
+        : c.store.session.paused
           ? 'Paused'
           : 'Flying';
-  const speed = response ? norm(sampleAt(response.result, c.clock).v) : 0;
   return (
     <section
       ref={deck}
@@ -160,7 +78,7 @@ export function FlightDeck({
           className="c-deck-title"
           aria-label={p.expanded ? 'Collapse flight deck' : 'Expand flight deck'}
           aria-expanded={p.expanded}
-          onClick={() => c.preferences({ expanded: !p.expanded })}
+          onClick={() => c.store.preferences({ expanded: !p.expanded })}
         >
           <Icon name="down" />
           <span>Flight deck</span>
@@ -168,7 +86,7 @@ export function FlightDeck({
         {!p.expanded && (
           <div
             className="c-compact"
-            aria-label={`Shot fuel ${Math.round(fuel)} percent, angle ${c.session.aim.angleDeg.toFixed(1)} degrees, ${compactStatus}`}
+            aria-label={`Shot fuel ${Math.round(fuel)} percent, angle ${c.store.session.aim.angleDeg.toFixed(1)} degrees, ${compactStatus}`}
           >
             <div>
               <span>
@@ -176,13 +94,13 @@ export function FlightDeck({
               </span>
               <meter min={0} max={100} value={fuel} />
             </div>
-            <span className="c-mini-angle">↗ {c.session.aim.angleDeg.toFixed(1)}°</span>
+            <span className="c-mini-angle">↗ {c.store.session.aim.angleDeg.toFixed(1)}°</span>
             <b className="c-mini-status">{compactStatus}</b>
           </div>
         )}
         <div className="c-deck-preferences">
-          <UnitButton c={c} />
-          <ModeButtons c={c} />
+          <UnitButton store={c.store} />
+          <ModeButtons store={c.store} />
         </div>
       </header>
       {p.expanded && (
@@ -199,108 +117,16 @@ export function FlightDeck({
             }}
           >
             {page === 0 && (
-              <div className="c-instruments">
-                <div className="c-fuel">
-                  <span>{p.scientific ? 'Departure Δv' : 'Shot fuel'}</span>
-                  <strong>
-                    {p.scientific ? dv.toFixed(3) : Math.round(fuel)}
-                    <small>{p.scientific ? 'km/s' : '%'}</small>
-                  </strong>
-                  <meter min={0} max={100} value={fuel} />
-                  <small>
-                    {Math.round((c.session.aim.speedKmS / c.level.vInfMaxKmS) * 100)}% engine charge
-                  </small>
-                </div>
-                <div className="c-prediction">
-                  <Icon name={response?.analysis.hit ? 'guide' : 'orbit'} />
-                  <div>
-                    <b>{status}</b>
-                    <span>
-                      {aim
-                        ? `${c.session.aim.angleDeg.toFixed(2)}° · ${response ? `${response.analysis.flightDays.toFixed(0)} days` : 'Computing'}`
-                        : `${dateFromEt(c.clock).toISOString().slice(0, 10)} · ${c.session.paused ? 'Paused' : 'In flight'}`}
-                    </span>
-                    <span>
-                      {distanceText(frame.targetDistance, unitOf(p))} to{' '}
-                      {BODIES[c.level.target].name}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <OverviewPage
+                c={c}
+                dv={dv}
+                fuel={fuel}
+                status={status}
+                targetDistance={targetDistance}
+              />
             )}
-            {page === 1 && (
-              <div className="c-fine">
-                <label>
-                  Direction <span>Heliocentric · 0 to 360°</span>
-                  <input
-                    aria-label="Aim angle (degrees)"
-                    type="number"
-                    min="0"
-                    max="360"
-                    step="0.01"
-                    value={Number(c.session.aim.angleDeg.toFixed(2))}
-                    disabled={!aim || c.pending}
-                    onChange={(e) => {
-                      if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber))
-                        c.aim({ ...c.session.aim, angleDeg: e.target.valueAsNumber });
-                    }}
-                  />
-                </label>
-                <label>
-                  Departure speed <span>Excess speed · km/s</span>
-                  <input
-                    aria-label="Departure speed (km/s)"
-                    type="number"
-                    min="0"
-                    max={c.level.vInfMaxKmS}
-                    step="0.001"
-                    value={Number(c.session.aim.speedKmS.toFixed(3))}
-                    disabled={!aim || c.pending}
-                    onChange={(e) => {
-                      if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber))
-                        c.aim({ ...c.session.aim, speedKmS: e.target.valueAsNumber });
-                    }}
-                  />
-                </label>
-                <p>
-                  Fuel includes the Earth escape burn, even at zero excess speed. Pulling the ring
-                  adds energy to that departure.
-                </p>
-              </div>
-            )}
-            {page === 2 && (
-              <div className="c-telemetry">
-                <div>
-                  <span>Travel speed</span>
-                  <strong>
-                    {unitOf(p) === 'imperial' ? (speed / 1.609344).toFixed(2) : speed.toFixed(2)}{' '}
-                    <small>{unitOf(p) === 'imperial' ? 'mi/s' : 'km/s'}</small>
-                  </strong>
-                </div>
-                <div>
-                  <span>Closest approach</span>
-                  <strong>
-                    {response ? distanceText(response.analysis.closestKm, unitOf(p)) : 'Computing'}
-                  </strong>
-                </div>
-                <div>
-                  <span>
-                    {c.level.requiredFlyby
-                      ? `${BODIES[c.level.requiredFlyby].name} flyby`
-                      : 'Guide'}
-                  </span>
-                  <strong>
-                    {c.level.requiredFlyby
-                      ? response?.analysis.requiredFlybyDone
-                        ? 'On course'
-                        : 'Not yet'
-                      : c.session.hintUsed
-                        ? 'Applied · 2 stars max'
-                        : 'Unassisted'}
-                  </strong>
-                </div>
-              </div>
-            )}
+            {page === 1 && <FineAimPage c={c} />}
+            {page === 2 && <TelemetryPage c={c} />}
           </div>
           <nav className="c-page-tabs" aria-label="Flight deck pages">
             {['Overview', 'Fine aim', 'Telemetry'].map((title, i) => (
@@ -315,22 +141,22 @@ export function FlightDeck({
               </button>
             ))}
           </nav>
-          {c.session.phase !== 'aim' && c.flight && (
+          {c.store.session.phase !== 'aim' && c.view.flight && (
             <label className="c-timeline">
               <span>Journey</span>
               <input
                 aria-label="Flight timeline"
                 type="range"
-                min={c.flight.shot.launchEt}
-                max={c.flight.analysis.endEt}
+                min={c.view.flight.shot.launchEt}
+                max={c.view.flight.analysis.endEt}
                 step={1}
-                value={c.clock}
-                onChange={(e) => c.seek(Number(e.target.value))}
+                value={c.view.clock}
+                onChange={(e) => c.playback.seek(Number(e.target.value))}
               />
               <output>
                 {Math.round(
-                  ((c.clock - c.flight.shot.launchEt) /
-                    Math.max(1, c.flight.analysis.endEt - c.flight.shot.launchEt)) *
+                  ((c.view.clock - c.view.flight.shot.launchEt) /
+                    Math.max(1, c.view.flight.analysis.endEt - c.view.flight.shot.launchEt)) *
                     100,
                 )}
                 %
@@ -367,28 +193,41 @@ export function FlightDeck({
             <>
               <button
                 className="pill"
-                aria-label={c.hintBusy ? 'Finding guide' : 'Guide'}
-                disabled={c.hintBusy || c.pending}
+                aria-label={c.hints.busy ? 'Finding guide' : 'Guide'}
+                disabled={c.hints.busy || c.release.pending}
                 onClick={guide}
               >
                 <Icon name="guide" />
-                <span>{c.hintBusy ? 'Finding…' : 'Guide'}</span>
+                <span>{c.hints.busy ? 'Finding…' : 'Guide'}</span>
               </button>
               <button
                 className="primary"
-                disabled={c.pending || c.hydrating}
-                onClick={() => c.launch()}
+                disabled={c.release.pending || c.hydrating}
+                onClick={() => c.release.launch()}
               >
-                {c.pending ? 'Preparing…' : 'Launch'}
+                {c.release.pending ? 'Preparing…' : 'Launch'}
                 <Icon name="play" />
               </button>
             </>
           ) : (
-            <button className="primary" onClick={c.session.phase === 'result' ? c.retry : c.pause}>
+            <button
+              className="primary"
+              onClick={c.store.session.phase === 'result' ? c.playback.retry : c.store.pause}
+            >
               <Icon
-                name={c.session.phase === 'result' ? 'retry' : c.session.paused ? 'play' : 'pause'}
+                name={
+                  c.store.session.phase === 'result'
+                    ? 'retry'
+                    : c.store.session.paused
+                      ? 'play'
+                      : 'pause'
+                }
               />
-              {c.session.phase === 'result' ? 'Try again' : c.session.paused ? 'Resume' : 'Pause'}
+              {c.store.session.phase === 'result'
+                ? 'Try again'
+                : c.store.session.paused
+                  ? 'Resume'
+                  : 'Pause'}
             </button>
           )}
         </div>

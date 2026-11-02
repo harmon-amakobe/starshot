@@ -74,7 +74,8 @@ pilot may import `starshot.progress.v1`; the original key is not overwritten.
 The cloud-profile flow uses a separate, explicitly local demo store. Firebase
 authentication, cloud storage and app-store listings remain future work.
 
-The cloned read-only `window.__starshotCampaign` snapshot exposes request identity,
+The cloned read-only `window.__starshotCampaign` snapshot
+(`src/campaign/debug-hook.ts`) exposes request identity,
 preview/flight summaries, ownership, playback, camera and projected control bounds
 for browser verification. It has no game-state mutators.
 
@@ -90,7 +91,8 @@ for browser verification. It has no game-state mutators.
 | `src/sim/hint.ts` | Hint: Lambert `bestDirectTransfer` over the window, nudged until the game simulator agrees (at most 240 simulations, no wall clock); curated shot for flyby levels. The aim is rounded to 0.01 degree and 0.001 km/s before it is checked, so the label is exactly what "Use hint" applies. |
 | `src/sim/preview.ts` | Launch gate: canonical shot key; Launch only for the preview of the aim on screen. |
 | `src/sim/sim.worker.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker; previews are latest-request-wins and throttled. |
-| `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. |
+| `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. The module map is in `docs/architecture.md`. |
+| `src/campaign/shell.test.ts` | The shell's pure decisions: the Escape choice, the autosave guard, the playback rate and clock advance, camera heights and the demo ring charge. |
 | `src/campaign/path.ts` | Cubic Hermite densifying of an integrated flight into the route polyline that `scene.ts` draws. |
 | `packages/presentation/` | Shared collector, engine, crew pod, drone, charge sleeve, icons, audio and entry timing. |
 | `public/` | Icon, web manifest, a small same-origin service worker for offline play. |

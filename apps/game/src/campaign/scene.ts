@@ -6,7 +6,7 @@ import { colours, makeFrame, type FrameGeometry } from './frame';
 import { loadSceneData, type SceneData } from './scene-data';
 import { ThreeScene } from './three-scene';
 import { ephemeris } from './scene-geometry';
-import type { SceneState } from './scene-types';
+import { RELEASE_SNAP_MS, type SceneState } from './scene-types';
 let identity = 0;
 export class CampaignScene {
   readonly identity = ++identity;
@@ -64,7 +64,7 @@ export class CampaignScene {
     this.wasAiming = state.aiming;
     const snap =
       state.snap && !state.reduced
-        ? Math.max(0, 1 - (state.visualTime - this.releaseAt) / 0.18)
+        ? Math.max(0, 1 - (state.visualTime - this.releaseAt) / (RELEASE_SNAP_MS / 1000))
         : 0;
     const drawn = snap > 0 ? { ...state, charge: this.releaseCharge * snap ** 3 } : state;
     const f = makeFrame(

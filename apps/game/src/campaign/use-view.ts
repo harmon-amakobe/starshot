@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { EntryPresentation } from '@starshot/presentation/presentation';
+import type { ShotRequest } from '../sim/shot';
 import { CampaignScene } from './scene';
 import { EMPTY_FRAME, type SceneState } from './scene-types';
-import type { CampaignController } from './use-campaign';
+/** What the render loop reads from the controller each frame: it also drives the clock. */
+export interface ViewSource {
+  tick(seconds: number, now: number, suspended: boolean): void;
+  shot: ShotRequest;
+  time: RefObject<number>;
+}
 export function useView(
-  controller: CampaignController,
+  controller: ViewSource,
   state: Omit<SceneState, 'et' | 'visualTime' | 'home'>,
   home: boolean,
   suspended: boolean,

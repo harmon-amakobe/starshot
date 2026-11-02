@@ -132,6 +132,11 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ### Changed
 
+- Game: the campaign shell is split by responsibility, with no change in behaviour.
+  `CampaignApp.tsx` composes focused hooks for the session, release, result, hints,
+  restore, playback, menu, views and hangar, and renders small components. The
+  module map is in `docs/architecture.md`; `campaign/shell.test.ts` pins the pure
+  decisions.
 - Starshot's own code and documentation are now licensed Apache-2.0 instead of MIT
   (D12). The four `package.json` files say so; Mark Macharia's files keep his terms.
 - Game: result messages are statements ("Captured by Mars", "Hit."), with one

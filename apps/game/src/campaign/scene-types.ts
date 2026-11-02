@@ -4,6 +4,8 @@ import type { Level } from '../levels';
 import type { ShotResponse } from '../sim/protocol';
 import type { Aim } from '../sim/shot';
 import type { Preferences } from './session';
+/** How long the ring snaps back after a release (`SceneState.snap`); the clock waits it out. */
+export const RELEASE_SNAP_MS = 180;
 export interface SceneState {
   level: Level;
   launchEt: number;
