@@ -25,7 +25,7 @@ All cloud jobs remain in `.github/workflows/release.yml`, the Web release workfl
 | Preview, manually from a reviewed ref | Development preview URL, expires after seven days |
 | Beta, manually from a reviewed ref | Snapshot at beta.playstarshot.com |
 | Candidate, manually from main | Final stable version built once, registered, then staged on beta |
-| Promote release, manually from main with a stable version | Exact registered candidate deployed to production, then GitHub release published |
+| Promote release, manually from main with a stable version | After owner approval, exact registered candidate deployed to production, then GitHub release published |
 | Push to main, a tag, a commit marker or a fork PR | No production deployment |
 
 The dispatch input values are `preview`, `beta`, `candidate` and `promote`.
@@ -95,6 +95,8 @@ not an accepted shortcut. The current lane versions the existing workspace set.
    mission, local save restoration, installed offline reload and the update lifecycle.
    Record the candidate version, SHA, build id, workflow URL and browser evidence.
 5. Run Web release on main with `target=promote` and that exact stable version.
+   Open the run's **Review deployments**, select `production`, then choose
+   **Approve and deploy** as `harmon-amakobe`. The production job waits for this approval.
    Promotion validates provenance and requires beta to serve the same metadata.
    It deploys the retained bytes to production without rebuilding. A newer live
    stable version or a conflicting source/build under the same version stops it.
@@ -106,6 +108,10 @@ In GitHub, open **Actions**, select **Web release**, then **Run workflow**. Choo
 the `main` branch, select `candidate` as the target and leave version empty. Run it
 and test that candidate on beta. When ready, open **Run workflow** again on `main`,
 select `promote` and enter its stable version, such as `0.1.0`.
+Submit the run, open it, and approve the waiting `production` deployment as described
+above. The README's **Promote to production** button opens
+[Web release on main](https://github.com/harmon-amakobe/starshot/actions/workflows/release.yml?query=branch%3Amain);
+it does not submit a deployment or preselect its inputs.
 Web release must first exist on the default branch, `main`, for **Run workflow**
 to be available. Before then, PR0 pushes publish beta; candidate and promotion
 dispatches become available after the workflow lands on main.
@@ -123,6 +129,40 @@ bug reports. The numeric snapshot suffix is a workflow run and attempt, not a ha
 Both labels come from the compiled version; an old or offline client never fetches
 a newer label from the server. The build id stays out of the main footer.
 Save-schema versions are separate and do not change just because game SemVer changes.
+
+## Production approval
+
+D37 adds a required reviewer to the existing `production` environment:
+
+| Setting | Required value |
+|---|---|
+| Required reviewers | Only `harmon-amakobe` |
+| Prevent self-review | Off, so the solo owner can approve their own run |
+| Allow administrators to bypass configured protection rules | Off |
+| Deployment branches and tags | Selected branches, only `main`, no tags |
+
+Repository write access permits a user to request a manual run. The production job
+cannot start until the owner account approves it, including a request from a future
+contributor. Public readers and forks do not gain deployment access from README links.
+Keep owner approval for agents using the owner's account; they must not approve a
+production run without an explicit production-promotion instruction.
+
+The Google provider requires this exact production environment and release workflow
+on main. Removing or renaming the environment in a workflow does not grant cloud
+access. Preview and candidate staging continue through the separate preview identity.
+
+This gate controls GitHub production jobs. Repository administrators who can edit
+these settings and principals with direct Firebase deployment access remain trusted.
+Do not grant either capability to an ordinary contributor. Owner tokens and sessions
+act as the owner, so keep them private. This setting does not make account compromise
+or a separate authorized cloud deployment impossible.
+
+When restoring settings, add the sole required reviewer and retain the main-only
+branch rule. Disable administrator bypass in the environment settings UI; it is not
+a supported field in GitHub's environment-update REST request. Read back the reviewer,
+self-review, bypass and branch settings. Do not dispatch a production release merely
+to test the gate. See [GitHub's environment settings](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
+and [manual workflow permissions](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 
 ## Candidate provenance and retries
 
@@ -166,6 +206,7 @@ Require the `gates` check and PRs on main; block force pushes and deletions.
 Create `production`, `preview` and `release` environments. Production and release
 allow only main. Release has no Google variables or secrets. Preview allows the
 reviewed main, starshot and codex refs accepted by its provider.
+Apply the [owner-only production approval settings](#production-approval).
 Protect `refs/tags/starshot-v*` against update and deletion without a bypass, allow
 creation, and enable immutable GitHub releases.
 
