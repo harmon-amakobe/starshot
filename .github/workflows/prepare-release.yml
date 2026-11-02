@@ -1,0 +1,87 @@
+# Version output is generated without application dependencies or cloud credentials.
+name: Prepare release
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Existing integration branch for the generated release proposal
+        type: string
+        default: starshot/pr0-bootstrap
+        required: true
+permissions: {}
+concurrency:
+  group: release-proposal
+  cancel-in-progress: false
+jobs:
+  proposal:
+    if: github.repository == 'harmon-amakobe/starshot' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      hasProposal: ${{ steps.generate.outputs.hasProposal }}
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - name: Validate integration branch
+        run: |
+          node -e "if (!/^(starshot|codex)\/[A-Za-z0-9][A-Za-z0-9/_-]*$/.test(process.env.PROPOSAL_BASE)) process.exit(1)"
+        env:
+          PROPOSAL_BASE: ${{ inputs.base }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: tools
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.base }}
+          path: source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: tools/.nvmrc
+      - id: generate
+        run: node tools/scripts/release/cli.mjs propose
+        env:
+          RELEASE_ROOT: source
+          PROPOSAL_BASE: ${{ inputs.base }}
+      - id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-proposal-${{ github.run_attempt }}
+          path: proposal
+          retention-days: 14
+  publish-proposal:
+    needs: proposal
+    if: >-
+      github.ref == 'refs/heads/main' && needs.proposal.outputs.hasProposal == 'true' &&
+      vars.RELEASE_PR_AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: release
+    permissions:
+      contents: write # optional generated branch, never a direct push to main
+      pull-requests: write # only when the owner enables this reviewed opt-in
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: tools
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.base }}
+          path: source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: tools/.nvmrc
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ needs.proposal.outputs.artifact }}
+          merge-multiple: true
+          path: proposal
+          digest-mismatch: error
+      - run: node tools/scripts/release/publish-proposal.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_PR_AUTOMATION_ENABLED: ${{ vars.RELEASE_PR_AUTOMATION_ENABLED }}

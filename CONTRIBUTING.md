@@ -178,8 +178,18 @@ AI tools are welcome here, as they are in building Starshot itself. The rules:
 
 Describe anything a player or a package user would notice under `## [Unreleased]` in
 [CHANGELOG.md](CHANGELOG.md). Do not add dated release headings and do not edit
-`version` fields in `package.json`. Version numbers will be set by an automated release
-step (not built yet), once per merged stack, so nobody has to coordinate them by hand.
+`version` fields in manifests or the lockfile. CI prepares those outputs once per
+release stack. Breaking changes infer major, nonempty Added infers minor, and other
+notes infer patch. A single `Bump: major`, `Bump: minor` or `Bump: patch` line can
+override the inference. Explain the reason in the PR. The first release keeps 0.1.0.
+
+Compatibility covers supported saved progress and public package APIs. Describe
+any incompatible behavior and its migration in the notes. Game SemVer and local-save
+schema versions are separate; a version bump does not migrate or erase saves.
+Follow the [release runbook](docs/hosting.md#prepare-version-outputs) to apply the
+unchanged CI proposal, test beta and promote explicitly. Merging main alone does
+not deploy production. A new workspace needs CI version initialization before it
+can pass the strict parity gate; extend the generator in that workspace's PR.
 
 ## Never touch `third_party/`
 

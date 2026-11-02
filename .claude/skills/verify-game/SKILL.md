@@ -1,6 +1,6 @@
 ---
 name: verify-game
-description: Use when a Starshot change needs proof in the running game rather than in source, such as a play-through, phone and desktop screenshots, a console sweep, reduced-motion or keyboard checks, or when a task mentions Playwright, the browser, mobile layout, screenshots, verifying a level end to end, or the GitHub Pages build.
+description: Use when a Starshot change needs proof in the running game rather than in source, such as a play-through, phone and desktop screenshots, a console sweep, reduced-motion or keyboard checks, or when a task mentions Playwright, the browser, mobile layout, screenshots, verifying a level end to end, or a hosted build.
 ---
 
 # Verifying the game in a browser
@@ -21,7 +21,7 @@ Playwright is deliberately not a dependency. It must already resolve on the mach
 ```bash
 npm run build
 node scripts/verify-game.mjs                        # smoke: load, screenshots, sweep
-node scripts/verify-game.mjs --base /starshot/      # as GitHub Pages serves it
+node scripts/verify-game.mjs --base /starshot/      # portable subpath hosting
 node scripts/verify-game.mjs --steps /tmp/steps.mjs # one shot() per acceptance criterion
 ```
 

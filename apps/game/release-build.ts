@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { cp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
+import { identityFor, contentId } from '../../scripts/release/identity.mjs';
 
 const sha256 = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('base64');
 
@@ -24,13 +25,13 @@ export async function finishRelease(output: string, repository: string) {
       const bytes = await readFile(file);
       return { path: relative(output, file).replaceAll('\\', '/'), integrity: `sha256-${sha256(bytes)}`, bytes: bytes.length };
     }));
-  const version = createHash('sha256').update(JSON.stringify(inventory)).update(template)
-    .update(process.env.GITHUB_SHA ?? '').digest('hex').slice(0, 24);
-  const metadata = JSON.stringify({ version, commit: process.env.GITHUB_SHA ?? null,
+  const identity = identityFor(repository);
+  const buildId = contentId(inventory, template, identity);
+  const metadata = JSON.stringify({ schema: 2, ...identity, buildId,
     files: inventory.length, bytes: inventory.reduce((sum, file) => sum + file.bytes, 0) }, null, 2) + '\n';
   await writeFile(join(output, 'release.json'), metadata);
   inventory.push({ path: 'release.json', integrity: `sha256-${sha256(metadata)}`, bytes: Buffer.byteLength(metadata) });
   await writeFile(join(output, 'sw.js'), template
-    .replace('__STARSHOT_RELEASE__', JSON.stringify(version))
+    .replace('__STARSHOT_RELEASE__', JSON.stringify(buildId))
     .replace('__STARSHOT_PRECACHE__', JSON.stringify(inventory.map(({ path, integrity }) => ({ path, integrity })))));
 }

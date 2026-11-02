@@ -23,6 +23,7 @@ git diff --name-only <base>...HEAD     # three dots: compare against the merge b
 | anything a player sees (`apps/**` UI, styles, assets) | `verify-game` through the `verification-driver` agent |
 | `third_party/**` | `astlo-upstream` (and expect `third-party` to fail unless it is a sync) |
 | `.claude/**`, `scripts/**`, `AGENTS.md`, `CLAUDE.md`, `.github/**` | the `rules-reviewer` agent; `hook-fixtures` must be green |
+| release workflows, `scripts/release/**`, version proposals or changelog release policy | `release-ready`, including provenance and retry negative cases |
 | anything about to be pushed | `public-hygiene` |
 
 Rows add up; none substitutes for another. A diff touching the worker and the HUD owes

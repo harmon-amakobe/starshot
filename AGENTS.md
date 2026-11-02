@@ -14,7 +14,7 @@ media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 
 | Path | What lives there |
 |---|---|
-| `apps/game` | Vite + React + Canvas 2D game (D5); shot physics runs in a Web Worker |
+| `apps/game` | Vite + React + Three.js game with Canvas 2D fallback (D19); shot physics runs in a Web Worker |
 | `packages/ephemeris` | Planet states from JPL Table 1, time scales, bodies (D4) |
 | `packages/physics` | Integrator, patched-conic launch, encounters, Lambert |
 | `tools/horizons` | Stdlib Python that refreshes the Horizons test fixtures |
@@ -23,7 +23,7 @@ media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 | `crates/` (planned) | The Rust core: maths, ephemeris, physics, game rules, wasm and FFI bindings (D16) |
 | `tools/ephem` (planned) | Python that builds DE440 rails and their validation report (D17) |
 | `docs/` | Decisions, plans, hosting, architecture |
-| `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Pages |
+| `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Firebase releases |
 
 ## Non-negotiables
 
@@ -165,6 +165,7 @@ Load a skill when its trigger appears; the index is how agents know they exist.
 | `plan-pr0` | turning research into a plan that lands as PR0 | `.claude/skills/plan-pr0/` |
 | `handoff-prompt` | closing a session with work left | `.claude/skills/handoff-prompt/` |
 | `track-work` | issues, epics, labels, `work.yaml`, the sync script, Part of or Closes | `.claude/skills/track-work/` |
+| `release-ready` | release proposals, game versions, beta staging or production promotion | `.claude/skills/release-ready/` |
 
 ## Definition of Done
 
@@ -187,6 +188,6 @@ shorter DoD.
 | `docs/copy-standard.md` | Writing anything a person reads: docs, UI text, issues, pull requests, commits |
 | `docs/plans/` | Building any PR of a program: specs, acceptance criteria, deviations |
 | `docs/architecture.md` | Changing how packages, worker and game fit together |
-| `docs/hosting.md` | Pages, Actions on the fork, branch protection, future build-time config |
+| `docs/hosting.md` | Firebase channels, CI version proposals, candidate promotion and recovery |
 | `.claude/README.md` | Harness config table, what each hook enforces, the accepted gaps |
 | `.claude/rubrics/` | Reviewing a diff, physics, game feel, hygiene, or an agent file |

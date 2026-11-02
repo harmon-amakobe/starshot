@@ -66,12 +66,28 @@ process.stdin.on("end", () => {
   const pairs = [];
   if (typeof ti.content === "string") {
     const before = existsSync(file) ? readFileSync(file, "utf8") : null;
-    if (before !== null) pairs.push([before, ti.content]);
+    pairs.push([before ?? "", ti.content]);
   }
   if (typeof ti.old_string === "string" || typeof ti.new_string === "string") pairs.push([ti.old_string ?? "", ti.new_string ?? ""]);
   if (Array.isArray(ti.edits)) for (const e of ti.edits) pairs.push([e?.old_string ?? "", e?.new_string ?? ""]);
 
   const base = file.split("/").pop() ?? "";
+  if (base === "package-lock.json") {
+    const full = existsSync(file) ? readFileSync(file, "utf8") : "{}";
+    const owned = text => {
+      const lock = JSON.parse(text);
+      return JSON.stringify([lock.version, ...Object.entries(lock.packages ?? {})
+        .filter(([path]) => !path.includes("node_modules"))
+        .map(([path, item]) => [path, item.version])]);
+    };
+    for (const [before, after] of pairs) {
+      try {
+        const original = before === full || !existsSync(file) ? before || "{}" : full;
+        const updated = before === full || !existsSync(file) ? after : full.replace(before, after);
+        if (owned(original) !== owned(updated)) deny(VERSION_REASON);
+      } catch { /* The tool or JSON parser reports malformed edits; ordinary dependency changes stay editable. */ }
+    }
+  }
   if (base === "package.json" && !/\/node_modules\//.test(file)) {
     for (const [before, after] of pairs) {
       // A Write of a whole file compares the top-level field; a partial edit compares the
@@ -81,9 +97,8 @@ process.stdin.on("end", () => {
   }
   if (/^CHANGELOG\.md$/i.test(base)) {
     for (const [before, after] of pairs) {
-      const added = (after.match(new RegExp(RELEASE_HEADING.source, "gm")) ?? []).length;
-      const had = (before.match(new RegExp(RELEASE_HEADING.source, "gm")) ?? []).length;
-      if (added > had) deny(CHANGELOG_REASON);
+      const headings = text => text.split("\n").filter(line => RELEASE_HEADING.test(line));
+      if (JSON.stringify(headings(before)) !== JSON.stringify(headings(after))) deny(CHANGELOG_REASON);
     }
   }
   process.exit(0);

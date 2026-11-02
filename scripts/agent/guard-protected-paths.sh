@@ -10,7 +10,7 @@
 
 payload=""
 [ -t 0 ] || payload=$(cat 2>/dev/null)
-case $payload in *third_party*|*package.json*|*CHANGELOG*|*changelog*) ;; *) exit 0 ;; esac
+case $payload in *third_party*|*package.json*|*package-lock.json*|*CHANGELOG*|*changelog*) ;; *) exit 0 ;; esac
 command -v node >/dev/null 2>&1 || exit 0
 engine="$(dirname "$0")/lib/guard-protected-paths.mjs"
 [ -f "$engine" ] || exit 0

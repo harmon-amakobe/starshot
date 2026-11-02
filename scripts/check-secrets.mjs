@@ -66,6 +66,14 @@ function loadPrivateNameHashes() {
   return hashes;
 }
 const PRIVATE_NAME_HASHES = loadPrivateNameHashes();
+// The owner explicitly requested this public creator link. Only this exact URL is public.
+const PUBLIC_CREATOR_URL = 'https://limitedsightfullvision.com';
+const CREATOR_LINK_FILES = new Set(['apps/game/src/campaign/HomeMenu.tsx', 'scripts/verify-web-release.mjs', 'scripts/check-secrets.mjs']);
+function privateScanLine(label, line) {
+  if (!CREATOR_LINK_FILES.has(label)) return line;
+  const escaped = PUBLIC_CREATOR_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return line.replace(new RegExp(`(^|["'\\s(<])${escaped}(?=["'\\s<>)]|$)`, 'g'), '$1<public-creator-url>');
+}
 // Self-test canary: a nonsense token whose hash proves the word pipeline works.
 const CANARY_HASH = "33b18f41a75a816c0ff56568ec0348220f8090f12b48a5cbb4a6ca1cef11e2d8";
 
@@ -150,7 +158,7 @@ function scanText(label, text, findings, extra, { emails = true } = {}) {
     for (const m of emails ? line.matchAll(EMAIL) : []) {
       if (!emailAllowed(m[0])) findings.push(`${label}:${n + 1}: email address (${redactEmail(m[0])})`);
     }
-    const t = privateToken(line, extra);
+    const t = privateToken(privateScanLine(label, line), extra);
     if (t) findings.push(`${label}:${n + 1}: private project name (${redactName(t)})`);
   }
 }
@@ -176,6 +184,18 @@ function selfTest() {
   const g = [];
   scanText("self-test", "notes about ZqxHygieneCanary here", g, CANARY_HASH);
   if (!g.some((x) => x.includes("private project name"))) problems.push("hashed-name detection did not fire on the canary");
+  const publicHostName = new URL(PUBLIC_CREATOR_URL).hostname.split('.')[0], publicHash = sha(publicHostName);
+  for (const [label, value, expectPrivate] of [
+    ['apps/game/src/campaign/HomeMenu.tsx', PUBLIC_CREATOR_URL, false],
+    ['apps/game/src/campaign/HomeMenu.tsx', publicHostName, true],
+    ['apps/game/src/campaign/HomeMenu.tsx', PUBLIC_CREATOR_URL + '.invalid', true],
+    ['apps/game/src/campaign/HomeMenu.tsx', 'https://example.invalid/?next=' + PUBLIC_CREATOR_URL, true],
+    ['apps/game/src/campaign/HomeMenu.tsx', 'https://example.invalid@' + PUBLIC_CREATOR_URL, true],
+    ['other.md', PUBLIC_CREATOR_URL, true],
+  ]) {
+    const result = []; scanText(label, value, result, publicHash);
+    if (result.some(item => item.includes('private project name')) !== expectPrivate) problems.push('public creator link exception escaped its exact scope');
+  }
   return problems;
 }
 

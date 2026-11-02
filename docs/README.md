@@ -29,6 +29,7 @@ people start from the README at the root.
 | [plans/pr0-bootstrap.md](plans/pr0-bootstrap.md) | The record of the bootstrap pull request (D8) |
 | [plans/current-game-release.md](plans/current-game-release.md) | The active release: publish the existing game and verify its domain before the first main merge (D34) |
 | [plans/current-game-release/work.yaml](plans/current-game-release/work.yaml) | The release epic and task, tracked separately from the remaining program |
+| [plans/current-game-release/versioned-releases.md](plans/current-game-release/versioned-releases.md) | CI versions, stable beta, immutable candidates and explicit production promotion (D35) |
 | [plans/entry-experience-prototype.md](plans/entry-experience-prototype.md) | Entry prototype scope, save ownership, camera handoff and verification |
 | [plans/campaign-ux-integration.md](plans/campaign-ux-integration.md) | Integration of the approved shell with all existing campaign missions and sandbox destinations |
 | [plans/main-game-handoff.md](plans/main-game-handoff.md) | Implementation handoff after the prototype joins PR0: active-shell cleanup and a Moon-first main campaign |
@@ -60,6 +61,7 @@ people start from the README at the root.
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |
 | `node scripts/verify-game.mjs` | Drives the built game in a headless browser on phone and desktop sizes |
 | `node scripts/verify-web-release.mjs` | Verifies offline flight, worker updates and cache ownership at the root and a portable subpath |
+| `node scripts/release/cli.mjs apply-proposal <proposal.json>` | Validates and applies unchanged CI version outputs to a clean checkout at their source commit |
 
 ### sync-work.mjs
 
