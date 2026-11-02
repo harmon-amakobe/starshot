@@ -27,6 +27,13 @@ why. This table carries the same fields, one row per deviation, oldest first.
 
 ## How to add a row
 
+Rows 15 and 16 are reserved for the saved PR2 branch. Its D33 and refactor remain
+separate until reviewed on the next program trunk.
+
+| # | PR | What the plan or spec said | What was done instead | Why | Decision or ruling | Logged |
+|---|---|---|---|---|---|---|
+| 17 | Current-game release | Hosting and the public release followed the full v1 program | A release PR on PR0 publishes the existing local game through Firebase Hosting and Pages. Remaining work resumes on a new program PR0 | The owner requested a playable public site before expanding the game | Owner, D34; [release plan](../current-game-release.md) | 2026-11-02 |
+
 - Number rows in order; never renumber.
 - Name the PR by its plan id (PR1, PR2, ...) and link the spec anchor in
   [00-plan.md](00-plan.md) if the row is about one spec.

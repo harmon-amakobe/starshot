@@ -48,7 +48,7 @@ planned next. Sections marked **Future** describe designs that are not built yet
   +---------------------------------------------------------------+
                  |
                  v  npm run build -> apps/game/dist (static files)
-         GitHub Pages (via .github/workflows/pages.yml)
+         Firebase Hosting and Pages (via .github/workflows/release.yml)
 ```
 
 ## The parts
@@ -231,7 +231,7 @@ stutters, even on a phone.
 
 `npm run gates` (`scripts/gates.mjs`) runs every check: public-repo hygiene, the
 untouched `third_party/astlo`, the agent configuration, type checking, tests and the
-build. CI runs it on every pull request, and the Pages workflow runs it before each
+build. CI runs it on every pull request, and the Web release workflow runs it before each
 deploy. Accuracy budgets are in `packages/ephemeris/test/ephemeris.test.ts`; integrator
 and timing checks in `packages/physics/test/physics.test.ts`.
 
@@ -304,11 +304,10 @@ added, the design is:
 
 - **A separate Firebase project used only by Starshot.** Never reuse a project that
   belongs to anything else.
-- **Configuration injected at build time from repository Variables** (Settings, Secrets
-  and variables, Actions, *Variables* tab), passed to Vite as `VITE_...` variables by the
-  Pages workflow. Firebase's web configuration identifies a project but is not a
-  password, so Variables (not Secrets) are the right place; it still never goes into a
-  file in the repository.
+- **Configuration follows D13.** The planned production web configuration identifies
+  the project and belongs in its one allow-listed file. Development configuration
+  comes from environment Variables. The current static release needs neither; its
+  Hosting deployment identifiers never enter the Vite build.
 - **Locked down on the server side:** Firestore security rules that allow a player to
   write only their own score, in the expected shape, and **App Check**, so only the real
   Starshot site can call the backend.

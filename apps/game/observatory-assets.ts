@@ -3,6 +3,7 @@ import { cp } from 'node:fs/promises';
 import { dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Plugin } from 'vite';
+import { finishRelease } from './release-build.ts';
 
 /** Keep the credited media in one source directory while both apps use it. */
 export function observatoryAssets(): Plugin {
@@ -22,6 +23,9 @@ export function observatoryAssets(): Plugin {
         createReadStream(path).on('error', next).pipe(res);
       });
     },
-    async closeBundle() { await cp(root, output, { recursive: true }); },
+    async closeBundle() {
+      await cp(root, output, { recursive: true });
+      await finishRelease(resolve(output, '..'), resolve(root, '../../../..'));
+    },
   };
 }

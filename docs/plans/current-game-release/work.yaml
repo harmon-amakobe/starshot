@@ -1,0 +1,25 @@
+program: current-game-release
+milestone: "Current game: web"
+
+epics:
+  - id: current-game-web
+    title: "Publish the current browser game"
+    labels: [kind:epic, area:ci, priority:p1]
+    body: |
+      Publish the existing playable game before the remaining v1 program (D34).
+      Scope and acceptance: docs/plans/current-game-release.md.
+    tasks:
+      - id: early-web-release
+        title: "Publish the current game with Firebase Hosting and a Pages mirror"
+        labels: [kind:feature, area:ci, area:game, priority:p1, status:ready, agent-ready]
+        size: L
+        priority: p1
+        actor: Agent
+        spec: docs/plans/current-game-release.md
+        depends_on: []
+        body: |
+          Stack a release pull request on PR0. Publish one verified static build to
+          playstarshot.com and the Pages mirror. Use isolated preview Hosting and
+          keyless deployment identities. Prove offline startup and coherent updates.
+          Keep local saves and label the cloud interaction as a demo. Ship credits.
+          Record D34 and the new program trunk sequence without claiming v1 is done.

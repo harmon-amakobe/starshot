@@ -15,11 +15,13 @@ Starshot is two things in one repository:
 
 ## Play it
 
-**<https://harmon-amakobe.github.io/starshot/>**
+**<https://playstarshot.com>**
 
-The link works once GitHub Pages is switched on for this repository. It takes two
-clicks, described in [docs/hosting.md](docs/hosting.md). After that, every change merged
-into `main` is published automatically.
+Mirror: <https://harmon-amakobe.github.io/starshot/>.
+The current public preview has four campaign missions and local saves. Its Cloud
+demo is a local interaction study, not a real account or backup. The
+[release plan](docs/plans/current-game-release.md) tracks first publication.
+After setup, verified merges to `main` publish the same build to both sites.
 
 ## Run it on your own computer
 

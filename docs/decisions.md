@@ -792,3 +792,34 @@ style and proposed interaction details. The look prototype demonstrates the shel
 before adopting it in the game. D6's physics and preview agreement, D15's asset
 rules and D19's rendering constraints remain in force. Detailed timing, materials
 and sound composition remain adjustable during iteration.
+
+---
+
+## D34. Publish the current browser game before resuming v1
+
+*Date:* 2026-11-02. *Source:* owner's release direction.
+
+**Decision.** Put the existing playable game on playstarshot.com using Firebase
+Hosting, with a GitHub Pages mirror. Stack the deployment work on PR0. Merging the
+release PR into PR0 automatically deploys an isolated development preview. Verify
+that run and the hosted game before merging the stack into `main` for production.
+Create a new program PR0 from the released main
+for the remaining work.
+
+This is an early public preview with local profiles. D13's real accounts and
+leaderboard, D16's Rust migration, D17's rails and D18's full chapter are deferred
+from this release, not cancelled. No database or paid runtime is needed. The local
+cloud interaction must be called a demo. The current campaign remains intact.
+
+**Why.** The owner wants a playable public site and working deployment process
+before expanding the game. The existing design can be published independently.
+
+**Consequences.** One verified static artifact goes to Firebase and Pages. Keyless
+identities and protected deployment environments limit publishing to the intended
+project and branch. Offline caches must install complete releases and preserve an
+active flight's code and data until its tabs close. Shipped licences stay accessible.
+
+D33 is reserved for the saved PR2 branch's approved Moon-first TypeScript direction.
+That branch remains separate for review on the new program trunk. This release does
+not replace its decision or require Moon-first to wait for Rust. Deviation 17 and
+[the release plan](plans/current-game-release.md) record the temporary sequence.

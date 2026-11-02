@@ -1,0 +1,136 @@
+# One verified artifact goes to Firebase Hosting and the GitHub Pages mirror.
+name: Web release
+
+on:
+  push:
+    branches: [main, starshot/pr0-bootstrap]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Preview from this branch, or production from main only
+        type: choice
+        options: [preview, production]
+        default: preview
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: web-release-${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && github.ref || 'production' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.repository == 'harmon-amakobe/starshot' &&
+      (github.ref == 'refs/heads/main' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      PLAYWRIGHT_VERSION: "1.64.1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # Release builds never restore a cache written by another workflow.
+      - run: npm ci
+      - run: npm run gates
+      - run: pipx run zizmor==1.31.1 --offline .github/
+      - name: Install browser verification tools outside the project
+        run: | # zizmor: ignore[adhoc-packages] pinned verifier outside the product lockfile
+          npm install --global "playwright@${PLAYWRIGHT_VERSION}"
+          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
+          playwright install --with-deps chromium
+      - run: node scripts/verify-game.mjs --out "$RUNNER_TEMP/verify-root"
+      - run: node scripts/verify-game.mjs --base /starshot/ --out "$RUNNER_TEMP/verify-mirror"
+      - run: node scripts/verify-web-release.mjs --out "$RUNNER_TEMP/verify-offline"
+      - name: Package the verified files
+        run: |
+          mkdir -p "$RUNNER_TEMP/web-release/apps/game"
+          cp -R apps/game/dist "$RUNNER_TEMP/web-release/apps/game/dist"
+          cp firebase.json "$RUNNER_TEMP/web-release/firebase.json"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-release
+          path: ${{ runner.temp }}/web-release
+          retention-days: 14
+      - if: github.ref == 'refs/heads/main' && inputs.target != 'preview'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: apps/game/dist
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-release-browser-proof
+          path: |
+            ${{ runner.temp }}/verify-root
+            ${{ runner.temp }}/verify-mirror
+            ${{ runner.temp }}/verify-offline
+          retention-days: 7
+
+  firebase:
+    needs: build
+    if: >-
+      github.repository == 'harmon-amakobe/starshot' &&
+      (github.ref == 'refs/heads/main' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
+    permissions:
+      contents: read
+      id-token: write # exchange this job's identity for a short-lived Hosting credential
+    env:
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      FIREBASE_TOOLS_VERSION: "15.34.2"
+      RELEASE_TARGET: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: web-release
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: Install the deploy CLI before authentication
+        # OIDC permission is job-wide, so package lifecycle scripts must never run here.
+        run: npm install --global --ignore-scripts "firebase-tools@${FIREBASE_TOOLS_VERSION}" # zizmor: ignore[adhoc-packages] exact Hosting CLI version, lifecycle scripts disabled
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          project_id: ${{ vars.FIREBASE_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Deploy Hosting only
+        run: |
+          test -n "$FIREBASE_PROJECT_ID"
+          if [ "$RELEASE_TARGET" = "preview" ]; then
+            firebase hosting:channel:deploy "preview-${GITHUB_RUN_ID}" --expires 7d --no-authorized-domains --project "$FIREBASE_PROJECT_ID" --non-interactive
+          else
+            firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID" --non-interactive
+            curl --fail --retry 5 --retry-delay 3 "https://${FIREBASE_PROJECT_ID}.web.app/release.json" -o "$RUNNER_TEMP/live-release.json"
+            cmp apps/game/dist/release.json "$RUNNER_TEMP/live-release.json"
+          fi
+
+  pages:
+    needs: build
+    if: github.repository == 'harmon-amakobe/starshot' && github.ref == 'refs/heads/main' && inputs.target != 'preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write # publish only the artifact produced by this run
+      id-token: write # let GitHub verify the protected branch deployment
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

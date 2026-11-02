@@ -1,53 +1,41 @@
-// Starshot offline cache. Same-origin GETs only; no third-party requests exist.
-// Pages: network first (so new deployments show up), cache as fallback.
-// Hashed build assets: cache first.
-const CACHE = "starshot-v1";
-// Only Starshot's own caches are ever deleted: another app on the same origin
-// (GitHub Pages serves many sites from one) keeps its caches.
-const OWN_PREFIX = "starshot-";
+// The build replaces both constants after copying all shared media and notices.
+const RELEASE = __STARSHOT_RELEASE__;
+const INVENTORY = __STARSHOT_PRECACHE__;
+const SCOPE = self.registration.scope;
+const PREFIX = 'starshot-release:' + SCOPE + ':';
+const CACHE = PREFIX + RELEASE;
+const ASSETS = new Map(INVENTORY.map(({ path, integrity }) => [new URL(path, SCOPE).href, integrity]));
 
-self.addEventListener("install", () => self.skipWaiting());
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(OWN_PREFIX) && k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim()),
-  );
+self.addEventListener('install', event => {
+  // Integrity makes a partial or stale CDN response fail the whole installation.
+  // The existing worker stays active until this complete release is available.
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(
+    [...ASSETS].map(([url, integrity]) => new Request(url, { integrity, cache: 'reload' })),
+  )));
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
-  if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          // Never let an error page (404, 500) replace the cached app shell.
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() =>
-          caches.match(req, { cacheName: CACHE }).then((hit) => hit || caches.match("./", { cacheName: CACHE })),
-        ),
-    );
-    return;
-  }
-  event.respondWith(
-    caches.match(req, { cacheName: CACHE }).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        }),
-    ),
-  );
+self.addEventListener('activate', event => {
+  // No skipWaiting: an in-flight game keeps its code and data until its tabs close.
+  event.waitUntil(caches.keys()
+    .then(keys => Promise.all(keys.filter(key => key.startsWith(PREFIX) && key !== CACHE)
+      .map(key => caches.delete(key)))));
+  // Do not claim an uncontrolled page: it may still be running an older build.
+});
+
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
+  url.search = '';
+  url.hash = '';
+  const asset = url.href === SCOPE ? new URL('index.html', SCOPE).href : url.href;
+  if (!ASSETS.has(asset)) return;
+  event.respondWith(caches.open(CACHE).then(async cache => {
+    const hit = await cache.match(asset);
+    if (hit) return hit;
+    // Storage eviction must not turn the cache into a mixture of release versions.
+    const response = await fetch(new Request(asset, { integrity: ASSETS.get(asset), cache: 'reload' }));
+    if (response.ok) await cache.put(asset, response.clone());
+    return response;
+  }));
 });
