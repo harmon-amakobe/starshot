@@ -102,13 +102,26 @@ not an accepted shortcut. The current lane versions the existing workspace set.
    hosted game. Only after production metadata matches does the workflow publish
    the complete immutable GitHub release.
 
+In GitHub, open **Actions**, select **Web release**, then **Run workflow**. Choose
+the `main` branch, select `candidate` as the target and leave version empty. Run it
+and test that candidate on beta. When ready, open **Run workflow** again on `main`,
+select `promote` and enter its stable version, such as `0.1.0`.
+Web release must first exist on the default branch, `main`, for **Run workflow**
+to be available. Before then, PR0 pushes publish beta; candidate and promotion
+dispatches become available after the workflow lands on main.
+
 Snapshots use `X.Y.Z-beta.<run>.<attempt>` or `X.Y.Z-preview.<run>.<attempt>`.
 Pending notes after a prepared release use the next planned stable version. With
 empty Unreleased, a snapshot uses the current prepared version. Such a no-change
 test build sorts below that stable version and makes no update-order claim.
 Local builds say `X.Y.Z-dev`. `release.json` distinguishes `version`, `kind`,
-`sourceCommit` and `buildId`. The menu and About compile the same version into their
-JavaScript; an old or offline client never fetches a newer label from the server.
+`sourceCommit` and `buildId`. The menu uses a short label such as
+`Version 0.1.0 · Beta`, with Preview or Development for those builds. A stable
+candidate shows `Version 0.1.0` on both beta and production, preserving exact bytes.
+In About and credits, expand **Build details** for the full version to include in
+bug reports. The numeric snapshot suffix is a workflow run and attempt, not a hash.
+Both labels come from the compiled version; an old or offline client never fetches
+a newer label from the server. The build id stays out of the main footer.
 Save-schema versions are separate and do not change just because game SemVer changes.
 
 ## Candidate provenance and retries
