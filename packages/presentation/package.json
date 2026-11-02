@@ -16,6 +16,13 @@
     "./entry.css": "./src/entry.css",
     "./cloud.css": "./src/cloud.css"
   },
-  "dependencies": { "three": "^0.187.0", "react": "^19.3.1" },
-  "devDependencies": { "@types/three": "^0.183.1", "@types/react": "^19.3.0" }
+  "dependencies": {
+    "three": "^0.187.0",
+    "react": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.183.1",
+    "@types/react": "^19.3.0"
+  },
+  "version": "0.1.0"
 }
