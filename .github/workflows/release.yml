@@ -1,37 +1,82 @@
-# Deploy one verified artifact to the selected Firebase Hosting project.
+# Cloud identities stay here; the provider pins this exact workflow path and ref.
 name: Web release
-
 on:
   push:
-    branches: [main, starshot/pr0-bootstrap]
+    branches: [starshot/pr0-bootstrap]
   workflow_dispatch:
     inputs:
       target:
-        description: Preview from this branch, or production from main only
+        description: Preview, beta snapshot, stage candidate, or promote tested release
         type: choice
-        options: [preview, production]
+        options: [preview, beta, candidate, promote]
         default: preview
         required: true
-
+      version:
+        description: Stable version for Promote release only, such as 0.1.0
+        type: string
+        default: ''
 permissions: {}
-
 concurrency:
-  group: web-release-${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && github.ref || 'production' }}
+  group: web-release-${{ inputs.target == 'promote' && 'production' || inputs.target == 'preview' && github.ref || 'beta' }}
   cancel-in-progress: false
-
 jobs:
+  plan:
+    if: github.repository == 'harmon-amakobe/starshot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read # resolve the pinned candidate artifact and original verification job
+    outputs:
+      action: ${{ steps.plan.outputs.action }}
+      reuse: ${{ steps.plan.outputs.reuse }}
+      version: ${{ steps.plan.outputs.version }}
+      source: ${{ steps.plan.outputs.sourceCommit }}
+      run: ${{ steps.plan.outputs.runId }}
+      artifact: ${{ steps.plan.outputs.artifactId }}
+      archive: ${{ steps.plan.outputs.archiveDigest }}
+      build: ${{ steps.plan.outputs.buildId }}
+      tools: ${{ steps.tools.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - id: plan
+        run: node scripts/release/cli.mjs plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TARGET: ${{ inputs.target }}
+          RELEASE_VERSION: ${{ inputs.version }}
+      - name: Package trusted deployment helpers
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-tools/scripts"
+          cp -R scripts/release "$RUNNER_TEMP/release-tools/scripts/release"
+          cp firebase.json "$RUNNER_TEMP/release-tools/firebase.json"
+      - id: tools
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-tools-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-tools
+          retention-days: 14
   build:
-    if: >-
-      github.repository == 'harmon-amakobe/starshot' &&
-      (github.ref == 'refs/heads/main' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
-      (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
+    needs: plan
+    if: needs.plan.outputs.action != 'promote' && needs.plan.outputs.reuse != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
       contents: read
     env:
-      PLAYWRIGHT_VERSION: "1.64.1"
+      PLAYWRIGHT_VERSION: '1.64.1'
+      STARSHOT_BUILD_KIND: ${{ needs.plan.outputs.action }}
+    outputs:
+      artifact: ${{ steps.upload.outputs.artifact-id }}
+      archive: ${{ steps.pack.outputs.archiveDigest }}
+      version: ${{ steps.pack.outputs.version }}
+      build: ${{ steps.pack.outputs.buildId }}
+      kind: ${{ steps.pack.outputs.kind }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -40,11 +85,11 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      # Release builds never restore a cache written by another workflow.
+      # Release builds never restore a dependency cache from another workflow.
       - run: npm ci
       - run: npm run gates
       - run: pipx run zizmor==1.31.1 --offline .github/
-      - name: Install browser verification tools outside the project
+      - name: Install browser tools outside the project
         run: | # zizmor: ignore[adhoc-packages] pinned verifier outside the product lockfile
           npm install --global "playwright@${PLAYWRIGHT_VERSION}"
           echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
@@ -52,66 +97,154 @@ jobs:
       - run: node scripts/verify-game.mjs --out "$RUNNER_TEMP/verify-root"
       - run: node scripts/verify-game.mjs --base /starshot/ --out "$RUNNER_TEMP/verify-subpath"
       - run: node scripts/verify-web-release.mjs --out "$RUNNER_TEMP/verify-offline"
-      - name: Package the verified files
-        run: |
-          mkdir -p "$RUNNER_TEMP/web-release/apps/game"
-          cp -R apps/game/dist "$RUNNER_TEMP/web-release/apps/game/dist"
-          cp firebase.json "$RUNNER_TEMP/web-release/firebase.json"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      - id: pack
+        run: node scripts/release/cli.mjs pack
+      - id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: web-release
-          path: ${{ runner.temp }}/web-release
+          name: web-release-${{ github.run_attempt }}
+          path: package/
+          retention-days: 90
+      - name: Generate the bootstrap release proposal
+        if: github.event_name == 'push'
+        run: node scripts/release/cli.mjs propose
+        env:
+          PROPOSAL_OUT: ${{ runner.temp }}/release-proposal
+      - if: github.event_name == 'push'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-proposal-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-proposal
           retention-days: 14
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: web-release-browser-proof
+          name: web-release-browser-proof-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/verify-root
             ${{ runner.temp }}/verify-subpath
             ${{ runner.temp }}/verify-offline
           retention-days: 7
-
-  firebase:
-    needs: build
+  register:
+    needs: [plan, build]
     if: >-
-      github.repository == 'harmon-amakobe/starshot' &&
-      (github.ref == 'refs/heads/main' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') ||
-      (github.event_name == 'workflow_dispatch' && inputs.target == 'preview'))
+      always() && github.ref == 'refs/heads/main' && needs.plan.result == 'success' &&
+      needs.plan.outputs.action == 'candidate' &&
+      (needs.build.result == 'success' || needs.plan.outputs.reuse == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: write # protected candidate tag and recovery assets, no cloud access
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ needs.plan.outputs.artifact || needs.build.outputs.artifact }}
+          run-id: ${{ needs.plan.outputs.run }}
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          digest-mismatch: error
+          path: package
+      - run: node scripts/release/cli.mjs register
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.plan.outputs.artifact || needs.build.outputs.artifact }}
+  firebase:
+    needs: [plan, build, register]
+    if: >-
+      always() && needs.plan.result == 'success' &&
+      (needs.build.result == 'success' || needs.plan.outputs.reuse == 'true') &&
+      (needs.plan.outputs.action != 'candidate' || needs.register.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
+      name: ${{ needs.plan.outputs.action == 'promote' && 'production' || 'preview' }}
+      url: ${{ needs.plan.outputs.action == 'promote' && 'https://playstarshot.com' || needs.plan.outputs.action != 'preview' && 'https://beta.playstarshot.com' || '' }}
     permissions:
       contents: read
-      id-token: write # exchange this job's identity for a short-lived Hosting credential
+      actions: read
+      id-token: write # only this artifact-only job exchanges a Google identity
     env:
       FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-      FIREBASE_TOOLS_VERSION: "15.34.2"
-      RELEASE_TARGET: ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/starshot/pr0-bootstrap') || (github.event_name == 'workflow_dispatch' && inputs.target == 'preview')) && 'preview' || 'production' }}
+      FIREBASE_TOOLS_VERSION: '15.34.2'
+      RELEASE_TARGET: ${{ needs.plan.outputs.action }}
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: web-release
+          artifact-ids: ${{ needs.plan.outputs.tools }}
+          merge-multiple: true
+          path: tools
+          digest-mismatch: error
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          artifact-ids: ${{ needs.plan.outputs.artifact || needs.build.outputs.artifact }}
+          run-id: ${{ needs.plan.outputs.run }}
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          digest-mismatch: error
+          path: package
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "22"
-      - name: Install the deploy CLI before authentication
-        # OIDC permission is job-wide, so package lifecycle scripts must never run here.
-        run: npm install --global --ignore-scripts "firebase-tools@${FIREBASE_TOOLS_VERSION}" # zizmor: ignore[adhoc-packages] exact Hosting CLI version, lifecycle scripts disabled
+          node-version: '22'
+      - name: Validate and extract static files
+        run: node tools/scripts/release/cli.mjs unpack
+        env:
+          RELEASE_ROOT: tools
+          EXPECTED_ARCHIVE_DIGEST: ${{ needs.plan.outputs.archive || needs.build.outputs.archive }}
+          EXPECTED_VERSION: ${{ needs.plan.outputs.version || needs.build.outputs.version }}
+          EXPECTED_SOURCE: ${{ needs.plan.outputs.source }}
+          EXPECTED_BUILD: ${{ needs.plan.outputs.build || needs.build.outputs.build }}
+          EXPECTED_KIND: ${{ needs.plan.outputs.reuse == 'true' && 'candidate' || needs.build.outputs.kind }}
+      - name: Check beta and prevent accidental rollback
+        if: needs.plan.outputs.action == 'promote'
+        run: node tools/scripts/release/cli.mjs preflight
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.version }}
+      - name: Install deploy CLI without lifecycle scripts
+        run: npm install --global --ignore-scripts "firebase-tools@${FIREBASE_TOOLS_VERSION}" # zizmor: ignore[adhoc-packages] pinned CLI; no lifecycle script may mint this job's OIDC token
       - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
         with:
           project_id: ${{ vars.FIREBASE_PROJECT_ID }}
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
-      - name: Deploy Hosting only
+      - name: Deploy verified static files
+        working-directory: deploy
         run: |
           test -n "$FIREBASE_PROJECT_ID"
           if [ "$RELEASE_TARGET" = "preview" ]; then
-            firebase hosting:channel:deploy "preview-${GITHUB_RUN_ID}" --expires 7d --no-authorized-domains --project "$FIREBASE_PROJECT_ID" --non-interactive
+            test "$FIREBASE_PROJECT_ID" = playstarshot-dev
+            firebase hosting:channel:deploy "preview-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" --expires 7d --no-authorized-domains --project "$FIREBASE_PROJECT_ID" --config firebase.json --non-interactive
           else
-            firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID" --non-interactive
+            if [ "$RELEASE_TARGET" = "promote" ]; then test "$FIREBASE_PROJECT_ID" = playstarshot-prod; else test "$FIREBASE_PROJECT_ID" = playstarshot-dev; fi
+            firebase deploy --only hosting --project "$FIREBASE_PROJECT_ID" --config firebase.json --non-interactive
             curl --fail --retry 5 --retry-delay 3 "https://${FIREBASE_PROJECT_ID}.web.app/release.json" -o "$RUNNER_TEMP/live-release.json"
             cmp apps/game/dist/release.json "$RUNNER_TEMP/live-release.json"
           fi
+  publish:
+    needs: [plan, firebase]
+    if: github.ref == 'refs/heads/main' && needs.plan.outputs.action == 'promote'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: release
+    permissions:
+      contents: write # publish the complete recovery release after production verification
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/release/cli.mjs publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.version }}

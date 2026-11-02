@@ -18,13 +18,25 @@ const { chromium } = createRequire(import.meta.url)('playwright');
 const template = readFileSync(join(dist, 'sw.js'), 'utf8');
 const version = JSON.parse(/^const RELEASE = (.*);$/m.exec(template)[1]);
 const inventory = JSON.parse(/^const INVENTORY = (.*);$/m.exec(template)[1]);
+const metadata = JSON.parse(readFileSync(join(dist, 'release.json'), 'utf8'));
+const nextVersion = `${metadata.version.split('-')[0]}-verification.next`;
+const nextBuild = createHash('sha256').update(version + '-next').digest('hex').slice(0, 24);
 const changedPath = 'observatory/system-orientation.json';
 const oldData = readFileSync(join(dist, changedPath), 'utf8');
 const newData = JSON.stringify({ ...JSON.parse(oldData), releaseVerification: 'next' });
 const integrity = bytes => `sha256-${createHash('sha256').update(bytes).digest('base64')}`;
-const nextInventory = inventory.map(entry => entry.path === changedPath
-  ? { ...entry, integrity: integrity(newData) } : entry);
-const nextWorker = template.replace(JSON.stringify(version), JSON.stringify(`${version}-next`))
+const changed = new Map([[changedPath, newData]]);
+for (const entry of inventory.filter(item => item.path.startsWith('assets/') && item.path.endsWith('.js'))) {
+  const text = readFileSync(join(dist, entry.path), 'utf8');
+  let updated = text;
+  for (const quote of ['"', "'", '`']) updated = updated.replaceAll(quote + metadata.version + quote, quote + nextVersion + quote);
+  if (updated !== text) changed.set(entry.path, updated);
+}
+assert(changed.size > 1, 'the next fixture must change the compiled footer version');
+changed.set('release.json', JSON.stringify({ ...metadata, version: nextVersion, buildId: nextBuild }));
+const nextInventory = inventory.map(entry => changed.has(entry.path)
+  ? { ...entry, integrity: integrity(changed.get(entry.path)) } : entry);
+const nextWorker = template.replace(JSON.stringify(version), JSON.stringify(nextBuild))
   .replace(JSON.stringify(inventory), JSON.stringify(nextInventory));
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json',
   '.css': 'text/css', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' };
@@ -44,8 +56,8 @@ const server = createServer((request, response) => {
   }
   response.writeHead(200, { 'Content-Type': types[extname(file)] ?? 'application/octet-stream',
     'Cache-Control': 'no-cache' });
-  response.end(next && local === 'sw.js' ? nextWorker : next && local === changedPath
-    ? newData : readFileSync(file));
+  response.end(next && local === 'sw.js' ? nextWorker : next && changed.has(local)
+    ? changed.get(local) : readFileSync(file));
 });
 await new Promise(ok => server.listen(0, '127.0.0.1', ok));
 const origin = `http://127.0.0.1:${server.address().port}`;
@@ -76,13 +88,42 @@ async function ready(page, target) {
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
 }
 
+async function menuLayout(page, label) {
+  for (const [name, width, height] of [['phone', 390, 844], ['small-phone', 360, 640], ['landscape', 844, 390], ['desktop', 1440, 900]]) {
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(150);
+    const layout = await page.evaluate(() => {
+      const rect = selector => {
+        const box = document.querySelector(selector).getBoundingClientRect();
+        return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
+      };
+      return { version: rect('[data-release-version]'), source: rect('.release-source>a'),
+        about: rect('.release-footer>button'), author: rect('.release-author a'),
+        title: rect('.entry-title h1'), actions: rect('.entry-actions'), footer: rect('.release-footer'),
+        credit: document.querySelector('.release-author').textContent, overflow: document.documentElement.scrollWidth > innerWidth };
+    });
+    assert.equal(layout.credit, 'A game by Kobe');
+    assert(!layout.overflow, `${name}: no horizontal overflow`);
+    assert(Math.abs(layout.version.x + layout.version.width / 2 - width / 2) < 2, `${name}: footer version is centered`);
+    assert(layout.source.x < width / 2 && layout.about.x > width / 2, `${name}: source left and About right`);
+    assert(layout.title.bottom < layout.actions.y, `${name}: title and Play do not overlap`);
+    assert(layout.actions.bottom <= layout.footer.y, `${name}: footer clears play controls`);
+    for (const box of [layout.source, layout.about, layout.author]) {
+      assert(box.width >= 44 && box.height >= 44, `${name}: links and buttons retain touch targets`);
+      assert(box.x >= 0 && box.y >= 0 && box.right <= width && box.bottom <= height, `${name}: controls stay in view`);
+    }
+    await page.screenshot({ path: join(out, `${label}-${name}-menu.png`) });
+  }
+  await page.setViewportSize({ width: 1280, height: 720 });
+}
+
 async function waitForNext(context) {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
     // Chromium may never answer an evaluation sent while an old worker terminates.
     const active = await Promise.all(context.serviceWorkers().map(worker => Promise.race([
-      worker.evaluate(() => self.registration.active?.state === 'activated' && !self.registration.installing
-        && !self.registration.waiting && RELEASE.endsWith('-next')).catch(() => false),
+      worker.evaluate(expected => self.registration.active?.state === 'activated' && !self.registration.installing
+        && !self.registration.waiting && RELEASE === expected, nextBuild).catch(() => false),
       new Promise(ok => setTimeout(() => ok(false), 1000)),
     ])));
     if (active.some(Boolean)) return;
@@ -115,7 +156,15 @@ try {
     page = await playContext.newPage();
     await ready(page, target);
     console.log(`web-release: ${base} installed release ready`);
+    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${metadata.version}`);
+    assert.equal(await page.locator('.entry-top').getByRole('link', { name: 'Kobe', exact: true }).getAttribute('href'), 'https://limitedsightfullvision.com');
+    assert.equal(await page.locator('.release-footer').getByRole('link', { name: 'GitHub', exact: true }).getAttribute('href'), 'https://github.com/harmon-amakobe/starshot');
+    assert.equal(await page.locator('.release-source').textContent(), 'View source on GitHub');
+    assert.equal(await page.locator('.release-source a').count(), 1);
+    assert.equal(await page.locator('.entry-top .entry-mark,.entry-top .entry-build').count(), 0);
+    await menuLayout(page, label);
     await page.getByRole('button', { name: 'About and credits' }).click();
+    assert.equal(await page.locator('[data-about-version]').innerText(), `Version ${metadata.version}`);
     await page.getByRole('navigation', { name: 'Credits and support' }).waitFor();
     await page.getByRole('navigation', { name: 'Credits and support' }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: join(out, `${label}-credits.png`) });
@@ -143,6 +192,12 @@ try {
     next = true;
     await page.evaluate(async () => { await (await navigator.serviceWorker.getRegistration()).update(); });
     await waitForRegistration(page, 'waiting');
+    // Return to the menu without reloading the old compiled application.
+    await page.getByRole('button', { name: 'Open main menu', exact: true }).click();
+    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${metadata.version}`,
+      'waiting updates cannot relabel the running game');
+    const networkMetadata = await (await playContext.request.get(target + 'release.json')).json();
+    assert.equal(networkMetadata.version, nextVersion, 'the server already has a different version');
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), oldData,
       'a waiting release must not replace data under an active flight');
     const worker = playContext.serviceWorkers().find(candidate => candidate.url() === target + 'sw.js'
@@ -154,6 +209,8 @@ try {
     console.log(`web-release: ${base} next worker active`);
     page = await playContext.newPage();
     await ready(page, target);
+    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${nextVersion}`,
+      'the activated release displays its own compiled version');
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), newData,
       'next launch receives the updated mutable data');
     assert(await page.evaluate(() => caches.has('unrelated-application')), 'other apps keep their caches');
@@ -162,6 +219,7 @@ try {
     await playContext.setOffline(true);
     await page.reload({ waitUntil: 'load' });
     await page.getByRole('button', { name: /^(Play|Continue)$/ }).waitFor();
+    assert.equal(await page.locator('[data-release-version]').innerText(), `Version ${nextVersion}`);
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), newData);
     await page.screenshot({ path: join(out, `${label}-updated-offline.png`) });
     await playContext.close();

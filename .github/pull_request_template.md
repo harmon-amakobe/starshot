@@ -29,6 +29,7 @@ Part of #
 - [ ] Physics: tests against Horizons fixtures, energy or known-solution tests (if `packages/` or shot settings changed)
 - [ ] Game: phone and desktop screenshots, console clean (`node scripts/verify-game.mjs`) (if anything a player sees changed)
 - [ ] `CHANGELOG.md` `[Unreleased]` entry (if a player or package user would notice)
+- Expected bump: <!-- major, minor or patch; explain any Bump override and compatibility impact. CI writes versions. -->
 
 ## Authorship
 

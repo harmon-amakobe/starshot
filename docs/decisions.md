@@ -799,6 +799,9 @@ and sound composition remain adjustable during iteration.
 
 *Date:* 2026-11-02. *Source:* owner's release direction.
 
+**Updated by D35:** subsequent production publication requires explicit candidate
+promotion. The first unversioned CLI publication remains the historical bootstrap.
+
 **Decision.** Put the existing playable game on playstarshot.com using Firebase
 Hosting. The owner's revised choice on 2026-11-02 is Firebase only for simplicity;
 this supersedes D21's GitHub Pages mirror. Stack the deployment work on PR0. Merging the
@@ -830,3 +833,51 @@ D33 is reserved for the saved PR2 branch's approved Moon-first TypeScript direct
 That branch remains separate for review on the new program trunk. This release does
 not replace its decision or require Moon-first to wait for Rust. Deviations 17 to 19 and
 [the release plan](plans/current-game-release.md) record the temporary sequence.
+
+---
+
+## D35. Generate release versions in CI and promote tested beta bytes explicitly
+
+*Date:* 2026-11-02. *Source:* owner's versioning, beta and promotion choice.
+
+**Decision.** Bring R26 and PR38's custom release proposal forward. Contributors
+write Unreleased notes; CI calculates one semantic version for the stack and generates
+all current npm workspace and lockfile versions plus a dated changelog heading.
+The first Starshot release is the existing 0.1.0 baseline. Later releases infer major
+from breaking changes, minor from Added and otherwise patch, with a validated Bump
+override. Tags use `starshot-vX.Y.Z`, preserving inherited astlo history.
+
+Beta uses the development site's live channel at beta.playstarshot.com. Temporary
+previews keep expiring URLs. PR0 pushes can stage beta; other reviewed refs use manual
+dispatch. Main merge does not publish production. The owner stages a stable candidate
+from main, tests it on beta, then explicitly selects Promote release with its version.
+Promotion deploys the same retained bytes and publishes the GitHub release after
+production checks. No rebuild, commit marker or mutable branch tip selects a release.
+
+A protected annotated tag binds version, source, original successful build, artifact
+id and digests. Its version cannot move to another archive. Resolution checks GitHub
+metadata and fails on mismatch or expiry. The source run must finish successfully
+before promotion; retrying a downstream failure reuses the original verified build.
+Published GitHub releases retain exact recovery assets and are immutable. Hosting
+rollback is a separate explicit recovery operation and never clears player saves.
+
+The ordinary proposal flow is a read-only CI artifact. The orchestrator applies its
+unchanged generated files with the validating CLI and opens a stacked PR. Optional
+automatic PR creation stays disabled unless the owner authorizes GitHub's combined
+create/approve permission and the exact repository switch. Its isolated main-only
+job uses D24's public owner author/signoff and Actions as committer. No PAT, stored
+cloud key or expanded production branch grant is introduced.
+
+**Why.** The owner wants a stable place to test and a deliberate release choice,
+with a readable version and evidence tying the published game to its tested bytes.
+
+**Consequences.** Snapshot versions include run and attempt; stable candidates already
+carry their final version on beta. The content build id still owns worker caches.
+The menu footer and About compile the same semantic version as release.json, so old
+offline clients identify themselves accurately. The header credits Kobe with the
+owner-requested public creator link, replacing the extra top-left mark and tagline.
+The footer has View source on GitHub at left, the version centered and About and
+credits at right. Save-schema versions remain
+separate. D33's future game program and D21's measurement requirement remain intact.
+The [versioned release plan](plans/current-game-release/versioned-releases.md) and
+[hosting runbook](hosting.md) define verification and recovery.

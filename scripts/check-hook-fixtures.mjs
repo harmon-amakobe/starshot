@@ -62,6 +62,8 @@ const onMain = repo("main");
 writeFileSync(join(onMain, "server.pem"), "not a real key\n");
 const onFeat = repo("feat");
 writeFileSync(join(onFeat, "notes.md"), "notes\n");
+const fixtureLock = { version: '1.0.0', packages: { '': { version: '1.0.0' }, 'apps/game': { version: '1.0.0' }, 'node_modules/example': { version: '1.0.0' } } };
+writeFileSync(join(onFeat, "package-lock.json"), JSON.stringify(fixtureLock));
 
 try {
   // ── destructive-git: must deny ─────────────────────────────────────────────
@@ -152,7 +154,11 @@ try {
     ["Edit", { file_path: join(ROOT, "packages/physics/package.json"), old_string: '"version": "0.1.0",', new_string: "" }],
     ["MultiEdit", { file_path: join(ROOT, "apps/game/package.json"), edits: [{ old_string: "x", new_string: "y" }, { old_string: '"version": "0.1.0"', new_string: '"version": "1.0.0"' }] }],
     ["Write", { file_path: join(onFeat, "package.json"), content: JSON.stringify({ name: "fixture", version: "1.1.0", description: "a" }) }],
+    ["Write", { file_path: join(onFeat, "packages/new-pkg/package.json"), content: JSON.stringify({ name: "new", version: "0.1.0" }) }],
+    ["Write", { file_path: join(onFeat, "package-lock.json"), content: JSON.stringify({ ...fixtureLock, version: '1.1.0' }) }],
+    ["Edit", { file_path: join(onFeat, "package-lock.json"), old_string: '"apps/game":{"version":"1.0.0"}', new_string: '"apps/game":{"version":"1.1.0"}' }],
     ["Edit", { file_path: join(ROOT, "CHANGELOG.md"), old_string: "## [Unreleased]", new_string: "## [Unreleased]\n\n## [0.2.0] - 2026-11-01" }],
+    ["Edit", { file_path: join(ROOT, "CHANGELOG.md"), old_string: "## [0.2.0] - 2026-11-01", new_string: "## [0.3.0] - 2026-11-02" }],
   ];
   for (const [tool, input] of P_DENY) {
     const r = hook("guard-protected-paths.sh", { tool_name: tool, tool_input: input, cwd: ROOT }, env);
@@ -161,7 +167,8 @@ try {
   const P_ALLOW = [
     ["Edit", { file_path: join(ROOT, "apps/game/src/main.ts"), old_string: "a", new_string: "b" }],
     ["Edit", { file_path: join(ROOT, "package.json"), old_string: '"vitest": "^5.0.5"', new_string: '"vitest": "^5.1.0"' }],
-    ["Write", { file_path: join(onFeat, "packages/new-pkg/package.json"), content: JSON.stringify({ name: "new", version: "0.1.0" }) }],
+    ["Write", { file_path: join(onFeat, "packages/new-pkg/package.json"), content: JSON.stringify({ name: "new", private: true }) }],
+    ["Edit", { file_path: join(onFeat, "package-lock.json"), old_string: '"node_modules/example":{"version":"1.0.0"}', new_string: '"node_modules/example":{"version":"2.0.0"}' }],
     ["Write", { file_path: join(onFeat, "package.json"), content: JSON.stringify({ name: "fixture", version: "1.0.0", description: "b" }) }],
     ["Edit", { file_path: join(ROOT, "CHANGELOG.md"), old_string: "## [Unreleased]", new_string: "## [Unreleased]\n\n### Added\n- a level" }],
     ["Edit", { file_path: join(ROOT, "docs/third-party-notes.md"), old_string: "a", new_string: "b" }],

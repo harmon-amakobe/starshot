@@ -6,6 +6,9 @@ create a new program trunk from the released `main`. Review and import the saved
 PR2 branch and D33's Moon-first TypeScript direction there. The tables below retain
 the remaining feature scope; hosting this preview does not complete their future work.
 D34's revised Firebase-only choice supersedes their earlier Pages mirror requirements.
+D35 also supersedes automatic production deployment on main merge: stage a versioned
+candidate on beta, then explicitly promote its tested bytes. The current
+[hosting runbook](../../hosting.md) takes precedence over the historical release steps below.
 Reconcile those historical hosting steps when preparing the next program trunk.
 
 The program plan: what chapter one delivers, the decisions it rests on, how each goal is
@@ -1292,6 +1295,10 @@ a script an agent writes and runs against `starshot-game`.
 - **Owner steps.** F4.
 
 ### PR33: Hosting
+
+**Release-order update (D35):** the following outline is historical. Production now
+requires explicit promotion of a tested beta candidate from main, as described in
+[hosting.md](../../hosting.md). D34 removed the hosted Pages mirror.
 
 - **Goal.** CI deploys to Firebase Hosting on merges to `main` (environment
   `production`). Same-repository branches get preview channels (environment `preview`),

@@ -17,7 +17,7 @@ Starshot is two things in one repository:
 
 **<https://playstarshot.com>**
 
-Publication on Firebase Hosting is being prepared. The browser game includes:
+The public preview is live on Firebase Hosting. The browser game includes:
 
 - Four campaign missions, from an Earth-to-Mars training flight to Saturn via Jupiter.
 - Seven sandbox destinations, real launch dates and a shared aiming/flight simulation.
@@ -27,9 +27,11 @@ Publication on Firebase Hosting is being prepared. The browser game includes:
 
 The [release plan](docs/plans/current-game-release.md) tracks the verified preview,
 first publication and domain checks before the first merge to `main`.
-Later verified merges to `main` publish to Firebase Hosting. The production site
-and development previews use separate Firebase projects. Forks can build and host
-their own static copy with the commands below.
+Later releases stage a versioned candidate at [beta.playstarshot.com](https://beta.playstarshot.com),
+then explicitly promote those tested bytes to production. Merging to `main` alone
+does not publish. The [release runbook](docs/hosting.md) describes this process.
+Production and beta use separate Firebase projects. Forks can build and host their
+own static copy with the commands below.
 
 ## Run it on your own computer
 
