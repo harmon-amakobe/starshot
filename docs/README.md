@@ -32,6 +32,7 @@ people start from the README at the root.
 | [plans/current-game-release/versioned-releases.md](plans/current-game-release/versioned-releases.md) | CI versions, stable beta, immutable candidates and explicit production promotion (D35) |
 | [plans/entry-experience-prototype.md](plans/entry-experience-prototype.md) | Entry prototype scope, save ownership, camera handoff and verification |
 | [plans/campaign-ux-integration.md](plans/campaign-ux-integration.md) | Integration of the approved shell with all existing campaign missions and sandbox destinations |
+| [plans/orbital-gameplay/plan.md](plans/orbital-gameplay/plan.md) | Local Moon-first gameplay, orbit cameras, date and phase controls, and save migration (D38) |
 | [plans/main-game-handoff.md](plans/main-game-handoff.md) | Implementation handoff after the prototype joins PR0: active-shell cleanup and a Moon-first main campaign |
 
 ## At the repository root

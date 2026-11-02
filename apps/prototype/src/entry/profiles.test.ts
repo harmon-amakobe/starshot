@@ -5,7 +5,7 @@ import { EntryPresentation } from './presentation';
 import { shotReducer, type ShotState } from '../lunar/shot-state';
 import { requestFor, simulateLunar } from '../lunar/flight';
 import { LunarModel, LAUNCH_ET } from '../lunar/model';
-import rail from '../../public/lunar/moon-rail.json';
+import rail from '@starshot/ephemeris/moon-rail.json';
 
 it('validates canonical saves and rejects nonfinite, unsupported or coerced preferences', () => {
   const save = sampleSave(); expect(validSession(save)).toBe(true);

@@ -96,10 +96,11 @@ planned next. Sections marked **Future** describe designs that are not built yet
   controller retains the original worker and scoring contracts. Entry, level,
   Launch window and body inspection share a scene, ET and preferences.
 - The scene uses camera-relative coordinates in Three.js, with a Canvas fallback.
-  Both project the campaign's flattened ephemeris and the worker's Hermite path.
+  Planetary views project the flattened ephemeris. Moonshot projects its lunar
+  plane. Both render the worker's Hermite path.
   Body enlargement changes display radii, not centre positions or flight samples.
   The old `src/ui/`, `src/input/` and most of `src/render/` remain as reference code.
-- `src/levels.ts`, `src/scoring.ts` and `src/progress.ts` hold the campaign, the star
+- `src/levels.ts`, `src/missions.ts`, `src/scoring.ts` and `src/progress.ts` hold the campaign, the star
   rules and saved progress. Each level names its settings (`sim`), its par and, where
   it differs from the default, its par tolerance and capture-zone size;
   `shotRequestFor()` and `hintQueryFor()` turn a level into the requests the worker
@@ -112,7 +113,17 @@ planned next. Sections marked **Future** describe designs that are not built yet
 `packages/presentation` contains the collector, engine chamber, crew pod, drone,
 icons, sound synthesis and entry timing. It imports no app. The original Moon study
 re-exports these modules and keeps its lunar controller in `apps/prototype`.
-The campaign never uses the study's limited-angle burn or local Earth-Moon frame.
+Moonshot uses the shared lunar variant in `packages/physics/src/lunar`, with the
+canonical JPL rail in `packages/ephemeris/data`. Planetary requests retain their
+patched-conic model. The worker dynamically loads the lunar simulation on its first
+lunar request. Both preview and launch carry the same explicit variant.
+
+Parking uses a circular Earth-relative initial condition in a fixed lunar reference
+plane, with separate plane and coasting epochs (D38). Date edits hold the craft's
+Earth-relative state while the Moon moves. Pulling freezes ET before the shared
+state receives an impulsive burn. The integrated flight is heliocentric ECLIPJ2000;
+the lunar map projects all three coordinates into its reference plane. Its path
+is shown relative to Earth's moving centre, with the Moon at the same sample time.
 
 Credited imagery and astronomy presentation data remain canonical in
 `apps/prototype/public/observatory`. `apps/game/observatory-assets.ts` mounts that

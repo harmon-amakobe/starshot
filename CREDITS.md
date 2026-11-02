@@ -61,7 +61,7 @@ geometry in `apps/prototype/src/render/vehicle.ts`. No borrowed character models
 generated raster images are used. The source code follows Apache-2.0.
 
 The level reuses the credited Earth and Moon maps and IBM Plex Mono fonts above.
-`apps/prototype/public/lunar/moon-rail.json` is an unchanged subset of the cached JPL
+`packages/ephemeris/data/moon-rail.json` is an unchanged subset of the cached JPL
 Moon vectors. `apps/prototype/tools/extract-lunar-rail.mjs` records the source binary hash and retains
 all 713 knots and five independent reference probes. NASA/JPL data terms apply.
 

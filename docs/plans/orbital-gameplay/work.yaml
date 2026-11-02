@@ -1,0 +1,19 @@
+program: orbital-gameplay
+milestone: "Local orbital gameplay"
+
+epics:
+  - id: orbital-gameplay
+    title: "Make the orbital game playable locally"
+    labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
+    size: XL
+    priority: p1
+    actor: Agent
+    spec: docs/plans/orbital-gameplay/plan.md
+    depends_on: []
+    body: |
+      Connect Moonshot to the existing campaign while preserving the approved menus
+      and art. Show a complete parking orbit, useful Craft, Orbit and System views,
+      independent phase and launch-date controls, and a clear arrival target.
+      Keep worker preview and launch identical, migrate pilots without losing access,
+      and verify real hit, miss and impact paths on phone and desktop.
+      This is a local preview. Publishing and deployment are separate owner actions.

@@ -1,7 +1,7 @@
 {
   "name": "starshot",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Starshot: a slingshot game across the real Solar System, plus the open orbital-mechanics packages behind it.",
   "homepage": "https://playstarshot.com",
   "repository": {

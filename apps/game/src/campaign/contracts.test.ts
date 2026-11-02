@@ -3,21 +3,38 @@ import { BODIES } from '@starshot/ephemeris';
 import { deltaVFromLeo } from '@starshot/physics';
 import { CAMPAIGN, sandboxLevel, SANDBOX_TARGETS } from '../levels';
 import { shotKey } from '../sim/preview';
+import { isLunar } from '../sim/flight-request';
 import { freshSession, validSession, copySession } from './session';
 import { parsePilots } from './profiles';
-import { ReleaseOwner } from './release';
-import { aimFromPull, depthRange, finalRequest, matchesRestore } from './contracts';
+import { pullIntent, ReleaseOwner } from './release';
+import { aimFromPull, chargeFromPull, depthRange, finalRequest, matchesRestore } from './contracts';
 import { makeFrame } from './frame';
 import { replayClock, stepRate } from './playback';
 import type { SceneState } from './scene-types';
 
 describe('campaign release and restore boundaries', () => {
+  it('defaults old saves to planning and persists either mode without accepting an unknown mode', () => {
+    const session = freshSession(); expect(session.preferences.releaseMode).toBe('plan');
+    const old = JSON.parse(JSON.stringify(session)); delete old.preferences.releaseMode;
+    expect(validSession(old)).toBe(true); expect(copySession(old).preferences.releaseMode).toBe('plan');
+    session.preferences.releaseMode = 'hail-mary'; expect(copySession(session).preferences.releaseMode).toBe('hail-mary');
+    old.preferences.releaseMode = 'surprise'; expect(validSession(old)).toBe(false);
+  });
+  it('uses captured release intent only for the same pilot, mode and aiming phase', () => {
+    expect(pullIntent('plan', 'pilot-a', 'plan', 'pilot-a', 'aim')).toBe('plan');
+    expect(pullIntent('hail-mary', 'pilot-a', 'hail-mary', 'pilot-a', 'aim')).toBe('hail-mary');
+    expect(pullIntent('plan', 'pilot-a', 'hail-mary', 'pilot-a', 'aim')).toBeNull();
+    expect(pullIntent('hail-mary', 'pilot-a', 'plan', 'pilot-a', 'aim')).toBeNull();
+    expect(pullIntent('hail-mary', 'pilot-a', 'hail-mary', 'pilot-b', 'aim')).toBeNull();
+    expect(pullIntent('hail-mary', 'pilot-a', 'hail-mary', 'pilot-a', 'flight')).toBeNull();
+  });
   it('captures the final pointer request rather than an older rendered aim', () => {
     for (const level of [...CAMPAIGN, ...SANDBOX_TARGETS.map(id => sandboxLevel(id, new Date('2026-11-02T00:00:00Z')))]) {
       const save = freshSession(level), old = finalRequest(save), released = finalRequest(save, { angleDeg: 359.75, speedKmS: level.vInfMaxKmS });
       const owner = new ReleaseOwner(), task = owner.request(released.shot);
       expect(owner.accepts(task.generation, old.shot)).toBe(false);
       expect(owner.accepts(task.generation, released.shot)).toBe(true);
+      if (isLunar(released.shot)) throw new Error('Planetary request changed kind');
       expect(released.shot.sim).toBe(level.sim); expect(Math.hypot(...released.shot.vInf)).toBeCloseTo(level.vInfMaxKmS, 12);
       expect(deltaVFromLeo(0)).toBeGreaterThan(0);
     }
@@ -30,7 +47,7 @@ describe('campaign release and restore boundaries', () => {
     expect(owner.accepts(a.generation, shot)).toBe(false); expect(owner.accepts(b.generation, shot)).toBe(true);
   });
   it('can hydrate another pilot with an identical cached shot, but cannot hydrate a different day or aim', () => {
-    const first = freshSession(), same = copySession(first), cached = finalRequest(first).shot;
+    const first = freshSession(CAMPAIGN[0]!), same = copySession(first), cached = finalRequest(first).shot;
     expect(matchesRestore(cached, same)).toBe(true);
     same.day++; expect(matchesRestore(cached, same)).toBe(false);
     same.day--; same.aim = { ...same.aim, angleDeg: same.aim.angleDeg + 1 }; expect(matchesRestore(cached, same)).toBe(false);
@@ -60,9 +77,19 @@ describe('camera and controls use the same projected frame', () => {
     for (const level of CAMPAIGN) for (const [w, h, deck] of [[1440, 900, 280], [390, 664, 240], [844, 390, 166]]) for (const charge of [0, .5, 1]) for (let angle = 0; angle < 360; angle += 15) {
       const s = state(level); s.deckHeight = deck!; s.charge = charge; s.aim = { ...s.aim, angleDeg: angle };
       const f = makeFrame(s, w!, h!, null, 1, 'test').frame;
-      expect(f.grip[0] - 28).toBeGreaterThanOrEqual(8 - 1e-7); expect(f.grip[0] + 28).toBeLessThanOrEqual(w! - 8 + 1e-7);
-      expect(f.grip[1] - 28).toBeGreaterThanOrEqual((h! < 500 ? 76 : 104) - 1e-7);
-      expect(f.grip[1] + 28).toBeLessThanOrEqual(h! - deck! - (h! < 500 ? 12 : 20) + 1e-7);
+      const landscape = h! < 500;
+      // The short landscape deck is beside the world, not below it.
+      expect(f.grip[0] - 28).toBeGreaterThanOrEqual(8 - 1e-7);
+      expect(f.grip[0] + 28).toBeLessThanOrEqual((landscape ? w! - Math.min(390, w! * .46) - 4 : w! - 8) + 1e-7);
+      expect(f.grip[1] - 28).toBeGreaterThanOrEqual((landscape ? 112 : 104) - 1e-7);
+      expect(f.grip[1] + 28).toBeLessThanOrEqual((landscape ? h! - 48 : h! - deck! - 20) + 1e-7);
+    }
+  });
+  it('keeps a precise input range even when the drawn sleeve has little clearance', () => {
+    for (const travel of [1, 23, 115]) {
+      expect(chargeFromPull(.4, 40, 40, travel)).toBe(.4);
+      expect(chargeFromPull(.4, 40, 41, travel) - .4).toBeCloseTo(1 / 160, 12);
+      expect(chargeFromPull(.4, 40, 136, travel)).toBe(1);
     }
   });
   it('has a continuous first step from a saved tilted free view to the live menu', () => {

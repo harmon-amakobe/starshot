@@ -13,7 +13,7 @@
  * there would add a second, nested render to every key press.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { HintQuery } from "./hint.js";
+import type { FlightHintQuery as HintQuery, FlightRequest } from './flight-request';
 import { shotKey } from "./preview.js";
 import type { HintResponse, ShotResponse, SimRequest, SimResponse } from "./protocol.js";
 import type { ShotRequest } from "./shot.js";
@@ -23,31 +23,31 @@ export const PREVIEW_THROTTLE_MS = 30;
 
 type Pending = { resolve: (r: SimResponse) => void; reject: (e: Error) => void };
 
-export interface SimulationApi {
+export interface SimulationApi<S extends FlightRequest = ShotRequest> {
   /** Latest finished preview (may lag the aim by one request while dragging; check its shot). */
-  readonly preview: ShotResponse | null;
+  readonly preview: ShotResponse<S> | null;
   /**
    * shotKey of the last preview request the worker answered, with a path or an
    * error. When it names a shot that `preview` does not, that shot failed.
    */
   readonly answeredKey: string;
-  requestPreview(shot: ShotRequest): void;
-  launch(shot: ShotRequest): Promise<ShotResponse>;
+  requestPreview(shot: S): void;
+  launch(shot: S): Promise<ShotResponse<S>>;
   hint(query: HintQuery): Promise<HintResponse>;
 }
 
-export function useSimulation(): SimulationApi {
+export function useSimulation<S extends FlightRequest = ShotRequest>(): SimulationApi<S> {
   const workerRef = useRef<Worker | null>(null);
   const nextId = useRef(1);
   const inFlight = useRef<number | null>(null);
   const inFlightKey = useRef("");
-  const queued = useRef<{ readonly shot: ShotRequest; readonly key: string } | null>(null);
+  const queued = useRef<{ readonly shot: S; readonly key: string } | null>(null);
   const lastKey = useRef<string>("");
   const lastPost = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pending = useRef(new Map<number, Pending>());
   // One state for both, so an answer re-renders once.
-  const [answered, setAnswered] = useState<{ readonly preview: ShotResponse | null; readonly key: string }>({
+  const [answered, setAnswered] = useState<{ readonly preview: ShotResponse<S> | null; readonly key: string }>({
     preview: null,
     key: "",
   });
@@ -84,7 +84,7 @@ export function useSimulation(): SimulationApi {
       if (res.id === inFlight.current) {
         inFlight.current = null;
         const key = inFlightKey.current;
-        setAnswered((prev) => ({ preview: res.kind === "shot" ? res : prev.preview, key }));
+        setAnswered((prev) => ({ preview: res.kind === "shot" ? res as ShotResponse<S> : prev.preview, key }));
         pump();
         return;
       }
@@ -117,7 +117,7 @@ export function useSimulation(): SimulationApi {
   }, [pump]);
 
   const requestPreview = useCallback(
-    (shot: ShotRequest) => {
+    (shot: S) => {
       const key = shotKey(shot);
       if (key === lastKey.current) return;
       lastKey.current = key;
@@ -138,7 +138,7 @@ export function useSimulation(): SimulationApi {
   }, []);
 
   const launch = useCallback(
-    (shot: ShotRequest) => call<ShotResponse>((id) => ({ kind: "shot", id, purpose: "launch", shot })),
+    (shot: S) => call<ShotResponse<S>>((id) => ({ kind: "shot", id, purpose: "launch", shot })),
     [call],
   );
   const hint = useCallback((query: HintQuery) => call<HintResponse>((id) => ({ kind: "hint", id, query })), [call]);

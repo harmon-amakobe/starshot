@@ -207,8 +207,10 @@ try {
     await page.getByRole('button', { name: /^(Play|Continue)$/ }).click();
     await page.getByRole('button', { name: /^Pull engine ring to aim/ }).waitFor({ timeout: 30_000 });
     await page.getByRole('button', { name: 'Launch', exact: true }).click();
-    await page.getByRole('slider', { name: 'Flight timeline' }).waitFor();
     await page.getByRole('button', { name: 'Pause', exact: true }).click();
+    const expandDeck = page.getByRole('button', { name: 'Expand flight deck', exact: true });
+    if (await expandDeck.isVisible()) await expandDeck.click();
+    await page.getByRole('slider', { name: 'Flight timeline' }).waitFor();
     console.log(`web-release: ${base} offline flight launched`);
     await page.screenshot({ path: join(out, `${label}-offline-game.png`) });
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), oldData,

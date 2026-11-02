@@ -1,21 +1,21 @@
 /** Messages between the UI thread and the physics worker (sim.worker.ts). */
-import type { SimulationResult } from "@starshot/physics";
-import type { Hint, HintQuery } from "./hint.js";
+import type { Hint } from "./hint.js";
 import type { ShotAnalysis, ShotRequest } from "./shot.js";
+import type { FlightRequest, FlightResult, FlightHintQuery } from './flight-request';
 
 /** "preview" while aiming, "launch" for the real flight: both run the identical simulation. */
 export type ShotPurpose = "preview" | "launch";
 
 export type SimRequest =
-  | { readonly kind: "shot"; readonly id: number; readonly purpose: ShotPurpose; readonly shot: ShotRequest }
-  | { readonly kind: "hint"; readonly id: number; readonly query: HintQuery };
+  | { readonly kind: "shot"; readonly id: number; readonly purpose: ShotPurpose; readonly shot: FlightRequest }
+  | { readonly kind: "hint"; readonly id: number; readonly query: FlightHintQuery };
 
-export interface ShotResponse {
+export interface ShotResponse<S extends FlightRequest = ShotRequest> {
   readonly kind: "shot";
   readonly id: number;
   readonly purpose: ShotPurpose;
-  readonly shot: ShotRequest;
-  readonly result: SimulationResult;
+  readonly shot: S;
+  readonly result: FlightResult<S>;
   readonly analysis: ShotAnalysis;
   /** Wall time spent in simulate + analysis inside the worker [ms]. */
   readonly ms: number;
@@ -34,4 +34,5 @@ export interface ErrorResponse {
   readonly message: string;
 }
 
-export type SimResponse = ShotResponse | HintResponse | ErrorResponse;
+export type FlightResponse = ShotResponse<FlightRequest>;
+export type SimResponse = FlightResponse | HintResponse | ErrorResponse;

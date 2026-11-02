@@ -6,6 +6,7 @@ import { ephemeris } from './scene-geometry';
 import { colours, type FrameGeometry } from './frame';
 import type { SceneState } from './scene-types';
 import { depthRange } from './contracts';
+import { bodyRadius, type MissionBody } from '../missions';
 
 export class ThreeScene {
   private renderer: THREE.WebGLRenderer;
@@ -63,16 +64,18 @@ export class ThreeScene {
     this.camera.left = -500 * aspect; this.camera.right = 500 * aspect; this.camera.top = 500; this.camera.bottom = -500;
     this.camera.position.set(0, 0, 8000); this.camera.lookAt(0, 0, 0); this.camera.updateProjectionMatrix();
     const position = (p: Vec3) => new THREE.Vector3(...f.local(p)).divideScalar(unit);
+    this.bodies.forEach(mesh => { mesh.visible = false; });
+    this.rings.forEach(ring => { ring.visible = false; });
     for (const marker of frame.bodies) {
       const mesh = this.bodies.get(marker.id)!;
       mesh.visible = !state.inspection;
-      mesh.position.copy(position(ephemeris.state(marker.id as BodyId, state.et).r)); mesh.scale.setScalar(marker.radius * 1000 / height);
+      mesh.position.copy(position(f.g.body(marker.id as MissionBody).r)); mesh.scale.setScalar(marker.radius * 1000 / height);
       const axes = this.data?.astronomy.orientation(this.data.physical.bodies[marker.id], state.et);
       if (axes) {
         const a = (i: number) => new THREE.Vector3(...f.direction(axes[i] as unknown as Vec3));
         mesh.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(a(0), a(2), a(1).negate()));
         const ring = this.rings.get(marker.id);
-        if (ring) { ring.visible = mesh.visible; ring.position.copy(mesh.position); ring.scale.setScalar(mesh.scale.x / BODIES[marker.id as BodyId].radiusKm); ring.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(a(0), a(1), a(2))); }
+        if (ring) { ring.visible = mesh.visible; ring.position.copy(mesh.position); ring.scale.setScalar(mesh.scale.x / bodyRadius(marker.id as MissionBody)); ring.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(a(0), a(1), a(2))); }
       }
     }
     const sun = this.bodies.get('sun')!;
@@ -82,7 +85,7 @@ export class ThreeScene {
     this.flares.visible = !state.inspection; this.flares.position.copy(sun.position); this.flares.scale.copy(sun.scale).multiplyScalar(1.1);
     this.flares.children.forEach((arc, i) => { arc.rotation.z = i + state.visualTime * (state.reduced ? 0 : .06 + i * .006); arc.scale.setScalar(1 + .08 * Math.sin(i + (state.reduced ? 0 : state.visualTime * .4))); });
     this.updateMoons(state, f, position);
-    this.craft.visible = !state.inspection && !state.focus;
+    this.craft.visible = !state.inspection;
     this.craft.position.set((frame.craft[0] - width / 2) * 1000 / height, (height / 2 - frame.craft[1]) * 1000 / height, 1000);
     this.craft.scale.setScalar((f.pixels + state.home * 50) * 1000 / height);
     this.craft.rotation.set(.18 + state.home * .12, -.18, frame.heading, 'ZYX');
@@ -114,7 +117,7 @@ export class ThreeScene {
     if (!state.focus || !state.showMoons || !f.frame.moonsAvailable || !this.data || state.inspection) return;
     if (!this.satelliteRequested) { this.satelliteRequested = true; loadSatellites().then(d => { if (!this.disposed) this.satellites = d; }).catch(() => {}); }
     if (!this.satellites) return;
-    const parent = ephemeris.state(state.focus, state.et).r;
+    const parent = f.g.body(state.focus).r;
     for (const meta of this.data.rails.moons.filter(m => m.parent === state.focus)) {
       const raw = this.data.astronomy.satelliteState(meta, this.satellites, state.et);
       if (!raw) continue;

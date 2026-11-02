@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import rail from '../../public/lunar/moon-rail.json';
+import rail from '@starshot/ephemeris/moon-rail.json';
 import { LunarModel, LAUNCH_ET } from '../lunar/model';
 import { requestFor, simulateLunar } from '../lunar/flight';
 import { frameGeometry, frameReadout, local } from './coordinates';

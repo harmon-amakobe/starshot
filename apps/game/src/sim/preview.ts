@@ -6,7 +6,7 @@
  * (decision D6: what you see is what you get).
  */
 import type { ShotResponse } from "./protocol.js";
-import type { ShotRequest } from "./shot.js";
+import type { FlightRequest } from './flight-request';
 
 /**
  * Canonical identity of a shot: the whole request as JSON with the keys of
@@ -17,7 +17,7 @@ import type { ShotRequest } from "./shot.js";
  * default give different keys, which can only keep Launch closed, never open it
  * for a different shot.
  */
-export function shotKey(s: ShotRequest): string {
+export function shotKey(s: FlightRequest): string {
   return stableJson(s);
 }
 
@@ -35,20 +35,20 @@ function stableJson(v: unknown): string {
 }
 
 /** The finished preview if it is for exactly this shot, otherwise null (still computing). */
-export function previewForShot(preview: ShotResponse | null, shot: ShotRequest): ShotResponse | null {
+export function previewForShot<S extends FlightRequest>(preview: ShotResponse<S> | null, shot: S): ShotResponse<S> | null {
   return preview !== null && shotKey(preview.shot) === shotKey(shot) ? preview : null;
 }
 
-export interface LaunchGate {
+export interface LaunchGate<S extends FlightRequest = FlightRequest> {
   /** Launch is enabled and would fly exactly the preview on screen. */
   readonly ready: boolean;
   /** The preview on screen is for an older aim (or there is none yet): show "busy". */
   readonly stale: boolean;
   /** The shot to launch when ready: the matching preview's own request. */
-  readonly shot: ShotRequest | null;
+  readonly shot: S | null;
 }
 
-export function launchGate(aiming: boolean, preview: ShotResponse | null, shot: ShotRequest): LaunchGate {
+export function launchGate<S extends FlightRequest>(aiming: boolean, preview: ShotResponse<S> | null, shot: S): LaunchGate<S> {
   const current = previewForShot(preview, shot);
   return { ready: aiming && current !== null, stale: current === null, shot: current?.shot ?? null };
 }

@@ -1,20 +1,20 @@
 import { BODIES, orbitPath, type PlanetId, type Vec3 } from '@starshot/ephemeris';
 import { drawSleeve } from '@starshot/presentation/charge-sleeve';
-import { buildPath, type PathData } from '../render/draw';
-import type { ShotResponse } from '../sim/protocol';
+import { routePath } from './orbit-path';
+import type { FlightResponse as ShotResponse } from '../sim/protocol';
 import { colours, makeFrame, type FrameGeometry } from './frame';
 import { loadSceneData, type SceneData } from './scene-data';
 import { ThreeScene } from './three-scene';
 import { ephemeris } from './scene-geometry';
 import type { SceneState } from './scene-types';
+import { bodyName } from '../missions';
+import { isLunar } from '../sim/flight-request';
 let identity = 0;
 export class CampaignScene {
   readonly identity = ++identity;
   private three: ThreeScene | null = null;
   private ctx: CanvasRenderingContext2D;
   private data: SceneData | null = null;
-  private response: ShotResponse | null = null;
-  private path: PathData | null = null;
   private orbitKey = '';
   private orbits = new Map<PlanetId, readonly Vec3[]>();
   private disposed = false;
@@ -49,7 +49,7 @@ export class CampaignScene {
     const key = `${state.level.id}:${state.level.target}:${state.map}:${Math.floor(state.et / 86400)}`;
     if (key !== this.orbitKey) {
       this.orbitKey = key; this.orbits.clear();
-      const ids = state.map ? Object.keys(colours).filter(id => id !== 'sun') : [...new Set(['earth', state.level.target, ...(state.level.requiredFlyby ? [state.level.requiredFlyby] : [])])];
+      const ids = state.parking ? [] : state.map ? Object.keys(colours).filter(id => id !== 'sun' && id !== 'moon') : [...new Set(['earth', state.level.target, ...(state.level.requiredFlyby ? [state.level.requiredFlyby] : [])])];
       ids.forEach(id => this.orbits.set(id as PlanetId, orbitPath(id as PlanetId, state.et, 160, { flatten: true })));
     }
     ctx.globalAlpha = 1 - state.home; ctx.lineWidth = 1;
@@ -60,24 +60,40 @@ export class CampaignScene {
       const a = Math.atan2(next[1] - q[1], next[0] - q[0]); ctx.save(); ctx.translate(q[0] + Math.cos(a) * 43, q[1] + Math.sin(a) * 43); ctx.rotate(a);
       ctx.strokeStyle = '#9dbcb780'; ctx.beginPath(); ctx.moveTo(-7, -4); ctx.lineTo(0, 0); ctx.lineTo(-7, 4); ctx.stroke(); ctx.restore();
     }
-    if (state.response !== this.response) { this.response = state.response; this.path = state.response ? buildPath(state.response.result, 4) : null; }
-    if (this.path && !state.focus) {
+    if (f.g.parking.length) {
+      ctx.strokeStyle = '#9ed4e6b0'; ctx.lineWidth = 1.5; ctx.setLineDash([]); ctx.beginPath();
+      f.g.parking.forEach((p, i) => { const q = f.projectPlane(p); if (i) ctx.lineTo(...q); else ctx.moveTo(...q); }); ctx.stroke();
+    }
+    if (f.g.moonOrbit.length) {
+      ctx.strokeStyle = '#88b9c866'; ctx.lineWidth = 1; ctx.setLineDash([]); ctx.beginPath();
+      f.g.moonOrbit.forEach((p, i) => { const q = f.projectPlane(p); if (i) ctx.lineTo(...q); else ctx.moveTo(...q); }); ctx.stroke();
+    }
+    if (state.response) {
       for (const past of [true, false]) {
         ctx.setLineDash(past ? [] : [1, 7]); ctx.lineCap = 'round'; ctx.strokeStyle = past ? '#f8c76f' : state.response?.analysis.hit ? '#b9ebd8' : '#d2dbe8b0'; ctx.lineWidth = past ? 2 : 2.2; ctx.beginPath(); let active = false;
-        for (let i = 0; i < this.path.count; i++) {
-          const t = this.path.pts[i * 3]!, isPast = !state.aiming && t <= state.et, p = f.project([this.path.pts[i * 3 + 1]!, this.path.pts[i * 3 + 2]!, 0]);
+        for (let i = 0; i < f.g.path.length; i++) {
+          const isPast = !state.aiming && routePath(state.response)[i]!.t <= state.et;
+          const p = f.projectPlane(f.g.path[i]!);
           if (isPast === past) { if (!active) ctx.moveTo(...p); else ctx.lineTo(...p); active = true; } else active = false;
         }
         ctx.stroke();
       }
-      if (frame.intercept) {
+      if (frame.intercept && !(isLunar(state.response.shot) && state.response.shot.scope === 'local')) {
         ctx.setLineDash([3, 5]); ctx.strokeStyle = frame.interceptHit ? '#a8e9ca' : '#f3c97a'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(...frame.intercept, 16, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(...frame.intercept, Math.max(3, frame.captureRadius), 0, Math.PI * 2); ctx.stroke();
+        if (frame.approachCraft) {
+          ctx.setLineDash([8, 8]); ctx.strokeStyle = '#e6b66a70'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(...frame.approachCraft); ctx.lineTo(...frame.intercept); ctx.stroke();
+          ctx.fillStyle = '#dcebe8'; ctx.font = '10px Plex, monospace';
+          const label = `${bodyName(state.level.target)} at ${frame.interceptHit ? 'arrival' : 'closest pass'}`;
+          ctx.fillText(label, Math.max(12, Math.min(frame.width - ctx.measureText(label).width - 12, frame.intercept[0] + 10)), Math.max(75, Math.min(frame.height - state.deckHeight - 15, frame.intercept[1] - 12)));
+        }
         ctx.beginPath(); ctx.moveTo(frame.intercept[0] - 22, frame.intercept[1]); ctx.lineTo(frame.intercept[0] + 22, frame.intercept[1]); ctx.stroke();
       }
     }
     if (state.aiming && !state.focus) {
       ctx.setLineDash([2, 4]); ctx.strokeStyle = '#a8bbce80'; ctx.beginPath(); ctx.moveTo(...frame.physicalCraft); ctx.lineTo(...frame.craft); ctx.stroke();
+      ctx.fillStyle = '#e5f8ff'; ctx.beginPath(); ctx.arc(...frame.physicalCraft, 2.5, 0, Math.PI * 2); ctx.fill();
     }
     ctx.setLineDash([]); ctx.globalAlpha = 1;
   }
@@ -91,7 +107,6 @@ export class CampaignScene {
       ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
       this.drawRings(body.id, state, f, true);
     }
-    if (state.focus) return;
     const anchor: [number, number] = state.inspection ? [frame.width / 2, frame.height * .45] : frame.craft;
     const size = state.inspection ? Math.min(frame.width * .13, 70) : f.pixels + state.home * 50, heading = state.inspection ? 0 : frame.heading;
     const charge = state.inspection ? state.demoCharge : state.charge, travel = state.inspection ? 2.5 * size : frame.travel;

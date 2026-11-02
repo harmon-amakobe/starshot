@@ -2,14 +2,17 @@ import { useRef, useState, type PointerEvent, type RefObject, type WheelEvent } 
 import type { SceneFrame, SceneState } from './scene-types';
 import type { CampaignController } from './use-campaign';
 import type { Aim } from '../sim/shot';
-import { aimFromPull } from './contracts';
+import { aimFromPull, chargeFromPull } from './contracts';
+import { zoomAt } from './zoom';
+import type { ReleaseMode } from './session';
 export function useGestures(c: CampaignController, frame: RefObject<SceneFrame>, inspect: boolean, demo: (value: number) => void, sound: (kind: 'pull' | 'launch', n?: number) => void) {
   const [lock, setLock] = useState<SceneState['lock']>(null), [pulling, setPulling] = useState(false);
-  const drag = useRef<{ pointer: number; start: [number, number]; moved: boolean; anchor: [number, number]; offset: [number, number]; travel: number; rotation: number; orbit: [number, number]; rest: number; last: Aim } | null>(null);
+  const drag = useRef<{ pointer: number; start: [number, number]; moved: boolean; anchor: [number, number]; offset: [number, number]; travel: number; rotation: number; orbit: [number, number]; rest: number; last: Aim; prograde: number; initialCharge: number; initialDistance: number; initialAim: Aim; wasPaused: boolean; owner: string; releaseMode: ReleaseMode } | null>(null);
   const points = useRef(new Map<number, [number, number]>());
   const finish = (cancelled: boolean, final?: Aim) => {
     const d = drag.current; drag.current = null; setPulling(false); setLock(null);
-    if (d && !cancelled && d.moved) { sound('launch', d.last.speedKmS / c.level.vInfMaxKmS); c.launch(final ?? d.last); }
+    if (d && !cancelled && d.moved) { if (d.releaseMode === 'hail-mary') sound('launch', d.last.speedKmS / c.level.vInfMaxKmS); c.releasePull(final ?? d.last, d.releaseMode, d.owner); }
+    else if (d) c.cancelPull(d.initialAim, d.wasPaused, d.owner);
     else if (cancelled) c.cancel();
   };
   const aimAt = (e: PointerEvent) => {
@@ -17,29 +20,35 @@ export function useGestures(c: CampaignController, frame: RefObject<SceneFrame>,
     if (Math.hypot(e.clientX - d.start[0], e.clientY - d.start[1]) >= 4) d.moved = true;
     if (!d.moved) return d.last;
     const dx = e.clientX - d.offset[0] - d.anchor[0], dy = e.clientY - d.offset[1] - d.anchor[1], distance = Math.hypot(dx, dy);
-    const angleDeg = aimFromPull(dx, dy, d.rotation, d.orbit);
-    d.last = { angleDeg, speedKmS: Math.max(0, Math.min(1, (distance - d.rest) / d.travel)) * c.level.vInfMaxKmS }; return d.last;
+    const direction = aimFromPull(dx, dy, d.rotation, d.orbit);
+    const angleDeg = c.session.parking ? Math.max(-35, Math.min(35, ((d.prograde * 180 / Math.PI - direction + 540) % 360) - 180)) : direction;
+    const charge = chargeFromPull(d.initialCharge, d.initialDistance, distance, d.travel);
+    d.last = { angleDeg, speedKmS: Math.max(0, Math.min(1, charge)) * c.level.vInfMaxKmS }; return d.last;
   };
   const ring = {
     onPointerDown(e: PointerEvent<HTMLButtonElement>) {
       if (drag.current || e.button !== 0 || c.pending || c.hydrating || c.session.phase !== 'aim') return;
       e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId);
+      c.freezeParking();
       const f = frame.current, rest = (f.height < 500 && f.width > 600 ? 15 : 22) * 1.12;
-      drag.current = { pointer: e.pointerId, start: [e.clientX, e.clientY], moved: false, anchor: [...f.craft], offset: [e.clientX - f.grip[0], e.clientY - f.grip[1]], travel: f.travel, rotation: f.rotation, orbit: c.session.preferences.camera === 'free' ? [...c.session.preferences.orbit] : [0, 0], rest, last: c.session.aim };
+      drag.current = { pointer: e.pointerId, start: [e.clientX, e.clientY], moved: false, anchor: [...f.craft], offset: [e.clientX - f.grip[0], e.clientY - f.grip[1]], travel: f.travel, rotation: f.rotation, orbit: c.session.preferences.camera === 'free' ? [...c.session.preferences.orbit] : [0, 0], rest, last: c.session.aim, prograde: f.prograde, initialCharge: c.session.aim.speedKmS / c.level.vInfMaxKmS, initialDistance: Math.hypot(f.grip[0] - f.craft[0], f.grip[1] - f.craft[1]), initialAim: { ...c.session.aim }, wasPaused: c.session.paused, owner: c.owner, releaseMode: c.session.preferences.releaseMode };
       setLock({ heightKm: f.heightKm, centre: [...f.centre], anchor: [...f.craft], travel: f.travel }); setPulling(true); sound('pull');
     },
     onPointerMove(e: PointerEvent<HTMLButtonElement>) { if (drag.current?.pointer !== e.pointerId) return; e.preventDefault(); c.aim(aimAt(e)); },
     onPointerUp(e: PointerEvent<HTMLButtonElement>) { if (drag.current?.pointer !== e.pointerId) return; e.preventDefault(); const final = aimAt(e); finish(false, final); },
     onPointerCancel() { finish(true); }, onLostPointerCapture() { if (drag.current) finish(true); },
   };
-  const zoom = (factor: number) => { if (drag.current) return; const f = frame.current; c.preferences({ camera: inspect ? c.session.preferences.camera : 'follow', heightKm: Math.max(1000, Math.min(2e11, f.heightKm * factor)), pan: [...f.centre] }); };
+  const zoom = (factor: number, point?: [number, number]) => {
+    if (drag.current) return; const f = frame.current;
+    c.preferences({ camera: 'free', ...zoomAt(f, factor, point ?? [f.width / 2, f.height / 2], c.session.preferences.camera === 'free' ? c.session.preferences.orbit : [0, 0]) });
+  };
   const world = {
-    onWheel(e: WheelEvent) { if (!drag.current) zoom(Math.exp(Math.max(-.4, Math.min(.4, e.deltaY * .0015)))); },
+    onWheel(e: WheelEvent) { if (!drag.current) zoom(Math.exp(Math.max(-.4, Math.min(.4, e.deltaY * .0015))), [e.clientX, e.clientY]); },
     onPointerDown(e: PointerEvent<HTMLDivElement>) { if (drag.current) { finish(true); return; } if (e.button !== 0) return; e.currentTarget.setPointerCapture(e.pointerId); points.current.set(e.pointerId, [e.clientX, e.clientY]); },
     onPointerMove(e: PointerEvent<HTMLDivElement>) {
       const old = points.current.get(e.pointerId); if (!old) return;
       const next: [number, number] = [e.clientX, e.clientY], f = frame.current, p = c.session.preferences;
-      if (points.current.size > 1) { const other = [...points.current].find(([id]) => id !== e.pointerId)?.[1]; if (other) zoom(Math.hypot(old[0] - other[0], old[1] - other[1]) / Math.max(10, Math.hypot(next[0] - other[0], next[1] - other[1]))); }
+      if (points.current.size > 1) { const other = [...points.current].find(([id]) => id !== e.pointerId)?.[1]; if (other) zoom(Math.hypot(old[0] - other[0], old[1] - other[1]) / Math.max(10, Math.hypot(next[0] - other[0], next[1] - other[1])), [(next[0] + other[0]) / 2, (next[1] + other[1]) / 2]); }
       else if (inspect || e.shiftKey) c.preferences({ camera: inspect ? p.camera : 'free', heightKm: f.heightKm, pan: [...f.centre], orbit: [Math.max(-1.2, Math.min(1.2, p.orbit[0] + (next[1] - old[1]) * .008)), Math.max(-1.2, Math.min(1.2, p.orbit[1] + (next[0] - old[0]) * .008))] });
       else {
         const a = p.camera === 'free' ? p.orbit[0] : 0, b = p.camera === 'free' ? p.orbit[1] : 0;

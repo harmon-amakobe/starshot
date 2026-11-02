@@ -799,6 +799,46 @@ and sound composition remain adjustable during iteration.
 
 ---
 
+## D33. Earth to Moon is the first mission, built on today's engine before the Rust core
+
+*Date:* 2026-11-02. *Source:* owner's ruling on when (directly after the PR2 group, on
+the current TypeScript engine, with the Rust core required to match it); the flight
+details (judgment) follow the approved lunar study. Amends the group order of D30's table
+and the Moon's place in PR34; refines D18's flattened chapter one for the Earth-Moon
+system. D16 and D17 stand.
+
+**Decision.** The Moon-first slice is built in the two groups after the PR2 group:
+PR3a (the flight) and PR3b (the campaign).
+
+- Earth to Moon is mission one, with the stable id `moonshot`. The planetary missions
+  keep their ids (`first-light`, `morning-star`, `big-game`, `grand-tour`) and follow it.
+- The lunar flight is an explicit typed variant beside the planetary shot. It is an
+  impulsive burn from a 200 km parking orbit (D18 item 1, the 3.55 km/s tank). Earth's
+  centre with Earth's own mass, the Moon and the Sun pull on the craft. Its frame and
+  units are named wherever it crosses a boundary.
+- The mission is planar in the Moon's own orbital plane at launch, not the ecliptic.
+  Flattening the Moon's orbit onto the ecliptic would move it by up to about 34,000 km,
+  so the flattened world of D6 and D18 applies to the planetary missions only.
+- The Moon's position comes from the cached JPL Horizons rail the lunar study validated
+  (five JPL probes within 0.1 km), moved into `packages/ephemeris` with its provenance.
+  The DE440 rails of PR8 replace it and keep its probes as a cross-check.
+- Success is first entry into the Moon's sphere of influence, as a hit is for the
+  planets. It is an encounter, not an orbit; capture stays with PR20.
+- The Rust core reproduces the lunar variant: PR11 to PR14 add its tests to their
+  conformance scope, and PR17 retires the TypeScript version only after the wasm matches
+  it. There is one engine at a time.
+
+**Why.** The owner wants a playable Moon-first campaign before the Rust core lands. The
+lunar study already has a measured flight model with tests against JPL probes, so the
+TypeScript version becomes one more oracle the Rust port is tested against, as the
+planetary code already is.
+
+**Consequences.** The group table gains PR3a, PR3b and PR3c (the stylesheet split,
+deviation 16) between the PR2 and PR4 groups. PR34 keeps the later Earth and Moon levels:
+an Earth-orbit lesson and a loose lunar capture. Mission numbers shift by one; ids do not.
+
+---
+
 ## D34. Publish the current browser game before resuming v1
 
 *Date:* 2026-11-02. *Source:* owner's release direction.
@@ -927,3 +967,46 @@ the button never submits a release. Preserve this gate during repository recover
 Repository administration and direct Firebase deployment access remain trusted powers.
 Agents using the owner's identity still need an explicit instruction to promote.
 The existing 0.1.0 candidate remains bound to its original records and tested bytes.
+
+
+---
+
+## D38. Make the local Moon-first campaign playable with explicit orbit and time controls
+
+*Date:* 2026-11-03. *Source:* owner's local gameplay request. Circular parking and its fixed frame are implementation judgments under D33.
+
+**Decision.** Bring D33's flight and campaign into the current approved shell before
+its later refactor. Keep the planetary physics and existing mission identities.
+Show the complete orbit or trajectory, with Craft, Orbit and System camera choices.
+Zoom retains its chosen world point. Date and phase controls are visible and independent.
+
+The craft starts in a circular 200 km Earth-relative parking orbit. Its plane is fixed
+at the lunar study's 2026-11-02 01:00 UTC reference. A separate coasting epoch controls
+phase advance. This refines D33's plane-at-launch wording so changing the launch date
+can hold the craft's Earth-relative position and velocity while the Moon moves.
+Changing phase at frozen ET deliberately sets a new circular initial condition.
+The same state feeds the scene and the worker's impulsive burn. Circular parking is
+an initial-condition approximation; released flights include Sun, Earth and Moon forces.
+
+Each pilot defaults to Plan and launch: releasing sets the aim and keeps time
+paused for inspection before explicit Launch. The optional YOLO setting
+launches on release. Missing saved settings migrate to Plan and launch.
+Pulling pauses ET before editing the burn. Cancelling restores the previous aim and
+coasting state. Reduced motion starts paused. The lunar guide retains its measured
+01:00 UTC epoch and 225-degree phase. Its reference par is not a claim of optimality.
+Success remains first entry into the real Moon sphere of influence, not lunar capture.
+
+**Why.** The owner wants to play and review a coherent local game before the next
+implementation handoff. A visible orbit must agree with the state that actually flies.
+
+**Consequences.** v2 pilot storage preserves old stars, sessions and earned access.
+Old storage is not overwritten. Playtest access cannot award unearned achievements.
+The shared lunar model and rail move into packages; the study imports them. The saved
+screen refactor remains separate. D35 and D37 still govern any later release: this
+local task grants no gameplay publication or deployment. See the
+[local gameplay plan](plans/orbital-gameplay/plan.md) for scope, deviations and proof.
+
+**Release follow-up, 2026-11-03.** After reviewing the local build, the owner
+requested a pull request and a release carrying these changes to beta and production
+before the handoff. That instruction authorizes publication under D35 and D37;
+it does not change the protected candidate or owner approval requirements.

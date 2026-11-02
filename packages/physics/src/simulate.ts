@@ -236,7 +236,7 @@ export function simulate(cfg: SimulationConfig): SimulationResult {
 }
 
 /** Probe state at any time inside a simulated trajectory (cubic Hermite between samples). */
-export function sampleAt(result: SimulationResult, t: number): TrajectorySample {
+export function sampleAt(result: Pick<SimulationResult, "samples">, t: number): TrajectorySample {
   const s = result.samples;
   if (t <= s[0]!.t) return s[0]!;
   const last = s[s.length - 1]!;
