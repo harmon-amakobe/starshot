@@ -1005,3 +1005,8 @@ The shared lunar model and rail move into packages; the study imports them. The 
 screen refactor remains separate. D35 and D37 still govern any later release: this
 local task grants no gameplay publication or deployment. See the
 [local gameplay plan](plans/orbital-gameplay/plan.md) for scope, deviations and proof.
+
+**Release follow-up, 2026-11-03.** After reviewing the local build, the owner
+requested a pull request and a release carrying these changes to beta and production
+before the handoff. That instruction authorizes publication under D35 and D37;
+it does not change the protected candidate or owner approval requirements.

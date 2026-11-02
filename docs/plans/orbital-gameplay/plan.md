@@ -1,7 +1,9 @@
 # Local orbital gameplay
 
 Issue [#14](https://github.com/harmon-amakobe/starshot/issues/14), decisions D33 and D38.
-This branch is a local playable preview. Publishing or deploying it is a separate owner action.
+The owner accepted the local preview and requested a pull request and release to
+beta and production on 2026-11-03. Use the existing D35 candidate and D37 promotion
+process before handing off the remaining program.
 
 ## Scope
 
@@ -69,4 +71,5 @@ and launch, circular closure and fixed-position date changes. Campaign tests cov
 migration, playtest scoring, guide ownership, saved launch ET and camera bounds.
 Browser evidence must show actual pointer and keyboard interaction, a measured hit
 and miss, profile restoration and responsive layouts. Record exact commands and
-exit codes at handoff. Do not publish a gameplay artifact from this local task.
+exit codes at handoff. CI generates the version proposal; stage the stable candidate
+on beta and promote those exact bytes after hosted verification and owner approval.
