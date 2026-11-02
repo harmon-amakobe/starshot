@@ -2,8 +2,13 @@
 
 [![CI](https://github.com/harmon-amakobe/starshot/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/harmon-amakobe/starshot/actions/workflows/ci.yml?query=branch%3Amain)
 [![Code licence: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-blue)](LICENSE)
-[![Play Starshot](https://img.shields.io/badge/play-Starshot-635bff)](https://playstarshot.com)
-[![Test beta](https://img.shields.io/badge/beta-test_candidate-d97706)](https://beta.playstarshot.com)
+[![Live version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fplaystarshot.com%2Frelease.json&query=%24.version&prefix=v&label=live&color=635bff)](https://playstarshot.com)
+[![Beta version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fbeta.playstarshot.com%2Frelease.json&query=%24.version&prefix=v&label=beta&color=d97706)](https://beta.playstarshot.com)
+
+Version badges read the game currently served. Badges can take a few minutes to
+refresh. For an immediate
+check, open the [live manifest](https://playstarshot.com/release.json) or
+[beta manifest](https://beta.playstarshot.com/release.json).
 
 **A slingshot game in orbit, across the real Solar System.**
 

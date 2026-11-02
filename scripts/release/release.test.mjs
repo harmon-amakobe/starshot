@@ -14,6 +14,29 @@ import { validateRecoveryAssets, validateRelease, releaseForTag } from './github
 import { validateProposal, applyProposal } from './proposal.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
+test('publication follows a verified promotion even when upstream build is skipped', () => {
+  const workflow = readFileSync(join(root, '.github/workflows/release.yml'), 'utf8');
+  const condition = workflow.match(/  publish:\n[\s\S]*?    if: >-\n([\s\S]*?)    runs-on:/)?.[1].trim();
+  assert(condition, 'publication needs an explicit status condition');
+  assert.match(condition, /(?:always|cancelled)\(\)/, 'override the implicit success check on skipped ancestors');
+  // Evaluate the actual workflow condition with the promotion dependency results.
+  const eligible = new Function('needs', 'github', 'cancelled', `return (${condition});`);
+  const needs = { plan: { result: 'success', outputs: { action: 'promote' } },
+    firebase: { result: 'success' }, build: { result: 'skipped' }, register: { result: 'skipped' } };
+  const github = { ref: MAIN };
+  assert.equal(eligible(needs, github, () => false), true);
+  assert.equal(eligible(needs, github, () => true), false);
+  assert.equal(eligible(needs, { ref: 'refs/heads/topic' }, () => false), false);
+  for (const job of ['plan', 'firebase']) for (const result of ['failure', 'cancelled', 'skipped']) {
+    const failed = structuredClone(needs); failed[job].result = result;
+    assert.equal(eligible(failed, github, () => false), false, `${job}: ${result}`);
+  }
+  for (const action of ['preview', 'beta', 'candidate']) {
+    const other = structuredClone(needs); other.plan.outputs.action = action;
+    assert.equal(eligible(other, github, () => false), false, action);
+  }
+});
+
 const source = manifests(root);
 // Bootstrap fixtures must still pass after CI versions every private workspace.
 const fixture = structuredClone(source);
