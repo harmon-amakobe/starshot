@@ -1,5 +1,10 @@
 # Starshot
 
+[![CI](https://github.com/harmon-amakobe/starshot/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/harmon-amakobe/starshot/actions/workflows/ci.yml?query=branch%3Amain)
+[![Code licence: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-blue)](LICENSE)
+[![Play Starshot](https://img.shields.io/badge/play-Starshot-635bff)](https://playstarshot.com)
+[![Test beta](https://img.shields.io/badge/beta-test_candidate-d97706)](https://beta.playstarshot.com)
+
 **A slingshot game in orbit, across the real Solar System.**
 
 Pull back the slingshot, let go, and watch your probe fly to Mars, Venus, Jupiter or
@@ -25,13 +30,32 @@ The public preview is live on Firebase Hosting. The browser game includes:
 - Local pilot profiles and saves. No account is needed; Cloud demo is a local
   interaction study, not an account or backup.
 
-The [release plan](docs/plans/current-game-release.md) tracks the verified preview,
-first publication and domain checks before the first merge to `main`.
-Later releases stage a versioned candidate at [beta.playstarshot.com](https://beta.playstarshot.com),
+The [release plan](docs/plans/current-game-release.md) records the initial publication
+and domain checks. Versioned releases stage a candidate at [beta.playstarshot.com](https://beta.playstarshot.com),
 then explicitly promote those tested bytes to production. Merging to `main` alone
 does not publish. The [release runbook](docs/hosting.md) describes this process.
 Production and beta use separate Firebase projects. Forks can build and host their
 own static copy with the commands below.
+
+## Promote a tested release
+
+[![Open GitHub to promote a release](https://img.shields.io/badge/release-Promote_to_production-166534?style=for-the-badge&logo=github)](https://github.com/harmon-amakobe/starshot/actions/workflows/release.yml?query=branch%3Amain)
+
+For the maintainer, after [staging and testing a stable candidate](docs/hosting.md#stage-test-and-promote):
+
+1. Open the button above, then choose **Run workflow** in **Web release**.
+2. Select branch `main`, target `promote` and the tested stable version, such as `0.1.0`.
+3. Click **Run workflow**, then open the new run.
+4. When it waits for approval, choose **Review deployments**, select `production`
+   and click **Approve and deploy**.
+5. Wait for the run to succeed, then check [playstarshot.com](https://playstarshot.com).
+
+Production approval is restricted to [@harmon-amakobe](https://github.com/harmon-amakobe),
+including runs requested by other writers. Administrator bypass is disabled.
+The owner can approve their own run. The workflow publishes the exact tested candidate
+without rebuilding, then publishes its GitHub release. The public button only opens
+GitHub; clicking it does not deploy or grant access. See the [release controls](docs/hosting.md#production-approval)
+for the approval boundary and recovery settings.
 
 ## Run it on your own computer
 

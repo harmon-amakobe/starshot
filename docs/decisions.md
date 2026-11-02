@@ -906,3 +906,24 @@ after detachment. Existing candidate versions remain bound to their original rec
 and artifacts. This notice correction belongs to a future build; it does not rebuild
 or replace the tested 0.1.0 candidate. Selective imports may preserve upstream content
 without merging all upstream ancestry or original root paths.
+
+---
+
+## D37. The owner approves every GitHub production deployment
+
+*Date:* 2026-11-02. *Source:* owner's approval of a production gate limited to their account.
+
+**Decision.** Require `harmon-amakobe` as the sole reviewer of the existing
+`production` environment. Disable administrator bypass. Allow self-review so the
+solo owner can approve a run they requested. Retain the main-only branch rule and
+the existing keyless cloud identity. Preview and candidate staging remain unchanged.
+
+**Why.** Repository write access may grow as contributors join. Requesting a release
+must not grant the right to approve production deployment.
+
+**Consequences.** D35's explicit promotion now waits for the owner to select
+**Approve and deploy**. The README links to the workflow and explains its inputs;
+the button never submits a release. Preserve this gate during repository recovery.
+Repository administration and direct Firebase deployment access remain trusted powers.
+Agents using the owner's identity still need an explicit instruction to promote.
+The existing 0.1.0 candidate remains bound to its original records and tested bytes.
