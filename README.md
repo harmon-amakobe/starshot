@@ -13,15 +13,23 @@ Starshot is two things in one repository:
 2. **Open orbital-mechanics packages** (planet positions and flight simulation) that
    anyone can reuse under the Apache-2.0 licence.
 
-## Play it
+## Play Starshot
 
 **<https://playstarshot.com>**
 
-Mirror: <https://harmon-amakobe.github.io/starshot/>.
-The current public preview has four campaign missions and local saves. Its Cloud
-demo is a local interaction study, not a real account or backup. The
-[release plan](docs/plans/current-game-release.md) tracks first publication.
-After setup, verified merges to `main` publish the same build to both sites.
+Publication on Firebase Hosting is being prepared. The browser game includes:
+
+- Four campaign missions, from an Earth-to-Mars training flight to Saturn via Jupiter.
+- Seven sandbox destinations, real launch dates and a shared aiming/flight simulation.
+- A 3D scene with touch, mouse and keyboard controls, plus a Canvas fallback.
+- Local pilot profiles and saves. No account is needed; Cloud demo is a local
+  interaction study, not an account or backup.
+
+The [release plan](docs/plans/current-game-release.md) tracks the verified preview,
+first publication and domain checks before the first merge to `main`.
+Later verified merges to `main` publish to Firebase Hosting. The production site
+and development previews use separate Firebase projects. Forks can build and host
+their own static copy with the commands below.
 
 ## Run it on your own computer
 
@@ -39,7 +47,7 @@ Other useful commands:
 | `npm test` | Runs every test, including the accuracy checks against NASA/JPL |
 | `npm run gates` | Runs every quality check (the "Definition of Done"); must pass before a change is merged |
 | `npm run build` | Builds the static website into `apps/game/dist` |
-| `npm run preview` | Serves that built website locally, the way GitHub Pages will |
+| `npm run preview` | Serves the built static website locally |
 
 ## How it works, in one minute
 
@@ -61,7 +69,9 @@ More detail: [docs/architecture.md](docs/architecture.md) (how the parts fit) an
 
 | Folder | What lives there |
 |---|---|
-| `apps/game` | The game: Vite + React, drawn on a Canvas; the flight maths runs in a background thread (a Web Worker) so the screen never freezes |
+| `apps/game` | The browser game: Vite + React, Three.js with a Canvas fallback, and flight physics in a Web Worker |
+| `packages/presentation` | Shared spacecraft, controls, audio and presentation styles |
+| `apps/prototype` | Design studies and the canonical credited observatory assets shared with the game |
 | `packages/ephemeris` | Planet positions from NASA/JPL's table, time conversions, planet sizes and masses |
 | `packages/physics` | The flight simulator, the launch model, and a launch-window finder |
 | `tools/horizons` | A small Python script that downloads the NASA/JPL reference positions the tests compare against |
@@ -104,17 +114,17 @@ table describes.
 That is far more accurate than a game needs, and accurate enough that real launch
 windows (like the late-2026 window to Mars) show up in the game on the right dates.
 
-## The one big simplification: the game is flat
+## A 3D scene with planar flight physics
 
 The real planets orbit in slightly tilted planes (Mercury's is tilted 7 degrees; the
-others are within about 3.5 degrees). A slingshot you aim on a flat screen cannot aim up or down, so
-the **game** squashes every orbit flat onto one plane, viewed from above. Within that
-flat world the flight is still fully simulated with real gravity, real masses and real
-dates.
+others are within about 3.5 degrees). The current campaign flattens those orbits onto
+one plane so aiming needs only a direction and a launch speed. Its 3D camera can
+orbit the scene, but that does not add inclination to the simulated flight. Within
+the plane, flights use real gravity, masses and dates.
 
 This means Starshot's flights are close to real missions, not identical to them. Do not
 use the game to plan a real spacecraft. The packages themselves can also work in full
-3D (without the flattening), and a 3D map of the Solar System is planned.
+3D without the campaign's flattening.
 
 ## Starshot and astlo
 

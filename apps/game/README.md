@@ -1,6 +1,6 @@
 # @starshot/game
 
-The Starshot game prototype: a slingshot game in orbit across the real
+The Starshot browser game: a slingshot game in orbit across the real
 Solar System. Vite + React 19 + TypeScript, Three.js with a Canvas fallback, and
 physics in a Web Worker. The default app is the integrated campaign shell.
 Fully static: packaged same-origin media and fonts, no CDNs or backend.
@@ -12,8 +12,8 @@ npm run preview -w @starshot/game    # serve the build
 npx vitest run apps/game             # scoring, progress and level-solvability tests
 ```
 
-The build uses `base: "./"`, so `dist/` works from any sub-path (GitHub Pages
-under any repository name, a file share, a USB stick behind a static server).
+The build uses `base: "./"`, so a fork can serve `dist/` at the root or a subpath
+of its own static host. Starshot's production deployment uses Firebase Hosting.
 
 ## How a shot works
 
@@ -159,7 +159,10 @@ outer-sandbox Sun-grazers would exceed it.
 Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 (Node).
 
-## Design rationale
+## Legacy 2D design rationale
+
+This section records the original `src/ui/`, `src/input/` and `src/render/` shell.
+The current campaign uses the engine-ring controls and shared scene described above.
 
 - **Linear scale, framed per level** (Sun to the outermost relevant orbit). True
   distances keep the slingshot honest; planets get a minimum on-screen radius and
@@ -182,7 +185,9 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 - **Honest numbers.** The HUD shows v-infinity, delta-v from a 200 km LEO, C3 and
   flight time; misses report the closest approach against the capture-zone radius.
 
-## Known issues
+## Legacy 2D layout limitation
+
+This measurement applies to the original shell, not the current campaign layout.
 
 - Landscape phones narrower than 700 CSS px (667 x 375, 640 x 360) keep the
   controls along the bottom, because the right-hand column starts at 700 px, and
@@ -200,8 +205,8 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 - New mechanics (mid-course burns, multiple flybys): extend `ShotRequest` /
   `simulateShot`; preview, launch and tests pick it up together.
 - Scoring tweaks live in `src/scoring.ts` only; `maxStars` drives the UI.
-- Renderer: `drawScene` takes a plain `SceneInput`; a 3D map (apps/orrery, D5)
-  can reuse `src/sim/*` unchanged.
+- Renderer: `src/campaign/scene.ts` connects the Three.js scene and Canvas fallback
+  to the shared campaign state. Physics stays in `src/sim/*`.
 - Leaderboard (D7, future): a separate Starshot-only project configured at build
   time; `progress.ts` is the seam for syncing results.
 

@@ -10,12 +10,19 @@ numbers will be added by an automated release step (planned), never by hand.
 
 ## [Unreleased]
 
-- Prepare the current game for Firebase Hosting and a GitHub Pages mirror (D34).
+- Prepare the current game for Firebase Hosting (D34).
   One verified artifact, separate preview and production projects, keyless deploys,
   scoped offline releases, visible credits and clear local-profile copy.
   Merging the release work into PR0 automatically deploys a development preview
   to verify before the production merge to `main`.
   The remaining program resumes on a new trunk after the release stack lands.
+- Use Firebase Hosting only for the release. Remove the Pages deployment under
+  the owner's revised D34 choice; keep subpath checks for portable fork builds.
+- Clarify Starshot's current game, repository links and verification instructions.
+  First publication uses the verified PR0 artifact to check the production domain
+  before the main merge. Later automatic production deployments remain main-only.
+- Wait for resolved service-worker states in release verification, so an unfinished
+  installation or missing waiting update cannot pass the browser check early.
 
 ### Added
 

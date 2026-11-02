@@ -48,7 +48,7 @@ planned next. Sections marked **Future** describe designs that are not built yet
   +---------------------------------------------------------------+
                  |
                  v  npm run build -> apps/game/dist (static files)
-         Firebase Hosting and Pages (via .github/workflows/release.yml)
+         Firebase Hosting (via .github/workflows/release.yml)
 ```
 
 ## The parts

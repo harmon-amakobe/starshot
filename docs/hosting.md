@@ -1,46 +1,57 @@
-# Hosting and publishing starshot
+# Hosting and publishing Starshot
 
-This release targets Firebase Hosting for the static game at
-<https://playstarshot.com>, with a mirror at
-<https://harmon-amakobe.github.io/starshot/>. D34 brings this release forward.
+This release uses Firebase Hosting for the static game at
+<https://playstarshot.com>. D34 brings this release forward and supersedes D21's
+GitHub Pages mirror with the owner's Firebase-only choice.
 The remaining v1 program is still planned; cloud accounts and a leaderboard do not
 ship in this preview. Firebase App Hosting is not needed for this Vite build.
+
+Production and development previews use separate Firebase projects. Saves belong to
+each origin, so progress in a preview does not transfer to playstarshot.com.
+There is no hosted mirror or automatic failover. A fork can reproduce the static
+build with `npm ci` and `npm run build`, then serve `apps/game/dist` on its own host.
+Cloudflare or another CDN remains deferred until production measurements justify
+it under D21.
 
 ## Build and deployment
 
 `.github/workflows/release.yml` is the Web release workflow. A push to `main` or
 `starshot/pr0-bootstrap` runs all gates, workflow lint and browser verification at
-the root and mirror paths.
+the root and a subpath for portability.
 It also proves offline startup and the transition between two worker releases.
 Only then does it upload the files from `apps/game/dist`.
 
-On `main`, separate jobs deploy those same files to Firebase Hosting and GitHub Pages.
-Deployment jobs do not run the application build or restore dependency caches.
+The deployment job publishes those same files to the selected Firebase Hosting
+project. It does not run the application build or restore dependency caches.
 Firebase uses short-lived Google credentials from Workload Identity Federation.
 There is no stored service-account key. The game itself has no Firebase SDK or key.
 
 Merging the release PR into `starshot/pr0-bootstrap` automatically deploys an
-expiring channel in the development project. It does not publish the Pages mirror.
+expiring channel in the development project.
 Verify that preview before merging PR0 into `main`.
 The workflow can also be dispatched with `target: preview` from a reviewed branch.
 It uses the same isolated preview job and expiring channels. `target: production`
-and the Pages job accept only `main`. Production and preview are separate projects.
+accepts only `main`.
 The workflow does not accept arbitrary pull-request events or execute fork code
 with deployment access.
+
+For the first publication only, the owner approved deploying that verified PR0
+artifact with the existing signed-in CLI before merging to `main`. This lets the
+real domain, HTTPS and game be checked first. It grants no additional production
+access to a branch workflow; subsequent automatic production deploys remain main-only.
 
 ## One-time settings
 
 1. Enable Actions and Dependency graph. Keep default workflow permissions read-only.
    Dependency review must run; do not waive its failure to get a green PR.
 2. Require the `gates` check and a pull request on `main`. Block force pushes and deletions.
-3. Set Pages source to GitHub Actions. Leave its custom domain empty so it remains a mirror.
-4. Create `production`, `preview` and `github-pages` environments. Restrict production
-   and github-pages to `main`. Allow preview for `starshot/pr0-bootstrap` and other
+3. Create `production` and `preview` environments. Restrict production
+   to `main`. Allow preview for `starshot/pr0-bootstrap` and other
    branches the owner reviews.
-5. Create dedicated Firebase production and development projects and their default
+4. Create dedicated Firebase production and development projects and their default
    Hosting sites. This release uses static Hosting within its free allowance, with
    no billing upgrade, database, Authentication or Functions setup.
-6. Configure the identities below and add the environment variables. Connect the
+5. Configure the identities below and add the environment variables. Connect the
    custom domain only to production Hosting.
 
 The Firebase projects are `playstarshot-prod` and `playstarshot-dev`. Their default
@@ -54,7 +65,7 @@ Every CLI command still supplies `--project` explicitly; there is no implicit CL
 | `GCP_DEPLOY_SERVICE_ACCOUNT` | That project's Hosting deployment service account |
 
 These are GitHub environment Variables, not secrets and not Vite build variables.
-Configure both `production` and `preview`. `github-pages` needs no Google variables.
+Configure both `production` and `preview`.
 
 ## Keyless deployment identity
 
@@ -68,8 +79,8 @@ pins `refs/heads/main`, the `production` environment and the release workflow pa
 Preview pins its own environment and release workflow path. It accepts a push only
 from `refs/heads/starshot/pr0-bootstrap`, plus manual dispatch from explicitly allowed
 refs. Configure the GitHub environment branch policies as a second boundary.
-Do not grant an owner, editor,
-Firebase-wide administration or Authentication administration role.
+Do not grant an owner, editor, Firebase-wide administration or Authentication
+administration role.
 
 Use the current GitHub OIDC claims when creating the provider. Do not assume an old
 subject string format. The workflow's exact resource names are configured through
@@ -96,7 +107,7 @@ with the signed-in Firebase CLI:
 npm ci
 npm run gates
 node scripts/verify-game.mjs --out <temporary-directory>/root
-node scripts/verify-game.mjs --base /starshot/ --out <temporary-directory>/mirror
+node scripts/verify-game.mjs --base /starshot/ --out <temporary-directory>/subpath
 node scripts/verify-web-release.mjs
 firebase hosting:channel:deploy release-check --expires 7d --no-authorized-domains --project playstarshot-dev --non-interactive
 ```
@@ -106,20 +117,46 @@ version globally. Keep screenshots and logs outside the repository. Open the pre
 URL returned by Firebase and verify entry, an actual mission, saves and About links.
 Do not interpret a successful upload as proof that the game works.
 
+## First publication before the main merge
+
+After the automatic PR0 preview passes, download its retained `web-release` artifact
+from that successful Web release run into a temporary directory:
+
+```bash
+gh run download <successful-pr0-run-id> --repo harmon-amakobe/starshot --name web-release --dir <temporary-directory>/web-release
+```
+
+Confirm `apps/game/dist/release.json` records the exact PR0 commit from the successful
+run. Its `version` must match the verified preview's `release.json`. Stop if either
+differs. Keep the artifact unchanged: do not rebuild it from a local checkout.
+From the extracted artifact root, use the existing signed-in Firebase CLI:
+
+```bash
+firebase deploy --only hosting --project playstarshot-prod --config firebase.json --non-interactive
+```
+
+Compare the production default URL's `release.json` with the artifact, then complete
+the apex and `www` domain steps below. Verify HTTPS, the redirect and the game at
+playstarshot.com before merging PR0 to `main`. Retain the run URL, source SHA, artifact
+version and live verification evidence. A failed check stops the main merge.
+The first main merge rebuilds from its own commit and publishes that new release to
+Firebase. Compare the apex and production default URL again after it finishes.
+
 ## Domain and caching
 
 Add playstarshot.com in the production site's Firebase Hosting console. Copy the
 exact ownership, address and certificate records Firebase provides to the DNS host.
 Do not guess those records or replace unrelated mail records. Keep ownership records
 needed for renewal. Wait until Firebase reports the certificate and domain active.
-If adding `www`, use Firebase's redirect-domain option to point at the apex.
+Set `www.playstarshot.com` as a Firebase redirect domain to the apex and verify its
+HTTPS redirect. Both domains belong to the production site, never an expiring
+development preview channel.
 
 `firebase.json` sends security headers and revalidates HTML, the worker and unhashed
 observatory assets. Vite's hashed `/assets/` files are immutable for one year.
 There is no catch-all rewrite: missing assets return 404 rather than HTML.
-The relative Vite base supports `/starshot/` on the Pages mirror.
-Pages does not support the custom response headers in `firebase.json`; verify both
-hosts, and do not claim their headers are identical.
+The relative Vite base also supports subpath hosting for forks. CI checks `/starshot/`
+as a portability test; Starshot itself is served at the production domain's root.
 
 The build generates a scoped worker cache and a content digest in `release.json`.
 A complete release, including required astronomy data, downloads in the background.
@@ -135,14 +172,14 @@ and [custom domains](https://firebase.google.com/docs/hosting/custom-domain).
 
 ## Verify production and recover
 
-After a successful Web release, compare `release.json` at playstarshot.com, the
-production project's default Hosting URL and the Pages mirror. They must identify
+After the first main Web release and each later one, compare `release.json` at
+playstarshot.com and the production project's default Hosting URL. They must identify
 the same build. Check entry and a mission on phone and desktop, the credits links,
 offline startup after installation, and a fresh browser profile.
 
 A failure to load entry, launch a mission or fetch an asset is a rollback trigger.
-Restore the previous verified release in Firebase Hosting's release history. For a
-coordinated rollback on both hosts, revert through a PR and redeploy `main`.
+Restore the previous verified release in Firebase Hosting's release history.
+Revert the faulty source through a PR before the next deployment from `main`.
 The workflow retains the exact `web-release` artifact for 14 days. Never clear pilot
 storage as part of rollback. Visit online and let the restored worker finish its
 download; confirm it is installed or waiting in browser developer tools. Then close

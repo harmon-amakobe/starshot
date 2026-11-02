@@ -49,11 +49,15 @@ headless browser on phone and desktop sizes:
 ```bash
 npm run build
 node scripts/verify-game.mjs
+node scripts/verify-game.mjs --base /starshot/
+node scripts/verify-web-release.mjs
 ```
 
 This needs [Playwright](https://playwright.dev/) with Chromium available on your
-machine; it is not a project dependency, so CI does not run it. Screenshots go to a
-temporary folder, never into the repository.
+machine. It is not a project dependency: CI installs a pinned version separately
+and runs these checks at the root and a subpath. The release verifier checks
+offline startup and service-worker updates. Screenshots go to a temporary folder
+locally and a retained artifact in CI, never into the repository.
 
 ## Issues: forms, claims and labels
 

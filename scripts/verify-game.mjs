@@ -8,7 +8,7 @@
  *
  *   npm run build
  *   node scripts/verify-game.mjs                       serve apps/game/dist and drive it
- *   node scripts/verify-game.mjs --base /starshot/     as GitHub Pages serves it
+ *   node scripts/verify-game.mjs --base /starshot/     check subpath portability
  *   node scripts/verify-game.mjs --url http://localhost:5173/
  *   node scripts/verify-game.mjs --steps /tmp/steps.mjs   criterion-specific actions
  *

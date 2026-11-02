@@ -3,8 +3,10 @@
 **Current sequence (D34):** first publish the existing game through the
 [current-game release](../current-game-release.md), stacked on PR0. After it lands,
 create a new program trunk from the released `main`. Review and import the saved
-PR2 branch and D33's Moon-first TypeScript direction there. The tables below remain
-the v1 scope; hosting this preview does not complete their future work.
+PR2 branch and D33's Moon-first TypeScript direction there. The tables below retain
+the remaining feature scope; hosting this preview does not complete their future work.
+D34's revised Firebase-only choice supersedes their earlier Pages mirror requirements.
+Reconcile those historical hosting steps when preparing the next program trunk.
 
 The program plan: what chapter one delivers, the decisions it rests on, how each goal is
 proven, and the pull requests that build it. Research and its sources are in

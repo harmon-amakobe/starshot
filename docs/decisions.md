@@ -800,11 +800,16 @@ and sound composition remain adjustable during iteration.
 *Date:* 2026-11-02. *Source:* owner's release direction.
 
 **Decision.** Put the existing playable game on playstarshot.com using Firebase
-Hosting, with a GitHub Pages mirror. Stack the deployment work on PR0. Merging the
+Hosting. The owner's revised choice on 2026-11-02 is Firebase only for simplicity;
+this supersedes D21's GitHub Pages mirror. Stack the deployment work on PR0. Merging the
 release PR into PR0 automatically deploys an isolated development preview. Verify
-that run and the hosted game before merging the stack into `main` for production.
-Create a new program PR0 from the released main
-for the remaining work.
+that run and the hosted game. For the first publication, download its retained
+artifact, confirm the source SHA and deploy those exact files to production with
+the existing signed-in CLI. Complete the apex and `www` DNS, HTTPS and game checks
+before merging PR0 into `main`. This is a one-time exception to D21's first-publication
+order, not a new production permission for branch workflows. Automatic production
+deployments remain main-only. Create a new program PR0 from the released
+main for the remaining work.
 
 This is an early public preview with local profiles. D13's real accounts and
 leaderboard, D16's Rust migration, D17's rails and D18's full chapter are deferred
@@ -814,12 +819,14 @@ cloud interaction must be called a demo. The current campaign remains intact.
 **Why.** The owner wants a playable public site and working deployment process
 before expanding the game. The existing design can be published independently.
 
-**Consequences.** One verified static artifact goes to Firebase and Pages. Keyless
+**Consequences.** One verified static artifact goes to Firebase Hosting. Keyless
 identities and protected deployment environments limit publishing to the intended
 project and branch. Offline caches must install complete releases and preserve an
 active flight's code and data until its tabs close. Shipped licences stay accessible.
+Forks can reproduce the static build without a hosted mirror. D21's requirement to
+measure production cost or latency before adding another CDN remains in force.
 
 D33 is reserved for the saved PR2 branch's approved Moon-first TypeScript direction.
 That branch remains separate for review on the new program trunk. This release does
-not replace its decision or require Moon-first to wait for Rust. Deviation 17 and
+not replace its decision or require Moon-first to wait for Rust. Deviations 17 to 19 and
 [the release plan](plans/current-game-release.md) record the temporary sequence.

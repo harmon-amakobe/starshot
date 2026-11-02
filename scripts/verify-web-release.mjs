@@ -51,13 +51,25 @@ await new Promise(ok => server.listen(0, '127.0.0.1', ok));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const browser = await chromium.launch();
 
+async function waitForRegistration(page, phase, timeout = 60_000) {
+  const deadline = Date.now() + timeout;
+  let state;
+  // Poll resolved values in Node: an async waitForFunction predicate can pass on its Promise.
+  while (Date.now() < deadline) {
+    state = await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      return { active: registration?.active?.state, waiting: registration?.waiting?.state };
+    });
+    if (state[phase] === (phase === 'active' ? 'activated' : 'installed')) return;
+    await new Promise(ok => setTimeout(ok, 100));
+  }
+  assert.fail(`the worker did not reach registration state: ${phase}; last state: ${JSON.stringify(state)}`);
+}
+
 async function ready(page, target) {
   await page.goto(target, { waitUntil: 'load' });
   await page.getByRole('button', { name: /^(Play|Continue)$/ }).waitFor();
-  await page.waitForFunction(async () => {
-    const registration = await navigator.serviceWorker.getRegistration();
-    return registration?.active?.state === 'activated';
-  }, null, { timeout: 60_000 });
+  await waitForRegistration(page, 'active');
   if (!(await page.evaluate(() => !!navigator.serviceWorker.controller))) {
     await page.reload({ waitUntil: 'load' });
   }
@@ -85,13 +97,11 @@ try {
     const context = await browser.newContext();
     let page = await context.newPage();
     const target = origin + base;
-    const label = base === '/' ? 'root' : 'mirror';
+    const label = base === '/' ? 'root' : 'subpath';
     console.log(`web-release: ${base} checking first-install ownership`);
     // A first visit has no controller. Updating the worker must never take it over.
     await page.goto(target, { waitUntil: 'load' });
-    await page.waitForFunction(async () =>
-      (await navigator.serviceWorker.getRegistration())?.active?.state === 'activated',
-    null, { timeout: 60_000 });
+    await waitForRegistration(page, 'active');
     assert.equal(await page.evaluate(() => navigator.serviceWorker.controller), null);
     next = true;
     await page.evaluate(async () => { await (await navigator.serviceWorker.getRegistration()).update(); });
@@ -132,8 +142,7 @@ try {
     await playContext.setOffline(false);
     next = true;
     await page.evaluate(async () => { await (await navigator.serviceWorker.getRegistration()).update(); });
-    await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.waiting,
-      null, { timeout: 60_000 });
+    await waitForRegistration(page, 'waiting');
     assert.equal(await page.evaluate(path => fetch(path).then(r => r.text()), base + changedPath), oldData,
       'a waiting release must not replace data under an active flight');
     const worker = playContext.serviceWorkers().find(candidate => candidate.url() === target + 'sw.js'
