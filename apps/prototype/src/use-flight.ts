@@ -31,10 +31,7 @@ export function useFlight() {
       send.current();
     };
     engine.onerror = () => { busy.current = false; dispatch({ type: 'error', id: latest.current.id, error: 'The flight worker could not start. Reload to retry.' }); };
-    fetch(`${import.meta.env.BASE_URL}lunar/moon-rail.json`).then(response => {
-      if (!response.ok) throw new Error('Moon data could not load');
-      return response.json() as Promise<RailData>;
-    }).then(rail => {
+    import('@starshot/ephemeris/moon-rail.json').then(module => module.default as RailData).then(rail => {
       if (!alive) return;
       setModel(new LunarModel(rail)); busy.current = true; sent.current = latest.current.id;
       engine.postMessage({ id: latest.current.id, request: latest.current.request, rail });

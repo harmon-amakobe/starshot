@@ -15,7 +15,24 @@ npx vitest run apps/game             # scoring, progress and level-solvability t
 The build uses `base: "./"`, so a fork can serve `dist/` at the root or a subpath
 of its own static host. Starshot's production deployment uses Firebase Hosting.
 
-## How a shot works
+## Moonshot
+
+New pilots start in a circular 200 km Earth orbit. Play advances the displayed ET;
+Pause and pulling hold it fixed. Orbit position chooses a new phase at that time.
+Launch date preserves the Earth-relative craft position while the Moon moves.
+The circular parking model is an initial-condition approximation, stated in D38.
+
+The ring controls a burn from prograde, up to 3.55 km/s and 35 degrees either side.
+The worker integrates Sun, Earth and Moon gravity from the exact displayed state.
+The dotted preview and launch use the same request. Reaching the Moon sphere of
+influence is an encounter, not capture. The guide applies its exact date, time,
+phase and burn together.
+
+Craft follows the craft. Orbit fits the full parking orbit or computed path.
+System includes the relevant full orbits and arrival target. Wheel and pinch keep
+the chosen world point; inspecting a body leaves the trajectory visible.
+
+## How a planetary shot works
 
 1. The player picks a launch day in the level's window and an aim (direction in
    the ecliptic plane + departure excess speed v-infinity).
@@ -32,16 +49,20 @@ of its own static host. Starshot's production deployment uses Firebase Hosting.
 The aiming preview and the real launch run the **same** `simulateShot` with the
 level's own integrator settings (`level.sim`, carried inside the shot request;
 decision D6), so what you see is what you get. The level tests run it too.
-Previews are answered asynchronously. A ring release or Launch captures the final
+Plan and launch is the default per-pilot setting: releasing the ring keeps the
+frozen aim for inspection. YOLO launches on release. Missing saved settings
+use the default. Both modes support explicit Launch and cancellation.
+
+Previews are answered asynchronously. Launch, or a ring release in YOLO mode, captures the final
 aim and waits for its matching preview (`src/sim/preview.ts`), then
 runs that explicit request. A generation token rejects cancelled work and responses
 from a previous pilot or mission, including responses to an identical shot.
 
 ## Campaign shell
 
-The live menu, level, Launch window, inspection and hangar share one mounted renderer
+The live menu, level, Solar system, inspection and hangar share one mounted renderer
 and worker. Play moves the camera into the current mission without reloading it.
-The level picker includes all four campaign missions and seven sandbox destinations.
+The level picker includes Moonshot and the four planetary missions and seven sandbox destinations.
 Labelled playtest access opens every card while preserving earned stars and unlocks.
 
 Pull the rear engine ring to aim in a full circle. The craft control symbol remains

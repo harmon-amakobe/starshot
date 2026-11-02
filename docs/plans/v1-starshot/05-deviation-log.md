@@ -27,8 +27,8 @@ why. This table carries the same fields, one row per deviation, oldest first.
 
 ## How to add a row
 
-Rows 15 and 16 are reserved for the saved PR2 branch. Its D33 and refactor remain
-separate until reviewed on the next program trunk.
+Rows 15 and 16 are reserved for the saved PR2 branch. Its refactor remains separate until reviewed on the next program trunk.
+D33's decision is restored and D38 brings its gameplay slice forward locally.
 
 | # | PR | What the plan or spec said | What was done instead | Why | Decision or ruling | Logged |
 |---|---|---|---|---|---|---|
@@ -36,6 +36,7 @@ separate until reviewed on the next program trunk.
 | 18 | Release follow-up | First production publication and domain checks followed the main merge | Publish the exact verified PR0 artifact with the existing signed-in CLI, then verify production DNS, HTTPS and gameplay before merging to main. Automatic production workflow trust stays main-only | The owner wants the domain and game working before the main merge | Owner, D34; [shipping order](../current-game-release.md#shipping-order) | 2026-11-02 |
 | 19 | Release follow-up | D21 and the first release plan included a GitHub Pages mirror | Use Firebase Hosting only, with isolated production and preview projects. Remove the Pages deployment and keep the static build reproducible for forks | The owner chose one hosting service for simplicity | Owner, revised D34; [hosting](../../hosting.md) | 2026-11-02 |
 | 20 | Versioned release | D34 deployed production on main push; the custom release lane followed the v1 program | Bring R26 and PR38 forward: CI proposals, stable beta, immutable candidate provenance and explicit promotion from main. Main merge alone does not publish | The owner chose to test a versioned candidate before releasing its exact bytes | Owner, D35; [versioned plan](../current-game-release/versioned-releases.md) | 2026-11-02 |
+| 21 | Local orbital gameplay | D33 flight and campaign followed the saved screen refactor | Build the local Moon-first slice in the current shell, with fixed-frame circular parking, independent time and phase controls, full-orbit cameras and v2 pilot migration. Keep the saved refactor separate | The owner wants a playable local fix before the next handoff | Owner, D38; [local plan](../orbital-gameplay/plan.md) | 2026-11-03 |
 
 - Number rows in order; never renumber.
 - Name the PR by its plan id (PR1, PR2, ...) and link the spec anchor in

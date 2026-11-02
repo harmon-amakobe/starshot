@@ -12,6 +12,7 @@
  * label shows and the simulator checked.
  */
 import type { Ephemeris, Vec3 } from "@starshot/ephemeris";
+import type { ParkingOrbit } from '@starshot/physics/lunar';
 import { bestDirectTransfer } from "@starshot/physics";
 import {
   DAY,
@@ -47,6 +48,7 @@ export interface HintQuery {
 }
 
 export interface Hint {
+  readonly parking?: ParkingOrbit;
   /** Day index in the launch window. */
   readonly day: number;
   readonly launchEt: number;

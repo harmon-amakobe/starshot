@@ -1,5 +1,10 @@
-import type { ShotRequest } from '../sim/shot';
+import type { FlightRequest as ShotRequest } from '../sim/flight-request';
 import { shotKey } from '../sim/preview';
+import type { ReleaseMode, Session } from './session';
+/** A changed pilot, mode or phase invalidates the pointer's captured intent. */
+export function pullIntent(mode: ReleaseMode, owner: string, currentMode: ReleaseMode, currentOwner: string, phase: Session['phase']) {
+  return owner === currentOwner && mode === currentMode && phase === 'aim' ? mode : null;
+}
 /** Async completion belongs to both a canonical shot and its current pilot/level visit. */
 export class ReleaseOwner {
   generation = 0;

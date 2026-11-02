@@ -1,10 +1,10 @@
 import { sampleAt, type SimulationResult } from '@starshot/physics';
-import type { ShotResponse } from '../sim/protocol';
+import type { FlightResponse as ShotResponse } from '../sim/protocol';
 const nodes = [0, -.5384693101056831, .5384693101056831, -.906179845938664, .906179845938664];
 const weights = [.5688888888888889, .4786286704993665, .4786286704993665, .2369268850561891, .2369268850561891];
 interface Segment { start: number; end: number; dt: number; offset: number; length: number; b: number[]; c: number[]; d: number[]; }
 /** The observatory's Hermite arc-length clock, applied to the campaign's heliocentric path. */
-export function replayClock(result: SimulationResult, start: number, end: number) {
+export function replayClock(result: Pick<SimulationResult, "samples">, start: number, end: number) {
   const samples = [...result.samples.filter(s => s.t < end), sampleAt(result, end)], segments: Segment[] = [];
   let total = 0;
   const speed = (s: Segment, u: number) => Math.hypot(...s.b.map((b, k) => b + 2 * s.c[k]! * u + 3 * s.d[k]! * u * u));

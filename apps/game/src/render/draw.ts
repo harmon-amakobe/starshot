@@ -41,7 +41,7 @@ export interface PathData {
 }
 
 /** Densify the integrator knots with cubic Hermite so the drawn curve is smooth. */
-export function buildPath(result: SimulationResult, subdiv = 3): PathData {
+export function buildPath(result: Pick<SimulationResult, "samples">, subdiv = 3): PathData {
   const s = result.samples;
   const n = Math.max(1, (s.length - 1) * subdiv + 1);
   const pts = new Float64Array(n * 3);

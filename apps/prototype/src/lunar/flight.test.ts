@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEphemeris, add, scale, sub, norm } from '@starshot/ephemeris';
-import rail from '../../public/lunar/moon-rail.json';
+import rail from '@starshot/ephemeris/moon-rail.json';
 import { LunarModel, EARTH_GM, MOON_GM, LAUNCH_ET, DAY } from './model';
 import { requestFor, simulateLunar, sampleFlight } from './flight';
 import { shotReducer, type ShotState } from './shot-state';

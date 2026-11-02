@@ -72,6 +72,6 @@ SPDX-FileCopyrightText = "2026 Lucide Icons and Contributors; 2013-present Cole 
 SPDX-License-Identifier = "LicenseRef-Lucide-Feather"
 
 [[annotations]]
-path = "apps/prototype/public/lunar/moon-rail.json"
+path = "packages/ephemeris/data/moon-rail.json"
 SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); assembled and last modified by starshot contributors"
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
