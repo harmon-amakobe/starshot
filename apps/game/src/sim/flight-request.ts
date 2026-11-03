@@ -18,4 +18,10 @@ export type LunarResult = Omit<SimulationResult, 'terminatedBy'> & {
   readonly relativeSamples: readonly Knot[];
 };
 export type FlightResult<S extends FlightRequest> = S extends LunarShotRequest ? LunarResult : SimulationResult;
-export type FlightHintQuery = HintQuery | { readonly kind: 'lunar' };
+/** Omitted strategy means the measured reference; a search budget is 0 to 240 simulations. */
+export interface LunarHintQuery {
+  readonly kind: 'lunar';
+  readonly strategy?: 'reference' | 'search';
+  readonly budget?: number;
+}
+export type FlightHintQuery = HintQuery | LunarHintQuery;
