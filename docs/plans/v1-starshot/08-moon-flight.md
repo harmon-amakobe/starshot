@@ -146,7 +146,8 @@ and YOLO; cancellation/owner switch; sub-day restore; loading/retry; and focused
 Moon drawing. Run phone portrait, short landscape, desktop and reduced motion,
 Canvas and WebGL as applicable, root and `/starshot/`, then offline restore.
 Inspect screenshots per criterion; numerical position proof remains separate.
-Human trials and physical-phone 60 fps/100 ms measurements remain outstanding.
+Human trials and physical-phone 60 fps/100 ms measurements are optional under D39.
+Their absence does not leave lunar acceptance unfinished; automated proof remains required.
 
 ## Acceptance commands and record
 

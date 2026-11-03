@@ -101,11 +101,13 @@ the D37 owner approval. Recheck served metadata after staging or promotion.
 
 | # | Action | Evidence | Blocks |
 |---|---|---|---|
-| P1 | Run the gameplay trials with five to ten testers; preserve all quantitative criteria in the [resumption ledger](06-resumption.md#rust-and-later-proof-boundaries) | Record measured success rates and failures in Band C planning | Criteria requiring human evidence; continue independent source work |
-| P2 | Test pull, audio and haptic cues on Android and iPhone | Record physical-device evidence in Band D planning | PR28's human/phone evidence |
+| P1 | Optional: use feedback after release to refine gameplay; no recruited tester count or success quota (D39) | Record observations if available; distinguish them from automated proof | Nothing |
+| P2 | Optional: measure pull, audio, haptic and performance behavior on physical devices (D39) | Record device/browser and measurements if available | Nothing |
 
 Browser automation does not establish physical-phone frame time or player success rates.
-Keep 60 fps and 100 ms preview evidence outstanding until measured.
+The 60 fps and 100 ms preview targets remain unmeasured unless device evidence exists.
+Missing human or device feedback does not block band planning, master review or release
+readiness. Automated checks and the D34 to D37 release lane remain required.
 
 ## Before any store submission (a later program)
 
@@ -122,7 +124,7 @@ Keep 60 fps and 100 ms preview evidence outstanding until measured.
 | PR2 group onward | D24 sign-off; verify G8 enforcement without delaying independent implementation |
 | PR4 | Real work-map sync, then work gate; G1 is already satisfied |
 | PR6 | Relevant Rust CI and code-security coverage |
-| Band C and PR28 | P1/P2 human evidence for their measured criteria |
+| Bands C and D | Detailed specs and automated proof, including prototype 5's economy script; P1/P2 are optional under D39 |
 | PR30/31 source | Detailed Band E spec and emulator proofs; no billing activation required |
 | PR30 to PR32 deployment | Concrete owner review of required F1 to F9 services/permissions, then their verification |
 | PR33 | Reverify G10, M6, F10/F11 for actual changes; preserve D34 to D37 |

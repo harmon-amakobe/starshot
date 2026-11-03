@@ -28,9 +28,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
-| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, then one master review (D30); PR3a has seven declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
+| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus the D39 owner checkpoint, then one master review (D30); PR3a has seven declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
 | Date | Started 2026-11-01; reconciled 2026-11-03 |
-| Decisions | [D1 to D38](../../decisions.md); later rulings govern their recorded supersessions |
+| Decisions | [D1 to D39](../../decisions.md); later rulings govern their recorded supersessions |
 | Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -101,6 +101,9 @@ Each criterion names the command that proves it and the PR that first makes it t
 criterion without a recorded result in the PR body is not proven. The
 [global acceptance ledger](06-resumption.md#global-acceptance-ledger) records the base
 disposition of AC1 to AC19; a historic PR number alone does not establish completion.
+Under D39, human trials and physical-phone measurements are optional release feedback.
+They do not block any band or release readiness. Automated proof remains required;
+browser phone contexts do not establish physical-device performance.
 
 | # | Criterion | Proof command | First proven by |
 |---|---|---|---|
@@ -199,7 +202,8 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups. Each has one branch, one
+The 42 implementation specs build in these 28 delivery groups, with one additional
+owner-decision checkpoint for D39. Each has one branch, one
 pull request and one bounded review. The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
@@ -211,7 +215,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR2 | PR2, PR3 | `codex/v1-pr02-screen-split` | `codex/v1-program-pr0` | A1 |
 | PR3a plan | PR3a | `codex/v1-pr03a-moon-flight` | `codex/v1-pr02-screen-split` | A1 |
 | PR3a precision | PR3a | `codex/v1-pr03a-precision` | `codex/v1-pr03a-moon-flight` | A1 |
-| PR3a ownership | PR3a | `codex/v1-pr03a-ownership` | `codex/v1-pr03a-precision` | A2 |
+| D39 checkpoint | Owner ruling, issue #27 | `codex/v1-release-feedback` | `codex/v1-pr03a-precision` | A1 follow-up |
+| PR3a ownership | PR3a | `codex/v1-pr03a-ownership` | `codex/v1-release-feedback` | A2 |
 | PR3a search | PR3a | `codex/v1-pr03a-search` | `codex/v1-pr03a-ownership` | A2 |
 | PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-pr03a-search` | A2 |
 | PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-pr03a-model` | A3 |
@@ -1248,17 +1253,19 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 These are outlines. Before a band is built, a **band planning session** upgrades every
 spec in it to the Band A and Band B format. The orchestrator runs it with the `plan-pr0`
-skill's turnkey bar. It re-checks this outline against the tree, records the prototype
-results named below, and commits the upgraded specs to this file before the first builder
+skill's turnkey bar. It re-checks this outline against the tree, records the required
+scripted results and any optional feedback below, and commits the upgraded specs before the first builder
 starts. The acceptance criteria and proof commands here are the floor for that session,
 not the whole spec.
 
 ### Prototypes before Bands C and D
 
-From the gameplay research's prototyping plan (its section K). Each must meet its success
-test, or the band planning session records why the design changes instead.
+From the gameplay research's prototyping plan (its section K). Under D39, prototypes
+1 to 4 and 6 are optional release-feedback questions, with no recruitment or success
+quota. Their former thresholds remain below as research context only. Prototype 5
+is a required script: meet its criterion or record why the design changes instead.
 
-| # | Prototype | Success test | Before |
+| # | Prototype | Feedback question or scripted criterion | Related PR |
 |---|---|---|---|
 | 1 | Pull-back feel with haptics and audio (Android web, plus an iOS native shell when it exists) | Eight of ten testers set a requested delta-v within 0.1 km/s in under 5 s using only feel and the meter | PR28 |
 | 2 | Time-warp pacing (the event-anchored map) on Moon, Mars and Saturn flights | Median launch-to-result time is 4 to 8 s for all three, and testers can name every planet they passed | PR22 |
@@ -1267,9 +1274,11 @@ test, or the band planning session records why the design changes instead.
 | 5 | Economy simulation (a script, no UI) | A scripted competent player reaches the chapter's end in 15 to 25 runs, with no body needing more than three attempts | PR24 |
 | 6 | Window slider with snapping | Testers pick a launch within 5% of the window minimum within 20 s | PR23 |
 
-Prototypes 1 to 4 and 6 need real players (the owner's step P1 and P2 in
-[04-ops-checklist.md](04-ops-checklist.md#playtests-for-the-prototypes)); prototype 5 is
-a script an agent writes and runs against `starshot-game`.
+Prototypes 1 to 4 and 6 may inform later iteration through optional P1/P2 feedback in
+[04-ops-checklist.md](04-ops-checklist.md#playtests-for-the-prototypes). Their absence
+does not block planning, implementation, master review or release readiness. Prototype
+5 remains a script an agent writes and runs against `starshot-game`. PR22's automated
+4 to 8 s pacing checks also remain required.
 
 ### PR18: Fly on DE440 rails
 
@@ -1308,7 +1317,7 @@ a script an agent writes and runs against `starshot-game`.
   an integrated constant-acceleration burn within 0.1% at its nodes. The stable-orbit
   rule (periapsis above the safe altitude, apoapsis inside 0.49 Hill radii) has tests at
   both edges. Proof: `cargo test -p starshot-physics -p starshot-game --locked`.
-- **Prototypes.** 3.
+- **Prototypes.** 3 is optional release feedback under D39.
 
 ### PR21: Lock states and cues
 
@@ -1322,7 +1331,7 @@ a script an agent writes and runs against `starshot-game`.
   (computed in the test). The preview stays under its budget in CI (the timing test).
   `verify-game` reads each state's text from the live region. Proof: the tests named,
   `npx vitest run apps/game`, `verify-game`.
-- **Prototypes.** 4. The Okabe-Ito hex values are verified against their source first.
+- **Prototypes.** 4 is optional release feedback under D39. Verify the Okabe-Ito hex values against their source first.
 
 ### PR22: Time map
 
@@ -1332,7 +1341,7 @@ a script an agent writes and runs against `starshot-game`.
 - **Acceptance.** Unit tests: the map is monotonic. Total player time for the campaign's
   known solutions lies in 4 to 8 s. Reduced motion scales time only. Proof:
   `npx vitest run apps/game`, `verify-game` timing per flight in its report.
-- **Prototypes.** 2.
+- **Prototypes.** 2 is optional release feedback under D39.
 
 ### PR23: Launch-window screen
 
@@ -1343,7 +1352,7 @@ a script an agent writes and runs against `starshot-game`.
 - **Acceptance.** Regenerating the table reproduces the committed file. The slider is a
   labelled DOM control with keyboard steps of one day and one window. Snaps are
   announced. Proof: a test that regenerates and compares, `verify-game` steps.
-- **Prototypes.** 6.
+- **Prototypes.** 6 is optional release feedback under D39.
 
 ### PR24: Progression and saves
 
@@ -1370,7 +1379,7 @@ a script an agent writes and runs against `starshot-game`.
   first-load JavaScript under 300 KB gzip. `verify-game` passes with WebGL 2 and with it
   disabled (the fallback). No planet label exists only in the canvas. Proof: those
   commands.
-- **Prototypes.** None. Frame time on the owner's low-end Android phone is recorded.
+- **Prototypes.** None. Physical-phone frame-time measurements are optional under D39.
 
 ### PR26: Textures
 
@@ -1381,7 +1390,7 @@ a script an agent writes and runs against `starshot-game`.
   (D15, D19).
 - **Acceptance.** AC9 texture part (level 1 at 1k under 300 KB). `check-assets` passes
   with every new file listed. No source image is committed. Proof: the gates.
-- **Prototypes.** None. Transcode time per texture on the low-end phone is recorded.
+- **Prototypes.** None. Physical-phone transcode measurements are optional under D39.
 
 ### PR27: Stars and sky
 
@@ -1402,7 +1411,7 @@ a script an agent writes and runs against `starshot-game`.
 - **Acceptance.** A test asserts no sound starts before a user gesture. A table test
   pairs every haptic with a sound, a visual and a text. `verify-game` passes with sound
   muted and with reduced motion. Proof: those commands.
-- **Prototypes.** 1.
+- **Prototypes.** 1 is optional release feedback under D39.
 
 ### PR29: Settings
 
@@ -1742,9 +1751,10 @@ First commands:
 
 ## What the owner must do by hand
 
-The settings, accounts, domain, Firebase projects, the message to Mark and the playtests
+The settings, accounts, domain, Firebase projects and the message to Mark
 are listed, grouped and ordered, with how to confirm each and which PRs wait on them, in
 [04-ops-checklist.md](04-ops-checklist.md). Issues and the main/release-tag rulesets
 are active. Reverify environment and IAM settings before relevant changes. DCO, the
 project board, mail forwarding and contact with Mark remain unverified. Backend source
 and emulator work can proceed; paid activation or permission expansion needs review.
+P1/P2 human and device feedback is optional under D39 and blocks no PR or release.

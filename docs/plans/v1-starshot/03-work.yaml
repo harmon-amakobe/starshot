@@ -120,15 +120,19 @@ epics:
           Step K1 (D26). The message stays outside the repository; record only the date.
           Later upstream pull requests follow D29 (step K2).
       - id: v1-ops-playtests
-        title: "Owner: run the feel prototypes with five to ten testers"
-        labels: [kind:chore, area:game, priority:p2, status:ready]
+        title: "Owner: arrange pre-release gameplay trials"
+        labels: [kind:chore, area:game, priority:p2]
+        state: closed
+        reason: not_planned
         size: M
         priority: p2
         actor: Human
         spec: docs/plans/v1-starshot/04-ops-checklist.md#playtests-for-the-prototypes
         depends_on: []
         body: |
-          Steps P1 and P2. Band C waits on P1; PR28 waits on P2.
+          Required recruitment and physical-device trials were cancelled by D39.
+          P1/P2 are optional feedback after release and block no band or release.
+          Automated proof and production approval remain required.
       - id: v1-ops-trademark
         title: "Owner: trademark searches before any store submission"
         labels: [kind:chore, area:brand, priority:p3, status:ready]
@@ -385,7 +389,8 @@ epics:
       Rails as the game's source, fuel as impulse, capture at periapsis, lock states with
       cues on every channel, the time map, the launch-window screen and progression (D17,
       D18). Specs are outlines until the Band C planning session makes them turnkey; that
-      session needs the playtest results of prototypes 2 to 6.
+      session needs prototype 5's scripted economy report. Human feedback is optional
+      under D39 and does not block planning or release readiness.
     tasks:
       - id: v1-rails-default
         title: "PR18: fly the game on DE440 rails and re-derive pars, hints and known solutions"
@@ -416,7 +421,7 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr20-spheres-of-influence-and-capture
         depends_on: [v1-craft-fuel]
         body: |
-          Blocked on the Band C planning session and prototype 3.
+          Blocked on the Band C planning session. Prototype 3 is optional feedback (D39).
       - id: v1-lock-cues
         title: "PR21: add preview lock states, the ghost leg, aim assist and their cues"
         labels: [kind:feature, area:a11y, priority:p2, status:blocked]
@@ -426,7 +431,7 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr21-lock-states-and-cues
         depends_on: [v1-soi-capture]
         body: |
-          Blocked on the Band C planning session and prototype 4.
+          Blocked on the Band C planning session. Prototype 4 is optional feedback (D39).
       - id: v1-time-map
         title: "PR22: replace the flight clock with the event-anchored time map"
         labels: [kind:feature, area:game, priority:p2, status:blocked]
@@ -436,7 +441,7 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr22-time-map
         depends_on: [v1-soi-capture]
         body: |
-          Blocked on the Band C planning session and prototype 2.
+          Blocked on the Band C planning session. Prototype 2 is optional feedback (D39).
       - id: v1-window-screen
         title: "PR23: add the launch-window table and the snapping date slider"
         labels: [kind:feature, area:levels, priority:p2, status:blocked]
@@ -446,7 +451,7 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr23-launch-window-screen
         depends_on: [v1-rails-default]
         body: |
-          Blocked on the Band C planning session and prototype 6.
+          Blocked on the Band C planning session. Prototype 6 is optional feedback (D39).
       - id: v1-progression
         title: "PR24: add unlocks, collectors, g levels, a versioned save and an export code"
         labels: [kind:feature, area:game, priority:p2, status:blocked]
@@ -505,7 +510,7 @@ epics:
         spec: docs/plans/v1-starshot/00-plan.md#pr28-audio-and-haptics
         depends_on: [v1-lock-cues]
         body: |
-          Blocked on the Band D planning session and prototype 1.
+          Blocked on the Band D planning session. Prototype 1 is optional feedback (D39).
       - id: v1-settings
         title: "PR29: add the settings screen and split styles.css by feature"
         labels: [kind:feature, area:a11y, priority:p2, status:blocked]
