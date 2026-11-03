@@ -187,17 +187,18 @@ epics:
           baseline and remove the dead-file size entries.
       - id: v1-moon-flight
         title: "PR3a: close remaining lunar flight, search and precision requirements"
-        labels: [kind:feature, area:physics, priority:p1, status:ready, agent-ready]
+        labels: [kind:feature, area:physics, priority:p1, status:claimed, agent-ready]
         size: L
         priority: p1
         actor: Agent
         spec: docs/plans/v1-starshot/00-plan.md#pr3a-moon-flight
         depends_on: [v1-screen-split-state]
         body: |
-          Shared lunar physics and rails already exist. Follow the lunar ledger in
-          06-resumption.md: bounded 240-simulation search, real-SOI grazing regression,
-          fixed-frame conformance, drawn Moon within 1 km and bundle-load proof.
-          Fix the focused satellite overlay coordinate defect with a regression.
+          Follow 08-moon-flight.md and the lunar ledger in 06-resumption.md.
+          Seven linear parts retain this issue: plan, precision, ownership,
+          search, model, loading and evidence. Each keeps a one-member cap and DoD.
+          Prove real-SOI grazing, captured ownership, Moon coordinates within 1 km,
+          bounded cooperative search and lazy-loading/offline behavior.
       - id: v1-moon-campaign
         title: "PR3b: complete lunar campaign browser proof and short-phone layout"
         labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
