@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { norm, sub } from '@starshot/ephemeris';
-import { parkingState, LAUNCH_ET } from '@starshot/physics/lunar';
+import { parkingState, LAUNCH_ET, MOON_SOI_KM } from '@starshot/physics/lunar';
 import { CAMPAIGN } from '../levels';
 import { MOONSHOT, MISSIONS, nextMission } from '../missions';
 import { scoreShot } from '../scoring';
@@ -56,6 +56,17 @@ describe('Moonshot uses one canonical request', () => {
     save.et += 1; expect(launchGate(true, response, finalRequest(save).shot).ready).toBe(false);
     save.et -= 1; save.parking = { ...save.parking!, phaseDeg: 226 };
     expect(launchGate(true, response, finalRequest(save).shot).ready).toBe(false);
+  });
+  it('flies the real-SOI grazing burn through the canonical game builder', () => {
+    const response = launch(3.24, 17.33167459468716);
+    const last = response.result.samples.at(-1)!;
+    expect(response.shot.launchEt).toBe(LAUNCH_ET);
+    expect(response.shot.parking).toEqual({ frameEt: LAUNCH_ET, epochEt: LAUNCH_ET, phaseDeg: 225, radiusKm: 6571 });
+    expect(response.shot.approachRadiusKm).toBe(MOON_SOI_KM);
+    expect(response.analysis.hit).toBe(true);
+    expect(response.result.termination).toBe('soi-reached');
+    expect(last.t).toBe(response.analysis.endEt);
+    expect(Math.abs(norm(sub(last.r, lunarModel.bodies(last.t).moon.r)) - MOON_SOI_KM)).toBeLessThan(.01);
   });
   it('pauses at the exact render clock between UI updates and resumes without moving the departure', () => {
     const previous = freshSession(), renderEt = previous.et + 8.004;

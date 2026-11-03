@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { add, sub, scale, norm, createEphemeris } from '@starshot/ephemeris';
 import rail from '@starshot/ephemeris/moon-rail.json';
 import { LunarModel, LAUNCH_ET, DAY, EARTH_GM, MOON_GM, MOON_SOI_KM,
-  parkingState, parkingPhase, parkingPeriod, requestFor, simulateLunar } from '../src/lunar/index';
+  parkingState, parkingPhase, parkingPeriod, requestFor, simulateLunar, sampleFlight } from '../src/lunar/index';
 
 const model = new LunarModel(rail);
 const parking = { frameEt: LAUNCH_ET, epochEt: LAUNCH_ET, phaseDeg: 225, radiusKm: 6571 };
@@ -54,5 +54,30 @@ describe('shared lunar model and parking state', () => {
   it('rejects a horizon beyond the rail rather than returning an extrapolated path', () => {
     const last = rail.knots.at(-7)!;
     expect(() => simulateLunar(model, { ...requestFor(3.24, 0), launchEt: last - DAY })).toThrow('Outside the lunar rail dates');
+  });
+  it('finds a real SOI graze even when every accepted diagnostic knot is outside', () => {
+    const request = {
+      ...requestFor(3.24, 17.33167459468716), parking,
+      approachRadiusKm: MOON_SOI_KM, stopAtEntry: true,
+    };
+    const diagnostic = simulateLunar(model, { ...request, stopAtEntry: false });
+    const stopped = simulateLunar(model, request);
+    const distance = (et: number) => norm(sub(sampleFlight(diagnostic.samples, et).r, model.bodies(et).moon.r));
+    expect(diagnostic.samples.every(k => distance(k.t) > MOON_SOI_KM)).toBe(true);
+    expect(diagnostic.entryEt).not.toBeNull();
+    const entry = diagnostic.entryEt!;
+    const index = diagnostic.samples.findIndex(k => k.t > entry);
+    expect(index).toBeGreaterThan(0);
+    expect(diagnostic.samples[index - 1]!.t).toBeLessThan(entry);
+    expect(diagnostic.samples[index]!.t).toBeGreaterThan(entry);
+    expect(diagnostic.closestEt).toBeGreaterThan(entry);
+    expect(diagnostic.closestEt).toBeLessThan(diagnostic.samples[index]!.t);
+    expect(distance(diagnostic.closestEt)).toBeLessThan(MOON_SOI_KM);
+    expect(distance(entry - .01)).toBeGreaterThan(MOON_SOI_KM);
+    expect(stopped.entryEt).toBe(entry);
+    const last = stopped.samples.at(-1)!;
+    expect(last.t).toBe(entry);
+    expect(stopped.samples.every(k => k.t <= entry)).toBe(true);
+    expect(Math.abs(norm(sub(last.r, model.bodies(entry).moon.r)) - MOON_SOI_KM)).toBeLessThan(.01);
   });
 });
