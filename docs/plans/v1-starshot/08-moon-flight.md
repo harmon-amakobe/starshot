@@ -160,3 +160,31 @@ Record commands, exit codes, counts and build/source identity in each PR.
 New tests/probes above are required work, not claimed results.
 Retain graze, fixed-frame date edit, captured sub-day departure, reference and bounded
 search input/results as the PR11 to PR15 conformance inventory before TS retirement.
+
+## Precision result
+
+Built from planning base `a3a258e1824888df2d3bdf70ceef8d35f9470221` plus the Precision diff.
+The inspected development build is `aa8df9d947ad360fbd4cf40e`.
+`campaign/moon-coordinates.test.ts:66` exercises 649 hourly epochs in four camera/size combinations,
+through real frames and mesh transforms, with a 1 km ceiling for position and projection.
+Temporarily omitting parent z makes all four cases fail at 8,402.2409 km; restoring it passes.
+The graze remains a Rust conformance input in `packages/physics/test/lunar.test.ts:58`
+and `campaign/lunar.test.ts:60`.
+
+The correction exposed two visible Moon meshes at one centre. `campaign/three-scene.ts:129`
+hides the primary while valid satellite data places its focused replacement.
+Tests verify restoration when the overlay is off or its data is unavailable.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 145 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 12 files, 124 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `node scripts/verify-game.mjs --steps scripts/verify-steps/lunar-flight.mjs` | 0, 3 contexts, 55 screenshots |
+| Same browser command with `--base /starshot/` | 0, 3 contexts, 55 screenshots |
+
+Final browser reports cover both renderers, graze launch identity, physical/enlarged symbols,
+focused Moon drawing, tilted Free views, restoration, portrait, short landscape and reduced motion.
+All listed screenshots were inspected. GPU readback warnings remain; browser errors and failed requests are zero.
+Guide application starts in portrait; its existing short-landscape deck overlap remains PR3b work.
+Later parts retain captured-request ownership and bounded search. They also retain loading and offline proof.

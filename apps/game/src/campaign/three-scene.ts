@@ -7,6 +7,7 @@ import { colours, type FrameGeometry } from './frame';
 import type { SceneState } from './scene-types';
 import { depthRange } from './contracts';
 import { bodyRadius, type MissionBody } from '../missions';
+import { satellitePosition } from './satellite-position';
 
 export class ThreeScene {
   private renderer: THREE.WebGLRenderer;
@@ -121,9 +122,12 @@ export class ThreeScene {
     for (const meta of this.data.rails.moons.filter(m => m.parent === state.focus)) {
       const raw = this.data.astronomy.satelliteState(meta, this.satellites, state.et);
       if (!raw) continue;
-      const relative = raw.slice(0, 3) as unknown as Vec3, world: Vec3 = [parent[0] + relative[0], parent[1] + relative[1], relative[2]];
+      const world = satellitePosition(parent, raw.slice(0, 3) as unknown as Vec3);
       let mesh = this.moons.get(meta.id);
       if (!mesh) { mesh = new THREE.Mesh(this.sphere, new THREE.MeshStandardMaterial({ color: '#bdb9ae', roughness: .95 })); this.moons.set(meta.id, mesh); this.scene.add(mesh); }
+      // The lunar mission already has a primary Moon at this same physical centre.
+      const primary = this.bodies.get(meta.id);
+      if (primary) primary.visible = false;
       mesh.visible = true; mesh.position.copy(position(world)); mesh.scale.setScalar((this.data.astronomy.moonRadii[meta.id] || 1) / f.unit);
     }
   }
