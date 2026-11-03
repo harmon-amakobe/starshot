@@ -57,9 +57,11 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - A file written by a shell command reaches a snapshot only at the next Edit or Write.
 - The Stop report reaches the human through `systemMessage`; the agent sees failures
   when it next runs the gates.
-- D30's working shape is advisory: one to four specs per group, two or three groups a
-  session, the hand-off at about 70% of the context, and the bounded review. Only the
-  size check that PR4 adds enforces anything of it.
+- D30's working shape is advisory: one to four specs per group, the bounded review and,
+  outside the V1 cloud run, two or three groups a session with the hand-off at about
+  70%. D40's handover at 776,000 tokens of measured context, with its compaction
+  controls, is wholly advisory: no hook reads occupancy or sets compaction. Of D30's
+  shape, only the size check that PR4 adds enforces anything.
 - In Actions, `scripts/gates.mjs` prints a failed gate's raw output, so a line in it that
   starts with `::` acts as a workflow command. The jobs that run it hold a read-only
   token and no secret but the optional private-name list, in its own step.

@@ -28,9 +28,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
-| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus the D39 owner checkpoint, then one master review (D30); PR3a has seven declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
+| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus the D39 and D40 owner checkpoints, then one master review (D30); PR3a has seven declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
 | Date | Started 2026-11-01; reconciled 2026-11-03 |
-| Decisions | [D1 to D39](../../decisions.md); later rulings govern their recorded supersessions |
+| Decisions | [D1 to D40](../../decisions.md); later rulings govern their recorded supersessions |
 | Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -90,7 +90,7 @@ interstellar chapter are later programs.
 | D27 | The copy standard and its gate, with the em dash, the en dash and the horizontal bar as hard failures |
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
 | D29 | astlo changes are made here first, offered to Mark as pull requests (astlo changes only), and pulled back from his releases once adopted; the Rust core stays Starshot's, with dependency-free ephemeris and topocentric parts he may use as a crate; tooling may depend on a licensed, validated astlo, the game never does |
-| D30 | Specs build as PR groups (one branch, one PR, one bounded review for one to four specs), two or three groups a session, PR1 inside PR0, and one master review of the whole stack at the end |
+| D30 | Specs build as PR groups (one branch, one PR, one bounded review for one to four specs), two or three groups a session (superseded by D40 for the V1 cloud run), PR1 inside PR0, and one master review of the whole stack at the end |
 
 Still binding from before: D1 and D2 (Mark's files untouched), D6 (2D physics; a level's
 preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
@@ -202,8 +202,8 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups, with one additional
-owner-decision checkpoint for D39. Each has one branch, one
+The 42 implementation specs build in these 28 delivery groups, with two additional
+owner-decision checkpoints, for D39 and D40. Each has one branch, one
 pull request and one bounded review. The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
@@ -216,7 +216,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR3a plan | PR3a | `codex/v1-pr03a-moon-flight` | `codex/v1-pr02-screen-split` | A1 |
 | PR3a precision | PR3a | `codex/v1-pr03a-precision` | `codex/v1-pr03a-moon-flight` | A1 |
 | D39 checkpoint | Owner ruling, issue #27 | `codex/v1-release-feedback` | `codex/v1-pr03a-precision` | A1 follow-up |
-| PR3a ownership | PR3a | `codex/v1-pr03a-ownership` | `codex/v1-release-feedback` | A2 |
+| D40 checkpoint | Owner ruling, issue #20 | `codex/v1-session-policy` | `codex/v1-release-feedback` | A2 |
+| PR3a ownership | PR3a | `codex/v1-pr03a-ownership` | `codex/v1-session-policy` | A2 |
 | PR3a search | PR3a | `codex/v1-pr03a-search` | `codex/v1-pr03a-ownership` | A2 |
 | PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-pr03a-search` | A2 |
 | PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-pr03a-model` | A3 |
@@ -254,7 +255,8 @@ Starshot's. The master review is defined in D30.
 PR3a's [declared parts](08-moon-flight.md) retain one spec identity and issue #33.
 Each part has one member for sizing; the repetition does not increase any PR's cap.
 Its planning, model-plumbing and behavior/proof boundaries are independently reviewed.
-The session labels are estimates; retain D30's context handoff boundary.
+The session labels are estimates. The V1 cloud run hands over at D40's measured
+trigger; other sessions keep D30's handoff.
 
 ## What PR0 carries
 
@@ -1672,8 +1674,10 @@ Approaches considered and rejected, so nobody re-derives them.
 
 ## Session protocol
 
-Every build session follows this order, for the orchestrator and for builders. A
-session builds two or three PR groups (D30); steps 2 to 8 run once per group. The owner
+Every build session follows this order, for the orchestrator and for builders. In the
+V1 cloud run a session builds groups until D40's measured trigger or a band close
+(step 9). Other sessions build two or three groups and keep D30's handoff. Steps 2 to 8
+run once per group. The owner
 authorized continuation after this PR0 publication. Read [06-resumption.md](06-resumption.md)
 before every group and [07-screen-split.md](07-screen-split.md) before PR2.
 
@@ -1708,13 +1712,22 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
    `main`). Post the completion comments, and run `node scripts/sync-work.mjs --apply` if
    `03-work.yaml` changed.
 8. **Record.** Update the acceptance results in the PR body, any deviation in
-   [05-deviation-log.md](05-deviation-log.md), and each issue's status.
+   [05-deviation-log.md](05-deviation-log.md), each issue's status and the
+   [session handover](06-resumption.md#session-handover-d40) rows (D40).
 9. **Close a band.** After its last group: the `verify-all` sweep, a handoff, and for
    Bands B to E the next band's planning session in a fresh session, which also confirms
    that band's groups.
-10. **Hand off at the budget band.** At about 70% of the session's context, stop after
-    the current group's publish step and write the handoff below; never start a group
-    the session cannot finish.
+10. **Hand over at the measured trigger.** The V1 cloud run uses D40's trigger: 776,000
+    tokens of measured context, or earlier when compaction or a hard limit would come
+    first. With no telemetry, record unknown and hand over after each published group.
+    Then start no new implementation or research and finish bounded stabilization.
+    Update and push the [session handover](06-resumption.md#session-handover-d40) rows,
+    write the handoff below and start one verified successor. Work the trigger
+    interrupts is pushed by name without a PR and labelled partial in the Next row.
+    Keep automatic and idle compaction off and never run `/compact`; after a forced
+    compaction, disclose it and hand over. Other sessions build two or three groups and
+    hand off at about 70% of context, after the current group's publish step. They never
+    start a group they cannot finish (D30).
 11. **Master review, once, at the end (D30).** After the last group: the `verify-all`
     sweep with every acceptance criterion's command and exit code, a multi-lens review of
     the whole stack, a final fix group, then the owner's review and the one merge.
@@ -1727,7 +1740,7 @@ The fields of the `handoff-prompt` skill, in its order. Read each value fresh at
 Repo: <abs path>. Stack tip: codex/v1-pr<NN>-<topic> @ <short sha>.
 Base of the stack: codex/v1-program-pr0 at its recorded base; then main after merge.
 Plan: docs/plans/v1-starshot/00-plan.md.
-Decisions: docs/decisions.md (D1..D38, including recorded supersessions).
+Decisions: docs/decisions.md (D1..D40, including recorded supersessions).
 Ledger: docs/plans/v1-starshot/06-resumption.md.
 Deviations: docs/plans/v1-starshot/05-deviation-log.md.
 Open-gate at close: <the line sh scripts/agent/open-gate.sh prints>.
@@ -1741,8 +1754,14 @@ group against .claude/rubrics/, with physics-auditor, verification-driver or
 rules-reviewer when the diff calls for them (D30). Executors never push.
 DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff requires),
 every command with its exit code.
-Stop: at about 70% of the context, finish the current group's publish step, then emit
-this block again.
+Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.
+Context (V1 cloud run, D40): keep automatic and idle compaction off; never run
+/compact; hand over earlier if compaction or a hard limit would come first, after each
+published group when telemetry is unknown, and after any forced compaction.
+Stop: V1 cloud run at 776,000 tokens of measured context, at a band close, or earlier as
+above: finish bounded stabilization, emit this block again and start one verified
+successor (D40). Other sessions at about 70%: finish the current group's publish step,
+then emit this block again (D30).
 First commands:
   git status --short && git branch --show-current && git log --oneline -5
   gh pr list

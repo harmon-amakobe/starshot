@@ -3,7 +3,8 @@
 This is the acceptance ledger for the new program PR0. Read it with
 [the plan](00-plan.md), whose stable spec identities remain unchanged.
 The owner authorized PR0 publication and continued implementation on 2026-11-03.
-PR0 is a checkpoint, not the full-program deliverable. D30 still governs reviews.
+PR0 is a checkpoint, not the full-program deliverable. D30 still governs reviews;
+D40 governs when a cloud session hands over.
 
 ## Verified starting point
 
@@ -158,6 +159,19 @@ band planning nor implementation, master review or release readiness. Browser
 automation is still not a measurement of player success or physical-phone performance.
 Prototype 5's scripted 15 to 25-run economy with no body needing over three attempts
 and PR22's automated 4 to 8 s pacing checks remain required.
+
+## Session handover (D40)
+
+The lead updates this section after each reviewed group and each material decision.
+It holds only public facts (D40, non-negotiable 4).
+
+| Field | Current value, updated after each reviewed group and material decision |
+|---|---|
+| Stack tip | `codex/v1-session-policy` (D40 checkpoint), based on #82's head `ee81e040e4c905195d6f9cc160e83e1d119e753f` |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82; [#82's CI run](https://github.com/harmon-amakobe/starshot/actions/runs/41640619884) passed at its head |
+| Next | PR3a ownership, issue #33, [captured-request ownership](08-moon-flight.md#captured-request-ownership), base `codex/v1-session-policy` |
+| Not run here | Physical-phone timing (optional under D39); every criterion from PR3a ownership onward |
+| Context at close | Not handed over yet |
 
 ## Publication and account boundaries
 
