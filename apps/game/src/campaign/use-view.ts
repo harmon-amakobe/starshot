@@ -21,7 +21,7 @@ export function useView(controller: CampaignController, state: Omit<SceneState, 
     const draw = (now: number) => {
       const { controller: c, state: s, suspended: paused } = live.current;
       const dt = Math.min(.05, (now - previous) / 1000); previous = now;
-      c.tick(dt, now, paused || enteringRef.current);
+      c.playback.tick(dt, now, paused || enteringRef.current);
       const amount = presentation.current.sample(now);
       if (enteringRef.current && amount === 0) { enteringRef.current = false; setEntering(false); }
       try {
@@ -32,7 +32,7 @@ export function useView(controller: CampaignController, state: Omit<SceneState, 
         const safeRect = deckBounds && controls ? { left: 35, right: landscape ? deckBounds.left - 20 : innerWidth - 35,
           top: Math.max(controls.bottom + 12, missionBottom ? missionBottom + 12 : 0),
           bottom: Math.max(controls.bottom + 56, Math.min(landscape ? innerHeight - 12 : deckBounds.top - 12, cue?.top ?? Infinity, hangar?.top ?? Infinity) - 12) } : undefined;
-        const next = scene.update({ ...s, safeTop: missionBottom ? missionBottom + 12 : undefined, safeRect, et: s.aiming && !s.parking ? c.shot.launchEt : c.time.current, visualTime: now / 1000, home: amount }); frameRef.current = next;
+        const next = scene.update({ ...s, safeTop: missionBottom ? missionBottom + 12 : undefined, safeRect, et: s.aiming && !s.parking ? c.store.shot.launchEt : c.view.time.current, visualTime: now / 1000, home: amount }); frameRef.current = next;
         if (now - painted > 80) { painted = now; setFrame(next); }
       } catch (e) { setError(e instanceof Error ? e.message : 'The scene could not be drawn.'); }
       raf = requestAnimationFrame(draw);

@@ -1,53 +1,134 @@
-import { useEffect, useRef, useState } from 'react';
-import { BODIES, type PlanetId } from '@starshot/ephemeris';
 import { Icon } from '@starshot/presentation/icons';
-import { SANDBOX_TARGETS, sandboxLevel } from '../levels';
-import { MISSIONS as CAMPAIGN, bodyName, type Mission as Level } from '../missions';
-import { isUnlocked, totalStars } from '../progress';
-import type { PilotController } from './profiles';
-import type { CampaignController } from './use-campaign';
-import type { CloudController } from './cloud';
+import { useEffect, useRef, useState } from 'react';
 import { CloudPanel } from './CloudPanel';
-import { distanceText, missionName, unitOf, type ReleaseMode } from './session';
-import type { SceneFrame } from './scene-types';
-import { readableVersion } from '../release-version';
-const releaseLabel = readableVersion(__STARSHOT_VERSION__);
+import { InfoPanels } from './InfoPanels';
+import { LevelsPanel } from './LevelsPanel';
+import type { HomeMenuProps } from './menu-types';
+import { MenuHome } from './MenuHome';
+import { ProfilesPanel } from './ProfilesPanel';
+import { SettingsPanel } from './SettingsPanel';
 export type MenuPanel = 'home' | 'levels' | 'profiles' | 'settings' | 'signin' | 'stores' | 'help';
-export function HomeMenu({ c, pilots, cloud, frame, entering, panel, setPanel, play, pick, detail, eye, error }: {
-  c: CampaignController; pilots: PilotController; cloud: CloudController; frame: SceneFrame; entering: boolean;
-  panel: MenuPanel; setPanel: (panel: MenuPanel) => void; play: () => void; pick: (level: Level) => void; detail: () => void; eye: () => void; error: string;
-}) {
-  const [name, setName] = useState(pilots.pilot.name), [newName, setNewName] = useState(''), root = useRef<HTMLElement>(null);
+export function HomeMenu({
+  c,
+  pilots,
+  cloud,
+  frame,
+  entering,
+  panel,
+  setPanel,
+  play,
+  pick,
+  detail,
+  eye,
+  error,
+}: HomeMenuProps) {
+  const [name, setName] = useState(pilots.pilot.name),
+    [newName, setNewName] = useState(''),
+    root = useRef<HTMLElement>(null);
   useEffect(() => setName(pilots.pilot.name), [pilots.pilot.id, pilots.pilot.name]);
-  useEffect(() => { requestAnimationFrame(() => root.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus()); }, [panel, c.hydrating]);
-  return <section ref={root} className={`entry-shell ${entering ? 'entering' : ''}`} inert={entering} role="dialog" aria-modal="true" aria-label="Starshot main menu" onKeyDown={e => {
-    if (e.key === 'Escape') { if (panel !== 'home') setPanel('home'); else if (c.ready) play(); }
-    if (e.key === 'Tab') { const nodes = [...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),input,select,summary,a[href]')].filter(n => n.getClientRects().length), first = nodes[0], last = nodes.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); } }
-  }}>
-    <div className="entry-shade" /><header className="entry-top"><span className="release-author">A game by <a href="https://limitedsightfullvision.com" target="_blank" rel="noopener noreferrer">Kobe</a></span><button className="pill" onClick={() => setPanel('profiles')} aria-label={`Local profile: ${pilots.pilot.name}`}><Icon name="face" />{pilots.pilot.name}</button></header>
-    {panel === 'home' ? <>
-      <div className="entry-title"><span className="eyebrow">A small ship. A very big sky.</span><h1>starshot</h1><p>Find your way through the real Solar System.</p></div>
-      <div className="entry-actions"><span className="entry-chapter"><i />{c.level.sandbox ? 'Free flight' : `0${c.level.number}`} · {c.level.title}<span>Earth → {bodyName(c.level.target)}</span></span>
-        <button className="entry-play" aria-label={c.session.entered ? 'Continue' : 'Play'} disabled={!c.ready || entering} onClick={play}><span><strong>{c.session.entered ? 'Continue' : 'Play'}</strong><small>{c.hydrating ? 'Restoring your flight…' : c.session.phase === 'flight' ? 'Your flight is waiting' : c.session.phase === 'result' ? 'Return to your last flight' : 'One pull starts it all'}</small></span><Icon name="play" size={25} /></button>
-        <div className="entry-secondary"><button className="pill" onClick={() => setPanel('levels')}><Icon name="system" />Levels</button><button className="pill" onClick={() => setPanel('profiles')}><Icon name="face" />Profiles</button></div>
-        <div className="entry-quiet"><button onClick={() => setPanel('settings')}>Settings</button><span>·</span><button onClick={() => setPanel('signin')}>Cloud demo</button><button onClick={() => setPanel('help')}>How to play</button></div>
-        {(error || c.notice || pilots.notice) && <p className="entry-notice" role="status">{error || c.notice || pilots.notice}</p>}
-      </div>
-      <div className="entry-vessel-note"><i /><span>The collector<small>Starshot engine · Crew pod · Co-pilot</small></span></div>
-      <div className="entry-target"><span aria-hidden="true">↗</span><b>{bodyName(c.level.target)}</b><small>{distanceText(frame.targetDistance, unitOf(c.session.preferences))}</small></div>
-      <footer className="entry-bottom release-footer"><span className="release-source">View source on <a href="https://github.com/harmon-amakobe/starshot" target="_blank" rel="noopener noreferrer">GitHub</a></span><span data-release-version>{releaseLabel}</span><button onClick={() => setPanel('help')}>About and credits</button></footer>
-    </> : <div className="entry-panel" role="region" aria-label={panel}><header><button className="pill" onClick={() => setPanel('home')}>← Back</button><span className="eyebrow">starshot</span></header><div className="entry-panel-body">
-      {panel === 'levels' && <><h2>Your next leap</h2><p>{totalStars(pilots.pilot.progress)} earned stars · Five real launch windows.</p><button className="setting-row" aria-pressed={pilots.data.playtest} onClick={pilots.togglePlaytest}><span>Playtest access</span><b>{pilots.data.playtest ? 'All missions open' : 'Earn your next mission'}</b></button>
-        <div className="campaign-cards">{CAMPAIGN.map((l, i) => { const unlocked = pilots.hasAccess(l.id), stars = pilots.pilot.progress.levels[l.id]?.stars ?? 0;
-          return <button key={l.id} className="level-card playable" aria-label={`Play ${l.title}`} disabled={!unlocked && !pilots.data.playtest} onClick={() => { pick(l); setPanel('home'); }}><span className="level-number">0{l.number}</span><span><b>{l.title}</b><small>Earth → {l.requiredFlyby ? `${BODIES[l.requiredFlyby].name} → ` : ''}{bodyName(l.target)}</small><small>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)} · {unlocked ? 'Unlocked' : pilots.data.playtest ? 'Playtest access' : 'Locked'}</small></span><Icon name={unlocked || pilots.data.playtest ? 'play' : 'lock'} /></button>; })}</div>
-        <h3>Open Solar System</h3><p>Seven destinations. Explore a fresh launch window.</p><div className="sandbox-grid">{SANDBOX_TARGETS.map(id => <button className="pill" key={id} aria-label={`Sandbox ${BODIES[id].name}`} onClick={() => { pick(sandboxLevel(id as PlanetId)); setPanel('home'); }}>{BODIES[id].name}</button>)}</div><p>Playtest access does not award stars or change campaign progress.</p></>}
-      {panel === 'profiles' && <><h2>Your own little universe</h2><p>Each pilot keeps a flight, earned stars and control preferences in this browser.</p><div className="profile-list">{pilots.data.profiles.filter(p => !p.id.startsWith('demo-')).map(p => <button key={p.id} className={`profile-row ${p.id === pilots.pilot.id ? 'selected' : ''}`} disabled={c.hydrating} onClick={() => { pilots.stash(c.snapshot()); pilots.select(p.id); }}><Icon name="face" /><span><b>{p.name}</b><small>{missionName(p.session)} · {p.session.phase} · {totalStars(p.progress)} stars</small></span>{p.id === pilots.pilot.id && <span>Active</span>}</button>)}</div>
-        <form onSubmit={e => { e.preventDefault(); pilots.rename(name); }}><label>Profile name<input value={name} maxLength={24} onChange={e => setName(e.target.value)} /></label><button className="pill">Save name</button></form>
-        <form onSubmit={e => { e.preventDefault(); pilots.stash(c.snapshot()); pilots.create(newName); setNewName(''); }}><label>New profile<input value={newName} maxLength={24} onChange={e => setNewName(e.target.value)} placeholder="A name for this pilot" /></label><button className="primary" disabled={c.hydrating || !newName.trim() || pilots.data.profiles.filter(p => !p.id.startsWith('demo-')).length >= 8}>Create profile</button></form><p role="status">{pilots.notice || 'Up to eight local pilots. Clearing browser data removes these saves.'}</p></>}
-      {panel === 'settings' && <><h2>Make it yours</h2><label className="c-release-setting">When I release the ring<select aria-describedby="release-mode-help" value={c.session.preferences.releaseMode} onChange={e => c.preferences({ releaseMode: e.target.value as ReleaseMode })}><option value="plan">Plan and launch (default)</option><option value="hail-mary">YOLO</option></select></label><p id="release-mode-help">Plan holds; YOLO launches on release.</p><button className="setting-row" aria-pressed={c.session.preferences.sound} onClick={() => c.preferences({ sound: !c.session.preferences.sound })}><Icon name="sound" /><span>Sound</span><b>{c.session.preferences.sound ? 'On' : 'Off'}</b></button><button className="setting-row" onClick={eye}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M2 12q10-15 20 0-10 15-20 0Z" /><circle cx="12" cy="12" r="3" /></svg><span>Hide UI</span></button><button className="setting-row" onClick={detail}><Icon name={c.session.preferences.scientific ? 'orbit' : 'face'} /><span>Instruments</span><b>{c.session.preferences.scientific ? 'Scientific' : 'Simplified'}</b></button><p>Reduced motion follows your device. Camera, world sizes and units stay with your pilot.</p><p>Sound adds a soft charge, launch pulse and arrival chime.</p></>}
-      {panel === 'signin' && <CloudPanel cloud={cloud} busy={c.hydrating} play={play} />}
-      {panel === 'stores' && <><h2>A pocket full of space</h2><p>App Store and Google Play editions are coming later. This browser game is ready now.</p><button className="primary" onClick={() => setPanel('home')}>Back to the game</button></>}
-      {panel === 'help' && <><h2>Pull. Plan. Launch.</h2><p data-about-version>{releaseLabel}</p><details className="release-build-details"><summary>Build details</summary><p>Full version: <code data-full-version>{__STARSHOT_VERSION__}</code></p></details><p>Pull the rear engine ring away from the craft. More extension adds departure speed. Rotate your pull to aim. The dots are the exact flight the worker will launch.</p><p>By default, letting go sets the aim and keeps time paused. Inspect the path, then press Launch. Settings also offers YOLO to launch on release. Use Fine aim in the flight deck for keyboard controls. Launch date changes the date. A guide can line up a shot; applying it limits the result to two stars.</p><p>Craft keeps the craft in view. Orbit fits the parking orbit or flight path. System shows the full relevant orbits. Free lets you pan, zoom or hold Shift while dragging to orbit the camera. Pinch to zoom on touchscreens.</p><p>Moonshot starts in a circular Earth parking orbit and integrates Sun, Earth and Moon gravity after the burn. Choose Orbit position at a frozen time, or change the date while keeping that position. Later planetary missions use a flattened orbital plane. Distances and launch dynamics remain in the real heliocentric frame. The enlarged craft control symbol has a leader to the departure point.</p><p>This public preview saves only in this browser. Cloud demo is a local interaction study, not an account or backup. Clearing browser data removes saves.</p><p>Original Starshot media: CC BY 4.0. Code: Apache-2.0. The name and logo are reserved.</p><nav className="release-links" aria-label="Credits and support"><a href="./CREDITS.md" target="_blank" rel="noopener noreferrer">Credits</a><a href="./LICENSE" target="_blank" rel="noopener noreferrer">Code licence</a><a href="./NOTICE.md" target="_blank" rel="noopener noreferrer">Notices</a><a href="./observatory/NOTICE.txt" target="_blank" rel="noopener noreferrer">Media licences</a><a href="https://github.com/harmon-amakobe/starshot" target="_blank" rel="noopener noreferrer">Source</a><a href="https://github.com/harmon-amakobe/starshot/issues" target="_blank" rel="noopener noreferrer">Support</a></nav></>}
-    </div></div>}
-  </section>;
+  useEffect(() => {
+    requestAnimationFrame(() =>
+      root.current?.querySelector<HTMLElement>('button:not(:disabled)')?.focus(),
+    );
+  }, [panel, c.hydrating]);
+  return (
+    <section
+      ref={root}
+      className={`entry-shell ${entering ? 'entering' : ''}`}
+      inert={entering}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Starshot main menu"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          if (panel !== 'home') setPanel('home');
+          else if (!c.hydrating) play();
+        }
+        if (e.key === 'Tab') {
+          const nodes = [
+              ...e.currentTarget.querySelectorAll<HTMLElement>(
+                'button:not(:disabled),input,select,summary,a[href]',
+              ),
+            ].filter((n) => n.getClientRects().length),
+            first = nodes[0],
+            last = nodes.at(-1);
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
+      }}
+    >
+      <div className="entry-shade" />
+      <header className="entry-top">
+        <span className="release-author">
+          A game by{' '}
+          <a href="https://limitedsightfullvision.com" target="_blank" rel="noopener noreferrer">
+            Kobe
+          </a>
+        </span>
+        <button
+          className="pill"
+          onClick={() => setPanel('profiles')}
+          aria-label={`Local profile: ${pilots.pilot.name}`}
+        >
+          <Icon name="face" />
+          {pilots.pilot.name}
+        </button>
+      </header>
+      {panel === 'home' ? (
+        <MenuHome
+          c={c}
+          pilots={pilots}
+          frame={frame}
+          entering={entering}
+          setPanel={setPanel}
+          play={play}
+          error={error}
+        />
+      ) : (
+        <div className="entry-panel" role="region" aria-label={panel}>
+          <header>
+            <button className="pill" onClick={() => setPanel('home')}>
+              ← Back
+            </button>
+            <span className="eyebrow">starshot</span>
+          </header>
+          <div className="entry-panel-body">
+            {panel === 'levels' && (
+              <LevelsPanel pilots={pilots} pick={pick} setPanel={setPanel} />
+            )}
+            {panel === 'profiles' && (
+              <ProfilesPanel
+                c={c}
+                pilots={pilots}
+                name={name}
+                setName={setName}
+                newName={newName}
+                setNewName={setNewName}
+              />
+            )}
+            {panel === 'settings' && <SettingsPanel c={c} eye={eye} detail={detail} />}
+            {panel === 'signin' && <CloudPanel cloud={cloud} busy={c.hydrating} play={play} />}
+            {panel === 'stores' && (
+              <>
+                <h2>A pocket full of space</h2>
+                <p>
+                  App Store and Google Play editions are coming later. This browser game is ready
+                  now.
+                </p>
+                <button className="primary" onClick={() => setPanel('home')}>
+                  Back to the game
+                </button>
+              </>
+            )}
+            {panel === 'help' && <InfoPanels />}
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }

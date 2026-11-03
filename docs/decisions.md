@@ -740,6 +740,13 @@ The size cap (`PR_SIZE_CAP`) applies to each member spec. A group of n specs is 
 n times the cap. The Definition of Done does not change: every group runs
 `npm run gates`, plus `verify-physics` and `verify-game` when its diff calls for them.
 
+**Scoped exception, 2026-11-03.** The owner approved a one-time size exception for
+the reviewed PR2 and PR3 campaign cleanup in `codex/v1-pr02-screen-split`. The
+reviewed change spans 71 files and 4,036 raw added lines, including formatting and
+moves, before recording this ruling. It includes 967 new browser-probe code lines.
+This exception covers that cleanup and its verification, plus this ruling's record.
+Future group limits, file-size limits and verification requirements stay unchanged.
+
 **Why.** Each session gets more built. A review per spec cost more than the building it
 checked, and most of what it found was cheap to fix in place. One full review of the
 finished stack sees how the parts fit, which no single-spec review can.
