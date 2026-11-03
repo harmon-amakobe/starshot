@@ -31,14 +31,7 @@ export function useRelease(input: {
   const launching = useRef(false),
     releaseOwner = useRef(new ReleaseOwner()),
     snapUntil = useRef(0);
-  function cancel() {
-    releaseOwner.current.cancel();
-    launching.current = false;
-    setPending(false);
-    setSnapping(false);
-    snapUntil.current = 0;
-  }
-  const state = {
+  const state = releaseState({
     pending,
     setPending,
     snapping,
@@ -46,8 +39,8 @@ export function useRelease(input: {
     launching,
     releaseOwner,
     snapUntil,
-    cancel,
-  };
+  });
+  const { cancel } = state;
   useLaunchCommit({ ...input, state });
   const actions = aimActions({ ...input, state });
   return {
@@ -67,6 +60,20 @@ export function useRelease(input: {
   };
 }
 export type Release = ReturnType<typeof useRelease>;
+/** The hook's release state without React, so tests reach the same cancel path. */
+export function releaseState(base: Omit<ReleaseState, 'cancel'>): ReleaseState {
+  const { releaseOwner, launching, setPending, setSnapping, snapUntil } = base;
+  return {
+    ...base,
+    cancel() {
+      releaseOwner.current.cancel();
+      launching.current = false;
+      setPending(false);
+      setSnapping(false);
+      snapUntil.current = 0;
+    },
+  };
+}
 export interface ReleaseState {
   pending: boolean;
   setPending: React.Dispatch<React.SetStateAction<boolean>>;

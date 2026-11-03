@@ -11,5 +11,18 @@ export class ReleaseOwner {
   pending: { generation: number; key: string; shot: ShotRequest } | null = null;
   cancel() { this.generation++; this.pending = null; }
   request(shot: ShotRequest) { this.cancel(); this.pending = { generation: this.generation, key: shotKey(shot), shot }; return this.pending; }
-  accepts(generation: number, shot: ShotRequest) { return this.pending?.generation === generation && this.generation === generation && this.pending.key === shotKey(shot); }
+  /**
+   * 'stale': a newer generation, or none, owns the release, so the answer may change nothing.
+   * 'drift': this generation's owned request no longer has its captured key; no answer can
+   * match it, so the caller resets to aim instead of waiting.
+   */
+  verdict(generation: number, shot: ShotRequest): 'accept' | 'drift' | 'stale' | 'mismatch' {
+    const owned = this.pending;
+    if (owned?.generation !== generation || this.generation !== generation) return 'stale';
+    if (owned.key !== shotKey(owned.shot)) return 'drift';
+    return owned.key === shotKey(shot) ? 'accept' : 'mismatch';
+  }
+  accepts(generation: number, shot: ShotRequest) {
+    return this.verdict(generation, shot) === 'accept';
+  }
 }

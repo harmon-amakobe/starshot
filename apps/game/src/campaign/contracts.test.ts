@@ -3,7 +3,8 @@ import { BODIES } from '@starshot/ephemeris';
 import { deltaVFromLeo } from '@starshot/physics';
 import { CAMPAIGN, sandboxLevel, SANDBOX_TARGETS } from '../levels';
 import { shotKey } from '../sim/preview';
-import { isLunar } from '../sim/flight-request';
+import { isLunar, type LunarShotRequest } from '../sim/flight-request';
+import type { ShotRequest } from '../sim/shot';
 import { freshSession, validSession, copySession } from './session';
 import { parsePilots } from './profiles';
 import { pullIntent, ReleaseOwner } from './release';
@@ -45,6 +46,51 @@ describe('campaign release and restore boundaries', () => {
     const caught = promise.catch(() => { if (owner.accepts(a.generation, a.shot)) owner.cancel(); });
     owner.cancel(); const b = owner.request(shot); rejectA(); await caught;
     expect(owner.accepts(a.generation, shot)).toBe(false); expect(owner.accepts(b.generation, shot)).toBe(true);
+  });
+  it('fails the cached-key guard once an owned request is mutated in place', () => {
+    const save = freshSession();
+    save.aim = { angleDeg: 0, speedKmS: 3.24 };
+    const top = finalRequest(save).shot as LunarShotRequest;
+    const nested = finalRequest(save).shot as LunarShotRequest;
+    const planet = finalRequest(freshSession(CAMPAIGN[0]!)).shot as ShotRequest;
+    const cases = [
+      [top, top, { deltaVKmS: 2.9 }],
+      [nested, nested.parking, { phaseDeg: 226 }],
+      [planet, planet.vInf, { 0: planet.vInf[0] + 1 }],
+    ] as const;
+    for (const [shot, part, patch] of cases) {
+      // The worker echoes a structured clone of the post, so the echo keeps the captured values.
+      const owner = new ReleaseOwner();
+      const echo = structuredClone(shot);
+      const task = owner.request(shot);
+      expect(owner.accepts(task.generation, echo)).toBe(true);
+      Object.assign(part, patch);
+      expect(task.shot).toBe(shot);
+      expect(owner.accepts(task.generation, echo)).toBe(false);
+      expect(owner.accepts(task.generation, task.shot)).toBe(false);
+    }
+  });
+  it('tells drift in the current generation apart from a stale generation', () => {
+    const save = freshSession();
+    save.aim = { angleDeg: 0, speedKmS: 3.24 };
+    const owner = new ReleaseOwner();
+    const a = owner.request(finalRequest(save).shot);
+    const echo = structuredClone(a.shot);
+    const later = finalRequest({ ...save, et: save.et + 1 }).shot;
+    expect(owner.verdict(a.generation, echo)).toBe('accept');
+    expect(owner.verdict(a.generation, later)).toBe('mismatch');
+    Object.assign(a.shot, { launchEt: a.shot.launchEt + 1 });
+    expect(owner.verdict(a.generation, echo)).toBe('drift');
+    // A newer generation owns the identical shot, so the drifted old one is stale.
+    const b = owner.request(structuredClone(echo));
+    expect(owner.verdict(a.generation, echo)).toBe('stale');
+    expect(owner.verdict(b.generation, echo)).toBe('accept');
+    // Once the newer request drifts, the old generation still reads stale and cannot reset it.
+    Object.assign(b.shot, { launchEt: b.shot.launchEt + 1 });
+    expect(owner.verdict(a.generation, echo)).toBe('stale');
+    expect(owner.verdict(b.generation, echo)).toBe('drift');
+    owner.cancel();
+    expect(owner.verdict(b.generation, echo)).toBe('stale');
   });
   it('can hydrate another pilot with an identical cached shot, but cannot hydrate a different day or aim', () => {
     const first = freshSession(CAMPAIGN[0]!), same = copySession(first), cached = finalRequest(first).shot;

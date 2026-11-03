@@ -93,7 +93,7 @@ and grouping then. An `agent-ready` label must reflect that bar, not the old ban
 ## Lunar acceptance ledger
 
 The post-cleanup [delivery supplement](08-moon-flight.md) turns the remaining work
-into seven declared parts under #33. The rows below retain the PR0 baseline evidence;
+into eight declared parts under #33. The rows below retain the PR0 baseline evidence;
 part publication records new proof without claiming that all lunar work is complete.
 
 The original PR3a/b specifications are restored in the plan for traceability. This ledger
