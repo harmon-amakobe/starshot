@@ -113,7 +113,7 @@ for browser verification. It has no game-state mutators.
 | `src/sim/sim.worker.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker; previews are latest-request-wins and throttled. |
 | `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. |
 | `packages/presentation/` | Shared collector, engine, crew pod, drone, charge sleeve, icons, audio and entry timing. |
-| `src/render/`, `src/input/`, `src/ui/` | Original 2D implementation retained as a reference; Hermite path construction is reused by the current renderer. |
+| `src/campaign/orbit-path.ts` | Current Hermite path construction, preserving z and lunar relative samples. The unmounted legacy screen and its renderer/input modules have been removed. |
 | `public/` | Icon, web manifest, a small same-origin service worker for offline play. |
 
 ## Levels
@@ -182,7 +182,7 @@ Hints run at most 240 simulations: 0.01-0.6 s per level and sandbox target here
 
 ## Legacy 2D design rationale
 
-This section records the original `src/ui/`, `src/input/` and `src/render/` shell.
+This section records the removed original 2D shell, available in repository history.
 The current campaign uses the engine-ring controls and shared scene described above.
 
 - **Linear scale, framed per level** (Sun to the outermost relevant orbit). True

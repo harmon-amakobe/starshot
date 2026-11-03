@@ -99,7 +99,8 @@ planned next. Sections marked **Future** describe designs that are not built yet
   Planetary views project the flattened ephemeris. Moonshot projects its lunar
   plane. Both render the worker's Hermite path.
   Body enlargement changes display radii, not centre positions or flight samples.
-  The old `src/ui/`, `src/input/` and most of `src/render/` remain as reference code.
+  `orbit-path.ts` retains all three coordinates and the lunar relative samples.
+  The unmounted legacy screen, input and renderer have been removed.
 - `src/levels.ts`, `src/missions.ts`, `src/scoring.ts` and `src/progress.ts` hold the campaign, the star
   rules and saved progress. Each level names its settings (`sim`), its par and, where
   it differs from the default, its par tolerance and capture-zone size;
@@ -107,6 +108,22 @@ planned next. Sections marked **Future** describe designs that are not built yet
   runs.
 - `public/sw.js` caches the game's own files so it keeps working offline after the
   first visit.
+
+The campaign shell keeps one controller and scene for its lifetime:
+
+| Modules under `src/campaign/` | Responsibility |
+| --- | --- |
+| `CampaignApp`, `pilot-session`, `autosave`, `debug-hook` | Compose the shell, bind the current pilot, guard saves and expose browser evidence. |
+| `use-campaign`, `session-store`, `use-restore` | Own session changes, canonical requests and matching-preview restoration. |
+| `use-release`, `aim-actions`, `use-launch-commit`, `use-hints` | Preserve captured release intent and reject stale worker replies by visit and owner. |
+| `flight-clock`, `playback-controls`, `use-result` | Advance the authoritative ET, commit pause time and record a result once. |
+| `use-menu`, `use-camera-views`, `use-hangar`, `mission-header` | Own navigation state without remounting the flight. |
+| `use-view`, `scene-view`, `gestures` | Keep the renderer loop, scene inputs and pointer controls connected. |
+| `HomeMenu`, menu panels, `FlightDeck`, `DeckControls`, `DeckPages`, `LaunchPlanning` | Render controls while menu form and deck page state stay mounted. |
+
+`scripts/verify-steps/screen-split.mjs` drives the same built baseline and extracted
+build, comparing controlled DOM and canonical state. It also checks owner changes,
+legacy saves and Canvas flight outcomes in fresh browser contexts.
 
 ### Shared presentation and the lunar study
 

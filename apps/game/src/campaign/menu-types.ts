@@ -1,0 +1,20 @@
+import { type Mission as Level } from '../missions';
+import type { CloudController } from './cloud';
+import type { PilotController } from './profiles';
+import type { SceneFrame } from './scene-types';
+import type { CampaignController } from './use-campaign';
+export type MenuPanel = 'home' | 'levels' | 'profiles' | 'settings' | 'signin' | 'stores' | 'help';
+export type HomeMenuProps = {
+  c: CampaignController;
+  pilots: PilotController;
+  cloud: CloudController;
+  frame: SceneFrame;
+  entering: boolean;
+  panel: MenuPanel;
+  setPanel: (panel: MenuPanel) => void;
+  play: () => void;
+  pick: (level: Level) => void;
+  detail: () => void;
+  eye: () => void;
+  error: string;
+};

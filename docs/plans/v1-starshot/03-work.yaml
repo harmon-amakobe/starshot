@@ -164,7 +164,7 @@ epics:
           Built in PR0 (#1) by the owner's ruling (D30).
       - id: v1-screen-split-render
         title: "PR2: remove the dead screen and split the current campaign shell"
-        labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
+        labels: [kind:chore, area:game, priority:p1, status:claimed, agent-ready]
         size: L
         priority: p1
         actor: Agent
@@ -175,7 +175,7 @@ epics:
           live shell from current code. Preserve accepted lunar, release and save behavior.
       - id: v1-screen-split-state
         title: "PR3: split current campaign state and views under 300 lines"
-        labels: [kind:chore, area:game, priority:p1, status:ready, agent-ready]
+        labels: [kind:chore, area:game, priority:p1, status:claimed, agent-ready]
         size: L
         priority: p1
         actor: Agent
