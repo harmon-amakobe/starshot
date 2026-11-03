@@ -18,7 +18,8 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 | Precision | 320 | 10 | Real-SOI graze and focused Moon coordinates |
 | Ownership guard | 400 | 10 | Captured-request guard and launch-commit boundary, with drift reset |
 | Ownership edits | 260 | 8 | Edit, mode, pilot-switch and guide ownership through production actions |
-| Search | 360 | 10 | Bounded deterministic search and cooperative worker dispatch |
+| Search core | 280 | 10 | Bounded deterministic search with exact simulation counts |
+| Search transport | 240 | 9 | Cooperative worker dispatch, protocol fields and browser proof |
 | Model | 280 | 16 | Pure requests and explicit scene-model plumbing, still eagerly loaded |
 | Loading | 360 | 14 | Lazy model, readiness controls, ownership and retry |
 | Evidence | 350 | 8 | Built-module, network, offline and asynchronous browser regressions |
@@ -250,4 +251,62 @@ The development build is `953f8b0dd7be674f9d6c3b88`. Browser steps used `NODE_PA
 | `node scripts/verify-game.mjs --steps scripts/verify-steps/screen-async.mjs`, at `/` and with `--base /starshot/` | Both 0, 3 contexts each; 4 stale replies ignored in each |
 | Same two runs with `lunar-flight.mjs` | Both 0, 3 contexts and 55 screenshots each |
 | Same two runs with `screen-flight.mjs` | Both 0, 3 contexts and 108 screenshots each |
+| `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
+
+## Ownership edits result
+
+Part 2 of Ownership, based on the guard part at `c9fc706`. Paths start at `apps/game/src/campaign/`.
+`use-hints.ts` moves the `applyGuide` body into `applyHint`, which the hook calls.
+`use-restore.ts` moves restore's body and the owner switch into `restoreActions`, which `useRestore` and its layout effect call.
+`aim-actions.test.ts` drives the production `aimActions`, `playbackControls`, `applyHint` and `restoreActions` through the shared harness.
+
+| Spec line | Proof |
+|---|---|
+| Caller aim, parking or ET edits leave a captured request unchanged | `aim-actions.test.ts:158`, lunar and planetary |
+| Launch captures the render ET; preview and launch get that request | `aim-actions.test.ts:36`, and `:57` for Plan and YOLO |
+| Cancel, date, aim and mode edits reject old success and failure | `aim-actions.test.ts:71` |
+| Date, phase and aim edits reject old preview success and failure | `aim-actions.test.ts:102` |
+| Identical-shot owner switches reject old success and failure | `aim-actions.test.ts:131` through `restoreActions(...).select()`; visit and token alone in `launch-commit.test.ts:109` |
+| Reference results never rewrite applied sessions or captured shots | `aim-actions.test.ts:171` |
+
+`orbitPhase` refuses a phase edit while a release is pending, so no old launch answer exists for it to reject.
+The switch test sets only `restoring.current = false` by hand: `useRestorePreview` does that once the restored preview arrives.
+Restore's cancel alone already makes an old launch reply stale. The test asserts the new visit and token directly.
+`launch-commit.test.ts:109` proves that each of those changes alone blocks a reply.
+
+| Mutated guard | Killing test |
+|---|---|
+| `use-restore.ts:90` restore's cancel, `:91` visit increment and `:106` token assignment | `aim-actions.test.ts:131` |
+| `use-hints.ts:40` copied parking and `:34` phase check | `aim-actions.test.ts:171` |
+| `aim-actions.ts:118` render-clock freeze and `:122` owned preview request | `aim-actions.test.ts:36` |
+| `aim-actions.ts:58` pull-cancel owner check | `aim-actions.test.ts:57` |
+| `aim-actions.ts:33` and `:101` cancels, `playback-controls.ts:100` mode cancel | `aim-actions.test.ts:71` |
+| `aim-actions.ts:84` phase refusal while pending | `aim-actions.test.ts:102` |
+
+Two cancels have no killing test, because each repeats another cancel in the same call.
+`cancel()` at `use-hints.ts:35` repeats the one inside `day()`.
+`cancel()` at `aim-actions.ts:59` repeats the one `aim()` runs at `:33`, which it skips only while a launch snap runs.
+The planetary branch of `applyHint` at `use-hints.ts:37` was not mutated; these tests apply only the lunar guide.
+A build with a no-op `applyHint` fails `screen-flight.mjs` at `:89` (`hit` is false) and `lunar-flight.mjs` at its readiness wait after `:20`.
+`screen-async.mjs` passes that build, because its Guide path only compares the flight with its preview.
+
+Size against `c9fc706`: 286 new contentful lines and 16 moved hook-body lines in 8 files.
+Of those, 268 are this part's own and 18 record the Search split and the handover packet.
+That is 26 lines over the 260-line budget (deviation row 32).
+That includes 13 lines of split records in `00-plan.md`, `03-work.yaml`, `05-deviation-log.md`, `06-resumption.md` and the Parts table.
+Every non-blank added line counts, comments included. An added line is moved when a trimmed identical line left the same file.
+Git keeps restore's body and the owner switch's two lines in place in `use-restore.ts`, so they are unchanged lines, not additions.
+
+Commands ran on `c9fc706` plus this part's uncommitted changes. The development build is `c440e6b231031d0f8e4eba08`.
+Browser steps ran as `NODE_PATH="$(npm root -g)" STARSHOT_PROBE_OUT=<folder> node scripts/verify-game.mjs --steps <step> [--base /starshot/]`.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 162 tests |
+| `npx vitest run apps/game/src/campaign` | 0, 6 files, 51 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 14 files, 141 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `screen-async.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts each; 4 stale replies ignored in each |
+| `lunar-flight.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts and 55 screenshots each |
+| `screen-flight.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts and 108 screenshots each |
 | `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |

@@ -12,22 +12,45 @@ import type { Hydration } from './use-restore';
 type Simulation = SimulationApi<FlightRequest>;
 
 import type { Release } from './use-release';
-export function useHints(input: {
+type HintInput = {
   store: SessionStore;
   clock: FlightClock;
   hydration: Hydration;
   release: Release;
   sim: Simulation;
   setNotice: (text: string) => void;
-}) {
-  const { sim, setNotice } = input;
+};
+/** Applies a guide by copying its values, so a later hint change rewrites nothing applied. */
+export function applyHint(
+  hint: Hint,
+  input: Pick<HintInput, 'store' | 'clock' | 'release' | 'setNotice'>,
+) {
   const { current, change } = input.store,
     { time, setClock } = input.clock;
-  const { visit, token } = input.hydration;
   const {
     cancel,
     actions: { day, aim },
   } = input.release;
+  if (current.current.phase !== 'aim') return;
+  cancel();
+  day(hint.day);
+  if (hint.parking) {
+    time.current = hint.launchEt;
+    setClock(time.current);
+    change((s) => ({ ...s, et: hint.launchEt, parking: { ...hint.parking! }, paused: true }));
+  }
+  aim(hint.aim);
+  change((s) => ({ ...s, hintUsed: true }));
+  input.setNotice(
+    hint.hits
+      ? 'Guide applied. Target approach lined up.'
+      : 'Closest guide applied. This shot still misses.',
+  );
+}
+export function useHints(input: HintInput) {
+  const { sim, setNotice } = input;
+  const { current } = input.store;
+  const { visit, token } = input.hydration;
   const [hint, setHint] = useState<Hint | null>(null),
     [hintBusy, setHintBusy] = useState(false);
   function guide() {
@@ -56,28 +79,13 @@ export function useHints(input: {
         }
       });
   }
-  function applyGuide() {
-    if (!hint || current.current.phase !== 'aim') return;
-    cancel();
-    day(hint.day);
-    if (hint.parking) {
-      time.current = hint.launchEt;
-      setClock(time.current);
-      change((s) => ({ ...s, et: hint.launchEt, parking: { ...hint.parking! }, paused: true }));
-    }
-    aim(hint.aim);
-    change((s) => ({ ...s, hintUsed: true }));
-    setNotice(
-      hint.hits
-        ? 'Guide applied. Target approach lined up.'
-        : 'Closest guide applied. This shot still misses.',
-    );
-  }
   return {
     hint,
     hintBusy,
     guide,
-    applyGuide,
+    applyGuide() {
+      if (hint) applyHint(hint, input);
+    },
     reset() {
       setHint(null);
       setHintBusy(false);
