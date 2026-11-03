@@ -65,7 +65,7 @@ export function useRestorePreview(
     }
   }, [sim.answeredKey, preview, shot, launchEt, change, restoreRevision]);
 }
-export function useRestore(input: {
+export interface RestoreInput {
   initial: Session;
   owner: string;
   store: SessionStore;
@@ -75,7 +75,12 @@ export function useRestore(input: {
   cancel: () => void;
   resetHint: () => void;
   setNotice: (text: string) => void;
-}) {
+}
+/**
+ * The hook's restore and owner switch, kept outside the hook so tests drive this boundary.
+ * `select` gives the token to the new owner before its session is restored.
+ */
+export function restoreActions(input: RestoreInput) {
   const { initial, owner, cancel, resetHint, setNotice } = input;
   const { change } = input.store,
     { setFlight, flightRef, time, setClock } = input.clock;
@@ -97,9 +102,14 @@ export function useRestore(input: {
     change(() => copySession(save));
     setNotice('');
   }
-  useLayoutEffect(() => {
+  function select() {
     token.current = owner;
     restore(initial);
-  }, [owner]);
+  }
+  return { restore, select };
+}
+export function useRestore(input: RestoreInput) {
+  const { restore, select } = restoreActions(input);
+  useLayoutEffect(select, [input.owner]);
   return restore;
 }

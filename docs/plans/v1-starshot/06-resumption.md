@@ -93,7 +93,7 @@ and grouping then. An `agent-ready` label must reflect that bar, not the old ban
 ## Lunar acceptance ledger
 
 The post-cleanup [delivery supplement](08-moon-flight.md) turns the remaining work
-into eight declared parts under #33. The rows below retain the PR0 baseline evidence;
+into nine declared parts under #33. The rows below retain the PR0 baseline evidence;
 part publication records new proof without claiming that all lunar work is complete.
 
 The original PR3a/b specifications are restored in the plan for traceability. This ledger
@@ -167,10 +167,10 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-session-policy` (D40 checkpoint), based on #82's head `ee81e040e4c905195d6f9cc160e83e1d119e753f` |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82; [#82's CI run](https://github.com/harmon-amakobe/starshot/actions/runs/41640619884) passed at its head |
-| Next | PR3a ownership, issue #33, [captured-request ownership](08-moon-flight.md#captured-request-ownership), base `codex/v1-session-policy` |
-| Not run here | Physical-phone timing (optional under D39); every criterion from PR3a ownership onward |
+| Stack tip | `codex/v1-pr03a-ownership-edits` (PR3a ownership edits), above `codex/v1-pr03a-ownership` (PR3a ownership guard) and `codex/v1-session-policy` (D40 checkpoint, #83) |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, PR3a ownership edits on `codex/v1-pr03a-ownership-edits`; [#83's CI run](https://github.com/harmon-amakobe/starshot/actions/runs/41688433259) passed at its head |
+| Next | PR3a search core, issue #33, [bounded search](08-moon-flight.md#bounded-search), branch `codex/v1-pr03a-search`, base `codex/v1-pr03a-ownership-edits` |
+| Not run here | Physical-phone timing (optional under D39); every criterion from PR3a search core onward |
 | Context at close | Not handed over yet |
 
 ## Publication and account boundaries
