@@ -1017,3 +1017,30 @@ local task grants no gameplay publication or deployment. See the
 requested a pull request and a release carrying these changes to beta and production
 before the handoff. That instruction authorizes publication under D35 and D37;
 it does not change the protected candidate or owner approval requirements.
+
+---
+
+## D39. Learn from releases without mandatory human trials
+
+*Date:* 2026-11-03. *Source:* owner's ruling to release and learn through use instead
+of requiring recruited testers or physical-phone measurements.
+
+**Decision.** V1 implementation, band planning, master review and release readiness
+do not depend on a tester count, human success quota or physical-phone measurement.
+Gameplay trials and device measurements are optional feedback after release. The
+plan's human prototype thresholds are research questions, not acceptance gates.
+This supersedes their mandatory status under the D18 prototype plan.
+
+Automated verification remains required: browser layouts, accessibility, offline
+behavior, physics/JPL comparisons, deterministic conformance, bundle budgets, CI
+timing, scripted pacing and the economy simulation. Phone 60 fps and 100 ms preview
+remain design targets; do not claim they are measured without device evidence.
+
+**Why.** The owner will learn from actual use and iterate after release, without
+arranging a separate tester program. Missing optional feedback does not block work.
+
+**Consequences.** P1 and P2 become optional. Retire the required recruitment task as
+not planned; preserve its issue identity. No new telemetry or Analytics dependency
+is introduced. D34 to D37 still govern candidate integrity and production approval.
+This decision changes readiness criteria; it does not mark any build verified,
+choose a production candidate or replace the owner's production approval.

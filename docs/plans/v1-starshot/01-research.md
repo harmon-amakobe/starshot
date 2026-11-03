@@ -687,6 +687,6 @@ These were outside the sandbox's reach. None blocks Band A or Band B. Each is as
 | The Okabe-Ito hex values against the palette's source | The brake and boost colours | Band C planning, before PR21 |
 | Kenya's Data Protection Act section 33 and the ODPC guidance | Confirms D22's age line holds | The owner, before PR31 |
 | Whether the Firebase CLI accepts a federated credential for Hosting | Decides whether a dev-only key is needed | PR33's trial |
-| Low-end phone numbers: KTX2 transcode time, frame time, preview time | The phone budgets of non-negotiable 6 | Bands C and D, on the owner's test phones |
+| Low-end phone numbers: KTX2 transcode time, frame time, preview time | The phone design targets of non-negotiable 6 | Optional device feedback under the later D39 ruling; no band or release prerequisite |
 | The arm64 bits of the `libm` crate | The one measurement that could weaken D16 | PR6's arm64 job |
 | The official trademark databases | Name clearance | The owner, before any store submission (T1) |

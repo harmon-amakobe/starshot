@@ -42,7 +42,7 @@ Historical evidence in PR16 is retained but must be repeated where later changes
 | AC7 | Existing TypeScript energy/timing tests remain the oracle. Rust closure, switching and preview timing remain PR11/12. |
 | AC8 | Current known solutions are in `apps/game/src/levels.test.ts`. Rust catalogue, deterministic search and later content remain pending. |
 | AC9 | Pending measured wasm, JavaScript and texture gates. Existing Three.js does not establish any size budget. |
-| AC10 | PR16 supplies browser and offline evidence for the current game. Repeat after cleanup; full chapter, physical-phone timing and human trials remain pending. |
+| AC10 | PR16 supplies browser and offline evidence for the current game. Repeat where changes affect it; full chapter proof remains pending. Human trials and physical-phone timing are optional under D39. |
 | AC11 | Existing copy gate remains required at every publication. No new copy exemptions. |
 | AC12 | File licensing exists. Dependency licence gate, assets manifest and generated credits remain PR5; inspect current credits before replacing them. |
 | AC13 | Existing file scan remains required. Scan commit and PR text separately until PR4 adds its gate. |
@@ -144,17 +144,20 @@ TypeScript deletion. Record a concrete readiness check in each issue; if a file,
 or proof is still unspecified, keep `agent-ready` off until that supplement is complete.
 PR9 to PR17 are marked blocked for this planning work; the orchestrator resolves it before assignment.
 
-Browser automation cannot substitute for these player criteria:
+Under D39, these former player criteria are optional release-feedback questions:
 
 - Aim within 0.1 km/s in five seconds for 8/10 testers.
 - Understandable Moon/Mars/Saturn pacing.
 - Capture within two attempts for 9/10 testers.
 - A Saturn assist in two minutes.
-- A 15 to 25-run economy without a wall over three attempts.
 - A window within 5% of optimum in 20 seconds.
 
-Physical-phone 60 fps and 100 ms preview measurements remain outstanding. Preserve
-the criteria and continue independent implementation while arranging human evidence.
+Physical-phone 60 fps and 100 ms preview remain unmeasured design targets, with no
+mandatory device session. Missing optional human or device feedback blocks neither
+band planning nor implementation, master review or release readiness. Browser
+automation is still not a measurement of player success or physical-phone performance.
+Prototype 5's scripted 15 to 25-run economy with no body needing over three attempts
+and PR22's automated 4 to 8 s pacing checks remain required.
 
 ## Publication and account boundaries
 
