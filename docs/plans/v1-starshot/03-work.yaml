@@ -199,8 +199,9 @@ epics:
         depends_on: [v1-screen-split-state]
         body: |
           Follow 08-moon-flight.md and the lunar ledger in 06-resumption.md.
-          Seven linear parts retain this issue: plan, precision, ownership,
-          search, model, loading and evidence. Each keeps a one-member cap and DoD.
+          Eight linear parts retain this issue: plan, precision, ownership guard,
+          ownership edits, search, model, loading and evidence. Each keeps a
+          one-member cap and DoD.
           Prove real-SOI grazing, captured ownership, Moon coordinates within 1 km,
           bounded cooperative search and lazy-loading/offline behavior.
       - id: v1-moon-campaign

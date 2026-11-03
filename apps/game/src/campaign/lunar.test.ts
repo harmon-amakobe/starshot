@@ -16,6 +16,8 @@ import { makeFrame } from './frame';
 import { zoomAt } from './zoom';
 import type { SceneState } from './scene-types';
 import { impactBody, completionNotice } from './outcome';
+import { ReleaseOwner } from './release';
+import { summaryOf } from './use-release';
 
 const launch = (speed = 3.24, angle = 0): ShotResponse<LunarShotRequest> => {
   const save = freshSession(); save.aim = { angleDeg: angle, speedKmS: speed };
@@ -78,6 +80,30 @@ describe('Moonshot uses one canonical request', () => {
     const resumed = togglePauseAt(stopped, renderEt);
     expect(resumed.paused).toBe(false); expect(resumed.et).toBe(renderEt);
     expect(shotKey(finalRequest(resumed).shot)).toBe(shotKey(shot));
+  });
+  it('flies one captured sub-day request identically as its preview and its launch', () => {
+    const save = freshSession();
+    save.et += 8.004;
+    save.paused = true;
+    save.aim = { angleDeg: 0, speedKmS: 3.24 };
+    const owner = new ReleaseOwner();
+    const task = owner.request(finalRequest(save).shot);
+    // Each worker post is a structured clone of the one owned request.
+    const answer = (purpose: 'preview' | 'launch') => {
+      const shot = structuredClone(task.shot);
+      if (!isLunar(shot)) throw Error('Expected Moonshot');
+      return { kind: 'shot' as const, id: 1, purpose, shot, ...runLunar(shot), ms: 0 };
+    };
+    const preview = answer('preview');
+    const launched = answer('launch');
+    const gate = launchGate(true, preview, task.shot);
+    expect(preview.shot.launchEt).toBe(LAUNCH_ET + 8.004);
+    expect(gate.ready).toBe(true);
+    expect(gate.shot).toBe(preview.shot);
+    expect(owner.accepts(task.generation, launched.shot)).toBe(true);
+    expect(launched.result).toEqual(preview.result);
+    expect(launched.analysis).toEqual(preview.analysis);
+    expect(summaryOf(launched)).toBe(summaryOf(preview));
   });
   it('preserves sub-day time, orbit and departure ET through aiming and flight saves', () => {
     const save = freshSession(); save.et += 321; save.paused = true;

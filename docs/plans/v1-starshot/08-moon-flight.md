@@ -16,7 +16,8 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 |---|---:|---:|---|
 | Plan | 240 | 6 | Public scope, ownership, proof and linear delivery map |
 | Precision | 320 | 10 | Real-SOI graze and focused Moon coordinates |
-| Ownership | 300 | 10 | Captured-request guards and asynchronous owner isolation |
+| Ownership guard | 400 | 10 | Captured-request guard and launch-commit boundary, with drift reset |
+| Ownership edits | 260 | 8 | Edit, mode, pilot-switch and guide ownership through production actions |
 | Search | 360 | 10 | Bounded deterministic search and cooperative worker dispatch |
 | Model | 280 | 16 | Pure requests and explicit scene-model plumbing, still eagerly loaded |
 | Loading | 360 | 14 | Lazy model, readiness controls, ownership and retry |
@@ -189,3 +190,64 @@ focused Moon drawing, tilted Free views, restoration, portrait, short landscape 
 All listed screenshots were inspected. GPU readback warnings remain; browser errors and failed requests are zero.
 Guide application starts in portrait; its existing short-landscape deck overlap remains PR3b work.
 Later parts retain captured-request ownership and bounded search. They also retain loading and offline proof.
+
+## Ownership guard result
+
+Part 1 of Ownership: the guard and the commit boundary. Built from `73e1c64` on `codex/v1-session-policy`.
+Paths start at `apps/game/src/campaign/`.
+`contracts.test.ts:50` mutates an owned request in place: lunar `deltaVKmS`, nested `parking.phaseDeg` and planetary `vInf`.
+On the unchanged tree every case still accepted the original worker echo, and the test exited 1.
+`release.ts:19` adds `verdict`, which reads a stale generation before drift.
+`accepts` now also fails when the owned request no longer has its captured key.
+`use-launch-commit.ts` returns a drifted generation to aim with a notice at the gate, after success and after failure.
+A stale generation, another pilot or another visit changes nothing, even when the owned request has drifted.
+No production code writes a captured request today, so this reset is defensive.
+A launch reply for another shot (`mismatch`) keeps the base behaviour: it is ignored and the release stays pending.
+
+`commitLaunch`, `failPreview` and `releaseState` are hook bodies moved into plain functions the hooks call.
+`launch-commit.test.ts` drives them through `owner-harness.test-support.ts`, with real `runLunar` replies.
+Vitest does not collect that support module and no app code imports it. No React shim or dependency was added.
+
+| Spec line | Proof |
+|---|---|
+| A mutated owned request fails its cached-key guard | `contracts.test.ts:50` and `:73`; `launch-commit.test.ts:145` and `:183` |
+| A real preview for an older aim launches nothing for the newer release | `launch-commit.test.ts:65` |
+| Old success and failure stay rejected after a newer request, even for an identical shot | `contracts.test.ts:43`; `launch-commit.test.ts:91` |
+| Old answers, drifted or not, change nothing once the visit or the pilot changed | `launch-commit.test.ts:109` |
+| A preview failure ends only the release waiting for its key | `launch-commit.test.ts:19` and `:77` |
+| A successful commit writes the flight, clock, session, mark and snap | `launch-commit.test.ts:19` |
+| Preview and launch fly one captured sub-day request identically | `lunar.test.ts:84` |
+
+| Mutated guard | Killing test |
+|---|---|
+| `release.ts:21` stale before drift, `:22` drift and `:23` key match | `contracts.test.ts:50` and `:73`; `launch-commit.test.ts:91` |
+| `use-launch-commit.ts:44` to `:49`, the gate reduced to `!preview` | `launch-commit.test.ts:65` |
+| `use-launch-commit.ts:38` pending and in-flight checks; `:104` pending and preview checks | `launch-commit.test.ts:19` |
+| `use-launch-commit.ts:55` visit and token checks; `:57` drift reported for any visit or pilot | `launch-commit.test.ts:109` |
+| `use-launch-commit.ts:43`, `:62` and `:93` drift; `:64` summary; `:94` current failure | `launch-commit.test.ts:145` |
+| `use-launch-commit.ts:63` mismatch read as accept | `launch-commit.test.ts:183` |
+| `use-launch-commit.ts:94` failure for any generation; `:104` any key | `launch-commit.test.ts:91` and `:77` |
+| `use-launch-commit.ts:69` to `:89`, each of the 16 writes of a successful commit | `launch-commit.test.ts:19` |
+| `use-release.ts:69` to `:73`, each line of `cancel` | `launch-commit.test.ts:19`, `:77`, `:91` and `:145` |
+
+Three single removals have no killing test, because each leaves behaviour unchanged.
+`launchGate` at `use-launch-commit.ts:46` and `accepts` at `:47` imply each other after the drift check.
+Dropping `this.generation !== generation` from `release.ts:21` is equivalent: a pending request carries the current generation.
+Swapping `release.ts:21` and `:22` as written also fails `tsc -b`, because `owned` may be null there.
+
+Size against `73e1c64`: 510 new contentful lines and 54 moved hook-body lines in 9 files.
+Every non-blank added line counts, comments included. An added line is moved when a trimmed identical line left the same file.
+
+Commands ran on `349ecc5` plus these test and note changes; production code is unchanged from `349ecc5`.
+The development build is `953f8b0dd7be674f9d6c3b88`. Browser steps used `NODE_PATH="$(npm root -g)"` and set `STARSHOT_PROBE_OUT`.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 155 tests |
+| `npx vitest run apps/game/src/campaign` | 0, 5 files, 44 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 13 files, 134 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `node scripts/verify-game.mjs --steps scripts/verify-steps/screen-async.mjs`, at `/` and with `--base /starshot/` | Both 0, 3 contexts each; 4 stale replies ignored in each |
+| Same two runs with `lunar-flight.mjs` | Both 0, 3 contexts and 55 screenshots each |
+| Same two runs with `screen-flight.mjs` | Both 0, 3 contexts and 108 screenshots each |
+| `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
