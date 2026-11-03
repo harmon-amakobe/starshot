@@ -704,6 +704,10 @@ licence gate keeping `python/astlo/astlo` under `LicenseRef-astlo`.
 *Date:* 2026-11-01. *Source:* owner's ruling (supersedes D25's sizing of pull requests
 for one reviewer).
 
+**Superseded in part by [D40](#d40-cloud-sessions-hand-over-at-measured-context-not-a-group-count) (2026-11-03, the owner's call): for the V1
+cloud run, the count of two or three groups a session and the handoff at about 70% of
+context.**
+
 **Decision.** The plan's specs stay as written, but they are built as PR groups. A group
 is one branch, one pull request and one review for one to four consecutive specs. It is
 named for its first member and based on the previous group's branch. The groups and
@@ -1044,3 +1048,62 @@ not planned; preserve its issue identity. No new telemetry or Analytics dependen
 is introduced. D34 to D37 still govern candidate integrity and production approval.
 This decision changes readiness criteria; it does not mark any build verified,
 choose a production candidate or replace the owner's production approval.
+
+---
+
+## D40. Cloud sessions hand over at measured context, not a group count
+
+*Date:* 2026-11-03. *Source:* owner's ruling for the cloud run of the remaining V1
+program (supersedes D30's handoff at about 70% of context and its count of two or
+three groups a session).
+
+**Decision.** The V1 cloud run is this program's sessions on the cloud platform, and
+the lead is its orchestrator session. The lead has an operating budget of 800,000
+tokens of context. It
+starts handover when its measured context occupancy reaches 776,000 tokens, 97% of
+that budget, which leaves a 24,000-token reserve. Occupancy means the current context
+window, with loaded instructions and tool results; cached tokens in that window count.
+It is not billing, cumulative cache read or write totals, or the sum of subagent
+contexts. The trigger stays at 776,000 on a larger window.
+
+Until the trigger or a band close, the session keeps building the authorized program.
+Finishing two or three groups is no reason to stop. At the trigger it starts no new
+implementation or research. It finishes bounded stabilization: the step in flight, its
+gates and the publication of reviewed work. Then it updates the handover packet and
+transfers the work. It may pass 800,000 only to finish handover, within the runtime's
+real limit.
+
+Only the lead creates the successor, and exactly one, so that two sessions never build
+one stack. It uses the platform's supported session tool, from the final published tip,
+and checks for an existing successor before retrying an uncertain create. It then
+confirms that the successor started, received its kickoff and runs the requested model
+and mode. A returned session id is not that proof. If creation is unavailable or
+refused, the lead keeps all state and gives the owner the kickoff. That is a blocked
+handover, not completion.
+
+Sessions use supported controls to prevent automatic and idle compaction and never run
+`/compact`. They measure occupancy with the runtime's own telemetry. If an unavoidable
+compaction or hard limit would arrive before 776,000, the session hands over earlier
+and records the measured limit. Missing telemetry is recorded as unknown, and the
+session then hands over after each published group. A forced compaction is disclosed,
+and a fresh session rebuilds from the handover packet before more implementation.
+
+After each reviewed group and each material decision, the lead updates the acceptance
+record and the handover packet, the
+[session handover](plans/v1-starshot/06-resumption.md#session-handover-d40) section of
+the resumption ledger, and pushes it. A file that exists only on a session's machine is
+not durable. The handover packet and other public files name no private account
+details, personal emails, personal paths or the owner's other private projects
+(non-negotiable 4). A kickoff follows the same rule, except for the absolute repository
+path, which goes only there.
+
+**Why.** Each session builds more when handover follows measured context rather than a
+fixed group count, and a count can no longer end the program early. Measuring
+occupancy, instead of trusting a configured threshold, keeps handover ahead of any
+compaction that would drop detail.
+
+**Consequences.** The handoff skill and the plan's operating steps use this trigger.
+D30's group table, size rules, bounded reviews, band sweeps, fresh band-planning
+sessions and master review are unchanged. A session that hands over finishes or
+preserves its current group; partial work is labelled partial and kept. Sessions outside
+the V1 cloud run keep D30's handoff.

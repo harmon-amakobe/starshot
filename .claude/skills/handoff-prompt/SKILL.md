@@ -1,6 +1,6 @@
 ---
 name: handoff-prompt
-description: Use when a Starshot session is closing with work left in the plan, when the context budget is running low, or when a task mentions a handoff, session close, a copy-paste prompt for the next session, or continuing in a fresh session.
+description: Use when a Starshot session is closing with work left in the plan, when the context budget is running low, or when a task mentions a handoff, session close, a copy-paste prompt for the next session, continuing in a fresh session, or starting and verifying a successor session (D40).
 ---
 
 # The handoff block
@@ -13,16 +13,17 @@ the session's most degraded point, which is why you are handing off.
 | Field | Copy it from |
 |---|---|
 | Absolute repo path | `git rev-parse --show-toplevel`, run now |
-| Stack tip branch and sha | `git branch --show-current`, `git rev-parse --short HEAD`, run now |
+| Stack tip branch and sha | `git fetch origin <branch>`, then `git rev-parse --short HEAD` and `git rev-parse --short origin/<branch>`, which must match (if they differ, push first or record a blocked handover); the open-gate line shows no unpushed commits |
 | Base of the stack | the plan's stack section, checked against `gh pr list` |
 | Plan path, decision log, deviation section | `docs/plans/<program>/...`, `docs/decisions.md`: paths, never pasted contents |
 | "Decisions D1..Dn are resolved; do not re-litigate" | n read from `docs/decisions.md` |
-| Done: PR0 and each finished group, one line each | `gh pr list` against the plan's group table |
+| Done: PR0 and each finished group, one line each | the ledger's session handover section in V1 (`06-resumption.md`), else the plan's group table; either way checked against `gh pr list` |
 | Next: one PR group (D30): its members and titles, each spec's path with heading anchor, each issue | the plan, headings copied exactly |
 | Unpushed work, stashes, snapshot refs | the open-gate line (`sh scripts/agent/open-gate.sh`) |
 | Routing | "would anything be lost with the cheaper tier?"; roster in `.claude/agents/` |
 | Definition of Done | `npm run gates` plus the conditional verifiers |
-| Opening move and stop condition | the audit commands; stop at about 70% of the context (D30), after the current group's publish step, then hand off in this format |
+| Context at close | the runtime's own telemetry, or unknown; any forced compaction (D40) |
+| Opening move and stop condition | the audit commands; in the V1 cloud run, hand over at 776,000 tokens of measured context, at a band close, or earlier when compaction or a hard limit would come first (D40); in any other session, at about 70% of the context after the current group's publish step (D30) |
 
 ## Template
 
@@ -37,9 +38,32 @@ tier?". One builder at a time; one adversary per group against .claude/rubrics/,
 physics-auditor, verification-driver or rules-reviewer when the diff calls for them
 (D30). DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff
 requires). Executors never push.
-Stop at about 70% of the context: finish the current group's publish step, then emit
-this block again.
+Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.
+Context (V1 cloud run, D40): keep automatic and idle compaction off; never run
+/compact; hand over earlier if compaction or a hard limit would come first, after each
+published group when telemetry is unknown, and after any forced compaction.
+Stop: V1 cloud run at 776,000 tokens of measured context, at a band close, or earlier as
+above: finish bounded stabilization, emit this block again and start one verified
+successor (D40). Other sessions at about 70%: finish the current group's publish step,
+then emit this block again (D30).
 ```
+
+## Start the successor (D40)
+
+Only the lead starts a successor; a builder near its limit reports to the lead instead.
+Start exactly one, because two successors would both build on one stack, and building
+is sequential (AGENTS.md). Measure occupancy with the runtime's own telemetry, not a
+configured threshold. Bounded stabilization is as D40 defines it.
+
+Update and push the ledger's session handover section, then create the successor with
+the platform's supported session tool, from the final
+published tip, with this block as its complete kickoff. Then confirm that it started,
+received the kickoff and runs the requested model and mode; a returned id proves none
+of that. Check for an existing successor before retrying an uncertain create. If
+creation is refused or unavailable, give the owner the block and name the limit: that
+is a blocked handover, not completion. Run the block through
+`node scripts/check-secrets.mjs --stdin` while its Repo line still holds the
+`<abs path>` placeholder, then fill in the path (`public-hygiene`).
 
 ## Check before sending
 
