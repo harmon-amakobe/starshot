@@ -1,24 +1,30 @@
-import { describe, expect, it } from 'vitest';
-import { norm, scale, sub } from '@starshot/ephemeris';
+import { describe, expect, it, vi } from 'vitest';
+import { PLANET_IDS, norm, scale, sub } from '@starshot/ephemeris';
 import { parkingState, LunarModel, DAY, LAUNCH_ET, MOON_SOI_KM } from '@starshot/physics/lunar';
 import { CAMPAIGN } from '../levels';
-import { MOONSHOT, MISSIONS, nextMission } from '../missions';
+import { MOONSHOT, MISSIONS, nextMission, type MissionBody } from '../missions';
 import { scoreShot } from '../scoring';
 import { lunarHint, runLunar } from '../sim/lunar';
 import { lunarModel } from '../sim/lunar-model';
 import { isLunar, type LunarShotRequest } from '../sim/flight-request';
 import { shotKey, launchGate } from '../sim/preview';
 import type { FlightResponse, ShotResponse } from '../sim/protocol';
-import { freshSession, copySession, validSession, togglePauseAt } from './session';
+import { freshSession, copySession, validSession, togglePauseAt, type CameraMode } from './session';
 import { finalRequest, matchesRestore } from './contracts';
 import { parsePilots, earnedFor, recordResult, type Pilot } from './profiles';
 import { geometry } from './scene-geometry';
 import { makeFrame } from './frame';
+import { CampaignScene } from './scene';
 import { zoomAt } from './zoom';
-import type { SceneState } from './scene-types';
+import type { SceneFrame, SceneState } from './scene-types';
 import { impactBody, completionNotice } from './outcome';
 import { ReleaseOwner } from './release';
 import { summaryOf } from './use-release';
+
+// The scene fetches its observatory data on construction; here that data never arrives.
+vi.mock('./scene-data', async (importOriginal) => ({
+  ...await importOriginal<typeof import('./scene-data')>(), loadSceneData: () => new Promise(() => {}),
+}));
 
 const launch = (speed = 3.24, angle = 0): ShotResponse<LunarShotRequest> => {
   const save = freshSession(); save.aim = { angleDeg: angle, speedKmS: speed };
@@ -212,6 +218,48 @@ describe('orbital views retain physical coordinates', () => {
       const before = zoomAt(f, 0, point, orbit);
       const after = zoomAt({ ...f, centre: zoom.pan, heightKm: zoom.heightKm }, 0, point, orbit);
       expect(Math.hypot(before.pan[0] - after.pan[0], before.pan[1] - after.pan[1])).toBeLessThan(1e-8);
+    }
+  });
+});
+describe('frames take the Moon model each frame, null until it loads', () => {
+  const planetary = (level = CAMPAIGN[0]!, camera: CameraMode = 'system', map = false, focus: MissionBody | null = null): SceneState => {
+    const s = freshSession(level);
+    return { ...frameState(), level, parking: undefined, launchEt: s.et, et: s.et, aim: s.aim, map, focus,
+      preferences: { ...s.preferences, camera } };
+  };
+  const missing = 'The Moon model has not loaded';
+  it('draws every planetary level without the model, as it does with it, in each camera, map and focus', () => {
+    for (const level of CAMPAIGN) for (const camera of ['follow', 'orbit', 'system', 'free'] as const) {
+      for (const map of [false, true]) for (const focus of [null, 'sun', 'earth', level.target] as const) {
+        const state = planetary(level, camera, map, focus), drawn = makeFrame(state, 390, 844, null, 1, 'test', null);
+        expect(drawn.frame.bodies.map(b => b.id)).toEqual(['sun', ...PLANET_IDS]);
+        expect(drawn.frame).toEqual(makeFrame(state, 390, 844, null, 1, 'test', lunarModel).frame);
+      }
+    }
+  });
+  it('refuses to draw Moonshot, or a planetary Moon focus, without the model, and draws both with it', () => {
+    const moonshot = frameState(), focused = planetary(CAMPAIGN[0]!, 'system', false, 'moon');
+    for (const state of [moonshot, focused]) {
+      expect(() => makeFrame(state, 390, 844, null, 1, 'test', null)).toThrow(missing);
+      const moon = makeFrame(state, 390, 844, null, 1, 'test', lunarModel).g.body('moon').r;
+      expect(moon).toEqual(lunarModel.bodies(state.et).moon.r);
+    }
+  });
+  it('takes the model on each scene update, so a model that arrives after mount needs no new scene', () => {
+    vi.stubGlobal('location', { search: '?renderer=canvas' });
+    vi.stubGlobal('devicePixelRatio', 1);
+    // Every 2D call is a no-op: the test reads the frame the scene returns, not its pixels.
+    const context = new Proxy({}, { get: () => () => ({ addColorStop() {}, width: 0 }), set: () => true });
+    const canvas = { clientWidth: 390, clientHeight: 844, width: 0, height: 0, getContext: () => context };
+    const scene = new CampaignScene(canvas as unknown as HTMLCanvasElement, canvas as unknown as HTMLCanvasElement);
+    const moonshot = frameState(), moonOf = (frame: SceneFrame) => frame.bodies.find(b => b.id === 'moon')!.point;
+    try {
+      expect(scene.update(planetary(), null).bodies.map(b => b.id)).toEqual(['sun', ...PLANET_IDS]);
+      expect(() => scene.update(moonshot, null)).toThrow(missing);
+      expect(moonOf(scene.update(moonshot, lunarModel))).toEqual(moonOf(makeFrame(moonshot, 390, 844, null, 1, 'test', lunarModel).frame));
+    } finally {
+      scene.dispose();
+      vi.unstubAllGlobals();
     }
   });
 });

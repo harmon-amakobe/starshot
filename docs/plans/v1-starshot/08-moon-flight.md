@@ -21,7 +21,9 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 | Search core | 280 | 10 | Bounded deterministic search with exact simulation counts |
 | Search transport | 240 | 9 | Cooperative worker dispatch, protocol fields and browser proof |
 | Model | 280 | 16 | Pure requests and explicit scene-model plumbing, still eagerly loaded |
-| Loading | 360 | 14 | Lazy model, readiness controls, ownership and retry |
+| Loader | 240 | 8 | Memoized dynamic loader with retry; the scene takes a nullable model each frame, still passed eagerly |
+| Readiness | 320 | 12 | Launch, pulling and Guide gated on the model and a matching preview, with the preview-key fixes; still eager |
+| Lazy | 280 | 9 | The main thread loads the rail on demand, with the loading and retry panel and the `lunar-loading.mjs` browser probe |
 | Evidence | 350 | 8 | Built-module, network, offline and asynchronous browser regressions |
 
 Budgets include tests and per-part plan, changelog and result additions. These are
@@ -106,8 +108,9 @@ The Model part first preserves eager loading while removing implicit ownership.
 Move request construction into pure `sim/lunar-request.ts`; `campaign/contracts.ts`
 imports it directly. No rail import may enter through a barrel. `sim/lunar-model.ts`
 owns the shared data-backed instance. Worker simulation stays in its dynamic graph.
-The following Loading part adds `sim/load-lunar-model.ts` to memoize main-thread
-dynamic loading with absent/loading/ready/failed states and retry after failure.
+The Loading work is three parts (deviation row 39). Loader adds `sim/load-lunar-model.ts`
+to memoize main-thread dynamic loading with absent/loading/ready/failed states and retry
+after failure. Readiness gates the controls, and Lazy switches the main thread to it.
 
 Pass the ready model through `CampaignScene`, `makeFrame`, `scene-geometry` and
 `worldFor`. `use-view` or the scene owns loading, never request construction.
@@ -130,7 +133,8 @@ Each implementation part supplies affected criterion proof before publication.
 The final evidence part makes that proof reusable; it cannot defer earlier DoD.
 Use existing browser helpers where they fit, with fresh isolated storage.
 Add `scripts/verify-steps/lunar-flight.mjs`, `lunar-worker.mjs`, `lunar-loading.mjs`
-and `scripts/verify-lunar-loading.mjs --dist apps/game/dist` as focused probes.
+and `scripts/verify-lunar-loading.mjs --dist apps/game/dist` as focused probes. The Lazy
+part supplies `lunar-loading.mjs` as its own proof; Evidence adds the bundle checker.
 The checker is a verifier, not a new global gate; include a rules-reviewer.
 
 Measure the real production build at the cleanup base and final tip separately:
@@ -536,3 +540,56 @@ That is 41 code, 130 test, 66 result-note, 1 changelog, 1 deviation-row and 5 ha
 | `lunar-flight.mjs`, `screen-flight.mjs` and `lunar-worker.mjs`, each at `/` and at `/starshot/` | All 6 exit 0 on the final tree, 3 contexts each: console 0, page errors 0, failed requests 0, no target under 44 px |
 | `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |
+
+## Loader result
+
+Based on the D41 checkpoint at `cab3844`, above Model at `067e5f9`. Paths start at `apps/game/src/`. Loading stays eager.
+`sim/load-lunar-model.ts` adds `createLunarModelLoader(importer)`, with `state`, `model` and `load()`, and the default `lunarModelLoader`, whose importer is `() => import('./lunar-model')`. No production module imports it yet.
+`CampaignScene` takes no model at construction. `update(state, model)` (`campaign/scene.ts:35`) passes it to `makeFrame` each frame, and `campaign/use-view.ts:38` passes the shared `lunarModel`. The renderer stays mounted.
+`makeFrame`, `geometry` and `worldFor` take a required `model: LunarModel | null`. `worldFor` reads it only through `loaded()` (`campaign/world.ts:11`), which throws on null, and returns the narrowed `moonModel`, which `geometry` reads.
+`DAY` replaces `86400` at `campaign/scene-geometry.ts:14` and `:17` and at `sim/lunar.ts:19`. That closes findings row 8.
+
+Open points, settled conservatively, and inputs for Readiness:
+- The loader exposes `state`, `model` and `load()`, nothing more. It has no subscription and keeps no error: `load()` resolves or rejects, and a consumer sets its own state from that.
+- Without the model, a lunar frame throws `The Moon model has not loaded, so the Moon cannot be drawn.` A planetary frame that asks for the Moon, as a `moon` focus would, throws the same. No other planetary path reads the model.
+- `CampaignScene.update` sets its release state and canvas size before `makeFrame` throws, and `use-view.ts` shows the throw as its error text. Readiness or Lazy must not draw a lunar level before the model is ready.
+- Findings row 9: the guard still counts `*.test-support.ts` files and type-only imports as importers. An extra importer can only fail the guard, so counting them errs closed.
+- `campaign/scene.ts:52` keeps a `86400` in the planetary orbit key. Row 8 did not name it.
+
+| Spec line | Proof |
+|---|---|
+| Lazy start, one shared pending promise, ready reuse | `sim/load-lunar-model.test.ts:39`, with an injected importer |
+| A failure sets `failed` and the next call retries | `:56` |
+| The default instance does not load the rail on import, and loads it once when asked | `:28`, with the rail counter; `sim/lunar-request.test.ts:75` pins the loader as an importer |
+| Every planetary level draws with a null model | `campaign/lunar.test.ts:231`: 4 levels, 4 cameras, map on and off, 4 focus values, each frame equal to the one drawn with the model |
+| A lunar level with a null model throws, with no fallback | `:240`, with a planetary Moon focus as the second case |
+| The scene takes the model each frame, without a rebuild | `:248`: one scene draws a planet, refuses Moonshot without the model, then draws its Moon with it |
+| Drawing is unchanged | The frame tests in `campaign/lunar.test.ts`, `campaign/contracts.test.ts` and `campaign/moon-coordinates.test.ts` pass unedited |
+
+There are 23 production mutants, all killed: 18 by Vitest, 4 by typecheck and 1 by the browser probe. Vitest ran with `--fsModuleCache=false` on the 5 affected test files, and each mutant was restored and checked with `cmp`.
+
+| Mutant | Killing test |
+|---|---|
+| The memo is never cleared on failure, or `failed` is never set | `sim/load-lunar-model.test.ts:56` |
+| A second call starts a second import, or a ready model is imported again | `:39` |
+| The loader imports `./lunar-model` statically | `:28` |
+| `loading`, `ready` or the kept model dropped, or the importer called at creation (4) | `:39` and `:56` |
+| A lunar null model falls back to an empty-rail stand-in | `campaign/lunar.test.ts:240` and `:248`, and `sim/lunar-request.test.ts:72` |
+| A planetary Moon read falls back to Earth | `campaign/lunar.test.ts:240` |
+| The planetary path reads the model, for every body or for Earth when present (2) | `:231`, with 3 or 1 tests in `campaign/contracts.test.ts` |
+| `loaded()` without its null check, or `geometry` drawing a Moon orbit on every level (2) | `:240` and `:248`, and `:231` for the orbit |
+| `makeFrame` passes `null` to `geometry` | `:240`, `:248`, 4 older frame tests and 4 in `campaign/moon-coordinates.test.ts` |
+| The scene passes `null`, or keeps the first model it gets (2) | `:248` only |
+| The model argument dropped at `use-view.ts:38`, `scene.ts:42`, `frame.ts:10` or `scene-geometry.ts:23` (4) | `node scripts/gates.mjs --only typecheck`, exit 1 each (TS2554) |
+| `use-view.ts:38` passes `null` | Typecheck and Vitest pass; `lunar-flight.mjs:18` exits 1, as no frame is drawn |
+
+Size against `cab3844`: 236 contentful added lines and 0 moved, in 12 files, against a budget of 240 lines and 8 files. That is 62 code, 128 test, 45 note and 1 changelog lines; the orchestrator's split records are counted apart. The spec's own list is 8 files; `sim/lunar.ts`, the null-model tests in `campaign/lunar.test.ts`, the changelog and this note add 4. Nothing was compressed.
+The entry `index-*.js` is 988,786 bytes, against 988,681 at the base; the loader is in no chunk. The worker's `lunar-*.js` is 99,312 bytes.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 194 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 18 files, 173 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; the existing large-chunk warning remains |
+| `lunar-flight.mjs` at `/` | 0 on the final tree, 3 contexts: page errors 0, failed requests 0, no target under 44 px. The phone context logs 4 Chromium "GPU stall due to ReadPixels" warnings, as the base build does on this machine |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |

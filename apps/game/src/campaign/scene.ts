@@ -25,20 +25,21 @@ export class CampaignScene {
   private releaseCharge = 0;
   private previousAnchor: [number, number] | null = null;
   private releaseAnchor: [number, number] | null = null;
-  // The owner hands over a ready Moon model; the scene draws with it and never loads one.
-  constructor(private background: HTMLCanvasElement, foreground: HTMLCanvasElement, private readonly model: LunarModel) {
+  constructor(private background: HTMLCanvasElement, foreground: HTMLCanvasElement) {
     this.ctx = background.getContext('2d')!;
     if (new URLSearchParams(location.search).get('renderer') !== 'canvas') { try { this.three = new ThreeScene(foreground); } catch { foreground.hidden = true; } }
     loadSceneData().then(data => { if (!this.disposed) { this.data = data; this.three?.setData(data); } }).catch(() => {});
   }
-  update(state: SceneState) {
+  // The owner hands over the Moon model each frame, null until it loads, so a model that arrives
+  // after mount needs no rebuild; the scene draws with it and never loads one.
+  update(state: SceneState, model: LunarModel | null) {
     const w = this.background.clientWidth, h = this.background.clientHeight, ratio = Math.min(devicePixelRatio, 2);
     if (this.background.width !== Math.round(w * ratio) || this.background.height !== Math.round(h * ratio)) { this.background.width = Math.round(w * ratio); this.background.height = Math.round(h * ratio); }
     if (this.wasAiming && !state.aiming && state.snap) { this.releaseAt = state.visualTime; this.releaseCharge = this.previousCharge; this.releaseAnchor = this.previousAnchor; }
     this.wasAiming = state.aiming;
     const snap = state.snap && !state.reduced ? Math.max(0, 1 - (state.visualTime - this.releaseAt) / .18) : 0;
     const drawn = snap > 0 ? { ...state, charge: this.releaseCharge * snap ** 3 } : state;
-    const f = makeFrame(drawn, w, h, this.data, this.identity, this.three ? 'WebGL 2' : 'Canvas 2D', this.model);
+    const f = makeFrame(drawn, w, h, this.data, this.identity, this.three ? 'WebGL 2' : 'Canvas 2D', model);
     if (snap && this.releaseAnchor) f.frame.craft = [f.frame.craft[0] * (1 - snap) + this.releaseAnchor[0] * snap, f.frame.craft[1] * (1 - snap) + this.releaseAnchor[1] * snap];
     this.previousCharge = state.charge; this.previousAnchor = [...f.frame.craft];
     this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0); this.ctx.clearRect(0, 0, w, h);

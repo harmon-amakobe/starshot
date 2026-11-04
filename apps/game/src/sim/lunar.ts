@@ -1,5 +1,5 @@
 import { norm, sub } from '@starshot/ephemeris';
-import { simulateLunar, MOON_GM, MOON_RADIUS, MOON_SOI_KM, LAUNCH_ET, EARTH_RADIUS } from '@starshot/physics/lunar';
+import { simulateLunar, DAY, MOON_GM, MOON_RADIUS, MOON_SOI_KM, LAUNCH_ET, EARTH_RADIUS } from '@starshot/physics/lunar';
 import { periapsisKm, type ShotAnalysis } from './shot';
 import type { Hint } from './hint';
 import type { LunarShotRequest, LunarResult } from './flight-request';
@@ -16,7 +16,7 @@ export function runLunar(shot: LunarShotRequest): { result: LunarResult; analysi
   }), steps: f.steps, endTime: last.t, termination,
     terminatedBy: f.impact ?? (hit ? 'moon' : undefined), encounters: [], closest: {} },
   analysis: { hit, termination, terminatedBy: f.impact ?? (hit ? 'moon' : undefined), launchEt: shot.launchEt,
-    endEt: last.t, flightDays: (last.t - shot.launchEt) / 86400, targetSoiKm: MOON_SOI_KM,
+    endEt: last.t, flightDays: (last.t - shot.launchEt) / DAY, targetSoiKm: MOON_SOI_KM,
     captureZoneKm: MOON_SOI_KM, captureZoneScale: 1, targetRadiusKm: MOON_RADIUS,
     closestKm: periapsis ?? f.closestKm, closestEt: hit ? last.t : f.closestEt, periapsisKm: periapsis,
     arrivalSpeedKmS: hit ? norm(v) : undefined, bullseye: hit && periapsis! < 10 * MOON_RADIUS,
