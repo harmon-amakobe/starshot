@@ -713,6 +713,9 @@ review becomes a lite review, and non-blocking findings wait for the master revi
 master review gains a findings-table input, one refuter per serious finding and a rerun
 of the affected acceptance commands.**
 
+**Superseded in part by [D42](#d42-builders-prove-what-matters-per-part-parts-grow-and-may-build-in-parallel) (2026-11-04, the owner's call): up to two builders may run at
+once on independent parts.**
+
 **Decision.** The plan's specs stay as written, but they are built as PR groups. A group
 is one branch, one pull request and one review for one to four consecutive specs. It is
 named for its first member and based on the previous group's branch. The groups and
@@ -1140,6 +1143,8 @@ PR's checks itself after opening it and before publishing the next group.
 
 ## D41. Each pull request gets a lite review; the master review carries the depth
 
+**Superseded in part by [D42](#d42-builders-prove-what-matters-per-part-parts-grow-and-may-build-in-parallel) (2026-11-04, the owner's call): a killed mutant is required only for physics, safety and gameplay guards, and the pre-build `codebase-map` pass is skipped when scope is clear.**
+
 *Date:* 2026-11-04. *Source:* owner's ruling for the remaining V1 program: "lite reviews
 per PR and one large final one at the end, so that we do not spend too much time
 reviewing each". It tightens D30's bounded review and keeps D30's master review.
@@ -1201,3 +1206,54 @@ describe the lite review. D30's per-group review is superseded in part. Its grou
 size rules and band sweeps are unchanged; its master review keeps its shape and gains
 the three steps above. The findings table lives in the resumption ledger beside the
 session handover packet.
+
+---
+
+## D42. Builders prove what matters per part; parts grow and may build in parallel
+
+*Date:* 2026-11-04. *Source:* the owner's ruling for the remaining V1 program, accepting
+four proposals to shorten each part: lighter per-part proof, larger parts, parallel
+builders and fewer pre-build maps. The builder rule applies to later work in this
+repository too. It narrows D41's builder proof and pre-build map, the sequential building
+in `AGENTS.md` and the plan, and the parts rule in the Moon flight plan; D41's review
+shape and the Definition of Done are unchanged.
+
+**Decision.** The four proposals, the first in two bullets:
+
+- **Proof per part.** Every spec line still needs a test, and `npm run gates` must exit
+  0. A planted, restored mutant that a test kills is required only for a guard that
+  protects physics (units, time scales, frames, preview equals launch, D6), safety (data
+  loss, ownership, hygiene, security) or a gameplay rule. Plumbing, records and UI
+  wiring get tests but no mutation run.
+- **Browser runs per part.** A part runs the browser steps its diff affects at `/` in the
+  three default contexts. The `/starshot/` subpath, the Canvas 2D pass, offline browser
+  runs other than `verify-web-release.mjs`, and
+  the full viewport matrix move to the master review and the band-close `verify-all`
+  sweeps. A part that changes routing, base paths, the service worker, the release
+  inventory or renderer choice still runs the affected matrix itself.
+- **Part size.** A part may grow to the size check's failure line, twice the 400-line
+  cap, without a split. Its measured size goes in the result note and the PR body; only
+  a part past the failure line, or a declared split, takes a deviation row.
+- **Parallel builders.** Up to two builders may run at once on independent parts: no
+  shared source, test or probe files and no dependency between them. Builders report
+  their records, and the lead writes the shared ones (changelog, result notes, deviation
+  and handover rows) when it commits. Both start from the current stack tip, each in its
+  own worktree (non-negotiable 8). The lead commits the earlier part first, rebases the
+  later part onto it, and only then runs the later part's gates, lite review and push
+  (non-negotiable 9). Each part keeps its own lite review.
+- **Pre-build maps.** The lead skips the `codebase-map` pass when the spec or the
+  previous part's result already names the files, callers and size; otherwise one pass.
+
+The master review gains the deferred work: the full browser matrix on the top tip and a
+mutation sweep over plumbing where a finding calls for it.
+
+**Why.** Each part took two to four hours of wall clock, most of it in mutation batches,
+browser runs repeated at two bases, splits forced at 400 lines and strictly sequential
+building. The deep checks are not dropped; they move to one place at the end, where D41
+already put the deep review.
+
+**Consequences.** `AGENTS.md`, the plan's operating steps and both handoff templates
+allow up to two parallel builders. The Moon flight plan's parts rule and acceptance
+commands follow this entry. Never loosening a tolerance, test, safety boundary or budget
+still holds (non-negotiable 2): the change is to what each part runs, not to what any
+test asserts.

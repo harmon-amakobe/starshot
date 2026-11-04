@@ -30,8 +30,8 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 Budgets include tests and per-part plan, changelog and result additions. These are
 planning targets below the ordinary 400-line/20-file warning; the failure threshold
 remains twice the cap. Count actual contentful additions before each builder and
-at review. Declare another real split before exceeding the budget; never compress
-code or multiply member identities. Mechanical moves are identified separately.
+at review. Under D42 a part may grow to the failure threshold without a split; declare a
+real split before that, and never compress code or multiply member identities. Mechanical moves are identified separately.
 
 ## Precision
 
@@ -151,8 +151,10 @@ retain the original first-load criterion and all existing size/performance budge
 
 Drive real guide hit, miss and Earth impact; preview/launch/replay identity; Plan
 and YOLO; cancellation/owner switch; sub-day restore; loading/retry; and focused
-Moon drawing. Run phone portrait, short landscape, desktop and reduced motion,
-Canvas and WebGL as applicable, root and `/starshot/`, then offline restore.
+Moon drawing. Run at `/` per part (D42): phone portrait, short landscape, desktop and
+reduced motion, WebGL, and the offline restore through the worker; a context a spec line
+names runs in that part. The `/starshot/` repeat and the Canvas 2D pass run at the master
+review.
 Inspect screenshots per criterion; numerical position proof remains separate.
 Human trials and physical-phone 60 fps/100 ms measurements are optional under D39.
 Their absence does not leave lunar acceptance unfinished; automated proof remains required.
@@ -162,8 +164,10 @@ Their absence does not leave lunar acceptance unfinished; automated proof remain
 Every part runs `npm run gates` and public hygiene. Runtime parts run
 `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts`,
 `npm run build` and `npm run build:prototype`, plus applicable browser proof.
-The three reusable steps run with `node scripts/verify-game.mjs --steps <path>`,
-repeated with `--base /starshot/`. Run the loading checker on the built output and
+The affected reusable steps run with `node scripts/verify-game.mjs --steps <path>` at
+`/`; under D42 the `/starshot/` repeats and the full matrix run at the master review. A
+part that changes routing, base paths, the service worker, the release inventory or
+renderer choice runs the affected matrix itself, `/starshot/` included. Run the loading checker on the built output and
 `node scripts/verify-web-release.mjs` for offline/update ownership.
 Record commands, exit codes, counts and build/source identity in each PR.
 New tests/probes above are required work, not claimed results.

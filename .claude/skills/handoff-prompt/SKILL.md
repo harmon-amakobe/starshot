@@ -34,7 +34,7 @@ Deviations: <path#section>. Open-gate at close: <the line>.
 Done: <PR0 ..., group PR2 ...>. Next: group PR<m> (<members>) <titles>.
 Specs: <path#anchor>, ... Issues: #<a>, #<b>.
 You are the orchestrator (top tier). Route by "would anything be lost with the cheaper
-tier?". One builder at a time; one lite review per PR (D41): one adversary, plus
+tier?". Up to two builders on independent parts (D42); one lite review per PR (D41): one adversary, plus
 physics-auditor or rules-reviewer only when physics or the harness changes (a docs-only
 checkpoint gets rules-reviewer alone); blockers and small own-code fixes land in the
 PR, the rest go to
