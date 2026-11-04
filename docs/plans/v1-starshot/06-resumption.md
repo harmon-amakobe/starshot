@@ -93,7 +93,7 @@ and grouping then. An `agent-ready` label must reflect that bar, not the old ban
 ## Lunar acceptance ledger
 
 The post-cleanup [delivery supplement](08-moon-flight.md) turns the remaining work
-into eleven declared parts under #33. The rows below retain the PR0 baseline evidence;
+into twelve declared parts under #33. The rows below retain the PR0 baseline evidence;
 part publication records new proof without claiming that all lunar work is complete.
 
 The original PR3a/b specifications are restored in the plan for traceability. This ledger
@@ -167,11 +167,11 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-pr03a-lazy` (PR3a lazy), above PR3a readiness #92, PR3a loader #91, the D41 review checkpoint #90, PR3a model #89, the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, PR3a loader #91, PR3a readiness #92, and PR3a lazy on `codex/v1-pr03a-lazy`; each PR's CI passed at its head. Issue #33's body was mirrored by hand through the GitHub connector after the Loading split, since `sync-work.mjs --apply` needs a token this environment lacks |
-| Next | PR3a evidence, issue #33, [browser and bundle evidence](08-moon-flight.md#browser-and-bundle-evidence), branch `codex/v1-pr03a-evidence`, base `codex/v1-pr03a-lazy`. Budget 350 lines and 8 files: one `codebase-map` pass, one builder, one lite review (D41). It owns `scripts/verify-lunar-loading.mjs`, the sub-day flight and result restore browser case and findings rows 6, 7 and 21. Then PR3b |
-| Not run here | Physical-phone timing (optional under D39); WebKit and Firefox worker and retry behaviour; every criterion from PR3a evidence onward |
-| Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: about 625,000 measured at the Lazy publication. The runtime's session telemetry (autocompact_state) has read automatic compaction off since the Readiness publication, so the 776,000 to 792,000 window applies in full |
+| Stack tip | `codex/v1-pr03a-evidence` (PR3a evidence bundle), above PR3a lazy #93, readiness #92, loader #91, the D41 review checkpoint #90, PR3a model #89, the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, PR3a loader #91, PR3a readiness #92, PR3a lazy #93, and PR3a evidence bundle on `codex/v1-pr03a-evidence`; each PR's CI passed at its head. Issue #33's body was mirrored by hand through the GitHub connector after each split, since `sync-work.mjs --apply` needs a token this environment lacks |
+| Next | The owner's D42 speed ruling as a checkpoint on `codex/v1-proof-speed`, base `codex/v1-pr03a-evidence`; then PR3a evidence browser, issue #33, branch `codex/v1-pr03a-evidence-browser`, base the D42 checkpoint, budget 220 lines and 5 files: the remaining browser cases, the offline Moon restore and the Chromium half of findings rows 21 and 22. Then PR3b |
+| Not run here | Physical-phone timing (optional under D39); WebKit and Firefox worker and retry behaviour; every criterion from PR3a evidence browser onward |
+| Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: about 715,000 measured at the Evidence bundle publication. The runtime's session telemetry (autocompact_state) has read automatic compaction off since the Readiness publication, so the 776,000 to 792,000 window applies in full |
 
 ## Findings for the master review (D41)
 
@@ -202,7 +202,9 @@ rows are never deleted. Line numbers are at the PR named in the source column.
 | 18 | PR3a readiness review | The hook's calls into `PreviewQueue` have no React test (`apps/game/src/sim/useSimulation.ts:103` to `:153`), and the extra `structuredClone` per preview is unmeasured | The master review decides whether a hook-level test or a measurement is owed |
 | 19 | PR3a lazy result | In development a retry cannot refetch, since the chunk meta tag exists only in the build; the paint after a switch to Moonshot is not timed by any probe | The master review decides whether either needs proof |
 | 20 | PR3a lazy result | While the reason row shows, the deck grows about 19 px and in short landscape Guide and Launch sit at the left of their row; while loading, the disabled ring handle sits at the top-left corner | PR3b's layout work owns these |
-| 21 | PR3a lazy result | Whether `page.route` sees requests the service worker serves, and retry in WebKit and Firefox, are unmeasured | PR3a evidence measures them |
+| 21 | PR3a lazy result | Whether `page.route` sees requests the service worker serves, and retry in WebKit and Firefox, are unmeasured | PR3a evidence measures them. The Chromium half stays with PR3a evidence browser; WebKit and Firefox are not installed here |
+| 22 | PR3a evidence bundle review | A `modulepreload` of the Moon chunk passes `scripts/verify-lunar-loading.mjs`, by design, since a preload only fetches | PR3a evidence browser measures it as a transfer cost |
+| 23 | PR3a evidence bundle review | The Lazy changelog line gives the entry as 90,860 bytes smaller and the bundle verifier measures 88,969, from different bases and methods | The master review settles one figure for the release notes |
 
 ## Publication and account boundaries
 
