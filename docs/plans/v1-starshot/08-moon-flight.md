@@ -776,3 +776,49 @@ Size against `1ea3f56`: 449 contentful added lines in 5 files, against a budget 
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
 
 Inputs for Evidence browser: planetary page requests (`system-*.js` under a run-time base) and transfer and initiator bytes are unknown here; count each cached response once. The precache lists the Moon chunk, so measure install traffic apart from first execution. A module preload, as in review copy c3, is a transfer cost that this verifier does not count as execution.
+
+## Evidence browser result
+
+Built to [Browser and bundle evidence](#browser-and-bundle-evidence) and the Evidence bundle result's inputs, on the D42 checkpoint at `4a4c9dd`. Two new steps for `scripts/verify-game.mjs`; no game source changed. Chromium 153.0.8010.12 under Playwright 1.63.0, on this tree's build (entry `index-zUE6zZTl.js`). `screen-async.mjs` now takes its contexts from a caller, keeps the desktop run as its default, and applies the guide by keyboard (`:6` and `:81`).
+
+| Case | Step | Contexts and exit |
+|---|---|---|
+| A guided Moon flight departs 2026-11-02 01:00 UTC, equals its preview, is paused and restored by a reload with 8 fields equal; its hit result restores with 10 | `lunar-evidence.mjs:56` | WebGL 2: desktop at 1440x900, both phones at 844x390; 0 |
+| Replay restarts the restored flight and ends on the same `et`, score, analysis and summary | `:79` | as above; 0 |
+| Short landscape: the guided hit above, a miss and an Earth impact, each launch equal to its preview; Plan and YOLO pulls, each cancelled once; a YOLO launch to its result | `:92` | both phones; 0 |
+| The stale-reply owner switch (launch and hint, each answered and failed) at 390x844 and 844x390 | `:112`, through `screen-async.mjs` | phone; 0 |
+| Offline restore: the worker installs, a reload puts the page under it, a guided Moon flight is paused, the context goes offline and reloads. The 8 fields match, all 22 responses come from the worker, the Moon chunk among them, and the flight resumes to a hit | `lunar-offline.mjs:132` | all three, at `/` and `/starshot/`; 0 and 0 |
+| Findings row 21 | `:118` | all three, both bases; 0 |
+| Findings row 22 and the bundle part's unknown rows | `:160`, helpers from `:23` | desktop, both bases; 0 |
+
+Row 21, Chromium half: `page.route` does not see a request the service worker answers. Through the first controlled reload, a handler on `**/*` saw none of the 21 (phones) or 22 (desktop) worker-served responses, the Moon chunk included. It did see the one control fetch the worker leaves to the network. Both bases agree. WebKit and Firefox are not installed here.
+
+Costs come from Navigation and Resource Timing in the page, its physics worker and the service worker, each URL once. Chromium adds 300 header bytes to each network `transferSize`. The harness server sends no content encoding and no cache headers, so transfer is raw bytes plus 300, and the HTTP cache served nothing. `/` and `/starshot/` gave identical numbers.
+
+| Load | Network: responses, transfer / body bytes | Script initiator | Worker-served | Unknown |
+|---|---:|---|---|---|
+| First visit, fresh pilot: Moonshot loads at the menu | 22, 1,906,230 / 1,899,630 | 5, 1,099,424 transfer bytes: entry, Moon chunk, two `system-*.js`, worker `lunar-*.js` | 0 | none |
+| The worker's install on that visit | 58, 13,847,004 / 13,829,604 | none; all 58 are `fetch` | 0 | `sw.js` itself, in no timeline |
+| Saved First Light pilot, cold cache | 20, 1,713,142 / 1,707,142 | 3, 906,336 transfer bytes: entry and two `system-*.js` | 0 | none |
+| Then Moonshot on that page | 2, 193,088 / 192,488 | Moon chunk 93,176 and worker `lunar-*.js` 99,312 body bytes | 0 | none |
+| Reload under the worker, on Moonshot | 0 | none | 21, 1,881,660 body bytes | `sim.worker-*.js`: both sizes read 0 |
+
+The first visit and the First Light load each also have navigation 1,242, stylesheet `link` 68,320, `fetch` 39,623 (two JSON files), `img` 564,467 (nine textures), `css` 114,884 (three fonts) and `other` 18,270 (the worker script) transfer bytes.
+- Planetary page requests: `system-astronomy.js` (3,089) and `system-rings.js` (3,502). The critical execution JS of a planetary first load is 905,436 raw bytes, 6,591 above the entry the bundle checker measured.
+- Install against execution: a first visit fetches the entry and the Moon chunk twice, once to run and once into the release cache. The install moves 7.3 times the bytes the page runs on.
+- Module preload (row 22): none. The built `index.html` has none, no load added a `link[rel=modulepreload]`, and the stylesheet is the only `link` initiator. Review copy c3's preload has no counterpart in this build.
+
+Left for the master review:
+- At 844x390 the flight deck covers Apply guide (its centre hits "Launch date (UTC)") and the result card's "Next mission" (its centre hits "Flight deck"); the steps log both (`lunar-evidence.mjs:36`). A pointer cannot press them; the keyboard can. Screenshots also show the mission pill over the result card's text. PR3b's layout work (findings row 20) is the natural owner.
+- Unmeasured: compressed transfer on the real host, and retry and worker serving in WebKit and Firefox. Under D42 the `/starshot/` repeat of `lunar-evidence.mjs` and a Canvas 2D pass of both steps wait for the master review; `lunar-offline.mjs` ran at `/starshot/`, as the worker demands.
+- The phone context logs 4 GL driver warnings, as at Lazy.
+
+| Command | Exit and result |
+|---|---|
+| `verify-game.mjs --steps scripts/verify-steps/lunar-evidence.mjs` at `/` | 0, 3 contexts: page errors 0, failed requests 0, no target under 44 px; 8 min 41 s |
+| `verify-game.mjs --steps scripts/verify-steps/lunar-offline.mjs` at `/` and with `--base /starshot/` | 0 and 0, 3 contexts each, as above |
+| `verify-game.mjs --steps scripts/verify-steps/screen-async.mjs` at `/` | 0; 4 stale replies ignored on the desktop |
+| `node scripts/verify-web-release.mjs` and `node scripts/verify-lunar-loading.mjs --dist apps/game/dist` | Both 0 |
+| `npm run gates` | 0, 13/13 gates, 223 tests; no copy finding on a line this part added |
+
+Size against `4a4c9dd`: 319 contentful added lines in 5 files of the part's own, and 328 in 6 with the handover and findings rows, against a budget of 220 lines and 5 files. That is `lunar-offline.mjs` 155 (139 code lines), `lunar-evidence.mjs` 113 (101), `screen-async.mjs` 13 with 11 removed, this note 36 and the changelog 1. D42 allows 800 without a split; nothing was compressed.
