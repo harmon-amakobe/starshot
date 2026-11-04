@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { norm, sub } from '@starshot/ephemeris';
-import { parkingState, LAUNCH_ET, MOON_SOI_KM } from '@starshot/physics/lunar';
+import { norm, scale, sub } from '@starshot/ephemeris';
+import { parkingState, LunarModel, DAY, LAUNCH_ET, MOON_SOI_KM } from '@starshot/physics/lunar';
 import { CAMPAIGN } from '../levels';
 import { MOONSHOT, MISSIONS, nextMission } from '../missions';
 import { scoreShot } from '../scoring';
-import { lunarHint, lunarModel, runLunar } from '../sim/lunar';
+import { lunarHint, runLunar } from '../sim/lunar';
+import { lunarModel } from '../sim/lunar-model';
 import { isLunar, type LunarShotRequest } from '../sim/flight-request';
 import { shotKey, launchGate } from '../sim/preview';
 import type { FlightResponse, ShotResponse } from '../sim/protocol';
@@ -148,9 +149,9 @@ describe('orbital views retain physical coordinates', () => {
       const state = frameState(lunar ? launch() : null);
       if (!lunar) { const s = freshSession(CAMPAIGN[0]!); Object.assign(state, { level: CAMPAIGN[0]!, parking: undefined, launchEt: s.et, et: s.et, aim: s.aim, preferences: s.preferences }); }
       state.preferences.camera = 'system'; state.deckHeight = 455;
-      const symbolic = makeFrame(state, 390, 844, null, 1, 'test').frame;
+      const symbolic = makeFrame(state, 390, 844, null, 1, 'test', lunarModel).frame;
       state.preferences.trueSize = true;
-      const physical = makeFrame(state, 390, 844, null, 1, 'test').frame;
+      const physical = makeFrame(state, 390, 844, null, 1, 'test', lunarModel).frame;
       expect(symbolic.bodies.map(b => b.point)).toEqual(physical.bodies.map(b => b.point));
       const bodies = symbolic.bodies.filter(b => ['earth', state.level.target, ...(lunar ? [] : ['sun'])].includes(b.id));
       for (const a of bodies) {
@@ -164,7 +165,7 @@ describe('orbital views retain physical coordinates', () => {
     for (const [w, h, deck] of [[390, 844, 280], [844, 390, 200], [1440, 900, 280]]) {
       for (const response of [null, weak, hit]) {
         const state = frameState(response); state.deckHeight = deck!;
-        const g = makeFrame(state, w!, h!, null, 1, 'test');
+        const g = makeFrame(state, w!, h!, null, 1, 'test', lunarModel);
         for (const p of [...g.g.parking, ...g.g.path]) {
           const point = g.projectPlane(p);
           expect(point[0]).toBeGreaterThanOrEqual(g.g.rect.left - 1e-5);
@@ -177,9 +178,32 @@ describe('orbital views retain physical coordinates', () => {
   });
   it('uses the same live parking position for the scene and an unburned departure', () => {
     const state = frameState(); state.et += 100;
-    const g = geometry(state, 390, 844), world = parkingState(lunarModel, state.parking!, state.et);
+    const g = geometry(state, 390, 844, lunarModel), world = parkingState(lunarModel, state.parking!, state.et);
     expect(norm(sub(g.current.r, world.r))).toBe(0);
     expect(g.craft[2]).toBeCloseTo(0, 5);
+  });
+  it('draws the Moon from the model it is given, even on a day another model has drawn', () => {
+    // A Moon 1% farther out keeps the drawing basis, so only a stale orbit could hide it.
+    class Wider extends LunarModel {
+      override relative(et: number) { const moon = super.relative(et); return { ...moon, r: scale(moon.r, 1.01) }; }
+    }
+    const wider = new Wider(lunarModel.rail), state = frameState();
+    const shared = makeFrame(state, 390, 844, null, 1, 'test', lunarModel).g;
+    const drawn = makeFrame(state, 390, 844, null, 1, 'test', wider).g;
+    expect(drawn.body('moon').r).toEqual(wider.bodies(state.et).moon.r);
+    expect(drawn.moonOrbit[0]).toEqual(drawn.direction(wider.relative(state.et).r));
+    expect(drawn.body('moon').r).not.toEqual(shared.body('moon').r);
+    expect(drawn.moonOrbit[0]).not.toEqual(shared.moonOrbit[0]);
+  });
+  it('draws the Moon orbit from each day it is asked for', () => {
+    // A cache that ignored the day would keep the first day's orbit on every later frame.
+    const first = frameState(), later = { ...first, et: first.et + 3 * DAY };
+    const orbits = [first, later].map(state => {
+      const g = makeFrame(state, 390, 844, null, 1, 'test', lunarModel).g;
+      expect(g.moonOrbit[0]).toEqual(g.direction(lunarModel.relative(state.et).r));
+      return g.moonOrbit[0];
+    });
+    expect(orbits[1]).not.toEqual(orbits[0]);
   });
   it('keeps the world point under the pointer during zoom, including a tilted free camera', () => {
     const f = { centre: [1000, 2000] as [number, number], heightKm: 50000, width: 390, height: 844 };

@@ -1,15 +1,15 @@
 import { createEphemeris, dot, sub, type Vec3 } from '@starshot/ephemeris';
 import { sampleAt } from '@starshot/physics';
-import { parkingState } from '@starshot/physics/lunar';
-import { lunarModel } from '../sim/lunar';
+import { parkingState, type LunarModel } from '@starshot/physics/lunar';
 import { cachedEphemeris } from '../sim/shot';
 import { isLunarLevel, type MissionBody } from '../missions';
 import type { SceneState } from './scene-types';
 export const ephemeris = cachedEphemeris(createEphemeris({ flatten: true }));
 export const rotate = (p: Vec3, angle: number): Vec3 => [p[0] * Math.cos(angle) + p[1] * Math.sin(angle), -p[0] * Math.sin(angle) + p[1] * Math.cos(angle), p[2]];
 
-export function worldFor(state: SceneState) {
-  const lunar = isLunarLevel(state.level), model = lunarModel;
+// The caller passes the ready Moon model, so drawing never decides when the rail loads.
+export function worldFor(state: SceneState, model: LunarModel) {
+  const lunar = isLunarLevel(state.level);
   const body = (id: MissionBody, et = state.et) => lunar && (id === 'earth' || id === 'moon') ? model.bodies(et)[id] : id === 'moon' ? model.bodies(et).moon : ephemeris.state(id, et);
   const earthLaunch = body('earth', state.launchEt).r, targetLaunch = body(state.level.target, state.launchEt).r;
   const rotation = lunar ? 0 : Math.atan2(targetLaunch[1] - earthLaunch[1], targetLaunch[0] - earthLaunch[0]);

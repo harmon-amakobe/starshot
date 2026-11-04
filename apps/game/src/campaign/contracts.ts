@@ -2,7 +2,7 @@ import { shotRequestFor } from '../levels';
 import { shotKey } from '../sim/preview';
 import { launchEtForDay, normalizeDeg, vInfFromAim, type Aim } from '../sim/shot';
 import { isLunarLevel } from '../missions';
-import { lunarRequest } from '../sim/lunar';
+import { lunarRequest } from '../sim/lunar-request';
 import type { FlightRequest as ShotRequest } from '../sim/flight-request';
 import { missionFor, type Session } from './session';
 export function finalRequest(save: Session, value: Aim = save.aim) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { EntryPresentation } from '@starshot/presentation/presentation';
+import { lunarModel } from '../sim/lunar-model';
 import { CampaignScene } from './scene';
 import { EMPTY_FRAME, type SceneState, type SceneFrame } from './scene-types';
 import type { CampaignController } from './use-campaign';
@@ -17,7 +18,8 @@ export function useView(controller: CampaignController, state: Omit<SceneState, 
     const observer = new ResizeObserver(measure); observer.observe(deckNode); measure(); return () => observer.disconnect();
   }, [deckNode]);
   useEffect(() => {
-    const scene = new CampaignScene(background.current!, foreground.current!); let raf = 0, previous = performance.now(), painted = 0;
+    // This hook owns the Moon model, still loaded with the app; request code never touches it.
+    const scene = new CampaignScene(background.current!, foreground.current!, lunarModel); let raf = 0, previous = performance.now(), painted = 0;
     const draw = (now: number) => {
       const { controller: c, state: s, suspended: paused } = live.current;
       const dt = Math.min(.05, (now - previous) / 1000); previous = now;
