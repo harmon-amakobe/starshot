@@ -119,11 +119,11 @@ A wrong change in these is expensive or silent; plan first and say what you chec
 The orchestrator holds the plan, routes work, reconciles and publishes; it does not
 build, except a small single-PR change it declares as such. A pull request builds a
 group of one to four specs (D30). Per group it reads the specs, confirms the base and
-spawns **one** builder at a time. Each PR gets one lite review (D41): an adversary in a
-fresh context against `.claude/rubrics/`, joined by `physics-auditor` when a physics
-number, tolerance, fixture, integrator or frozen setting changes, and by
-`rules-reviewer` when the harness does; a documentation-only checkpoint gets the
-rules-reviewer alone. The orchestrator fixes blockers and small should-fixes in the PR's
+spawns one builder, or two on independent parts in separate worktrees (D42). Each PR
+gets one lite review (D41). An adversary reads it in a fresh context against
+`.claude/rubrics/`. `physics-auditor` joins when a physics number, tolerance, fixture,
+integrator or frozen setting changes, and `rules-reviewer` when the harness does; a
+documentation-only checkpoint gets the rules-reviewer alone. The orchestrator fixes blockers and small should-fixes in the PR's
 own code, logs the rest for the master review (outside a program, in the PR body) and
 runs the gates and verifiers itself. It pushes, opens the PR, and updates the plan and
 logs. The deep review of the whole stack waits for the master review at the end (D30).
@@ -142,7 +142,7 @@ logs. The deep review of the whole stack waits for the master review at the end 
 - **Citations:** `file:line` for code, a resolvable URL for the web. Uncited claims
   are not promoted into plans or diffs. A gate reported without its exit code was not
   run.
-- Fan out only read-only research and review; building is sequential.
+- Fan out only read-only research and review; at most two builders run at once (D42).
 - **Commits are the owner's (D24).** The orchestrator commits agent work with the owner
   as author, adds the owner's `Signed-off-by:` at its publish step, and names the agent
   and session in a `Co-Authored-By:` trailer. Builders never commit or sign off.

@@ -28,9 +28,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
-| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus four owner checkpoints (D39, D40, D40's window note and D41), then one master review (D30, D41); PR3a has twelve declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
+| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus five owner checkpoints (D39, D40, D40's window note, D41 and D42), then one master review (D30, D41); PR3a has twelve declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
 | Date | Started 2026-11-01; reconciled 2026-11-03 |
-| Decisions | [D1 to D41](../../decisions.md); later rulings govern their recorded supersessions |
+| Decisions | [D1 to D42](../../decisions.md); later rulings govern their recorded supersessions |
 | Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -202,8 +202,8 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups, with four additional
-owner-decision checkpoints: D39, D40, D40's window note and D41. Each has one branch, one
+The 42 implementation specs build in these 28 delivery groups, with five additional
+owner-decision checkpoints: D39, D40, D40's window note, D41 and D42. Each has one branch, one
 pull request and one lite review (D41). The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
@@ -228,7 +228,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR3a readiness | PR3a | `codex/v1-pr03a-readiness` | `codex/v1-pr03a-loader` | A3 |
 | PR3a lazy | PR3a | `codex/v1-pr03a-lazy` | `codex/v1-pr03a-readiness` | A3 |
 | PR3a evidence bundle | PR3a | `codex/v1-pr03a-evidence` | `codex/v1-pr03a-lazy` | A3 |
-| PR3a evidence browser | PR3a | `codex/v1-pr03a-evidence-browser` | `codex/v1-pr03a-evidence` | A3 |
+| D42 proof checkpoint | Owner ruling, issue #20 | `codex/v1-proof-speed` | `codex/v1-pr03a-evidence` | A3 |
+| PR3a evidence browser | PR3a | `codex/v1-pr03a-evidence-browser` | `codex/v1-proof-speed` | A3 |
 | PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-evidence-browser` | A4 |
 | PR3c | PR3c | `codex/v1-pr03c-stylesheets` | `codex/v1-pr03b-moon-campaign` | A4 |
 | PR4 | PR4, PR5 | `codex/v1-pr04-process-licence` | `codex/v1-pr03c-stylesheets` | A4 |
@@ -1575,8 +1576,9 @@ does not block planning, implementation, master review or release readiness. Pro
 - **Layering.** `packages/` never imports `apps/`; nothing imports `python/` or
   `third_party/` (the `size` gate's layering check); in Rust, logic crates never depend
   on binding crates, and only `starshot-math` calls transcendental functions.
-- **One writer per tree.** One builder per worktree, sequential building; only read-only
-  research and review fan out (AGENTS.md, non-negotiable 8).
+- **One writer per tree.** One builder per worktree; at most two at once, on independent
+  parts (D42); otherwise only read-only research and review fan out (AGENTS.md,
+  non-negotiable 8).
 - **Physics numbers come with a test** against Horizons, the DE440 rails, an energy or
   timing check, or a known solution (AGENTS.md, non-negotiable 2).
 - **Accessible from the first commit** (AGENTS.md, non-negotiable 7).
@@ -1698,9 +1700,11 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
    before building there (the `stacked-pr` skill).
 3. **Claim.** Post the claim comment on each member's issue (D23; the `track-work`
    skill) and set its status.
-4. **One builder at a time.** Spawn one `executor` for the group, or one per member in
-   order when a member is large, with each spec's anchor, the absolute repository path
-   and the base; nobody else writes to that tree.
+4. **Builders (D42).** Spawn one `executor` for the group, or one per member in order
+   when a member is large, with each spec's anchor, the absolute repository path and the
+   base; nobody else writes to that tree. Up to two builders may run at once on
+   independent parts (D42): both start from the stack tip in separate worktrees, and the
+   lead rebases the later part onto the earlier before its gates, review and push.
 5. **Review, lite (D41).** One `adversary` pass in a fresh context against
    `.claude/rubrics/` and each member's "Adversary checks". It also reads this plan's
    deviation log and the PR body against the diff, reports per directory which files it
@@ -1728,7 +1732,7 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
    [session handover](06-resumption.md#session-handover-d40) rows (D40).
 9. **Close a band.** After its last group: the `verify-all` sweep, a handoff, and for
    Bands B to E the next band's planning session in a fresh session, which also confirms
-   that band's groups.
+   that band's groups. The sweep includes the browser runs D42 deferred.
 10. **Hand over in the measured window.** The V1 cloud run uses D40's window: 776,000
     to 792,000 tokens of measured context, never earlier on a projected cost, or earlier
     when compaction or a hard limit would come first. With no telemetry, record unknown
@@ -1743,7 +1747,10 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
     start a group they cannot finish (D30).
 11. **Master review, once, at the end (D30).** After the last group: the `verify-all`
     sweep with every acceptance criterion's command and exit code, a multi-lens review of
-    the whole stack, a final fix group, then the owner's review and the one merge.
+    the whole stack, a final fix group, then the owner's review and the one merge. It also
+    runs what D42 deferred: the browser steps at `/starshot/`, the Canvas 2D pass, offline
+    runs and the full viewport matrix on the top tip, and a mutation sweep over plumbing
+    where a finding calls for it.
 
 ### Handoff template
 
@@ -1762,7 +1769,7 @@ Next: group PR<m> (PR<m>, PR<m+1>) <titles>.
 Specs: docs/plans/v1-starshot/00-plan.md#<anchor>, ... Issues: #<a>, #<b>.
 Owner steps it waits on: <ids from 04-ops-checklist.md, or none>.
 Routing: you are the orchestrator (top tier); route by "would anything be lost with the
-cheaper tier?"; roster in .claude/agents/; one builder at a time; one lite review
+cheaper tier?"; roster in .claude/agents/; up to two builders on independent parts (D42); one lite review
 per PR (D41): one adversary, plus physics-auditor or rules-reviewer only when physics or
 the harness changes (a docs-only checkpoint gets rules-reviewer alone); blockers and
 small own-code fixes land in the PR, the rest go to
