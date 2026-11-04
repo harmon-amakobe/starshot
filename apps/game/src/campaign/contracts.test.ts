@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BODIES } from '@starshot/ephemeris';
 import { deltaVFromLeo } from '@starshot/physics';
 import { CAMPAIGN, sandboxLevel, SANDBOX_TARGETS } from '../levels';
+import { MOONSHOT } from '../missions';
 import { shotKey } from '../sim/preview';
 import { isLunar, type LunarShotRequest } from '../sim/flight-request';
 import type { ShotRequest } from '../sim/shot';
@@ -11,6 +12,7 @@ import { parsePilots } from './profiles';
 import { pullIntent, ReleaseOwner } from './release';
 import { aimFromPull, chargeFromPull, depthRange, finalRequest, matchesRestore } from './contracts';
 import { makeFrame } from './frame';
+import { freeRect } from './scene-geometry';
 import { replayClock, stepRate } from './playback';
 import type { SceneState } from './scene-types';
 
@@ -130,6 +132,25 @@ describe('camera and controls use the same projected frame', () => {
       expect(f.grip[0] + 28).toBeLessThanOrEqual((landscape ? w! - Math.min(390, w! * .46) - 4 : w! - 8) + 1e-7);
       expect(f.grip[1] - 28).toBeGreaterThanOrEqual((landscape ? 112 : 104) - 1e-7);
       expect(f.grip[1] + 28).toBeLessThanOrEqual((landscape ? h! - 48 : h! - deck! - 20) + 1e-7);
+    }
+  });
+  it('leaves the Moon ring 160 px of free room with Fine aim and System open, at the measured deck heights', () => {
+    // Measured in the browser: the decks (260 px at 390x664 and 360x640, 441 at 390x844, 311 at
+    // 360x780, 11 px above the bottom), the phone map tools at 64 to 110 px and the Hangar beside them.
+    const tools = { left: 95, top: 64, bottom: 110 }, hangar = { left: 13, top: 64, bottom: 108 };
+    for (const [w, h, deck] of [[390, 664, 260], [390, 844, 441], [360, 640, 260], [360, 780, 311]] as const) {
+      const s = freshSession(), top = h - 11 - deck, rect = freeRect(w, h, { left: 11, top, bottom: h - 11 }, tools, 0, [undefined, hangar]);
+      s.preferences.camera = 'system';
+      const scene: SceneState = { ...state(), level: MOONSHOT, parking: s.parking, aim: s.aim, preferences: s.preferences, deckHeight: deck + 16, safeRect: rect };
+      for (const charge of [0, .5, 1]) {
+        const f = makeFrame({ ...scene, charge }, w, h, null, 1, 'test', lunarModel).frame;
+        expect(f.ringRoom, `${w}x${h}`).toBeGreaterThanOrEqual(160);
+        // The System view caps travel at 45 px, which the room must not cut.
+        expect(f.travel, `${w}x${h}`).toBe(45);
+        expect(f.grip[1] + 28).toBeLessThanOrEqual(rect.bottom + 1e-7); expect(f.grip[1] - 28).toBeGreaterThanOrEqual(rect.top - 1e-7);
+      }
+      // A Hangar above the deck, as the old phone layout had it, takes its height from the room.
+      expect(freeRect(w, h, { left: 11, top, bottom: h - 11 }, tools, 0, [undefined, { ...hangar, top: top - 57 }]).bottom).toBe(top - 69);
     }
   });
   it('keeps a precise input range even when the drawn sleeve has little clearance', () => {

@@ -1,3 +1,4 @@
+import { missionNumber } from '../missions';
 import { useGestures } from './gestures';
 
 import type { CampaignController } from './use-campaign';
@@ -23,7 +24,7 @@ export function IntroCaption({
       <span className="eyebrow">
         {c.store.level.sandbox
           ? 'Open Solar System'
-          : `Chapter one · Mission ${c.store.level.number}`}
+          : `Chapter one · Mission ${missionNumber(c.store.level.id)}`}
       </span>
       <h1>{c.store.level.title}</h1>
       <p>

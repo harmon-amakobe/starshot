@@ -128,9 +128,11 @@ export function FlightDeck({
               <button
                 className="pill"
                 aria-label={c.hints.hintBusy ? 'Finding guide' : 'Guide'}
-                disabled={c.hints.hintBusy || c.release.pending || !readiness.scene}
+                // Busy, it stays focusable for a keyboard pilot; aria-disabled and the handler hold it.
+                disabled={c.release.pending || !readiness.scene}
+                aria-disabled={c.hints.hintBusy || undefined}
                 aria-describedby={wait}
-                onClick={guide}
+                onClick={c.hints.hintBusy ? undefined : guide}
               >
                 <Icon name="guide" />
                 <span>{c.hints.hintBusy ? 'Finding…' : 'Guide'}</span>

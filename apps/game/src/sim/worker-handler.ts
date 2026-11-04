@@ -8,8 +8,26 @@ import { findHint } from './hint.js';
 import type { SimRequest, SimResponse } from './protocol.js';
 import { analyzeShot, simulateShot } from './shot.js';
 
-/** A real macrotask, so a message queued during a search is answered before the next flight. */
-const nextTask = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+/**
+ * A real macrotask, so a message queued during a search is answered before the next flight.
+ * A channel message, not a zero-delay timer: nested timers wait at least 4 ms past the fifth
+ * level (HTML timers), which cost about a second over a 240-flight search. Each yield has its
+ * own channel and closes it, so no open port keeps a test run or a worker alive.
+ */
+export function channelTask(): Promise<void> {
+  // An engine without MessageChannel still gets a macrotask, at the timer's slower pace.
+  if (typeof MessageChannel !== 'function') return new Promise((resolve) => setTimeout(resolve, 0));
+  return new Promise((resolve) => {
+    const { port1, port2 } = new MessageChannel();
+    port1.onmessage = () => {
+      port1.close();
+      resolve();
+    };
+    port2.postMessage(null);
+  });
+}
+/** The yield after each search flight; a seam so tests hold each yield and order replies. */
+export const scheduler = { nextTask: channelTask };
 
 async function handle(ephemeris: Ephemeris, req: SimRequest): Promise<SimResponse> {
   const start = performance.now();
@@ -28,7 +46,7 @@ async function handle(ephemeris: Ephemeris, req: SimRequest): Promise<SimRespons
     let simulations = 0;
     const hint = await findLunarHint(req.query, () => {
       simulations++;
-      return nextTask();
+      return scheduler.nextTask();
     });
     // findLunarHint has rejected anything else, so only an absent strategy reaches the default.
     const strategy = req.query.strategy ?? 'reference';

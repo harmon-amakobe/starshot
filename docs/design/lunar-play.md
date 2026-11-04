@@ -3,6 +3,23 @@
 This is the first visual form for the lunar level and vehicle workshop. It extends
 the approved Observatory into the space immediately around the collector.
 
+## What the mission is and is not
+
+Moonshot is mission one (D33). The craft starts in a circular 200 km Earth orbit and
+makes one impulsive burn of up to 3.55 km/s. The worker then integrates the gravity of
+the Sun, Earth and the Moon from that exact state.
+
+A hit is the craft's first entry into the Moon's sphere of influence, about 66,000 km
+from the Moon's centre (`MOON_SOI_KM`). The flight ends there. That is an encounter: the
+craft does not enter lunar orbit and is not captured, and the game offers no braking burn.
+Loose capture at periapsis, its rewards and its lock cues belong to PR20 and PR21 (D18).
+
+Guide re-flies the measured reference: 3.240 km/s prograde on 2026-11-02 at 01:00 UTC,
+phase 225 degrees. Its par is a reference, not a claimed optimum. Search routes flies a
+fixed grid of launch days, burns and angles, at most 240 flights, and shows its cheapest
+hit in a slot of its own. Neither route changes the aim until the pilot applies it, and
+an applied route limits that attempt to 2 stars.
+
 ## The first view
 
 A north-facing orthographic camera puts Earth left and the Moon right at departure.

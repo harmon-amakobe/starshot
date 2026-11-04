@@ -32,8 +32,6 @@ export interface Par {
 
 export interface Level {
   readonly id: LevelId;
-  /** 1-based position in the campaign. */
-  readonly number: number;
   readonly title: string;
   /** One-line, factual real-world context. */
   readonly blurb: string;
@@ -137,7 +135,6 @@ export const GRAND_TOUR_PAR_SHOT: KnownShot = {
 export const CAMPAIGN: readonly Level[] = [
   {
     id: "first-light",
-    number: 1,
     title: "First Light",
     blurb:
       "Earth-Mars launch windows open about every 26 months; this is the real late-2026 window.",
@@ -154,7 +151,6 @@ export const CAMPAIGN: readonly Level[] = [
   },
   {
     id: "morning-star",
-    number: 2,
     title: "Morning Star",
     blurb:
       "Venus is the closest planet to Earth; launch windows to it come round about every 19 months.",
@@ -169,7 +165,6 @@ export const CAMPAIGN: readonly Level[] = [
   },
   {
     id: "big-game",
-    number: 3,
     title: "Big Game",
     blurb:
       "Jupiter outweighs all the other planets put together; windows to it open about every 13 months.",
@@ -184,7 +179,6 @@ export const CAMPAIGN: readonly Level[] = [
   },
   {
     id: "grand-tour",
-    number: 4,
     title: "Grand Tour",
     blurb:
       "Voyager 2 launched on 20 August 1977 and used Jupiter's gravity (July 1979) to reach Saturn (August 1981).",
@@ -252,7 +246,6 @@ export function sandboxLevel(target: PlanetId = "mars", now: Date = new Date()):
   const startIso = sandboxStartIso(now);
   return {
     id: "sandbox",
-    number: CAMPAIGN.length + 1,
     title: "Sandbox",
     blurb: "Free play from today's date: pick any planet and find your own window.",
     window: { startIso, days: 730 },

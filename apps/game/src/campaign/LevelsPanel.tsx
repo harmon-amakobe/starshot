@@ -1,7 +1,7 @@
 import { BODIES, type PlanetId } from '@starshot/ephemeris';
 import { Icon } from '@starshot/presentation/icons';
 import { SANDBOX_TARGETS, sandboxLevel } from '../levels';
-import { MISSIONS as CAMPAIGN, bodyName } from '../missions';
+import { MISSIONS as CAMPAIGN, bodyName, missionNumber } from '../missions';
 import { totalStars } from '../progress';
 import type { HomeMenuProps } from './menu-types';
 export function LevelsPanel({
@@ -36,7 +36,7 @@ export function LevelsPanel({
                 setPanel('home');
               }}
             >
-              <span className="level-number">0{l.number}</span>
+              <span className="level-number">0{missionNumber(l.id)}</span>
               <span>
                 <b>{l.title}</b>
                 <small>

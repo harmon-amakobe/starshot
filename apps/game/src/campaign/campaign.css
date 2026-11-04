@@ -39,6 +39,45 @@
 .c-impact{margin:3px 0 5px;font-size:10px;color:#f2c98b;line-height:1.4}
 @media(max-height:500px) and (min-width:601px){.campaign-shell .entry-quiet{top:63px;bottom:auto}.campaign-shell .entry-notice{position:absolute;left:300px;top:0;width:245px;max-height:57px;overflow-y:auto;margin:0;font-size:9px}}
 @media(max-height:500px) and (min-width:601px){.campaign-shell .c-deck.expanded:has(.c-fine) .c-deck-page{height:72px}.campaign-shell .c-fine p{display:none}.campaign-shell .c-fine label{display:grid;gap:4px;flex:1;min-width:0}.campaign-shell .c-fine input{min-width:0;max-width:none;width:100%;padding:0 10px}.campaign-shell .c-fine{gap:12px}}
-.c-actions:has(.c-wait){flex-wrap:wrap}.c-wait{flex-basis:100%;margin:0;font-size:9px;line-height:1.2;color:#b9d8d2;white-space:nowrap;text-align:right;pointer-events:none}
+.c-deck-footer:has(.c-wait){position:relative}
+.campaign-shell .c-wait{position:absolute;right:0;top:-7px;margin:0;padding:0 6px;border-radius:6px;background:#15263a;font-size:9px;line-height:1.2;color:#b9d8d2;white-space:nowrap;pointer-events:none}
 .c-moon-load{position:absolute;right:24px;bottom:calc(var(--deck-height) + 64px);z-index:5;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border:1px solid #65798c8f;border-radius:30px;background:#101c2ce8;color:#d9e8ef;font-size:10px}.c-moon-load p{margin:0}
 @media(max-height:500px) and (min-width:601px){.c-moon-load{left:20px;top:125px;right:auto;bottom:auto}}
+/* A busy Guide or route search stays focusable; it looks held, as a disabled button does. */
+.campaign-shell button[aria-disabled=true]{opacity:.5;cursor:wait}
+/* Before the first frame, and while the Moon loads, the disabled ring waits at the centre of the free room, not at the corner. */
+.c-ring-handle.waiting{left:50%;top:calc((100% - var(--deck-height))/2)}
+/* The reason sits on the footer's divider, in the gap the deck already has, so the deck keeps its height while the Moon loads. Short landscape has a fixed deck height and a tighter gap, so the reason takes a row there. */
+@media(max-height:500px) and (min-width:601px){
+.c-actions:has(.c-wait){flex-wrap:wrap}
+.campaign-shell .c-wait{position:static;flex-basis:100%;padding:0;background:none;text-align:right}
+.campaign-shell .c-deck .c-actions{flex:1;justify-content:flex-end}
+.campaign-shell .c-result{left:calc((100% - min(390px,46vw) - 12px)/2);top:116px;transform:translateX(-50%);width:min(400px,calc(100% - min(390px,46vw) - 52px))}
+.campaign-shell .c-mission{left:0;right:0;width:auto;transform:none}
+.campaign-shell .c-mission-body{align-self:flex-start;margin-left:20px;width:calc(100% - min(390px,46vw) - 52px);max-height:calc(100vh - 76px);overflow-y:auto;flex-wrap:wrap}
+.campaign-shell .c-mission-body>div:first-child{flex:1 1 100%}
+.campaign-shell .c-mission-body .c-guide{flex:1 1 160px;max-width:none}
+.c-ring-handle.waiting{left:calc((100% - min(390px,46vw) - 12px)/2);top:50%}
+}
+/* Phones: the map tools make one row below the top bar, with the Hangar as an icon at its left, so the free room above the deck runs from that row to the deck. */
+@media(max-width:600px){
+.c-map-tools{top:64px;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center;max-width:calc(100% - 78px)}
+.c-map-tools .c-size{order:1}
+.c-hangar-button{top:64px;bottom:auto;left:13px;width:44px;padding:0!important}
+.c-hangar-button span{display:none}
+.c-target-cue{bottom:calc(var(--deck-height) + 8px)}
+.c-scale{left:18px;right:auto;align-items:flex-start}
+.c-focus-title{top:124px}
+.c-warning{top:120px}
+.c-mission-body{max-height:calc(100vh - var(--deck-height) - 80px);overflow-y:auto}
+}
+/* Phones up to 800 px tall: the expanded deck puts its page tabs in the heading row, as short landscape does, leaves the orbit position to its number field and packs Fine aim, so the ring keeps at least 160 px of free room down to 360x640. */
+@media(max-width:600px) and (max-height:800px){
+.campaign-shell .c-deck.expanded .c-page-tabs{position:absolute;left:58px;right:8px;top:7px;justify-content:flex-start;margin:0;gap:0}
+.campaign-shell .c-deck.expanded .c-page-tabs button{padding:0 7px}
+.campaign-shell .c-deck.expanded .c-deck-preferences{visibility:hidden}
+.campaign-shell .c-deck.expanded .c-phase-range{display:none}
+.campaign-shell .c-deck.expanded:has(.c-fine) .c-deck-page{height:auto;padding:3px 1px 0}
+.campaign-shell .c-deck.expanded .c-fine label{gap:3px}
+.campaign-shell .c-deck.expanded .c-planning{margin-top:2px}
+}

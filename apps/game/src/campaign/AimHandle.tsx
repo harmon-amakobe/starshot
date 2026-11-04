@@ -20,8 +20,9 @@ export function AimHandle({
     <>
       <button
         {...gestures.ring}
-        className="c-ring-handle"
-        style={{ left: frame.grip[0], top: frame.grip[1] }}
+        // No frame yet (the Moon may be loading): CSS centres the disabled ring in the free room.
+        className={frame.ready ? 'c-ring-handle' : 'c-ring-handle waiting'}
+        style={frame.ready ? { left: frame.grip[0], top: frame.grip[1] } : undefined}
         aria-label="Pull engine ring to aim. Arrow keys adjust, Enter launches, Escape cancels."
         disabled={c.release.pending || c.hydrating || !readiness.scene}
         aria-describedby={readiness.scene ? undefined : 'c-launch-wait'}
@@ -46,9 +47,11 @@ export function AimHandle({
           }
         }}
       />
-      <span className="c-symbol-note" style={{ left: frame.craft[0], top: frame.craft[1] + 36 }}>
-        {c.store.session.parking ? 'Craft symbol · enlarged' : 'Departure control · enlarged'}
-      </span>
+      {frame.ready && (
+        <span className="c-symbol-note" style={{ left: frame.craft[0], top: frame.craft[1] + 36 }}>
+          {c.store.session.parking ? 'Craft symbol · enlarged' : 'Departure control · enlarged'}
+        </span>
+      )}
     </>
   );
 }

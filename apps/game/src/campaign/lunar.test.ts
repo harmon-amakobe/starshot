@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { PLANET_IDS, norm, scale, sub } from '@starshot/ephemeris';
 import { parkingState, LunarModel, DAY, LAUNCH_ET, MOON_SOI_KM } from '@starshot/physics/lunar';
 import { CAMPAIGN } from '../levels';
-import { MOONSHOT, MISSIONS, nextMission, type MissionBody } from '../missions';
+import { MOONSHOT, MISSIONS, MISSION_ORDER, missionNumber, nextMission, type MissionBody, type MissionId } from '../missions';
+import { PROGRESS_KEY } from '../progress';
 import { scoreShot } from '../scoring';
 import { lunarHint, runLunar } from '../sim/lunar';
 import { lunarModel } from '../sim/lunar-model';
@@ -11,7 +12,7 @@ import { shotKey, launchGate } from '../sim/preview';
 import type { FlightResponse, ShotResponse } from '../sim/protocol';
 import { freshSession, copySession, validSession, togglePauseAt, type CameraMode } from './session';
 import { finalRequest, matchesRestore } from './contracts';
-import { parsePilots, earnedFor, recordResult, type Pilot } from './profiles';
+import { parsePilots, earnedFor, freshPilots, recordResult, type Pilot } from './profiles';
 import { geometry } from './scene-geometry';
 import { makeFrame } from './frame';
 import { CampaignScene } from './scene';
@@ -43,6 +44,13 @@ describe('Moonshot uses one canonical request', () => {
     expect(freshSession().levelId).toBe('moonshot');
     expect(MISSIONS.map(l => l.id)).toEqual(['moonshot', ...CAMPAIGN.map(l => l.id)]);
     expect(nextMission('moonshot')?.id).toBe('first-light'); expect(nextMission('grand-tour')).toBeUndefined();
+  });
+  it('numbers and chains every mission from the explicit order, with none after the last, the sandbox or an unknown id', () => {
+    expect(MISSION_ORDER).toEqual(['moonshot', 'first-light', 'morning-star', 'big-game', 'grand-tour']);
+    expect(MISSIONS.map(level => level.id)).toEqual(MISSION_ORDER); expect(Object.isFrozen(MISSION_ORDER)).toBe(true);
+    expect(MISSION_ORDER.map(missionNumber)).toEqual([1, 2, 3, 4, 5]); expect(missionNumber('sandbox')).toBe(0);
+    for (const [index, id] of MISSION_ORDER.entries()) expect(nextMission(id)?.id, id).toBe(MISSION_ORDER[index + 1]);
+    for (const id of ['grand-tour', 'sandbox', 'pluto'] as MissionId[]) expect(nextMission(id), id).toBeUndefined();
   });
   it('measures a hit, miss and Earth impact with the actual game request builder', () => {
     const hit = launch(), miss = launch(3.24, 20), impact = launch(3.24, -20);
@@ -135,6 +143,25 @@ describe('pilot migration preserves access without recording playtest achievemen
     expect(parsed.profiles[0]!.session).toEqual(pilot.session);
     expect(earnedFor(parsed.profiles[0]!)).toEqual(['moonshot', 'first-light', 'morning-star']);
     expect(parsePilots(JSON.stringify(parsed))?.profiles).toEqual(parsed.profiles);
+  });
+  /** Browser storage holding only these keys; nothing may be written to it. */
+  const storage = (saved: Record<string, unknown>) => {
+    const setItem = vi.fn(), removeItem = vi.fn();
+    vi.stubGlobal('localStorage', { getItem: (key: string) => key in saved ? JSON.stringify(saved[key]) : null, setItem, removeItem });
+    onTestFinished(() => void vi.unstubAllGlobals());
+    return { setItem, removeItem };
+  };
+  it('builds the first pilot from a legacy progress save with the v1 access and stars, writing nothing', () => {
+    const levels = { 'first-light': { stars: 2, bestDeltaVKmS: 3.1 } }, writes = storage({ [PROGRESS_KEY]: { version: 1, levels } });
+    const [first, ...others] = freshPilots().profiles;
+    expect(others).toEqual([]); expect(first!.progress.levels).toEqual(levels);
+    expect(first!.earned).toEqual(['moonshot', 'first-light', 'morning-star']);
+    expect(writes.setItem).not.toHaveBeenCalled(); expect(writes.removeItem).not.toHaveBeenCalled();
+  });
+  it('starts a pilot with no saves at Moonshot alone', () => {
+    storage({});
+    const [first] = freshPilots().profiles;
+    expect(first!.earned).toEqual(['moonshot']); expect(first!.progress.levels).toEqual({}); expect(first!.session.levelId).toBe('moonshot');
   });
   it('drops one corrupt pilot with a notice count while retaining valid pilots', () => {
     const parsed = parsePilots(JSON.stringify({ version: 1, selected: 'bad', playtest: false, profiles: [{ ...pilot, id: 'bad', session: null }, pilot] }))!;

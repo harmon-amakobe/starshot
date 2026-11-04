@@ -1,5 +1,5 @@
 import { Icon } from '@starshot/presentation/icons';
-import { bodyName } from '../missions';
+import { bodyName, missionNumber } from '../missions';
 import { readableVersion } from '../release-version';
 import type { HomeMenuProps } from './menu-types';
 import { distanceText, unitOf } from './session';
@@ -23,7 +23,7 @@ export function MenuHome({
       <div className="entry-actions">
         <span className="entry-chapter">
           <i />
-          {c.store.level.sandbox ? 'Free flight' : `0${c.store.level.number}`} ·{' '}
+          {c.store.level.sandbox ? 'Free flight' : `0${missionNumber(c.store.level.id)}`} ·{' '}
           {c.store.level.title}
           <span>Earth → {bodyName(c.store.level.target)}</span>
         </span>

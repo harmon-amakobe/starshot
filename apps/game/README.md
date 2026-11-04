@@ -26,7 +26,9 @@ The ring controls a burn from prograde, up to 3.55 km/s and 35 degrees either si
 The worker integrates Sun, Earth and Moon gravity from the exact displayed state.
 The dotted preview and launch use the same request. Reaching the Moon sphere of
 influence is an encounter, not capture. The guide applies its exact date, time,
-phase and burn together.
+phase and burn together. Search routes fills a second slot with the cheapest hit of
+a bounded grid. Only Apply searched route changes the aim, and either applied route
+caps the attempt at 2 stars. Capture belongs to PR20.
 
 Craft follows the craft. Orbit fits the full parking orbit or computed path.
 System includes the relevant full orbits and arrival target. Wheel and pinch keep

@@ -37,7 +37,8 @@ export function parsePilots(raw: string): Pilots | null {
       profiles: profiles.map(p => ({ id: p.id, name: p.name, session: copySession(p.session), progress: structuredClone(p.progress), earned: [...earnedFor(p)] })) };
   } catch { return null; }
 }
-const fresh = (): Pilots => {
+/** The first pilot of a browser: Moonshot only, or the access and stars of a legacy progress save. */
+export const freshPilots = (): Pilots => {
   const progress = loadProgress(), hasLegacy = Object.keys(progress.levels).length > 0;
   const pilot: Pilot = { id: 'pilot-1', name: 'Pilot 1', session: freshSession(), progress, earned: ['moonshot'] };
   if (hasLegacy) pilot.earned = earnedFor({ ...pilot, earned: undefined });
@@ -46,9 +47,9 @@ const fresh = (): Pilots => {
 export function usePilots() {
   const [notice, setNotice] = useState('');
   const [data, setData] = useState<Pilots>(() => {
-    try { const raw = localStorage.getItem(PILOTS_KEY) ?? localStorage.getItem(LEGACY_PILOTS_KEY); if (!raw) return fresh(); const saved = parsePilots(raw); if (saved) { if (saved.dropped) setTimeout(() => setNotice('Some saved pilots could not be read. Other pilots are preserved.'), 0); return saved; } setTimeout(() => setNotice('The saved pilots could not be read. A fresh local pilot is ready.'), 0); }
+    try { const raw = localStorage.getItem(PILOTS_KEY) ?? localStorage.getItem(LEGACY_PILOTS_KEY); if (!raw) return freshPilots(); const saved = parsePilots(raw); if (saved) { if (saved.dropped) setTimeout(() => setNotice('Some saved pilots could not be read. Other pilots are preserved.'), 0); return saved; } setTimeout(() => setNotice('The saved pilots could not be read. A fresh local pilot is ready.'), 0); }
     catch { setTimeout(() => setNotice('Storage is unavailable. You can play for this visit.'), 0); }
-    return fresh();
+    return freshPilots();
   });
   const current = useRef(data); current.current = data;
   const [revision, setRevision] = useState(0);

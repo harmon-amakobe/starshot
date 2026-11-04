@@ -20,13 +20,18 @@ function layout() {
   const meet = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
   const name = (e) => e.getAttribute('aria-label') || e.textContent.trim();
   const shown = (root) => [...root.querySelectorAll('button, input, select')].filter((e) => e.getClientRects().length);
-  const [wait, deck, panel] = ['.c-wait', '.c-deck', '.c-moon-load'].map((s) => document.querySelector(s));
-  const [w, d, p] = [box(wait), box(deck), box(panel)];
+  const [wait, deck, panel, ring] = ['.c-wait', '.c-deck', '.c-moon-load', '.c-ring-handle'].map((s) => document.querySelector(s));
+  const [w, d, p, r] = [box(wait), box(deck), box(panel), box(ring)];
   return {
     inside: w.left >= d.left - 0.5 && w.right <= d.right + 0.5 && w.top >= d.top - 0.5 && w.bottom <= d.bottom + 0.5,
     clipped: wait.scrollWidth > wait.clientWidth + 1,
     waitHits: shown(deck).filter((e) => meet(w, box(e))).map(name),
     panelHits: shown(document).filter((e) => !panel.contains(e) && meet(p, box(e))).map(name),
+    // The disabled ring waits in the free room: below the top bar, clear of the deck, on screen.
+    ringPlaced: r.top >= 60 && r.left >= 0 && r.right <= innerWidth && !meet(r, d),
+    // Launch ends the footer row under the reason, with Guide before it, as once loaded.
+    actionsEnd: (([f, g, l]) => f.right - l.right <= 1 && g.right <= l.left)(
+      ['.c-deck-footer', '.c-actions .pill', '.c-actions .primary'].map((s) => box(document.querySelector(s)))),
   };
 }
 
@@ -173,32 +178,41 @@ export default async (page, harness) => {
   // 3. The reason line stays inside the deck and clear of its controls at each size, collapsed
   // and expanded. 200% zoom is approximated by halving the desktop viewport in CSS pixels.
   const sizes = viewport.startsWith('phone')
-    ? [[390, 844], [360, 780], [844, 390]]
+    ? [[390, 844], [390, 664], [360, 780], [360, 640], [844, 390]]
     : [[1440, 900], [720, 450]];
-  for (const [width, height] of sizes) {
-    await page.setViewportSize({ width, height });
-    for (const pageName of ['collapsed', 'Overview', 'Fine aim', 'Telemetry']) {
-      if (pageName === 'collapsed') await collapse();
-      else {
-        await expand();
-        await button(pageName).click();
+  // The reason waits in a slot the deck already has, so its height is the same once loaded.
+  const heights = new Map();
+  const eachPage = async (visit) => {
+    for (const [width, height] of sizes) {
+      await page.setViewportSize({ width, height });
+      for (const pageName of ['collapsed', 'Overview', 'Fine aim', 'Telemetry']) {
+        if (pageName === 'collapsed') await collapse();
+        else {
+          await expand();
+          await button(pageName).click();
+        }
+        await page.waitForTimeout(150);
+        await visit(`${width}x${height}-${pageName.replace(' ', '-')}`, pageName);
       }
-      await page.waitForTimeout(150);
-      const label = `${width}x${height}-${pageName.replace(' ', '-')}`;
-      const box = await page.evaluate(layout);
-      log(JSON.stringify({ label, ...box }));
-      assert.deepEqual(box, { inside: true, clipped: false, waitHits: [], panelHits: [] }, label);
-      if (pageName === 'collapsed' || pageName === 'Fine aim') await check(`wait-${label}`);
     }
-  }
-  await collapse();
-  await page.setViewportSize(size);
+    await collapse();
+    await page.setViewportSize(size);
+  };
+  const deckHeight = () => page.evaluate(() => document.querySelector('.c-deck').getBoundingClientRect().height);
+  await eachPage(async (label, pageName) => {
+    const box = await page.evaluate(layout);
+    log(JSON.stringify({ label, ...box }));
+    assert.deepEqual(box, { inside: true, clipped: false, waitHits: [], panelHits: [], ringPlaced: true, actionsEnd: true }, label);
+    heights.set(label, await deckHeight());
+    if (pageName === 'collapsed' || pageName === 'Fine aim') await check(`wait-${label}`);
+  });
 
-  // The held load finishes into a usable Moonshot.
+  // The held load finishes into a usable Moonshot, with every deck as tall as while it waited.
   hold.release();
   await page.waitForFunction(() => window.__starshotCampaign?.renderer !== '');
   assert(await button('Launch').isEnabled());
   assert.equal(await live(), '');
+  await eachPage(async (label) => assert.equal(await deckHeight(), heights.get(label), `${label}: deck height`));
 
   // 4. A failed first request shows the error; Retry by keyboard asks again under a new URL.
   hold = null;

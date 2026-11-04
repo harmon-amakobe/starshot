@@ -8,7 +8,7 @@ import { lunarHint, runLunar } from './lunar';
 import { lunarRequest } from './lunar-request';
 import type { SimRequest, SimResponse } from './protocol';
 import { analyzeShot, cachedEphemeris, simulateShot, vInfFromAim } from './shot';
-import { respond } from './worker-handler';
+import { channelTask, respond, scheduler } from './worker-handler';
 
 // Flights are counted below the production runner, never by the handler.
 vi.mock('./lunar', async (importOriginal) => {
@@ -32,23 +32,23 @@ const search = (id: number, budget: number) => lunar(id, { strategy: 'search', b
 /** The reference route as a canonical Moon request, as a preview after the guide flies it. */
 const parking = { frameEt: LAUNCH_ET, epochEt: LAUNCH_ET, phaseDeg: 225, radiusKm: 6571 };
 const moonShot = () => lunarRequest(LAUNCH_ET, { angleDeg: 0, speedKmS: 3.24 }, parking);
-/** One real macrotask; the held timers below are the handler's only setTimeout calls. */
+/** One real macrotask; while held, the handler's yields wait for the test. */
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 const grid = 'moon-grid/1';
-/** A controlled scheduler: each timer the handler sets waits here until the test runs it. */
-function holdTimers() {
+/** A controlled scheduler: each yield the handler takes waits here until the test runs it. */
+function holdYields() {
   const held: (() => void)[] = [];
-  const hold = (run: () => void) => held.push(run);
-  const timers = vi.spyOn(globalThis, 'setTimeout').mockImplementation(hold as never);
-  onTestFinished(() => timers.mockRestore());
-  return { held, timers };
+  const hold = () => new Promise<void>((resolve) => held.push(resolve));
+  const yields = vi.spyOn(scheduler, 'nextTask').mockImplementation(hold);
+  onTestFinished(() => yields.mockRestore());
+  return { held, yields };
 }
 
 describe('the worker handler', () => {
   it('answers a preview queued during a search first, each reply with its own id', async () => {
     // Loads the Moon modules first, so no import wait can pass for a yield.
     await respond(ephemeris, search(1, 0));
-    const { held, timers } = holdTimers();
+    const { held, yields } = holdYields();
     integrator.mockClear();
     const replies: SimResponse[] = [];
     const searching = respond(ephemeris, search(41, 3)).then((reply) => replies.push(reply));
@@ -76,8 +76,8 @@ describe('the worker handler', () => {
     expect(held).toHaveLength(1);
     held.shift()!();
     expect(await reference).toMatchObject({ id: 44, strategy: 'reference', simulations: 1 });
-    // One zero-delay timer per flight, and none for the preview.
-    expect(timers.mock.calls.map((call) => call[1])).toEqual([0, 0, 0, 0]);
+    // One yield per flight, and none for the preview.
+    expect(yields).toHaveBeenCalledTimes(4);
     expect(replies.map((reply) => reply.id)).toEqual([42, 41]);
     expect(replies[1]).toMatchObject({ strategy: 'search', grid, simulations: 3 });
     // The preview answered mid-search equals the same request flown alone, and its launch.
@@ -85,6 +85,32 @@ describe('the worker handler', () => {
     const launch = { ...preview, id: 43, purpose: 'launch' } as const;
     const flown = { ...replies[0], ...launch, ms: expect.any(Number) };
     expect(await respond(ephemeris, launch)).toEqual(flown);
+  });
+  it('yields in production on a channel message, a macrotask after every queued microtask', async () => {
+    expect(scheduler.nextTask).toBe(channelTask);
+    const timers = [vi.spyOn(globalThis, 'setTimeout'), vi.spyOn(globalThis, 'setImmediate')];
+    onTestFinished(() => timers.forEach((timer) => timer.mockRestore()));
+    const order: string[] = [];
+    let depth = 0;
+    const chain = (): Promise<void> =>
+      Promise.resolve().then(() => (++depth < 100 ? chain() : void order.push('microtasks')));
+    void chain();
+    await scheduler.nextTask().then(() => order.push('yield'));
+    expect(order).toEqual(['microtasks', 'yield']);
+    // A zero-delay timer waits at least 4 ms once nested, about a second per full search.
+    for (const timer of timers) expect(timer).not.toHaveBeenCalled();
+  });
+  it('falls back to a zero-delay timer where MessageChannel is missing, for the reference and a search', async () => {
+    vi.stubGlobal('MessageChannel', undefined);
+    onTestFinished(() => void vi.unstubAllGlobals());
+    const timers = vi.spyOn(globalThis, 'setTimeout');
+    onTestFinished(() => timers.mockRestore());
+    const reference = await respond(ephemeris, lunar(60, {}));
+    const searched = await respond(ephemeris, search(61, 2));
+    expect(reference).toMatchObject({ kind: 'hint', id: 60, strategy: 'reference', simulations: 1, hint: { hits: true } });
+    expect(searched).toMatchObject({ kind: 'hint', id: 61, strategy: 'search', simulations: 2, hint: { hits: true } });
+    // One timer per flight: the reference's one and the search's two.
+    expect(timers.mock.calls.map((call) => call[1])).toEqual([0, 0, 0]);
   });
   it('runs each worker message as it arrives, so a preview overtakes a search', async () => {
     // The real worker module, on a stub of the worker scope it reads at import.
@@ -96,7 +122,7 @@ describe('the worker handler', () => {
     const scope = self as unknown as Scope;
     const posted = () => postMessage.mock.calls.map(([reply]) => (reply as SimResponse).id);
     await scope.onmessage({ data: search(50, 0) });
-    const { held } = holdTimers();
+    const { held } = holdYields();
     const searching = scope.onmessage({ data: search(51, 3) });
     await flush();
     expect(held).toHaveLength(1);

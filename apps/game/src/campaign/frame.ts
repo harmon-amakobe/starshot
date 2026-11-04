@@ -35,7 +35,7 @@ export function makeFrame(state: SceneState, width: number, height: number, data
   ring.anchor = [ring.anchor[0] * (1 - state.home) + width * (width < 600 ? .58 : .72) * state.home, ring.anchor[1] * (1 - state.home) + height * (width < 600 ? .4 : .43) * state.home];
   const frame: SceneFrame = { ...EMPTY_FRAME, ready: true, renderer, identity, width, height, heightKm: g.heightKm, centre: g.centre, rotation: g.rotation,
     craft: ring.anchor, physicalCraft: physical, heading, prograde: g.prograde, visibleRect: g.rect, forward: [Math.cos(heading), Math.sin(heading)], velocity: g.velocity,
-    grip: ring.grip, travel: ring.travel, bodies, target: target.point, targetRadius: target.radius, targetDistance: g.targetDistance,
+    grip: ring.grip, travel: ring.travel, ringRoom: ring.room, bodies, target: target.point, targetRadius: target.radius, targetDistance: g.targetDistance,
     intercept: g.intercept ? projectLocal(rotatedPosition(g.intercept)) : null, interceptEt: g.interceptEt, interceptHit: !!state.response?.analysis.hit,
     approachCraft: g.approachCraft ? projectLocal(rotatedPosition(g.approachCraft)) : null, captureRadius: (state.response?.analysis.captureZoneKm ?? 0) * height / g.heightKm,
     scaleKm: g.heightKm / height * 100, moonsAvailable: !!data && state.et >= data.rails.startEt && state.et <= data.rails.endEt,

@@ -79,6 +79,7 @@ export function useDebugHook(
           projectedTarget: frame.target,
           grip: frame.grip,
           travel: frame.travel,
+          ringRoom: frame.ringRoom,
           deckHeight: measuredDeck.current,
         });
       },
