@@ -13,6 +13,8 @@ import { lunarHint, lunarRequest, runLunar } from './lunar';
 export interface Route { readonly day: number; readonly burn: number; readonly angle: number }
 /** Most simulations a search may run. Whole-search dedupe leaves the grid at most 236. */
 export const LUNAR_SEARCH_BUDGET = 240;
+/** Names this grid and its flight order; a change to either needs a new id. */
+export const LUNAR_GRID = 'moon-grid/1';
 const REFERENCE: Route = { day: 0, burn: 3240, angle: 0 };
 const LAST_DAY = 27;
 const BURNS = [3150, 3240];

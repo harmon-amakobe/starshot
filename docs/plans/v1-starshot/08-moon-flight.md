@@ -388,3 +388,75 @@ Commands ran on `54c9be7` plus the uncommitted review fixes.
 | `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 15 files, 154 tests |
 | `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |
+
+## Search transport result
+
+Part 2 of Search (deviation row 33), based on Search core at `6032f07`. Paths start at `apps/game/src/sim/`.
+`worker-handler.ts` holds the worker's handler apart from `self`; `sim.worker.ts` keeps the ephemeris and the message loop and calls it.
+Lunar queries go through `findLunarHint`, so an omitted strategy flies the reference. The player's Guide still sends `{ kind: 'lunar' }`.
+After each flight the handler awaits a zero-delay `setTimeout`, a macrotask, so a preview queued during a search is answered between flights.
+Moon replies add `strategy`, `grid` (`moon-grid/1`, `LUNAR_GRID` at `lunar-hint.ts:17`) and `simulations` (`protocol.ts:30` to `:32`). Planetary replies keep their four fields.
+
+Open points, settled conservatively:
+- The count is the number of `afterFlight` calls (`worker-handler.ts:30`), which Search core's tests tie one to one to flights. `findLunarHint` and its tests stay unchanged; returning `{ hint, simulations }` would change both for no new information.
+- No production seam starts a search. `scripts/verify-steps/lunar-worker.mjs` wraps `window.Worker` in an init script, as `screen-async.mjs` does, and posts its queries on the app's own worker with ids from 900001.
+- The app drops replies to ids it did not issue (`useSimulation.ts:91`), so a search reply reaches no state. The wrapper exists only in the probe's browser context.
+- `use-hints.ts` is unchanged, so its visit and token guards and the 2-star guide cap remain. `apps/game/README.md` states no hint limit that changed.
+
+| Spec line | Proof |
+|---|---|
+| Omitted strategy means reference; strategy, grid and real flight count, even for no route | `worker-dispatch.test.ts:112`, budget 0 gives null and 0; `:141`, real flights read as misses give null and 2 |
+| Positive budgets include the reference | `worker-dispatch.test.ts:112`, budgets 1 and 2, first flight the reference request |
+| Invalid budgets and unknown strategies use the error reply | `worker-dispatch.test.ts:155`; `lunar-worker.mjs:63` for budget 241 |
+| A macrotask after each flight; a queued preview answered first, with the same ids | `worker-dispatch.test.ts:47`, a controlled scheduler holding each timer, for a search and at `:73` the reference; `:88` through the real `sim.worker.ts` loop; `lunar-worker.mjs:86` |
+| Preview and launch fly one canonical request to identical samples and analysis | `worker-dispatch.test.ts:83` to `:86`; `lunar-worker.mjs:91` to `:93` |
+| Planetary hints and shots unchanged | `worker-dispatch.test.ts:165`, strict equality with direct `findHint` and `simulateShot` |
+| One worker; search completion changes no aim | `lunar-worker.mjs:73`, `:74` and `:77` |
+
+The probe prewarms with the player's Guide (reference, 1 flight) and a budget-0 search, then starts a default search and fills 3.2 km/s.
+In six contexts, phone, desktop and reduced motion at `/` and `/starshot/`, replies came in the order 1, 2, 3, 900001, 900002, 4, 900003, 5.
+Preview 4, posted 240 to 344 ms into a search of 2,369 to 2,730 ms, answered in 45 to 69 ms; the idle preview after the guide took 37 to 59 ms.
+Each search flew 236 simulations and selected day 0 at 3.120 km/s, as in Node. Times are headless Chromium page-clock milliseconds, post to reply.
+Interleaving was measured only in Chromium. WebKit and Firefox are unmeasured, not passed.
+
+The zero-delay timer has a cost. In a later run at `/`, full searches took 2,479 to 2,705 ms, and 1,402 to 1,627 ms with a `MessageChannel` post as the yield.
+That is 4.2 to 4.6 ms more per flight in the worker, as the [HTML timer rule](https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers) predicts: nested timers past level 5 wait at least 4 ms.
+Previews in those six contexts answered in 40 to 104 ms. The yield stays as built; PR3b can take the `MessageChannel` option.
+
+There are 31 unit mutants of `worker-handler.ts`, `sim.worker.ts` and `lunar-hint.ts`, all killed, and two browser mutants, both killed. Each was restored and checked with `cmp`.
+
+| Mutated line | Killing test |
+|---|---|
+| `worker-handler.ts:12` yield as `queueMicrotask` or `Promise.resolve()`, as `setImmediate`, or with a 4 ms delay | `worker-dispatch.test.ts:47` |
+| `:31` yield unawaited, removed, doubled or only for a search; `:29` an extra yield before the search | `:47` |
+| `:30` no count or a double count | `:47`, `:112` and `:141` |
+| `:36` count read from the returned hint | `:141` |
+| `:34` omitted strategy reported as search | `:47` and `:112` |
+| `:36` strategy, grid or id dropped or changed; `lunar-hint.ts:17` another grid id | `:47`, `:112` and `:141` |
+| `:29` the old `lunarHint()` for every Moon query; `:25` the Moon query test inverted | `:47`, `:112`, `:141` and `:155`; inverted also `:165` |
+| `:44` rejection not awaited; `:46` error id or message | `:155` |
+| `:19` Moon shot id or purpose | `:47` |
+| `:23` planetary shot id or purpose; `:38` planetary hint budget; `:39` planetary id or an extra undefined field | `:165` |
+| `sim.worker.ts:16` to `:18` one message at a time (review mutant S1); `:17` the reply posted unawaited | `:88`; in the browser, unawaited also times out at `lunar-worker.mjs:48` |
+| Browser: `worker-handler.ts:12` microtask yield | `lunar-worker.mjs:86` |
+
+No test reads `ms`, which is wall time. `:88` imports the real `sim.worker.ts` on a stubbed `self`.
+CI's verify-game job passes no `--steps` (`.github/workflows/ci.yml:109` and `:110`), so the browser steps above run by hand.
+
+Size against `6032f07`: 399 contentful added lines and 16 moved in 11 files. Every non-blank added line counts, comments included.
+A handler line is moved when a trimmed identical line left `sim.worker.ts`: one import, the handler body, and its try and catch lines. Nothing was compressed.
+That is 41 code, 179 test, 114 probe, 60 result-note, 3 README and architecture, 1 changelog and 1 deviation-log line: 159 over the 240-line budget and 1 under the 400-line cap (row 35).
+
+Commands ran on `46c4873` plus the uncommitted review fixes, which change no production code. The development build is `3dc2b7d9cb1c0bf0dee20611`.
+Browser steps ran as `NODE_PATH="$(npm root -g)" STARSHOT_PROBE_OUT=<folder> node scripts/verify-game.mjs --steps <step> [--base /starshot/]`.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 181 tests |
+| `npx vitest run apps/game/src/sim` | 0, 3 files, 24 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 16 files, 160 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `lunar-worker.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts and 9 screenshots each; the later run at `/` and its `MessageChannel` build also 0 |
+| `screen-async.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts each; 4 stale replies ignored in each |
+| `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |

@@ -26,6 +26,10 @@ export interface HintResponse {
   readonly id: number;
   readonly hint: Hint | null;
   readonly ms: number;
+  /** Moon guides only, even with no route: the strategy, the grid and the flights it took. */
+  readonly strategy?: "reference" | "search";
+  readonly grid?: "moon-grid/1";
+  readonly simulations?: number;
 }
 
 export interface ErrorResponse {

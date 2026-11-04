@@ -246,6 +246,8 @@ stutters, even on a phone.
   aim replaces any queued one, so the worker never falls behind.
 - **Launch and hint: awaited.** A launch request runs the identical simulation and the
   UI animates the result. A hint request searches for a working shot in the worker.
+  A Moon guide search yields a macrotask after each flight, so a queued preview is
+  answered before the search ends (`apps/game/src/sim/worker-handler.ts`).
 - **Budget.** Measured in Node 22 over 432 aims per level (the docblocks above
   `SIM_SETTINGS` and `OUTER_SIM_SETTINGS` hold the numbers): a median of 2 ms on the
   Mars and Venus levels, 8 ms on Big Game and the Grand Tour, 7 to 8 ms in the Mars
