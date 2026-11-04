@@ -20,6 +20,7 @@ Playwright is deliberately not a dependency. It must already resolve on the mach
 
 ```bash
 npm run build
+node scripts/verify-lunar-loading.mjs --dist apps/game/dist  # the Moon rail stays out of the entry
 node scripts/verify-game.mjs                        # smoke: load, screenshots, sweep
 node scripts/verify-game.mjs --base /starshot/      # portable subpath hosting
 node scripts/verify-game.mjs --steps /tmp/steps.mjs # one shot() per acceptance criterion

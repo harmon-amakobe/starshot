@@ -65,6 +65,7 @@ people start from the README at the root.
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |
 | `node scripts/verify-game.mjs` | Drives the built game in a headless browser on phone and desktop sizes |
 | `node scripts/verify-web-release.mjs` | Verifies offline flight, worker updates and cache ownership at the root and a portable subpath |
+| `node scripts/verify-lunar-loading.mjs --dist apps/game/dist` | After `npm run build`, fails when the entry graph carries the Moon rail or the Moon chunk is missing from the page or the precache, and prints raw and gzip bytes. A verifier, not a gate |
 | `node scripts/release/cli.mjs apply-proposal <proposal.json>` | Validates and applies unchanged CI version outputs to a clean checkout at their source commit |
 
 ### sync-work.mjs

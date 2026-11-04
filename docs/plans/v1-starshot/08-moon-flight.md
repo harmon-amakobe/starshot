@@ -24,7 +24,8 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 | Loader | 240 | 8 | Memoized dynamic loader with retry; the scene takes a nullable model each frame, still passed eagerly |
 | Readiness | 320 | 12 | Launch, pulling and Guide gated on the model, the matching preview enforced at commit (deviation row 41), with the preview-key fixes; still eager |
 | Lazy | 340 | 12 | The main thread loads the rail on demand, with the loading and retry panel and the `lunar-loading.mjs` browser probe (deviation row 42) |
-| Evidence | 350 | 8 | Built-module, network, offline and asynchronous browser regressions |
+| Evidence bundle | 280 | 6 | `scripts/verify-lunar-loading.mjs` with failing canaries, and the real builds at the cleanup base and the tip measured separately (deviation row 43) |
+| Evidence browser | 220 | 5 | The remaining browser cases: sub-day restore and replay under WebGL and short landscape, guide outcomes and YOLO in short landscape, owner switch on phones, and an offline Moon restore through the worker |
 
 Budgets include tests and per-part plan, changelog and result additions. These are
 planning targets below the ordinary 400-line/20-file warning; the failure threshold
@@ -719,3 +720,55 @@ Open points, settled conservatively, and inputs for Evidence:
 - While loading, the disabled ring handle sits at the empty frame's grip, the top-left corner.
 - Offline: `verify-web-release.mjs` launches Moonshot offline at `/` and `/starshot/` from the worker's cache. Whether `page.route` sees worker-served requests, and retry in WebKit and Firefox, are unmeasured.
 - The sub-day flight and result restore case stays with Evidence.
+
+## Evidence bundle result
+
+Built to [Browser and bundle evidence](#browser-and-bundle-evidence), lines 132 to 150, on Lazy at `1ea3f56`. `scripts/verify-lunar-loading.mjs --dist apps/game/dist` reads a production build. It is a verifier, and `scripts/gates.mjs` does not run it. `--measure-only` prints the same findings and exits 0. Otherwise it exits 1 on any of these:
+- the entry or the initial worker, or a chunk in either static import graph, carries the Moon rail (the worker check was added at the delta review);
+- the entry, worker, dynamic worker or Moon graph loads a file the build lacks, or the entry starts no worker the verifier can find;
+- the chunk named by the `starshot-moon-chunk` meta tag is absent or lacks the rail;
+- the release inventory in `sw.js` is missing, omits a chunk of those graphs, or lists a file the build lacks.
+
+Two markers from `moon-rail.json` find the rail: its `sourceSha256`, and its first four knot values as the minifier writes them. Either marks a chunk, so a named JSON import that drops the digest is still caught. The Moon chunk must hold both, which proves each still matches real output.
+Gzip bytes come from node zlib `gzipSync` at level 9, one file at a time. The Lazy result's `gzip -9` figures include each file name in the header. Without it, GNU gzip 1.12 gives 245,633 for the tip's entry and 47,000 for its Moon chunk, where zlib gives 0.5% more and 2.6% less. Compare numbers from one method only.
+
+| Part, raw / gzip bytes | Cleanup base `e523545` | Tip |
+|---|---:|---:|
+| Critical execution JS: the entry and its static imports | 987,814 / 292,352, with the rail | 898,845 / 246,864 |
+| Initial worker JS | 17,693 / 8,099 | 17,970 / 8,231 |
+| Dynamic worker JS | 99,292 / 49,839 in 1 file | 100,921 / 50,715 in 2 files |
+| Lazy Moon chunk | none: the rail is in the entry | 93,176 / 45,795 |
+| Service-worker precache, complete | 13,822,866 / 12,343,824 in 56 files | 13,829,604 / 12,345,273 in 58 files |
+| Planetary page requests; transfer and initiator bytes | unknown | unknown: both need a browser |
+
+The critical JS is 88,969 raw and 45,488 gzip bytes smaller. A Moon level then loads 93,176 more, so the entry and the Moon chunk together are 4,207 raw and 307 gzip bytes above the base entry. The precache grew by 6,738 bytes and 2 files. An install still fetches the Moon chunk: the lazy rail defers execution and saves no install traffic.
+The base came from `git archive e523545 | tar -x` in a scratch folder outside the repository. There `npm ci --prefer-offline` (61 packages) and `npm run build` both exited 0, on Node 22.23.4, npm 10.9.9 and Vite 8.3.5. Its `package-lock.json` SHA-256 begins `b56e042d89abc3da`, the same as the tip's. Build ids: base `376fbb4ba098d3ac1102aab7`, tip `24ec361406d4cd840cce4d7a`. This part's diff changes no game source.
+Expected base failure: the plain run exits 1 with two findings. The entry `assets/index-iSl09Xkv.js` carries the rail, and `index.html` has no `starshot-moon-chunk` tag, which Lazy added. The base's inventory lists every chunk of its graphs, so no inventory finding appears.
+A module preload only fetches, so the entry graph starts from `<script src>` tags alone. The review's copy c3, which preloads the Moon chunk, exits 0 by that rule.
+
+There are 33 mutants of the verifier, all killed, each restored and checked with `cmp`. The 9 tests in `apps/game/src/verify-lunar-loading.test.ts`, which `npm run gates` runs, kill 30, with Vitest's `--fsModuleCache=false`; the CLI runs kill 3. Real-build canaries ran on scratch copies of the tip's build, the review's copies among them.
+
+| Guard | Canaries | Mutants killed |
+|---|---|---|
+| Rail in the entry or a static import, in the `import{a as b}from` and bare forms, by either marker | `:73`; review copies v4, c1 and c2, and one more, each import the Moon chunk statically and exit 1 | Check removed, static edges ignored, either `STATIC` form refused (2), a dynamic import read as static, digest-only marker (6) |
+| No entry, or no worker found | `:86`; review v2 and c4 exit 1 | Each check removed (2) |
+| A graph loads a file the build lacks | `:95`; review v1, v3, v6, c6 and c7 exit 1 | The closure or the later graph drops its missing edges, or they go unreported (3) |
+| Meta tag missing; its chunk absent or missing a marker | `:108`; a real build with the chunk deleted, and one with its digest zeroed, each exit 1 | Each check removed, one marker enough (4) |
+| Inventory missing, omitting a chunk of the four graphs, or listing an absent file | `:122` and `:95`; review v5, without the worker's two lunar chunks, review c5 and a real build without the Moon chunk exit 1 | Each of the three checks removed, only the Moon graph checked, an unfilled inventory read as empty (5) |
+| Graphs | `:57` | Worker not followed, one level of later chunks, the Moon row counting the entry (3) |
+| Bytes, each file alone at level 9 | `:135` | One gzip for all files, level 1, `cost` sizing an absent file (3) |
+| A part that is absent, unfound or missing a file prints its reason instead of bytes; a Moon chunk inside the entry says so | `:153` | A part with a missing file measured, an empty part printed as 0, the Moon inside the entry called absent, an unfound worker called none (4) |
+| Exit codes | Tip 0, base 1, base with `--measure-only` 0 | Each flipped (3) |
+
+Size against `1ea3f56`: 449 contentful added lines in 5 files, against a budget of 280 lines and 6 files, so 169 over. That is verifier 219 (168 code lines), declarations 23, test 164, changelog 1 and this note 42, the review fixes included. The orchestrator's records are counted apart, and nothing was compressed. The declarations let the game's typecheck cover the test, so `npm run gates` runs it.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 223 tests |
+| `npx vitest run apps/game/src/verify-lunar-loading.test.ts` | 0, 9 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 20 files, 202 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; the large-chunk warning remains |
+| `node scripts/verify-lunar-loading.mjs --dist apps/game/dist` | 0 at the tip; 1 at the base, as expected, and 0 there with `--measure-only`; 1 on review copies v1, v2, v3, v5 and v6 |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
+
+Inputs for Evidence browser: planetary page requests (`system-*.js` under a run-time base) and transfer and initiator bytes are unknown here; count each cached response once. The precache lists the Moon chunk, so measure install traffic apart from first execution. A module preload, as in review copy c3, is a transfer cost that this verifier does not count as execution.
