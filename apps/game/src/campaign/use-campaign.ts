@@ -61,6 +61,8 @@ export function useCampaign(initial: Session, owner: string, record: RecordResul
     // Read the token before layout restore so autosave rejects a newly selected pilot's old render.
     owner: hydration.token.current,
     identity: { worker: workerIdentity, visit: hydration.visit.current },
+    // The live refs themselves, for a load that settles after later renders (`use-view.ts`).
+    hydrationRefs: { token: hydration.token, visit: hydration.visit },
   };
 }
 export type CampaignController = ReturnType<typeof useCampaign>;

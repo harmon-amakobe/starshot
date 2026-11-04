@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { MissionBody as BodyId } from '../missions';
-import { bodyRadius } from '../missions';
+import { bodyRadius, isLunarLevel } from '../missions';
 import type { SceneFrame } from './scene-types';
 import { type CameraMode, type Preferences } from './session';
 import type { CampaignController } from './use-campaign';
@@ -17,6 +17,8 @@ export function useCameraViews(
   const mapReturn = useRef<Preferences | null>(null);
   function camera(mode: CameraMode) {
     const frame = getFrame();
+    // An undrawn frame, as on a Moon level waiting for its model, has no view to keep.
+    if (!frame.ready) return;
     setMap(false);
     if (focus) closeFocus();
     c.playback.preferences({
@@ -54,6 +56,9 @@ export function useCameraViews(
     setSelected(null);
   }
   function inspectBody(id: BodyId) {
+    // Only a Moon level loads the Moon model, so a planetary one refuses a Moon focus before any
+    // focus state changes; `world.ts` still throws if a frame asks for it anyway.
+    if (id === 'moon' && !isLunarLevel(c.store.level)) return;
     focusReturn.current = structuredClone(c.store.session.preferences);
     setFocus(id);
     setSelected(null);

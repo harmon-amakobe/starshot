@@ -23,7 +23,7 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 | Model | 280 | 16 | Pure requests and explicit scene-model plumbing, still eagerly loaded |
 | Loader | 240 | 8 | Memoized dynamic loader with retry; the scene takes a nullable model each frame, still passed eagerly |
 | Readiness | 320 | 12 | Launch, pulling and Guide gated on the model, the matching preview enforced at commit (deviation row 41), with the preview-key fixes; still eager |
-| Lazy | 280 | 9 | The main thread loads the rail on demand, with the loading and retry panel and the `lunar-loading.mjs` browser probe |
+| Lazy | 340 | 12 | The main thread loads the rail on demand, with the loading and retry panel and the `lunar-loading.mjs` browser probe (deviation row 42) |
 | Evidence | 350 | 8 | Built-module, network, offline and asynchronous browser regressions |
 
 Budgets include tests and per-part plan, changelog and result additions. These are
@@ -645,3 +645,77 @@ The entry `index-*.js` is 989,705 bytes, against 988,786 at Loader; the worker's
 | `npm run build` and `npm run build:prototype` | Both 0; the large-chunk warning remains |
 | `lunar-flight.mjs`, `screen-flight.mjs`, `lunar-worker.mjs`, `screen-async.mjs`, `screen-split.mjs` and `screen-restore.mjs` at `/`, and `lunar-flight.mjs` at `/starshot/` | All 7 exit 0, 3 contexts each: page errors 0, failed requests 0, no target under 44 px. The phone logs 4 GL driver warnings, as at Loader. `screen-restore.mjs` reads the output of `screen-flight.mjs` |
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
+
+## Lazy result
+
+Based on Readiness at `65969fa`. Paths start at `apps/game/src/`. The main thread now loads the Moon rail on demand.
+`campaign/use-view.ts` no longer imports `lunarModel`. Its load effect (`:24` to `:30`) runs again when the Moon level, pilot or visit changes and calls `lunarLoadRun` (`campaign/lunar-readiness.ts:63`). A planetary level gets null and loads nothing. A Moon level loads through `lunarModelLoader` with a disposal flag of its own run, and success and failure settle through `ownedCallback` with the `useHydration` refs (`hydrationRefs`, `campaign/use-campaign.ts`) and the session's level id. Retry loads again through the same owner.
+While a Moon level waits, the draw loop holds lunar time and skips `scene.update` (`use-view.ts:47` to `:52`). On the switch, a layout effect clears both canvases (`campaign/scene.ts:140`) and resets the frame to `EMPTY_FRAME` before the browser paints (`use-view.ts:32` to `:37`). The camera controls and gestures ignore that undrawn frame, and the target cue hides.
+The reason reads "Loading the Moon." or "The Moon could not load." `MoonLoadPanel` (`campaign/FlightDeck.tsx:179`) shows it above the deck, with Retry (named "Retry loading the Moon") after a failure, and the polite live region announces it. Focus goes to the panel while Launch is disabled.
+Findings row 14: a planetary level refuses a Moon focus before any focus state is written (`campaign/use-camera-views.ts:61`). Row 17: Apply guide and both fine-aim inputs wait for the model. Row 15: the reason line covered the orbit slider's 44 px box by 6 to 11 px at every size measured. It now takes its own row in `.c-actions` (`campaign/campaign.css:42`), and the deck grows about 19 px while the Moon loads.
+
+Retry, measured: Chromium 153.0.8010.12 under Playwright 1.63.0 keeps a failed dynamic import for the life of the page. After an abort, a 500 or a held abort, three `import()` calls of one URL made 1 request, and all three rejected. So a retry imports the same chunk under `?retry=n` (`sim/load-lunar-model.ts:36`). The build names the chunk in a `starshot-moon-chunk` meta tag (`apps/game/vite.config.ts`) and fails unless there is exactly one. An emitted chunk URL was rejected: Rolldown then moved shared code into a new static chunk and ignored `implicitlyLoadedAfterOneOf`. The service worker serves the chunk from its cache and drops the query (`apps/game/public/sw.js:29` to `:33`).
+
+| Build | Entry `index-*.js`, raw / gzip | Moon chunk `lunar-model-*.js`, raw / gzip |
+|---|---:|---:|
+| Readiness `65969fa` | 989,705 / 295,350 | none: the rail is in the entry |
+| Lazy | 898,845 / 245,651 | 93,176 / 47,024 |
+
+Gzip is `gzip -9` output in bytes. The worker's `lunar-*.js` stays 99,312 bytes.
+`scripts/verify-steps/lunar-loading.mjs` runs in every verify-game context. It removes the release service worker from its pages, because `page.route` never sees a chunk the worker answers from cache. `scripts/verify-game.mjs` gives a step `intend(url)`. Each call excuses one failed request for that exact URL and one "Failed to load resource" line for it, counted apart (`:99` to `:113`). Scratch canaries: a declared failure exits 0; adding an undeclared URL exits 1; failing the declared URL twice exits 1; declaring a failure that never happens exits 1 (`declared but never failed`, added at the delta review).
+
+| Case | Proof in `lunar-loading.mjs` |
+|---|---|
+| The served entry lacks the rail's `sourceSha256`; one lazy import carries it, and the meta tag names it | Before case 1 |
+| A fresh Moonshot holds `et` over 700 ms, draws nothing and asks once; reduced motion resumes its parked orbit first | Case 1 |
+| Pull, Enter, Launch and Guide do nothing; the reason is visible and announced; focus stays off the body; no target cue | Case 2 |
+| The reason line lies inside the deck and clear of every deck control, and the panel clear of all others | Case 3: 390x844, 360x780, 844x390, 1440x900 and 720x450 (200% zoom approximated by halving the CSS viewport), collapsed and on each page |
+| A failed request shows the error; Retry by keyboard asks `?retry=1`, and Launch is enabled | Case 4 |
+| First Light draws during a held load; Moonshot then has no lit pixel and no frame; the model is reused with no request | Case 5, from a screenshot on black, as WebGL keeps no readable buffer |
+| A saved planetary pilot asks for nothing until Moonshot opens | Case 6 |
+| Under `?renderer=canvas` (D19), which draws planets behind the home menu too: cases 1 and 5 again, with no lit pixel on the held Moonshot | Case 7 |
+
+There are 34 mutants, all killed, each restored and checked with `cmp`. Vitest ran with `--fsModuleCache=false`; a browser kill is the probe's exit 1 on a fresh build. The five killed in cases 2, 3 and 6 ran before case 7 was added; those cases did not change.
+
+| Mutant | Killing test |
+|---|---|
+| A planetary level starts a load (unit and browser, 2) | `campaign/lunar-readiness.test.ts:238`; probe case 6 |
+| One disposal flag shared by every run | `:263` |
+| A late success or a late failure not owned (2) | `:245` |
+| The run's Retry, or the view's, loads nothing (2) | `:271`; case 4, by its 30 s wait |
+| The reason ignores a failure, or Retry shows while loading (2) | `:29` and `:34` |
+| Row 14 gate removed, or placed after the focus return is written (2) | `:196` |
+| Row 17: Apply guide, angle or speed not gated (3) | `:208` |
+| Camera, zoom or pan guard removed (3) | `:185` |
+| The loader stops counting failures | `sim/load-lunar-model.test.ts:68` |
+| The view imports the model statically | `sim/lunar-request.test.ts:75` |
+| Tick not paused; the layout effect removed; frame not reset; `clear()` not called; WebGL not cleared (5) | Cases 1, 5, 5, 5 and 5 |
+| The 2D background not cleared | Case 7 only: with WebGL, the home menu's own frame already blanks that canvas (`campaign/scene.ts:45` and `:46`) |
+| Retry under the same URL | Case 4, by its 30 s wait |
+| Focus not given to the panel; reason not announced; target cue shown; reason line back out of flow (4) | Cases 2, 2, 2 and 3 |
+| `verify-game.mjs` excuses every URL, or excuses a URL more than once (2) | The undeclared and twice canaries exit 0, not 1 |
+| The build guard: the rail merged into the entry, or two chunks matched (2) | `npm run build` exits 1 with "Expected one Moon model chunk, found 0." and "found 2." |
+
+Without the allowance, the probe fails each context on the aborted chunk and its console line.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 214 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 19 files, 193 tests |
+| `npm run build` | 0; the large-chunk warning remains |
+| `lunar-loading.mjs` at `/` and `/starshot/`, and `lunar-flight.mjs` at `/` | All 0, 3 contexts each: page errors 0, failed requests 0, no target under 44 px. The phone logs 4 GL driver warnings, as at Readiness |
+| The declared, undeclared, twice and unspent canaries | 0, 1, 1 and 1, as intended |
+| Before the review fixes (layout effect, Retry name, one-shot allowance): `build:prototype`, `lunar-flight.mjs` at `/starshot/`, `screen-flight.mjs` and `lunar-worker.mjs` at `/`, plain `verify-game.mjs` | All 0; not rerun after the fixes |
+| `node scripts/verify-web-release.mjs`, before the review fixes | 0: a fresh Moonshot launches offline at `/` and `/starshot/`, its chunk served by the worker |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
+
+Open points, settled conservatively, and inputs for Evidence:
+- Size against `65969fa`: 605 contentful added lines in 21 files, review fixes and the untracked probe included, against a budget of 340 lines and 12 files. That is 145 production, 140 test, 21 harness, 235 probe, 63 note and 1 changelog lines; nothing was compressed. The orchestrator ruled Lazy stays one part (deviation row 42).
+- The retry URL needs the meta tag and its build plugin; in development a retry cannot refetch.
+- `CampaignScene.clear()` and `ThreeScene.clear()` exist because a same-width reset leaves WebGL drawn in Chromium.
+- On a switch to a waiting Moonshot, React still renders once with the planetary frame. The layout effect blanks the canvases and the frame before that render is painted; no probe times the paint itself.
+- The deck moves while the reason row shows; in short landscape, Guide and Launch then sit at the left of their row.
+- `MoonLoadPanel` lives in `FlightDeck.tsx` and renders beside `FlightDeck` in `CampaignApp`, which saves a file.
+- While loading, the disabled ring handle sits at the empty frame's grip, the top-left corner.
+- Offline: `verify-web-release.mjs` launches Moonshot offline at `/` and `/starshot/` from the worker's cache. Whether `page.route` sees worker-served requests, and retry in WebKit and Firefox, are unmeasured.
+- The sub-day flight and result restore case stays with Evidence.

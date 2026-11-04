@@ -14,9 +14,13 @@ export interface Readiness {
 }
 export const READY: Readiness = Object.freeze({ scene: true, reason: '' });
 
-/** A planetary level is ready at once and never waits for the Moon model; a Moon level needs it. */
-export function lunarReadiness(level: Mission, model: LunarModel | null): Readiness {
-  return !isLunarLevel(level) || model ? READY : { scene: false, reason: 'Loading the Moon.' };
+/**
+ * A planetary level is ready at once and never waits for the Moon model; a Moon level needs it.
+ * The reason says whether the model is on its way or failed, since only a failure offers Retry.
+ */
+export function lunarReadiness(level: Mission, model: LunarModel | null, failed: boolean): Readiness {
+  if (!isLunarLevel(level) || model) return READY;
+  return { scene: false, reason: failed ? 'The Moon could not load.' : 'Loading the Moon.' };
 }
 
 /** Who a late callback acts for: the pilot and visit refs of `useHydration`, the mission and the view. */
@@ -42,4 +46,29 @@ export function ownedCallback<A extends unknown[]>(owner: CallbackOwner, run: (.
     run(...args);
     return true;
   };
+}
+
+/** Where one load run reports: the model when it arrives, and each change of status. */
+export interface LoadSettle {
+  readonly model: (model: LunarModel) => void;
+  readonly status: (status: 'loading' | 'ready' | 'failed') => void;
+}
+
+/**
+ * One run of the view's Moon model effect, or null on a planetary level, which never loads the
+ * rail. The run owns its disposal flag: StrictMode runs an effect twice, and a flag shared by
+ * both runs would let the first run's late answer through. Both outcomes are caught and settle
+ * only for the owner current when the load, or its retry, started.
+ */
+export function lunarLoadRun(level: Mission, owner: Omit<CallbackOwner, 'disposed'>, settle: LoadSettle,
+  loader: { readonly model: LunarModel | null; load(): Promise<LunarModel> }) {
+  if (!isLunarLevel(level)) return null;
+  const disposed = { current: false }, owned = { ...owner, disposed };
+  const load = () => {
+    settle.status(loader.model ? 'ready' : 'loading');
+    const ready = ownedCallback(owned, (model: LunarModel) => { settle.model(model); settle.status('ready'); });
+    void loader.load().then(ready, ownedCallback(owned, () => settle.status('failed')));
+  };
+  load();
+  return { retry: load, dispose: () => void (disposed.current = true) };
 }

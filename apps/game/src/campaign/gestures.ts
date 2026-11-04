@@ -39,15 +39,16 @@ export function useGestures(c: CampaignController, frame: RefObject<SceneFrame>,
     onPointerUp(e: PointerEvent<HTMLButtonElement>) { if (drag.current?.pointer !== e.pointerId) return; e.preventDefault(); const final = aimAt(e); finish(false, final); },
     onPointerCancel() { finish(true); }, onLostPointerCapture() { if (drag.current) finish(true); },
   };
+  // An undrawn frame, as on a Moon level waiting for its model, has no view to zoom or pan from.
   const zoom = (factor: number, point?: [number, number]) => {
-    if (drag.current) return; const f = frame.current;
+    if (drag.current || !frame.current.ready) return; const f = frame.current;
     c.playback.preferences({ camera: 'free', ...zoomAt(f, factor, point ?? [f.width / 2, f.height / 2], c.store.session.preferences.camera === 'free' ? c.store.session.preferences.orbit : [0, 0]) });
   };
   const world = {
     onWheel(e: WheelEvent) { if (!drag.current) zoom(Math.exp(Math.max(-.4, Math.min(.4, e.deltaY * .0015))), [e.clientX, e.clientY]); },
     onPointerDown(e: PointerEvent<HTMLDivElement>) { if (drag.current) { finish(true); return; } if (e.button !== 0) return; e.currentTarget.setPointerCapture(e.pointerId); points.current.set(e.pointerId, [e.clientX, e.clientY]); },
     onPointerMove(e: PointerEvent<HTMLDivElement>) {
-      const old = points.current.get(e.pointerId); if (!old) return;
+      const old = points.current.get(e.pointerId); if (!old || !frame.current.ready) return;
       const next: [number, number] = [e.clientX, e.clientY], f = frame.current, p = c.store.session.preferences;
       if (points.current.size > 1) { const other = [...points.current].find(([id]) => id !== e.pointerId)?.[1]; if (other) zoom(Math.hypot(old[0] - other[0], old[1] - other[1]) / Math.max(10, Math.hypot(next[0] - other[0], next[1] - other[1])), [(next[0] + other[0]) / 2, (next[1] + other[1]) / 2]); }
       else if (inspect || e.shiftKey) c.playback.preferences({ camera: inspect ? p.camera : 'free', heightKm: f.heightKm, pan: [...f.centre], orbit: [Math.max(-1.2, Math.min(1.2, p.orbit[0] + (next[1] - old[1]) * .008)), Math.max(-1.2, Math.min(1.2, p.orbit[1] + (next[0] - old[0]) * .008))] });

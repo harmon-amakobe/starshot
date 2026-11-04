@@ -12,10 +12,12 @@
  *   node scripts/verify-game.mjs --url http://localhost:5173/
  *   node scripts/verify-game.mjs --steps /tmp/steps.mjs   criterion-specific actions
  *
- * A steps module default-exports `async (page, { shot, viewport, log })`; call
- * `await shot("02-aimed")` after each acceptance criterion. Screenshots and the report go
+ * A steps module default-exports `async (page, { shot, viewport, log, intend })`; call
+ * `await shot("02-aimed")` after each acceptance criterion, and `intend(url)` before each
+ * request it fails on purpose. Screenshots and the report go
  * to a fresh directory under the OS temp dir (override with --out), never into the repo.
- * Exit 1 on any console error, page error, failed request, or horizontal overflow.
+ * Exit 1 on any page error, horizontal overflow, or console error or failed request that a
+ * step did not declare with `intend(url)`; a declared failure that never happened also fails.
  */
 import { createRequire } from "node:module";
 import { createServer } from "node:http";
@@ -90,14 +92,29 @@ async function main() {
       const ctx = await browser.newContext(vp.context);
       const page = await ctx.newPage();
       const r = { name: vp.name, console: [], pageErrors: [], failedRequests: [], shots: [] };
+      // A step that fails a request on purpose, as lunar-loading.mjs fails the Moon chunk to test
+      // Retry, calls intend(url) once per failure. Each call excuses one failed request for that
+      // exact URL and one "Failed to load resource" line Chromium writes for it, counted apart as
+      // their order is not fixed. A repeat, any other line from that URL or any other failure
+      // still fails the run.
+      const excused = { requests: new Map(), lines: new Map() };
+      const spend = (pool, url) => {
+        const left = pool.get(url) ?? 0;
+        if (left) pool.set(url, left - 1);
+        return left > 0;
+      };
       page.on("console", (m) => {
+        if (m.type() === "error" && m.text().startsWith("Failed to load resource") && spend(excused.lines, m.location().url)) return;
         if (m.type() === "error" || m.type() === "warning") r.console.push(`${m.type()}: ${m.text()}`);
       });
       page.on("pageerror", (e) => r.pageErrors.push(String(e?.message ?? e)));
-      page.on("requestfailed", (q) => r.failedRequests.push(`${q.url()} ${q.failure()?.errorText ?? ""}`));
+      page.on("requestfailed", (q) => spend(excused.requests, q.url()) || r.failedRequests.push(`${q.url()} ${q.failure()?.errorText ?? ""}`));
       page.on("response", (s) => {
-        if (s.status() >= 400) r.failedRequests.push(`${s.status()} ${s.url()}`);
+        if (s.status() >= 400 && !spend(excused.requests, s.url())) r.failedRequests.push(`${s.status()} ${s.url()}`);
       });
+      const intend = (url) => {
+        for (const pool of Object.values(excused)) pool.set(url, (pool.get(url) ?? 0) + 1);
+      };
       const shot = async (label) => {
         const file = join(out, `${vp.name}-${label}.png`);
         await page.screenshot({ path: file });
@@ -130,7 +147,9 @@ async function main() {
       } catch (e) {
         r.ariaSnapshotError = String(e?.message ?? e);
       }
-      if (steps) await steps(page, { shot, viewport: vp.name, log: (s) => console.log(`  [${vp.name}] ${s}`) });
+      if (steps) await steps(page, { shot, viewport: vp.name, log: (s) => console.log(`  [${vp.name}] ${s}`), intend });
+      // A declared failure that never happened is a step bug, and its excuse could hide a later one.
+      for (const [url, left] of excused.requests) if (left) r.failedRequests.push(`declared but never failed: ${url}`);
       const errs = r.console.filter((c) => c.startsWith("error")).length + r.pageErrors.length + r.failedRequests.length + (r.layout.overflowX ? 1 : 0);
       bad += errs;
       console.log(`${vp.name.padEnd(22)} ${errs ? "FAIL" : "ok  "} console ${r.console.length}, page errors ${r.pageErrors.length}, failed requests ${r.failedRequests.length}, overflowX ${r.layout.overflowX}, canvases ${r.layout.canvases.length}, unnamed controls ${r.layout.unnamedControls.length}, targets < 44px ${r.layout.smallTargets}, rAF ${r.fps}/s`);
