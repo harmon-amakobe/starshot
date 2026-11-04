@@ -58,7 +58,7 @@ export interface Hint {
   readonly hits: boolean;
   /** Closest approach of exactly this aim to the target's centre [km]. */
   readonly closestKm: number;
-  readonly source: "lambert" | "curated";
+  readonly source: "lambert" | "curated" | "lunar-grid";
   readonly simulations: number;
 }
 

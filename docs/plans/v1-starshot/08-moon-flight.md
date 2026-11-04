@@ -310,3 +310,81 @@ Browser steps ran as `NODE_PATH="$(npm root -g)" STARSHOT_PROBE_OUT=<folder> nod
 | `lunar-flight.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts and 55 screenshots each |
 | `screen-flight.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts and 108 screenshots each |
 | `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
+
+## Search core result
+
+Part 1 of Search (deviation row 33), based on the Ownership edits part at `0a39ad4`. Paths start at `apps/game/src/sim/`.
+`lunar-hint.ts` adds `findLunarHint`. `lunarHint()`, the 3.240 km/s par and the worker are unchanged.
+An omitted or `reference` strategy returns `lunarHint()` itself. A search flies the reference, the coarse grid, then each seed's refinement.
+By orchestrator ruling, each integer tuple flies at most once per search, and a seed's own tuple is not flown again.
+Refinement adds at most 4 x 17 = 68 flights and a full search at most 236, tightening the spec's "at most 72 further calls".
+Budgets 236 to 240 therefore give identical results. Measured coarse hits seed days 0, 25, 26 and 27, all at 3.150 km/s and 0 degrees.
+A full search selects day 0, 2026-11-02 at 01:00 UTC, at 3.120 km/s and 0 degrees. It is the cheapest hit of a finite grid, not an optimum, and the 3.240 km/s par stays.
+
+Open points, settled conservatively:
+- The coarse grid flies by day, then burn, then angle, each ascending, without repeating the reference. A truncated budget flies a prefix of that order. PR11 to PR15 keep it as a conformance rule.
+- A budget is validated for both strategies but bounds only the search, so a reference query with budget 0 still flies the reference once.
+- A `null` strategy or budget is malformed, not omitted. `findLunarHint` is async because it awaits `afterFlight`.
+- A null result has no count field; transport can count `afterFlight` calls, which the tests tie one to one to flights.
+
+Tests count flights through `vi.mock` wrappers of the production `runLunar` (`lunar-hint.test.ts:14`) and of `simulateLunar` below it (`:19`).
+The second wrapper also sees an integration that bypasses `runLunar`.
+
+| Spec line | Proof in `lunar-hint.test.ts` |
+|---|---|
+| Repeatable order and results | `:71`; at `:136` every budget flies a prefix of that one order |
+| Integer conversion, with every flown burn below the 3.55 km/s fuel budget | `:82` |
+| Fixed frame and date, for every flight and for a returned day-26 route | `:92` and `:199` |
+| The selected route replays through `finalRequest` to the same analysis | `:101` |
+| Reference strategy, par and first searched flight, with one integration each | `:117` |
+| Budgets 0, 1, 2, 167, 168, 169, 235, 239 and 240 fly 0, 1, 2, 167, 168, 169, 235, 236 and 236, at both layers | `:136` |
+| Invalid budgets and unknown strategies reject before any integration | `:155` |
+| `afterFlight` awaited once after each flight; a yielding hook changes nothing | `:169`, `:178` and `:71` |
+| Cost order, seeds and refinement | `:218`, `:225` and `:232` |
+
+Real flights always select a day-0 prograde route, so `:199` uses a controlled runner instead.
+In it only day 26 at 3.240 km/s and -20 degrees hits, and the whole returned hint is compared.
+The sweep at `:136` flies 1,214 real simulations in 15.7 to 15.8 s over two runs here, under a 120 s timeout. The file takes about 22 s.
+
+There are 84 distinct mutants of `lunar-hint.ts`: 72 from the builder's sweep and 12 from review, labelled N1 to N11 and X5 below. 75 fail a test.
+Review also reran nine of the builder's mutants with the same results: an unawaited search hook and the eight that change nothing.
+Each mutant was restored and checked with `cmp`.
+
+| Mutated line in `lunar-hint.ts` | Killing test |
+|---|---|
+| `:26` each `byCost` term dropped, day before burn, burn descending | `:218`; dropping or reversing burn also `:71` and `:136` |
+| `:22` three or five seeds, `:31` unsorted, `:32` distinct-day rule dropped | `:225`; three and unsorted also `:71` |
+| `:39` and `:40` loops swapped, offsets mirrored, burn or angle not seed-relative, day 0; `:20` and `:21` other steps | `:232`; most also `:71` |
+| `:16` other reference, `:98` reference skipped; `:17`, `:99`, `:18` and `:19` other coarse days, burns or angles | `:71` and `:136` |
+| `:74` key without angle, `:75` no dedupe or a repeat stopping the search, `:107` refining every hit | `:71` and `:136` |
+| `:76` guard `>` or removed, `:78` no count; `:95` first or last hit; `:96` validation flight, hits counted | `:136`; most also `:71` |
+| `:81` angle scale or burn off by one | `:71`, `:136` and `:199` |
+| `:80` 00:00 UTC, `:83` radius, `:84` moving frame, fixed epoch or phase 226 | `:92` and `:199` |
+| `:86` every flight a hit, `:87` closest dropped, `:89` labelled `curated` | `:199`; also `:101` or `:117` |
+| `:88` hint on day 0, at `LAUNCH_ET`, with a fixed epoch, a moving frame or angle 0 (N1 to N5) | `:199` |
+| `:95` a hidden `lunarHint()` or `simulateLunar` call (N6, N7) | `:117` and `:136` |
+| `:65` the reference flown twice (N8); `:64` reference skipped at budget 0 (N9) | `:117` |
+| `:85` and `:91` `afterFlight` before, unawaited, missing or only on hits; `:66` none or unawaited (N10) | `:169` or `:178` |
+| `:66` `afterFlight` moved before the reference flight (X5); it passes the 13 tests at `54c9be7` | `:178` |
+| `:56` default `search`; `:57` default budget 100 | `:117`; `:71` |
+| `:56` and `:57` null as omitted; `:58` and `:61` each check dropped; `:59` and `:62` plain `Error` | `:155` |
+| `:61` 0 rejected; 240 rejected | `:136`; every test |
+
+Nine mutants leave behaviour unchanged. Once `:76` refuses, every later new tuple is refused too.
+So a late dedupe, an early `seen` mark, or continuing at `:98`, `:102` or `:109`, changes nothing.
+Counting after the synchronous flight at `:78` is the same. At `:81`, `burn * 0.001` equals `burn / 1000` for every grid burn, 3100 to 3240.
+Likewise `angle * 0.01` (N11) equals `angle / 100` for every grid angle, -2500 to 2500. A default of 239 at `:57` equals 240, because the grid holds 236 flights.
+
+Size against `0a39ad4`, counted as deviation row 34 counts it: 417 contentful added lines and none moved in 7 files.
+That is 115 code, 234 test, 66 result-note, 1 changelog and 1 deviation-log line: 137 over the 280-line budget and 17 over the 400-line cap.
+Row 34 records this total. The total is a warning below the 800-line failure. Nothing was compressed.
+
+Commands ran on `54c9be7` plus the uncommitted review fixes.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 175 tests |
+| `npx vitest run apps/game/src/sim` | 0, 2 files, 18 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 15 files, 154 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |
