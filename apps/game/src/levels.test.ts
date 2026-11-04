@@ -62,7 +62,7 @@ const byId = (id: LevelId) => CAMPAIGN.find((l) => l.id === id)!;
 
 describe("campaign levels are solvable with the game's simulator", () => {
   for (const level of CAMPAIGN) {
-    it(`${level.number}. ${level.title}: the known solution reaches ${level.target}`, () => {
+    it(`${level.title}: the known solution reaches ${level.target}`, () => {
       const sol = KNOWN_SOLUTIONS[level.id as Exclude<LevelId, "sandbox">];
       const day = daysBetweenIso(level.window.startIso, sol.launchIso);
       expect(day).toBeGreaterThanOrEqual(0);

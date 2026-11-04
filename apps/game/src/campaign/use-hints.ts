@@ -12,7 +12,7 @@ import type { Hydration } from './use-restore';
 type Simulation = SimulationApi<FlightRequest>;
 
 import type { Release } from './use-release';
-type HintInput = {
+export type HintInput = {
   store: SessionStore;
   clock: FlightClock;
   hydration: Hydration;
@@ -24,6 +24,9 @@ type HintInput = {
 export function applyHint(
   hint: Hint,
   input: Pick<HintInput, 'store' | 'clock' | 'release' | 'setNotice'>,
+  applied = hint.hits
+    ? 'Guide applied. Target approach lined up.'
+    : 'Closest guide applied. This shot still misses.',
 ) {
   const { current, change } = input.store,
     { time, setClock } = input.clock;
@@ -41,54 +44,84 @@ export function applyHint(
   }
   aim(hint.aim);
   change((s) => ({ ...s, hintUsed: true }));
-  input.setNotice(
-    hint.hits
-      ? 'Guide applied. Target approach lined up.'
-      : 'Closest guide applied. This shot still misses.',
-  );
+  input.setNotice(applied);
 }
-export function useHints(input: HintInput) {
+/** One guide slot: the route it holds, and whether its request is still out. */
+export interface HintSlot {
+  readonly hint: Hint | null;
+  readonly busy: boolean;
+}
+export const EMPTY_SLOT: HintSlot = { hint: null, busy: false };
+/** The measured reference guide, or the bounded Moon route search; each fills its own slot. */
+export type HintStrategy = 'reference' | 'search';
+export type HintSlots = Record<HintStrategy, HintSlot>;
+type SetSlot = (update: (slot: HintSlot) => HintSlot) => void;
+const READY = 'Apply it to set the date and aim. Guided shots earn at most 2 stars.';
+
+/**
+ * The slots' actions over plain state, so tests drive the hook's own code. A reply fills only
+ * its own slot, and only for the visit and pilot that asked. A reply never applies a route:
+ * only the Apply controls change the aim and the 2-star cap (`scoring.ts`).
+ */
+export function hintActions(input: HintInput, slots: HintSlots, set: Record<HintStrategy, SetSlot>) {
   const { sim, setNotice } = input;
   const { current } = input.store;
   const { visit, token } = input.hydration;
-  const [hint, setHint] = useState<Hint | null>(null),
-    [hintBusy, setHintBusy] = useState(false);
-  function guide() {
-    if (hintBusy || current.current.phase !== 'aim') return;
-    const epoch = visit.current,
-      identity = token.current;
-    setHintBusy(true);
-    setNotice('Finding a measured guide…');
+  function ask(strategy: HintStrategy) {
     const mission = missionFor(current.current);
+    const search = strategy === 'search';
+    if (slots[strategy].busy || current.current.phase !== 'aim') return;
+    // Only the Moon has a route search; a planetary guide is already a bounded search.
+    if (search && !isLunarLevel(mission)) return;
+    const epoch = visit.current,
+      identity = token.current,
+      update = set[strategy];
+    update((slot) => ({ ...slot, busy: true }));
+    setNotice(search ? 'Searching Moon routes…' : 'Finding a measured guide…');
+    // The search takes the worker's default budget, so the 240-flight bound lives in one place.
+    const lunar = search ? { kind: 'lunar', strategy } as const : { kind: 'lunar' } as const;
     sim
-      .hint(isLunarLevel(mission) ? { kind: 'lunar' } : hintQueryFor(mission))
+      .hint(isLunarLevel(mission) ? lunar : hintQueryFor(mission))
       .then((res) => {
         if (epoch !== visit.current || identity !== token.current) return;
-        setHint(res.hint);
-        setHintBusy(false);
-        setNotice(
-          res.hint
-            ? 'Guide ready. Apply it to set the date and aim. Guided shots earn at most 2 stars.'
-            : 'No guide was found for this window.',
-        );
+        update(() => ({ hint: res.hint, busy: false }));
+        if (search)
+          setNotice(
+            res.hint
+              ? `Searched route ready after ${res.simulations} flights. ${READY}`
+              : `The search flew ${res.simulations} routes and found no hit.`,
+          );
+        else setNotice(res.hint ? `Guide ready. ${READY}` : 'No guide was found for this window.');
       })
       .catch(() => {
         if (epoch === visit.current) {
-          setHintBusy(false);
-          setNotice('The guide could not be computed.');
+          update((slot) => ({ ...slot, busy: false }));
+          setNotice(search ? 'The route search could not finish.' : 'The guide could not be computed.');
         }
       });
   }
+  const { reference, search } = slots;
   return {
-    hint,
-    hintBusy,
-    guide,
+    hint: reference.hint,
+    hintBusy: reference.busy,
+    searched: search.hint,
+    searchBusy: search.busy,
+    guide: () => ask('reference'),
+    search: () => ask('search'),
     applyGuide() {
-      if (hint) applyHint(hint, input);
+      if (reference.hint) applyHint(reference.hint, input);
+    },
+    applySearched() {
+      if (search.hint) applyHint(search.hint, input, 'Searched route applied. Target approach lined up.');
     },
     reset() {
-      setHint(null);
-      setHintBusy(false);
+      set.reference(() => EMPTY_SLOT);
+      set.search(() => EMPTY_SLOT);
     },
   };
+}
+export function useHints(input: HintInput) {
+  const [reference, setReference] = useState(EMPTY_SLOT),
+    [search, setSearch] = useState(EMPTY_SLOT);
+  return hintActions(input, { reference, search }, { reference: setReference, search: setSearch });
 }

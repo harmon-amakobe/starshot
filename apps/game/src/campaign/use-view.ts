@@ -4,6 +4,7 @@ import { isLunarLevel } from '../missions';
 import { lunarModelLoader } from '../sim/load-lunar-model';
 import { lunarLoadRun } from './lunar-readiness';
 import { CampaignScene } from './scene';
+import { freeRect } from './scene-geometry';
 import { EMPTY_FRAME, type SceneState, type SceneFrame } from './scene-types';
 import type { CampaignController } from './use-campaign';
 export function useView(controller: CampaignController, state: Omit<SceneState, 'et' | 'visualTime' | 'home'>, home: boolean, suspended: boolean, sharedFrame?: RefObject<SceneFrame>) {
@@ -53,10 +54,7 @@ export function useView(controller: CampaignController, state: Omit<SceneState, 
         const missionBottom = document.querySelector('.c-mission-body')?.getBoundingClientRect().bottom ?? 0;
         const bounds = (selector: string) => document.querySelector(selector)?.getBoundingClientRect();
         const controls = bounds('.c-map-tools'), deckBounds = bounds('.c-deck'), cue = bounds('.c-target-cue'), hangar = bounds('.c-hangar-button');
-        const landscape = innerHeight < 500 && innerWidth > 600;
-        const safeRect = deckBounds && controls ? { left: 35, right: landscape ? deckBounds.left - 20 : innerWidth - 35,
-          top: Math.max(controls.bottom + 12, missionBottom ? missionBottom + 12 : 0),
-          bottom: Math.max(controls.bottom + 56, Math.min(landscape ? innerHeight - 12 : deckBounds.top - 12, cue?.top ?? Infinity, hangar?.top ?? Infinity) - 12) } : undefined;
+        const safeRect = deckBounds && controls ? freeRect(innerWidth, innerHeight, deckBounds, controls, missionBottom, [cue, hangar]) : undefined;
         const next = scene.update({ ...s, safeTop: missionBottom ? missionBottom + 12 : undefined, safeRect, et: s.aiming && !s.parking ? c.store.shot.launchEt : c.view.time.current, visualTime: now / 1000, home: amount }, drawModel); frameRef.current = next;
         if (now - painted > 80) { painted = now; setFrame(next); }
       } catch (e) { setError(e instanceof Error ? e.message : 'The scene could not be drawn.'); }

@@ -11,6 +11,21 @@ import asyncProof from './screen-async.mjs';
 const KEPT = ['shotKey', 'shot', 'flightShot', 'flightSummary', 'phase', 'et', 'parking', 'paused'];
 const PHONE = { deviceScaleFactor: 3, isMobile: true, hasTouch: true, reducedMotion: 'reduce' };
 
+/**
+ * The names of the overlays drawn above a control whose boxes meet its own: the flight deck, the
+ * mission pill and an open mission drawer. A box test, not the centre point, so a control half
+ * under the deck fails too.
+ */
+export const covering = (control) =>
+  control.evaluate((e) => {
+    const meet = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+    const box = e.getBoundingClientRect();
+    return ['.c-deck', '.c-mission-toggle', '.c-mission-body']
+      .map((s) => document.querySelector(s))
+      .filter((over) => over && !over.contains(e) && meet(box, over.getBoundingClientRect()))
+      .map((over) => over.getAttribute('aria-label') || over.className);
+  });
+
 export default async (page, harness) => {
   process.env.STARSHOT_PROBE_OUT ??= mkdtempSync(join(tmpdir(), 'starshot-lunar-evidence-'));
   const { viewport, log } = harness;
@@ -30,15 +45,11 @@ export default async (page, harness) => {
     await resume();
     return restored;
   };
-  // At 844x390 the flight deck covers Apply guide and part of the result card, so a pointer
-  // cannot reach them. The probe logs each covered control for the master review, and applies
-  // the guide by keyboard, as a player can.
+  // At 844x390 the flight deck once covered Apply guide and the result card (findings row 20).
+  // Each must now lie clear of the deck and the pill; the guide is still applied by keyboard.
   const covered = async (control) => {
-    const over = await control.evaluate((e) => {
-      const b = e.getBoundingClientRect(), hit = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2);
-      return e.contains(hit) ? '' : hit?.closest('[aria-label]')?.getAttribute('aria-label') || hit?.tagName;
-    });
-    if (over) log(`"${(await control.textContent()).trim()}" at ${size} lies under "${over}"`);
+    const over = await covering(control);
+    assert.deepEqual(over, [], `"${(await control.textContent()).trim()}" at ${size} lies under ${over}`);
   };
   const guide = async () => {
     await button('Guide').click();
@@ -75,6 +86,8 @@ export default async (page, harness) => {
   await check(`${size}-result-restored`);
   for (const control of await page.getByRole('region', { name: 'Flight result' }).getByRole('button').all())
     await covered(control);
+  // The pill once sat over the card's text at 844x390.
+  assert.deepEqual(await covering(page.getByRole('region', { name: 'Flight result' })), [], `the result card at ${size}`);
 
   // 2. Replay flies the restored flight again from its launch, to the same analysis and score.
   await page.getByRole('region', { name: 'Flight result' }).getByRole('button', { name: 'Replay' }).click();

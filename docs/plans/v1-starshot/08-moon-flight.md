@@ -822,3 +822,35 @@ Left for the master review:
 | `npm run gates` | 0, 13/13 gates, 223 tests; no copy finding on a line this part added |
 
 Size against `4a4c9dd`: 319 contentful added lines in 5 files of the part's own, and 328 in 6 with the handover and findings rows, against a budget of 220 lines and 5 files. That is `lunar-offline.mjs` 155 (139 code lines), `lunar-evidence.mjs` 113 (101), `screen-async.mjs` 13 with 11 removed, this note 36 and the changelog 1. D42 allows 800 without a split; nothing was compressed.
+
+## Moon campaign result
+
+PR3b, issue #34, built to [PR3b](00-plan.md#pr3b-moon-campaign) and the lunar ledger rows Mission order, Saves, Interaction, Browser proof and Short phone, on `fdd6810`. It closes findings rows 5 and 20. Chromium 153.0.8010.12 under Playwright 1.63.0, on this tree's build (entry `index-HQt6_ddO.js`). Paths start at `apps/game/src/`. `missions.ts:15` holds the frozen `MISSION_ORDER`; mission numbers and `nextMission` come from it, and `Level` has no hand-typed number. The worker yields on a `MessageChannel` behind `scheduler.nextTask`, with a zero-delay timer where the channel is missing (`sim/worker-handler.ts:19`). `campaign/use-hints.ts:66` keeps a reference slot and a search slot. `campaign/scene-geometry.ts:81` holds the free room the ring and world fit into.
+
+| Case | Step | Contexts and exit |
+|---|---|---|
+| Fine aim and System leave the ring at least 160 px of free room and 45 px of travel: 191 at 390x664, 190 at 390x844, 167 at 360x640, 256 at 360x780. Every labelled control is 44 px or more and none overlap another body's control | `lunar-campaign.mjs:95` | both phones; 0 |
+| Search routes fills its own slot and changes nothing. Apply searched route sets day 0 at 3.120 km/s and the 2-star cap. The launch equals its preview and hits. On the desktop, Enter keeps focus on the busy button and Tab reaches Apply searched route | `:131` | all three; 0 |
+| Apply guide and Launch with the mission drawer open; the launch closes it. The result card and Next mission clear the deck, the drawer and the pill; Next mission by pointer reaches First Light, drawn | `:165` | 844x390 on both phones, 1440x900; 0 |
+| Every mission draws a fresh, visible scene, WebGL 2 and Canvas 2D | `:175` | all three; 0 and 0 (Canvas in round one) |
+| Row 20 a to c: deck heights unchanged once loaded at seven sizes, ring placed, Launch ends its row | `lunar-loading.mjs:31`, `:33`, `:215` | all three; 0 |
+| Row 20 d and e in the evidence flight | `lunar-evidence.mjs:51`, `:89` | all three; 0 |
+
+A 236-flight search took 2,667 to 3,099 ms with the zero-delay timer and 1,401 to 1,782 ms with the channel. Previews posted during it answered in 58 to 85 ms and 59 to 71 ms. Reply order was 1, 2, 3, 900001, 900002, 4, 900003, 5 in every run.
+
+The lite review found one blocker (no changelog entry, now written) and four should-fixes, all fixed: a `MessageChannel` fallback, a travel assertion beside the free room, the 360 px sizes, and focus kept on busy buttons. The verification-driver found the open mission drawer covering the result card at 844x390; a launch now closes the drawer. 18 unit and 10 browser mutants were killed.
+
+Left for the master review:
+- Orbit view with Fine aim leaves 122 px at 360x640, 211 at 360x780, 146 at 390x664 and 145 at 390x844, since the Moon cue sits above the deck. In Orbit view the ring meets Inspect Earth, as at the base.
+- At 360x640 in reduced motion the ring's travel is 33.3 px, not 45: the paused craft sits near the room's top edge. The step asserts 45 only at 390.
+- WebKit and Firefox are unmeasured. The `/starshot/` repeats wait for the master review (D42).
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 235 tests |
+| `npx vitest run apps/game` | 0, 172 tests |
+| `verify-game.mjs --steps` `lunar-campaign`, `lunar-loading`, `lunar-evidence`, `lunar-worker`, `screen-flight`, `screen-split` at `/` | 0 each, 3 contexts; `lunar-flight` 0 in round one |
+| `lunar-campaign.mjs` under `?renderer=canvas` | 0, round one |
+| `node scripts/verify-web-release.mjs` and `node scripts/verify-lunar-loading.mjs --dist apps/game/dist` | Both 0 on `index-HQt6_ddO.js` |
+
+Size against `fdd6810`: 688 contentful added lines, 26 moved and 119 removed, in 30 files: 204 app code (CSS included), 245 test, 223 probe and 16 docs. With the changelog, this note and the deviation, findings and handover rows, 732 contentful and 26 moved in 34 files. That is over the 480-line estimate and the 20-file warning, and under D42's 800-line line. Nothing was compressed.

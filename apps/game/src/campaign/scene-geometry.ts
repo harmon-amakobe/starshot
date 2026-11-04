@@ -72,6 +72,19 @@ export function geometry(state: SceneState, width: number, height: number, model
   return { ...world, heightKm: h, centre, earth, target, craft, intercept, approachCraft, interceptEt, rect, parking, moonOrbit, path,
     targetDistance: norm(sub(body(state.level.target).r, world.current.r)) };
 }
+type Edges = { left: number; top: number; bottom: number };
+/**
+ * The free room the world and the ring fit into, from the measured shell: below the map tools and
+ * an open mission drawer, above the deck. A control at the deck's edge shortens the room only when
+ * it lies below the room's top, since phones put the Hangar beside the map tools.
+ */
+export function freeRect(width: number, height: number, deck: Edges, tools: Edges, missionBottom: number, edge: (Edges | undefined)[]) {
+  const landscape = height < 500 && width > 600;
+  const top = Math.max(tools.bottom + 12, missionBottom ? missionBottom + 12 : 0);
+  const below = edge.filter((box): box is Edges => !!box && box.top > top).map((box) => box.top);
+  const floor = Math.min(landscape ? height - 12 : deck.top - 12, ...below) - 12;
+  return { left: 35, right: landscape ? deck.left - 20 : width - 35, top, bottom: Math.max(tools.bottom + 56, floor) };
+}
 export function ringGeometry(physical: [number, number], earth: [number, number], radius: number, heading: number, state: SceneState, width: number, height: number, overview = false) {
   const landscape = height < 500 && width > 600, pixels = overview ? 14 : landscape ? 15 : 22;
   const rest = 1.12 * pixels;
@@ -98,5 +111,6 @@ export function ringGeometry(physical: [number, number], earth: [number, number]
   }
   const travel = state.lock?.travel ?? Math.max(1, Math.min(overview ? 45 : 115, room - rest));
   const distance = rest + travel * state.charge;
-  return { anchor, travel, pixels, grip: [anchor[0] - Math.cos(heading) * distance, anchor[1] + Math.sin(heading) * distance] as [number, number] };
+  // The free room's height, before the 115 px travel cap: what the short-phone layout must keep.
+  return { anchor, travel, pixels, room: bottom - top, grip: [anchor[0] - Math.cos(heading) * distance, anchor[1] + Math.sin(heading) * distance] as [number, number] };
 }

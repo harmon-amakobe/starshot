@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os';
 import { flightControls } from './screen-flight-controls.mjs';
 
 // Records every message of the app's one physics worker, as screen-async.mjs wraps it.
-// The game has no search control until PR3b, so only this probe posts a search.
+// The probe posts its own searches, apart from the game's Search routes control, so it can time
+// them against a queued preview; lunar-campaign.mjs drives that control.
 function recordWorker() {
   localStorage.clear();
   const Native = window.Worker;
@@ -69,7 +70,7 @@ export default async (page, harness) => {
   await ready();
   await page.waitForTimeout(250);
   const searched = await state();
-  // The search reply goes to no app request, so aim and guide stay as the player set them.
+  // The probe's search reply goes to no app request, so aim and guide stay as the player set them.
   assert.deepEqual(searched.aim, { angleDeg: before.aim.angleDeg, speedKmS: 3.2 });
   assert.equal(searched.hintUsed, before.hintUsed);
   const result = await launch('search-preview');

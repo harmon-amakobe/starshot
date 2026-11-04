@@ -101,6 +101,10 @@ export function CampaignApp() {
   useEffect(() => {
     if (c.store.session.preferences.expanded && mission && innerWidth < 900) setMission(false);
   }, [c.store.session.preferences.expanded]);
+  // A launch closes the mission drawer: it is drawn above the result card and would cover its buttons.
+  useEffect(() => {
+    if (c.store.session.phase !== 'aim') setMission(false);
+  }, [c.store.session.phase]);
 
   useEscape(
     c,
@@ -218,6 +222,7 @@ export function CampaignApp() {
             )}
           <button
             className="pill c-hangar-button"
+            aria-label="Hangar"
             onClick={() => {
               gestures.cancel();
               hangarReturn.current = structuredClone(c.store.session.preferences);
@@ -225,7 +230,7 @@ export function CampaignApp() {
             }}
           >
             <Icon name="craft" />
-            Hangar
+            <span>Hangar</span>
           </button>
           {c.store.session.phase === 'result' && !focus && <ResultCard c={c} pick={pick} />}
           <MoonLoadPanel readiness={readiness} failed={view.status === 'failed'} retry={view.retry} />
