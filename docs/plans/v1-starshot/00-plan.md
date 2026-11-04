@@ -28,9 +28,9 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
-| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus the D39 and D40 owner checkpoints, then one master review (D30); PR3a has nine declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
+| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus four owner checkpoints (D39, D40, D40's window note and D41), then one master review (D30, D41); PR3a has nine declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
 | Date | Started 2026-11-01; reconciled 2026-11-03 |
-| Decisions | [D1 to D40](../../decisions.md); later rulings govern their recorded supersessions |
+| Decisions | [D1 to D41](../../decisions.md); later rulings govern their recorded supersessions |
 | Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
 
 Line numbers in this plan are anchors only: re-locate code by symbol or heading before
@@ -90,7 +90,7 @@ interstellar chapter are later programs.
 | D27 | The copy standard and its gate, with the em dash, the en dash and the horizontal bar as hard failures |
 | D28 | Size gate (warn 300 code lines, fail 500, shrinking baseline), god-component heuristics, layering, dependency licence allow-list; GameScreen split early |
 | D29 | astlo changes are made here first, offered to Mark as pull requests (astlo changes only), and pulled back from his releases once adopted; the Rust core stays Starshot's, with dependency-free ephemeris and topocentric parts he may use as a crate; tooling may depend on a licensed, validated astlo, the game never does |
-| D30 | Specs build as PR groups (one branch, one PR, one bounded review for one to four specs), two or three groups a session (superseded by D40 for the V1 cloud run), PR1 inside PR0, and one master review of the whole stack at the end |
+| D30 | Specs build as PR groups (one branch, one PR, one review for one to four specs, lightened to a lite review by D41), two or three groups a session (superseded by D40 for the V1 cloud run), PR1 inside PR0, and one master review of the whole stack at the end |
 
 Still binding from before: D1 and D2 (Mark's files untouched), D6 (2D physics; a level's
 preview, launch, hints and tests share its frozen `SimSettings`), D8 to D11.
@@ -202,9 +202,9 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups, with three additional
-owner-decision checkpoints: D39, D40 and D40's window note. Each has one branch, one
-pull request and one bounded review. The preceding branch is its exact base. Only the
+The 42 implementation specs build in these 28 delivery groups, with four additional
+owner-decision checkpoints: D39, D40, D40's window note and D41. Each has one branch, one
+pull request and one lite review (D41). The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
 All spec dispositions are in [the resumption ledger](06-resumption.md#every-implementation-spec).
@@ -223,7 +223,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR3a search transport | PR3a | `codex/v1-pr03a-search-transport` | `codex/v1-pr03a-search` | A2 |
 | D40 window checkpoint | Owner clarification, issue #20 | `codex/v1-session-window` | `codex/v1-pr03a-search-transport` | A2 |
 | PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-session-window` | A2 |
-| PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-pr03a-model` | A3 |
+| D41 review checkpoint | Owner ruling, issue #20 | `codex/v1-review-lite` | `codex/v1-pr03a-model` | A2 |
+| PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-review-lite` | A3 |
 | PR3a evidence | PR3a | `codex/v1-pr03a-evidence` | `codex/v1-pr03a-loading` | A3 |
 | PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-evidence` | A4 |
 | PR3c | PR3c | `codex/v1-pr03c-stylesheets` | `codex/v1-pr03b-moon-campaign` | A4 |
@@ -1697,14 +1698,17 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
 4. **One builder at a time.** Spawn one `executor` for the group, or one per member in
    order when a member is large, with each spec's anchor, the absolute repository path
    and the base; nobody else writes to that tree.
-5. **Review, bounded (D30).** One `adversary` pass in a fresh context against
+5. **Review, lite (D41).** One `adversary` pass in a fresh context against
    `.claude/rubrics/` and each member's "Adversary checks". It also reads this plan's
-   deviation log and the PR body against the diff, and reports per directory which files
-   it opened. A domain lens joins only when the diff calls for it (`physics-auditor`,
-   `verification-driver`, `rules-reviewer`). No refuters by default: the orchestrator
-   judges each finding from the tree and closes the gaps. A second adversary pass runs
-   only over files the first did not open. A delta pass runs only when the fixes touched
-   a physics number, a workflow, the harness or more than about 50 contentful lines.
+   deviation log and the PR body against the diff, reports per directory which files it
+   opened and checks at most three builder claims from scratch. `physics-auditor` joins
+   only when a physics number, tolerance, fixture, integrator or frozen setting changes,
+   `rules-reviewer` only when the harness does; a documentation-only checkpoint gets the
+   rules-reviewer alone. No refuters, no second pass and no workflow fan-out. The
+   orchestrator fixes blockers and small should-fixes in the PR's own code, and moves
+   every other finding to the
+   [findings table](06-resumption.md#findings-for-the-master-review-d41). A delta pass
+   runs only when the fixes touched a physics number, a workflow or the harness.
 6. **Gates.** `npm run gates` (with `STARSHOT_REQUIRE_RUST=1` from PR6), plus
    `verify-physics` for crates, packages or fixtures and `verify-game` for anything a
    player sees; every command reported with its exit code.
@@ -1755,9 +1759,11 @@ Next: group PR<m> (PR<m>, PR<m+1>) <titles>.
 Specs: docs/plans/v1-starshot/00-plan.md#<anchor>, ... Issues: #<a>, #<b>.
 Owner steps it waits on: <ids from 04-ops-checklist.md, or none>.
 Routing: you are the orchestrator (top tier); route by "would anything be lost with the
-cheaper tier?"; roster in .claude/agents/; one builder at a time; one adversary per
-group against .claude/rubrics/, with physics-auditor, verification-driver or
-rules-reviewer when the diff calls for them (D30). Executors never push.
+cheaper tier?"; roster in .claude/agents/; one builder at a time; one lite review
+per PR (D41): one adversary, plus physics-auditor or rules-reviewer only when physics or
+the harness changes (a docs-only checkpoint gets rules-reviewer alone); blockers and
+small own-code fixes land in the PR, the rest go to
+06-resumption.md#findings-for-the-master-review-d41. Executors never push.
 DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff requires),
 every command with its exit code.
 Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.

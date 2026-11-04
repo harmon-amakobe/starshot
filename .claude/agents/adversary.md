@@ -48,7 +48,7 @@ case, a physics number with no JPL comparison, a level with no known-solution te
 
 ## Report
 
-Use the verdict block in `pr-review.md`, including a specific `Verified clean:` line.
-A bare approval is itself a blocker under that rubric. Add, per directory, the files you
-opened and what you found there: the orchestrator sends a second pass only over what you
-did not open (D30). Check the deviation log and the PR body against the diff too.
+Use the verdict block in `pr-review.md`, including a specific `Verified clean:` line. A
+bare approval is itself a blocker under that rubric. Add, per directory, the files you
+opened and what you found there. There is no second pass (D41); the master review covers
+what you did not open. Check the deviation log and the PR body against the diff too.

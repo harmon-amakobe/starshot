@@ -119,11 +119,14 @@ A wrong change in these is expensive or silent; plan first and say what you chec
 The orchestrator holds the plan, routes work, reconciles and publishes; it does not
 build, except a small single-PR change it declares as such. A pull request builds a
 group of one to four specs (D30). Per group it reads the specs, confirms the base and
-spawns **one** builder at a time. An adversary reviews the diff in a fresh context
-against `.claude/rubrics/`, joined by `physics-auditor`, `verification-driver` or
-`rules-reviewer` when the diff calls for them, and the orchestrator closes the gaps
-itself. It runs the gates and the verifiers, pushes, opens the PR, and updates the plan
-and logs. The review of the whole stack waits for the master review at the end (D30).
+spawns **one** builder at a time. Each PR gets one lite review (D41): an adversary in a
+fresh context against `.claude/rubrics/`, joined by `physics-auditor` when a physics
+number, tolerance, fixture, integrator or frozen setting changes, and by
+`rules-reviewer` when the harness does; a documentation-only checkpoint gets the
+rules-reviewer alone. The orchestrator fixes blockers and small should-fixes in the PR's
+own code, logs the rest for the master review (outside a program, in the PR body) and
+runs the gates and verifiers itself. It pushes, opens the PR, and updates the plan and
+logs. The deep review of the whole stack waits for the master review at the end (D30).
 
 - **Route by one question:** would anything be lost with the cheaper tier? Anything
   short of a confident no goes up a tier. Tiers: originator `fable`, top `opus`,
