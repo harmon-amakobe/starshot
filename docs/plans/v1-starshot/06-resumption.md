@@ -167,11 +167,11 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-pr03a-ownership-edits` (PR3a ownership edits), above `codex/v1-pr03a-ownership` (PR3a ownership guard) and `codex/v1-session-policy` (D40 checkpoint, #83) |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, PR3a ownership edits on `codex/v1-pr03a-ownership-edits`; [#83's CI run](https://github.com/harmon-amakobe/starshot/actions/runs/41688433259) passed at its head |
-| Next | PR3a search core, issue #33, [bounded search](08-moon-flight.md#bounded-search), branch `codex/v1-pr03a-search`, base `codex/v1-pr03a-ownership-edits` |
-| Not run here | Physical-phone timing (optional under D39); every criterion from PR3a search core onward |
-| Context at close | Not handed over yet |
+| Stack tip | `codex/v1-pr03a-search-transport` (PR3a search transport), above search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, and search transport on `codex/v1-pr03a-search-transport`; each PR's CI passed at its head |
+| Next | PR3a model, issue #33, [lazy scene data and readiness](08-moon-flight.md#lazy-scene-data-and-readiness), branch `codex/v1-pr03a-model`, base `codex/v1-pr03a-search-transport`. Budget 280 lines and 16 files: reconcile files and size before the builder |
+| Not run here | Physical-phone timing (optional under D39); WebKit worker interleaving; every criterion from PR3a model onward |
+| Context at close | About 570,000 of 1,000,000 tokens measured at the Search transport publication, the handover point; compaction none, with automatic and idle compaction off |
 
 ## Publication and account boundaries
 

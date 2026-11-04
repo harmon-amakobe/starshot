@@ -110,7 +110,7 @@ for browser verification. It has no game-state mutators.
 | `src/sim/shot.ts` | Shot model shared by worker, hint finder and tests. |
 | `src/sim/hint.ts` | Hint: Lambert `bestDirectTransfer` over the window, nudged until the game simulator agrees (at most 240 simulations, no wall clock); curated shot for flyby levels. The aim is rounded to 0.01 degree and 0.001 km/s before it is checked, so the label is exactly what "Use hint" applies. |
 | `src/sim/preview.ts` | Launch gate: canonical shot key; Launch only for the preview of the aim on screen. |
-| `src/sim/sim.worker.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker; previews are latest-request-wins and throttled. |
+| `src/sim/sim.worker.ts`, `worker-handler.ts`, `protocol.ts`, `useSimulation.ts` | Physics worker and its testable request handler; previews are latest-request-wins and throttled. |
 | `src/campaign/` | Persistent campaign controller, shell, Three/Canvas adapter, full-circle gestures, profiles and local cloud demo. |
 | `packages/presentation/` | Shared collector, engine, crew pod, drone, charge sleeve, icons, audio and entry timing. |
 | `src/campaign/orbit-path.ts` | Current Hermite path construction, preserving z and lunar relative samples. The unmounted legacy screen and its renderer/input modules have been removed. |
