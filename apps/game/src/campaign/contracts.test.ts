@@ -5,6 +5,7 @@ import { CAMPAIGN, sandboxLevel, SANDBOX_TARGETS } from '../levels';
 import { shotKey } from '../sim/preview';
 import { isLunar, type LunarShotRequest } from '../sim/flight-request';
 import type { ShotRequest } from '../sim/shot';
+import { lunarModel } from '../sim/lunar-model';
 import { freshSession, validSession, copySession } from './session';
 import { parsePilots } from './profiles';
 import { pullIntent, ReleaseOwner } from './release';
@@ -114,7 +115,7 @@ function state(level = CAMPAIGN[0]!): SceneState {
 describe('camera and controls use the same projected frame', () => {
   it('inverts the free camera projection for all directions without changing the held aim', () => {
     const s = state(); s.preferences.camera = 'free'; s.preferences.orbit = [1.2, 1.2];
-    for (let angle = 0; angle < 360; angle += 5) { s.aim = { ...s.aim, angleDeg: angle }; const f = makeFrame(s, 390, 664, null, 1, 'test').frame;
+    for (let angle = 0; angle < 360; angle += 5) { s.aim = { ...s.aim, angleDeg: angle }; const f = makeFrame(s, 390, 664, null, 1, 'test', lunarModel).frame;
       const restored = aimFromPull(f.grip[0] - f.craft[0], f.grip[1] - f.craft[1], f.rotation, s.preferences.orbit);
       expect(Math.min(Math.abs(restored - angle), 360 - Math.abs(restored - angle))).toBeLessThan(1e-8);
     }
@@ -122,7 +123,7 @@ describe('camera and controls use the same projected frame', () => {
   it('keeps all 56 pixels of the ring target clear at rest, half and full extension', () => {
     for (const level of CAMPAIGN) for (const [w, h, deck] of [[1440, 900, 280], [390, 664, 240], [844, 390, 166]]) for (const charge of [0, .5, 1]) for (let angle = 0; angle < 360; angle += 15) {
       const s = state(level); s.deckHeight = deck!; s.charge = charge; s.aim = { ...s.aim, angleDeg: angle };
-      const f = makeFrame(s, w!, h!, null, 1, 'test').frame;
+      const f = makeFrame(s, w!, h!, null, 1, 'test', lunarModel).frame;
       const landscape = h! < 500;
       // The short landscape deck is beside the world, not below it.
       expect(f.grip[0] - 28).toBeGreaterThanOrEqual(8 - 1e-7);
@@ -140,7 +141,7 @@ describe('camera and controls use the same projected frame', () => {
   });
   it('has a continuous first step from a saved tilted free view to the live menu', () => {
     const s = state(); s.preferences.camera = 'free'; s.preferences.orbit = [1.2, 1.2];
-    const a = makeFrame(s, 390, 664, null, 1, 'test').frame; s.home = 1e-9; const b = makeFrame(s, 390, 664, null, 1, 'test').frame;
+    const a = makeFrame(s, 390, 664, null, 1, 'test', lunarModel).frame; s.home = 1e-9; const b = makeFrame(s, 390, 664, null, 1, 'test', lunarModel).frame;
     for (let i = 0; i < a.bodies.length; i++) expect(Math.hypot(a.bodies[i]!.point[0] - b.bodies[i]!.point[0], a.bodies[i]!.point[1] - b.bodies[i]!.point[1])).toBeLessThan(.01);
     expect(Math.hypot(a.craft[0] - b.craft[0], a.craft[1] - b.craft[1])).toBeLessThan(.01);
   });

@@ -7,7 +7,8 @@
 import { DAY, EARTH_RADIUS, LAUNCH_ET } from '@starshot/physics/lunar';
 import type { LunarHintQuery } from './flight-request';
 import type { Hint } from './hint';
-import { lunarHint, lunarRequest, runLunar } from './lunar';
+import { lunarHint, runLunar } from './lunar';
+import { lunarRequest } from './lunar-request';
 
 /** A candidate in integers: day index, burn [milli-km/s] and signed angle [centidegrees]. */
 export interface Route { readonly day: number; readonly burn: number; readonly angle: number }

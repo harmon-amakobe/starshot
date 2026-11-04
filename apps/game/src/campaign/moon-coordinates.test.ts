@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { norm, sub } from '@starshot/ephemeris';
 import { DAY, LAUNCH_ET } from '@starshot/physics/lunar';
 import { MOONSHOT } from '../missions';
-import { lunarModel } from '../sim/lunar';
+import { lunarModel } from '../sim/lunar-model';
 import { freshSession } from './session';
 import { makeFrame } from './frame';
 import { ThreeScene } from './three-scene';
@@ -69,7 +69,7 @@ describe('Moon coordinates through production frames and meshes', () => {
         parentZ = Math.max(parentZ, Math.abs(reference.earth.r[2]));
         state.focus = null;
         state.showMoons = false;
-        const primary = makeFrame(state, 390, 844, data, 1, 'test');
+        const primary = makeFrame(state, 390, 844, data, 1, 'test', lunarModel);
         scene.update(state, primary);
         primaryKm = Math.max(primaryKm, norm(sub(primary.g.body('moon').r, reference.moon.r)));
         const primaryMesh = internals.bodies.get('moon')!;
@@ -87,7 +87,7 @@ describe('Moon coordinates through production frames and meshes', () => {
         checkProjection(primary, primaryMesh);
         state.focus = 'earth';
         state.showMoons = true;
-        const focused = makeFrame(state, 390, 844, data, 1, 'test');
+        const focused = makeFrame(state, 390, 844, data, 1, 'test', lunarModel);
         scene.update(state, focused);
         const moon = internals.moons.get('moon')!;
         expect(moon.visible).toBe(true);

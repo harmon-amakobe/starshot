@@ -460,3 +460,79 @@ Browser steps ran as `NODE_PATH="$(npm root -g)" STARSHOT_PROBE_OUT=<folder> nod
 | `screen-async.mjs` at `/` and at `/starshot/` | Both 0, 3 contexts each; 4 stale replies ignored in each |
 | `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |
+
+## Model result
+
+Based on the D40 window checkpoint at `6f88454`, above Search transport at `e3714f5`. Paths start at `apps/game/src/`. Loading stays eager.
+`sim/lunar-request.ts` builds Moon requests from constants alone, and `campaign/contracts.ts:5` imports it directly.
+`sim/lunar-model.ts` is the only module that imports the rail, and it holds the shared `lunarModel`.
+`sim/lunar.ts` keeps `runLunar` and `lunarHint`, imports both new modules and re-exports nothing. The worker still reaches it only by the dynamic imports at `sim/worker-handler.ts:18` and `:26`.
+`worldFor`, `geometry` and `makeFrame` take a required `model: LunarModel` last; `CampaignScene` takes it as a third constructor argument. `campaign/use-view.ts:22` passes the shared instance.
+The 8 moved lines are the rail import and the instance (`sim/lunar.ts:2` and `:9` at base) and `lunarRequest` with its guard (`:10` to `:15`), unchanged.
+
+Open points, settled conservatively, and inputs for Loading:
+- The model is the non-null `LunarModel`, the spec's ready model. No planetary frame reads it: `campaign/frame.ts:19` draws only the Sun and planets there. The planetary path needs it only through the required parameters (`campaign/world.ts:11`, `campaign/scene-geometry.ts:22`, `campaign/frame.ts:8`) and `campaign/scene.ts:29`. Loading must let those accept an absent model on planetary levels.
+- `CampaignScene` receives the model once, as a readonly constructor argument, and `use-view.ts` builds the scene in a mount-only effect. A model that arrives after mount needs a setter or a per-frame argument; that is Loading's choice.
+- Of the two owners the spec allows, the view hook holds the model and the scene receives it. Neither builds a request.
+- The `moonOrbits` cache (`campaign/scene-geometry.ts:10`) is a `WeakMap` of per-model day maps, because a day key alone would draw one model's orbit for another. The 161 samples, the sidereal period and the 32-entry clear are unchanged.
+- "No rail import through a barrel" is a Vitest guard, not a new gate: `scripts/gates.mjs` is harness.
+- The scan counts as a re-export any `export ... from` either module, and a binding imported from one and exported again by name, as the default or as a new constant, typed or not. Using the binding is not one.
+- The `86400` literals stay, so the moved lines still count as moved. `DAY` can replace them in a later physics part; the value is identical.
+
+| Spec line | Proof |
+|---|---|
+| Request construction is pure; contracts imports it directly | `sim/lunar-request.test.ts:45`: contracts, the scene and the worker handler load the rail 0 times, then `./lunar-model` loads it once |
+| No rail import may enter through a barrel | `:70`, the rail's only importer is `sim/lunar-model.ts`; `:74`, nothing re-exports either module, with controls at `:57` |
+| `sim/lunar-model.ts` owns the shared instance | `:71`, `new LunarModel` appears only there |
+| Worker simulation stays in its dynamic graph | `:45`, the worker-handler entry; `:77`, the runner's importers are exactly the worker's `sim/lunar-hint.ts` and `sim/worker-handler.ts` and the tests' shared harness |
+| The ready model passes through `CampaignScene`, `makeFrame`, `scene-geometry` and `worldFor` | Typecheck, as the parameter is required; `campaign/lunar.test.ts:185`, a model 1% wider drawn on a day the shared model drew |
+| `use-view` or the scene owns loading, never request construction | `sim/lunar-request.test.ts:73`, the model's importers are exactly `campaign/use-view.ts` and `sim/lunar.ts` |
+| The move changes no request | `:85`, the 35 degree guard; `:92`, the one frozen settings object |
+
+There are 45 production mutants: 43 killed and 2 equivalent, none surviving. Seven more mutate the guard's own helpers, all killed.
+Vitest ran with `--fsModuleCache=false`, and each mutant was restored and checked with `cmp`. Lines without a file are in `sim/lunar-request.test.ts`.
+
+| Mutant | Killing test |
+|---|---|
+| `campaign/contracts.ts:5` back to `../sim/lunar` | `:51`, 8 tests in `campaign/lunar.test.ts`, and typecheck (TS2459) |
+| The same, with `sim/lunar.ts` re-exporting `lunarRequest`, which passes typecheck | `:51` and `:74` |
+| `sim/lunar-request.ts` imports `lunar-model`, or the rail | `:51`, and `:73` or `:70` |
+| `world.ts`, `scene-geometry.ts` or `frame.ts` uses the shared `lunarModel`, not its parameter | `:51`, `:73`, and `campaign/lunar.test.ts:193` or `:194` |
+| `scene.ts` passes the shared `lunarModel` to `makeFrame` | `:51` and `:73` |
+| A static `./lunar` import in `sim/worker-handler.ts` | `:51` only |
+| `campaign/aim-actions.ts` imports `runLunar` from `../sim/lunar` | `:77` only; typecheck passes |
+| `sim/lunar-model.ts` builds from an empty rail | `:54`, `:70` and 8 tests in `campaign/lunar.test.ts` |
+| A second rail import in `sim/lunar.ts`, or its own `new LunarModel(rail)` | `:70` |
+| `use-view.ts` builds a second `LunarModel` | `:71` |
+| `sim/lunar.ts` re-exports by `export from`, `export *`, by name or as a new constant | `:74` |
+| `sim/lunar.ts` exports `lunarModel` as a typed constant | `:74`, with its control at `:63` |
+| `use-campaign.ts` or `aim-actions.ts` imports `lunar-model` | `:73` |
+| The `moonOrbits` cache keyed by day only | `campaign/lunar.test.ts:194` |
+| The `moonOrbits` day key made constant | `campaign/lunar.test.ts:198`; it survived every test at base |
+| The guard as `<=` or `>=`, a bound of 34 or 36 on either side, removed, or `Error` for `RangeError` (8) | `:87` to `:90`; all 8 pass the 76 other sim and campaign tests |
+| `settings: { ...SETTINGS, rtol: 1e-8 }` | `:93` only; the 80 other sim and campaign tests pass |
+| `stopAtEntry` false or dropped | `campaign/lunar.test.ts:44` and `:72` |
+| `approachRadiusKm` 65000 or dropped | `campaign/lunar.test.ts:68` |
+| `parking` aliased, not copied | `campaign/aim-actions.test.ts:168`, in the test at `:158` |
+| `model` dropped at `scene-geometry.ts:23`, `:29` or `:32`, `frame.ts:9`, `scene.ts:41` or `use-view.ts:22` | `node scripts/gates.mjs --only typecheck`, exit 1 for each (TS2554) |
+| Guard helpers: each regex never matching (3), `reexports` always true, no count, the control first, a flat walk | `:59`, `:61`, `:61`, `:66`, `:54`, `:51` and `:70` |
+
+Equivalent: dropping `settings` leaves the one `requestFor` sets (`packages/physics/src/lunar/flight.ts:32`). A relative import of the same rail file is still counted by the mock and seen by the scan.
+The count is cumulative, so the guard shows that an entry loaded the rail, not which one.
+
+The eager baseline for Loading: the rail is in two built chunks. They are the main entry `index-*.js` (988,681 bytes) and the worker's lazy `lunar-*.js` (99,316 bytes), which `sim.worker-*.js` and `lunar-hint-*.js` load.
+A build of the base put the rail in the same two chunks, at 988,600 and 99,327 bytes.
+In `lunar-worker.mjs` each search flew 236 simulations. Previews posted during a search answered in 77 to 112 ms, and searches took 3,790 to 4,049 ms.
+The base on the same machine gave 78 to 108 ms and 3,816 to 3,960 ms, so the gap to the Search transport figures comes from the machine, not this part.
+
+Size against `6f88454`: 244 contentful added lines and 8 moved in 19 files, against a budget of 280 lines and 16 files. Every non-blank added line counts, comments included.
+That is 41 code, 130 test, 66 result-note, 1 changelog, 1 deviation-row and 5 handover-packet lines. Moved lines are trimmed-identical lines removed elsewhere in the diff. Nothing was compressed (row 37).
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 188 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 17 files, 167 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; existing large-chunk warnings remain |
+| `lunar-flight.mjs`, `screen-flight.mjs` and `lunar-worker.mjs`, each at `/` and at `/starshot/` | All 6 exit 0 on the final tree, 3 contexts each: console 0, page errors 0, failed requests 0, no target under 44 px |
+| `node scripts/verify-web-release.mjs` | 0; offline launch, flight, update isolation and cache ownership pass at `/` and `/starshot/` |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0 |

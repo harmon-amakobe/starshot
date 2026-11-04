@@ -1,11 +1,12 @@
 import { BODIES, PLANET_IDS, type BodyId, type Vec3 } from '@starshot/ephemeris';
+import type { LunarModel } from '@starshot/physics/lunar';
 import { geometry, ringGeometry } from './scene-geometry';
 import { bodyName, bodyRadius, type MissionBody } from '../missions';
 import { EMPTY_FRAME, type SceneState, type SceneFrame } from './scene-types';
 import type { SceneData } from './scene-data';
 export const colours: Record<string, string> = { sun: '#fff1cf', mercury: '#b6b3ab', venus: '#e4c990', earth: '#66b9da', moon: '#ccc9bb', mars: '#de8e70', jupiter: '#d8ba9a', saturn: '#e5d1a1', uranus: '#9ed2d4', neptune: '#638ad7' };
-export function makeFrame(state: SceneState, width: number, height: number, data: SceneData | null, identity: number, renderer: string) {
-  const g = geometry(state, width, height), unit = g.heightKm / 1000;
+export function makeFrame(state: SceneState, width: number, height: number, data: SceneData | null, identity: number, renderer: string, model: LunarModel) {
+  const g = geometry(state, width, height, model), unit = g.heightKm / 1000;
   const orbit = state.preferences.camera === 'free' ? state.preferences.orbit.map(n => n * (1 - state.home)) : [0, 0];
   const view = (v: Vec3): Vec3 => { const x = v[0], y = v[1] * Math.cos(orbit[0]!) - v[2] * Math.sin(orbit[0]!), z = v[1] * Math.sin(orbit[0]!) + v[2] * Math.cos(orbit[0]!); return [x * Math.cos(orbit[1]!) + z * Math.sin(orbit[1]!), y, -x * Math.sin(orbit[1]!) + z * Math.cos(orbit[1]!)]; };
   const rotatedPosition = (p: Vec3): Vec3 => view([p[0] - g.centre[0], p[1] - g.centre[1], p[2]]);

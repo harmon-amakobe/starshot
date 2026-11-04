@@ -1,4 +1,5 @@
 import { BODIES, orbitPath, type PlanetId, type Vec3 } from '@starshot/ephemeris';
+import type { LunarModel } from '@starshot/physics/lunar';
 import { drawSleeve } from '@starshot/presentation/charge-sleeve';
 import { routePath } from './orbit-path';
 import type { FlightResponse as ShotResponse } from '../sim/protocol';
@@ -24,7 +25,8 @@ export class CampaignScene {
   private releaseCharge = 0;
   private previousAnchor: [number, number] | null = null;
   private releaseAnchor: [number, number] | null = null;
-  constructor(private background: HTMLCanvasElement, foreground: HTMLCanvasElement) {
+  // The owner hands over a ready Moon model; the scene draws with it and never loads one.
+  constructor(private background: HTMLCanvasElement, foreground: HTMLCanvasElement, private readonly model: LunarModel) {
     this.ctx = background.getContext('2d')!;
     if (new URLSearchParams(location.search).get('renderer') !== 'canvas') { try { this.three = new ThreeScene(foreground); } catch { foreground.hidden = true; } }
     loadSceneData().then(data => { if (!this.disposed) { this.data = data; this.three?.setData(data); } }).catch(() => {});
@@ -36,7 +38,7 @@ export class CampaignScene {
     this.wasAiming = state.aiming;
     const snap = state.snap && !state.reduced ? Math.max(0, 1 - (state.visualTime - this.releaseAt) / .18) : 0;
     const drawn = snap > 0 ? { ...state, charge: this.releaseCharge * snap ** 3 } : state;
-    const f = makeFrame(drawn, w, h, this.data, this.identity, this.three ? 'WebGL 2' : 'Canvas 2D');
+    const f = makeFrame(drawn, w, h, this.data, this.identity, this.three ? 'WebGL 2' : 'Canvas 2D', this.model);
     if (snap && this.releaseAnchor) f.frame.craft = [f.frame.craft[0] * (1 - snap) + this.releaseAnchor[0] * snap, f.frame.craft[1] * (1 - snap) + this.releaseAnchor[1] * snap];
     this.previousCharge = state.charge; this.previousAnchor = [...f.frame.craft];
     this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0); this.ctx.clearRect(0, 0, w, h);

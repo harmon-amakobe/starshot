@@ -1,18 +1,11 @@
 import { norm, sub } from '@starshot/ephemeris';
-import rail from '@starshot/ephemeris/moon-rail.json';
-import { LunarModel, simulateLunar, requestFor, MOON_GM, MOON_RADIUS, MOON_SOI_KM,
-  LAUNCH_ET, EARTH_RADIUS, SETTINGS, type ParkingOrbit } from '@starshot/physics/lunar';
-import { periapsisKm, type ShotAnalysis, type Aim } from './shot';
+import { simulateLunar, MOON_GM, MOON_RADIUS, MOON_SOI_KM, LAUNCH_ET, EARTH_RADIUS } from '@starshot/physics/lunar';
+import { periapsisKm, type ShotAnalysis } from './shot';
 import type { Hint } from './hint';
 import type { LunarShotRequest, LunarResult } from './flight-request';
+import { lunarModel } from './lunar-model';
+import { lunarRequest } from './lunar-request';
 
-export const lunarModel = new LunarModel(rail);
-export function lunarRequest(launchEt: number, aim: Aim, parking: ParkingOrbit): LunarShotRequest {
-  if (aim.angleDeg < -35 || aim.angleDeg > 35) throw new RangeError('Burn angle must be within 35 degrees of prograde');
-  return { ...requestFor(aim.speedKmS, aim.angleDeg), kind: 'lunar', target: 'moon', launchEt,
-    parkingRadiusKm: parking.radiusKm, parkingPhaseDeg: parking.phaseDeg, parking: { ...parking },
-    approachRadiusKm: MOON_SOI_KM, settings: SETTINGS, stopAtEntry: true };
-}
 export function runLunar(shot: LunarShotRequest): { result: LunarResult; analysis: ShotAnalysis } {
   const f = simulateLunar(lunarModel, shot), last = f.samples.at(-1)!, target = lunarModel.bodies(last.t).moon;
   const r = sub(last.r, target.r), v = sub(last.v, target.v), hit = f.entryEt !== null;
