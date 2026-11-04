@@ -1,6 +1,7 @@
 /**
  * Who may load the Moon rail. A request is built from constants alone; only `lunar-model.ts`
- * imports the rail, and only the view hook and the worker's runner import that module.
+ * imports the rail, and only the view hook, the main-thread loader and the worker's runner
+ * import that module.
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
@@ -66,11 +67,13 @@ describe('the Moon rail enters only through sim/lunar-model.ts', () => {
     expect(reexports(`${use}export function draw() { return lunarModel; }`)).toBe(false);
     expect(reexports("export { ephemeris, rotate } from './world';")).toBe(false);
   });
-  it('has one rail importer and model builder, and the view hook and runner as its only users', () => {
+  it('has one rail importer and model builder, and the view hook, loader and runner as its only users', () => {
     expect(holders(/['"][^'"]*moon-rail\.json['"]/)).toEqual(['sim/lunar-model.ts']);
     expect(holders(/new\s+LunarModel\s*\(/)).toEqual(['sim/lunar-model.ts']);
-    // Pins who loads: the view hook on the main thread, the runner in the worker's lazy chunk.
-    expect(holders(/['"][^'"]*\/lunar-model(?:\.[jt]s)?['"]/)).toEqual(['campaign/use-view.ts', 'sim/lunar.ts']);
+    // Pins who loads: the view hook on the main thread, the loader by its dynamic import, which
+    // counts as an importer, and the runner in the worker's lazy chunk.
+    expect(holders(/['"][^'"]*\/lunar-model(?:\.[jt]s)?['"]/))
+      .toEqual(['campaign/use-view.ts', 'sim/load-lunar-model.ts', 'sim/lunar.ts']);
     expect(holders({ test: reexports })).toEqual([]);
     // The runner carries the model, so it stays in the worker graph: its importers are the
     // worker's lazy modules and the tests' shared harness, never a main-thread module.

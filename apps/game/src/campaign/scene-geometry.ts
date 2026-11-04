@@ -1,6 +1,6 @@
 import { BODIES, norm, sub, type Vec3 } from '@starshot/ephemeris';
 import { sampleAt } from '@starshot/physics';
-import { parkingState, MOON_SOI_KM, type LunarModel } from '@starshot/physics/lunar';
+import { parkingState, DAY, MOON_SOI_KM, type LunarModel } from '@starshot/physics/lunar';
 import { bodyRadius } from '../missions';
 import { worldFor } from './world';
 import { routePath, planetOrbitPaths } from './orbit-path';
@@ -11,25 +11,25 @@ const moonOrbits = new WeakMap<LunarModel, Map<number, readonly Vec3[]>>();
 function lunarOrbit(et: number, model: LunarModel) {
   let orbits = moonOrbits.get(model);
   if (!orbits) { orbits = new Map(); moonOrbits.set(model, orbits); }
-  const day = Math.floor(et / 86400); let path = orbits.get(day);
+  const day = Math.floor(et / DAY); let path = orbits.get(day);
   if (!path) {
     // JPL states over the next lunar sidereal period, not a decorative ellipse.
-    path = Array.from({ length: 161 }, (_, i) => model.relative(et + 27.321661 * 86400 * i / 160).r);
+    path = Array.from({ length: 161 }, (_, i) => model.relative(et + 27.321661 * DAY * i / 160).r);
     if (orbits.size > 32) orbits.clear(); orbits.set(day, path);
   }
   return path;
 }
-export function geometry(state: SceneState, width: number, height: number, model: LunarModel) {
-  const world = worldFor(state, model), { plane, body, direction } = world;
+export function geometry(state: SceneState, width: number, height: number, model: LunarModel | null) {
+  const world = worldFor(state, model), { plane, body, direction, moonModel } = world;
   const earth = plane(body('earth').r), target = plane(body(state.level.target).r), craft = plane(world.current.r);
   const landscape = height < 500 && width > 600;
   const top = Math.max(landscape ? 122 : width < 600 ? 170 : 155, (state.safeTop ?? 0) + 20);
   const bottom = Math.max(top + 44, landscape ? height - 60 : height - state.deckHeight - 62);
   const rect = state.safeRect ?? { left: landscape ? 35 : 44, right: landscape ? width - Math.min(390, width * .46) - 35 : width - (width < 600 ? 44 : 190), top, bottom };
-  const parking = world.lunar ? Array.from({ length: 129 }, (_, i) => plane(parkingState(model,
+  const parking = moonModel ? Array.from({ length: 129 }, (_, i) => plane(parkingState(moonModel,
     { ...state.parking!, epochEt: state.parking!.epochEt, phaseDeg: i * 360 / 128 }, state.parking!.epochEt).r, state.parking!.epochEt)) : [];
   const path = state.response ? routePath(state.response).map(k => world.lunar ? direction(k.r) : plane(k.r)) : [];
-  const moonOrbit = world.lunar ? lunarOrbit(state.et, model).map(direction) : [];
+  const moonOrbit = moonModel ? lunarOrbit(state.et, moonModel).map(direction) : [];
   let intercept: Vec3 | null = null, approachCraft: Vec3 | null = null, interceptEt: number | null = null;
   if (state.response) {
     const a = state.response.analysis; interceptEt = a.hit ? a.endEt : a.closestEt;

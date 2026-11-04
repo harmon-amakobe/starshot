@@ -28,7 +28,7 @@ is in [02-disagreement-register.md](02-disagreement-register.md). The issues are
 |---|---|
 | Program | `v1-starshot` |
 | Trunk | New PR0 on `codex/v1-program-pr0`, from `main` at `7f325a61b77a43c98d95a7644d7d03834829b1a1` |
-| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus four owner checkpoints (D39, D40, D40's window note and D41), then one master review (D30, D41); PR3a has nine declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
+| Shape | New PR0, then 42 implementation specs in 28 delivery groups across six bands, plus four owner checkpoints (D39, D40, D40's window note and D41), then one master review (D30, D41); PR3a has eleven declared parts under one issue; bootstrap PR0 and PR1 remain completed history |
 | Date | Started 2026-11-01; reconciled 2026-11-03 |
 | Decisions | [D1 to D41](../../decisions.md); later rulings govern their recorded supersessions |
 | Readiness | Band A uses the current split and lunar ledgers. Check Band B's D38 supplement before each builder. Bands C to F remain outlines without `agent-ready` until detailed planning |
@@ -155,7 +155,7 @@ in their planning sessions.
 | PR1 | `v1-ci-hardening` | CI hardening | A | about 330 lines, 11 files: built in bootstrap PR0 (D30) | Bootstrap PR0 |
 | PR2 | `v1-screen-split-render` | Delete dead screen and extract live campaign shell | A | moves and deletions; current mapping in 07-screen-split.md | PR1, new PR0 |
 | PR3 | `v1-screen-split-state` | Split current campaign state and views | A | about 480 lines plus mechanical moves; current mapping in 07-screen-split.md | PR2 |
-| PR3a | `v1-moon-flight` | Complete remaining Moon flight acceptance | A | nine declared parts, each one-member cap; [budgets](08-moon-flight.md#parts-and-size-accounting) | PR3 |
+| PR3a | `v1-moon-flight` | Complete remaining Moon flight acceptance | A | eleven declared parts, each one-member cap; [budgets](08-moon-flight.md#parts-and-size-accounting) | PR3 |
 | PR3b | `v1-moon-campaign` | Complete Moon campaign proof and small-screen layout | A | about 480 lines | PR3a |
 | PR3c | `v1-stylesheet-split` | Format and split styles without visual changes | A | about 250 contentful lines plus mechanical moves | PR3b |
 | PR4 | `v1-process-checks` | Process checks | A | about 330 lines, 9 files: inside | PR1 |
@@ -224,8 +224,10 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | D40 window checkpoint | Owner clarification, issue #20 | `codex/v1-session-window` | `codex/v1-pr03a-search-transport` | A2 |
 | PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-session-window` | A2 |
 | D41 review checkpoint | Owner ruling, issue #20 | `codex/v1-review-lite` | `codex/v1-pr03a-model` | A2 |
-| PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-review-lite` | A3 |
-| PR3a evidence | PR3a | `codex/v1-pr03a-evidence` | `codex/v1-pr03a-loading` | A3 |
+| PR3a loader | PR3a | `codex/v1-pr03a-loader` | `codex/v1-review-lite` | A3 |
+| PR3a readiness | PR3a | `codex/v1-pr03a-readiness` | `codex/v1-pr03a-loader` | A3 |
+| PR3a lazy | PR3a | `codex/v1-pr03a-lazy` | `codex/v1-pr03a-readiness` | A3 |
+| PR3a evidence | PR3a | `codex/v1-pr03a-evidence` | `codex/v1-pr03a-lazy` | A3 |
 | PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-evidence` | A4 |
 | PR3c | PR3c | `codex/v1-pr03c-stylesheets` | `codex/v1-pr03b-moon-campaign` | A4 |
 | PR4 | PR4, PR5 | `codex/v1-pr04-process-licence` | `codex/v1-pr03c-stylesheets` | A4 |
@@ -558,7 +560,7 @@ below records the original scope only. No `ui/screen/` hooks are to be created.
 ### PR3a: Moon flight
 
 **Current delivery:** [08-moon-flight.md](08-moon-flight.md) supplies executable
-scope, budgets and proof for the nine declared parts in the group table.
+scope, budgets and proof for the eleven declared parts in the group table.
 The first branch is `codex/v1-pr03a-moon-flight`; the last is
 `codex/v1-pr03a-evidence`. All name `Part of #33`; no part alone completes PR3a.
 
