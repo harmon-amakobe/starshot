@@ -167,11 +167,11 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-pr03a-loader` (PR3a loader), above the D41 review checkpoint #90, PR3a model #89, the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, and PR3a loader on `codex/v1-pr03a-loader`; each PR's CI passed at its head |
-| Next | PR3a readiness, issue #33, [lazy scene data and readiness](08-moon-flight.md#lazy-scene-data-and-readiness), branch `codex/v1-pr03a-readiness`, base `codex/v1-pr03a-loader`. Budget 320 lines and 12 files: one `codebase-map` pass, one builder, one lite review (D41). Fix findings rows 1 and 3 before trusting a matching-preview gate; rows 13 and 14 and the [Loader result](08-moon-flight.md#loader-result) open points are inputs |
-| Not run here | Physical-phone timing (optional under D39); WebKit worker interleaving; every criterion from PR3a readiness onward |
-| Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: about 330,000 measured at the Loader publication. The supported settings have not turned automatic compaction off: the runtime's session telemetry (autocompact_state) reports it enabled at 784,000, so this session starts handover at 776,000 and finishes before 784,000 |
+| Stack tip | `codex/v1-pr03a-readiness` (PR3a readiness), above PR3a loader #91, the D41 review checkpoint #90, PR3a model #89, the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, PR3a loader #91, and PR3a readiness on `codex/v1-pr03a-readiness`; each PR's CI passed at its head. Issue #33's body was mirrored by hand through the GitHub connector after the Loading split, since `sync-work.mjs --apply` needs a token this environment lacks |
+| Next | PR3a lazy, issue #33, [lazy scene data and readiness](08-moon-flight.md#lazy-scene-data-and-readiness), branch `codex/v1-pr03a-lazy`, base `codex/v1-pr03a-readiness`. Budget 280 lines and 9 files: one `codebase-map` pass, one builder, one lite review (D41). Inputs: the [Readiness result](08-moon-flight.md#readiness-result) and findings rows 13 to 17 |
+| Not run here | Physical-phone timing (optional under D39); WebKit worker interleaving; every criterion from PR3a lazy onward |
+| Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: about 440,000 measured at the Readiness publication. The supported settings have not turned automatic compaction off: the runtime's session telemetry (autocompact_state) reports it enabled at 784,000, so this session starts handover at 776,000 and finishes before 784,000 |
 
 ## Findings for the master review (D41)
 
@@ -182,9 +182,9 @@ rows are never deleted. Line numbers are at the PR named in the source column.
 
 | # | Source | Finding | Proposed fix |
 |---|---|---|---|
-| 1 | Search transport review (#87), not verified here | The preview key is taken when a preview is queued (`apps/game/src/sim/useSimulation.ts:121` to `:124`) and answered later (`:86`), so a live reference can change in between | Derive the answered key from the posted request |
+| 1 | Search transport review (#87), not verified here | The preview key is taken when a preview is queued (`apps/game/src/sim/useSimulation.ts:121` to `:124`) and answered later (`:86`), so a live reference can change in between | Derive the answered key from the posted request. Fixed by PR3a readiness: the queue posts a clone of the shot it keyed (`apps/game/src/sim/preview.test.ts:79`) |
 | 2 | Search transport review (#87), not verified here | Planetary requests share the level's unfrozen `attractors` array (`apps/game/src/levels.ts:79`) | Copy or freeze the array in the request |
-| 3 | Search transport review (#87), not verified here | `requestPreview` skips a repeated key after a failed preview (`apps/game/src/sim/useSimulation.ts:122`) | Clear the last key when a preview fails |
+| 3 | Search transport review (#87), not verified here | `requestPreview` skips a repeated key after a failed preview (`apps/game/src/sim/useSimulation.ts:122`) | Clear the last key when a preview fails. Fixed by PR3a readiness, also on a worker error (`apps/game/src/sim/preview.test.ts:93` and `:108`) |
 | 4 | Ownership guard review (#84) | The gate-pair mutant is killed only by a test timeout | Add a direct assertion that fails fast |
 | 5 | Search transport result (#87) | The Moon search yields with a zero-delay timer, about 4.4 ms per flight; a `MessageChannel` yield measured faster | PR3b chooses the yield |
 | 6 | Search transport result (#87) | Worker ordering is measured in Chromium only; WebKit and Firefox are unmeasured | PR3a evidence or the master review measures them |
@@ -196,6 +196,10 @@ rows are never deleted. Line numbers are at the PR named in the source column.
 | 12 | PR3a model review (#89) | The secrets gate runs without its private-name list in cloud sessions | The owner supplies the list, or the gap stays recorded |
 | 13 | PR3a loader review | Retry after a failed load is proven with an injected importer (`apps/game/src/sim/load-lunar-model.test.ts:56`), not with a browser's real `import()` | PR3a lazy fails the chunk request once, then succeeds, and checks for a second request |
 | 14 | PR3a loader review | A Moon focus on a planetary level throws without the model (`apps/game/src/campaign/world.ts:20`); `inspectBody` can set any body id (`apps/game/src/campaign/use-camera-views.ts:56`) | PR3a readiness or lazy keeps a saved planetary pilot from waiting on the rail |
+| 15 | PR3a readiness review | The "Loading the Moon." reason line has never rendered in a browser; it is absolute inside the deck's `overflow: hidden` (`apps/game/src/campaign/campaign.css:42` and `:5`), so it may be clipped or cover controls | PR3a lazy screenshots it at 360 and 390 px collapsed and expanded, short landscape and 200% zoom, and asserts its box is inside the deck and overlaps no button |
+| 16 | PR3a readiness review | While loading is eager, the readiness ref write (`apps/game/src/campaign/CampaignApp.tsx:83`) is untested, `ownedCallback` has no production caller, the reason line is not a live region and a disabled handle can lose focus | PR3a lazy calls `ownedCallback` with the real disposal flag and its loading probe tries a pull, Enter, Launch and Guide while loading |
+| 17 | PR3a readiness review | Apply guide and the fine-aim inputs are not gated (`apps/game/src/campaign/MissionDeck.tsx:8`) | PR3a lazy confirms no hint reaches a Moon level whose model has not loaded |
+| 18 | PR3a readiness review | The hook's calls into `PreviewQueue` have no React test (`apps/game/src/sim/useSimulation.ts:103` to `:153`), and the extra `structuredClone` per preview is unmeasured | The master review decides whether a hook-level test or a measurement is owed |
 
 ## Publication and account boundaries
 

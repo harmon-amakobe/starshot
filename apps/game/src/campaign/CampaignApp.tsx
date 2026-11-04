@@ -16,6 +16,7 @@ import { useGestures } from './gestures';
 import { HangarView } from './HangarView';
 import { HomeMenu } from './HomeMenu';
 import { IntroCaption } from './IntroCaption';
+import { lunarReadiness } from './lunar-readiness';
 import { MapTools } from './MapTools';
 import { useMissionHeader } from './mission-header';
 import { MissionDeck } from './MissionDeck';
@@ -77,6 +78,9 @@ export function CampaignApp() {
   const view = useView(c, state, home, home || !!inspection, frameRef);
   frameRef.current = view.frameRef.current;
   measuredDeck.current = view.deckHeight;
+  // Computed once per render: components take it as a prop, actions and gestures read the ref.
+  const readiness = lunarReadiness(c.store.level, view.model);
+  c.release.readiness.current = readiness;
   const frame = view.frame,
     live = useRef({ c, pilots, cloud, home, map, focus, inspection, frame });
   live.current = { c, pilots, cloud, home, map, focus, inspection, frame };
@@ -193,7 +197,7 @@ export function CampaignApp() {
                 select={setSelected}
               />
               {c.store.session.phase === 'aim' && !map && !mission && (
-                <AimHandle c={c} gestures={gestures} frame={frame} />
+                <AimHandle c={c} gestures={gestures} frame={frame} readiness={readiness} />
               )}
             </>
           )}
@@ -230,6 +234,7 @@ export function CampaignApp() {
             map={map}
             openMap={openMap}
             guide={openGuide}
+            readiness={readiness}
           />
           <div className="c-scale">
             <i />

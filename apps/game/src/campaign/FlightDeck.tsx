@@ -4,6 +4,7 @@ import { deckMetrics } from './deck-metrics';
 import { ModeButtons, UnitButton } from './DeckControls';
 import { DeckPages } from './DeckPages';
 import { LaunchPlanning } from './LaunchPlanning';
+import type { Readiness } from './lunar-readiness';
 import type { SceneFrame } from './scene-types';
 import { type CameraMode } from './session';
 import type { CampaignController } from './use-campaign';
@@ -17,6 +18,7 @@ export function FlightDeck({
   map,
   openMap,
   guide,
+  readiness,
 }: {
   c: CampaignController;
   frame: SceneFrame;
@@ -25,6 +27,7 @@ export function FlightDeck({
   map: boolean;
   openMap: () => void;
   guide: () => void;
+  readiness: Readiness;
 }) {
   const [page, setPage] = useState(0),
     swipe = useRef(0),
@@ -32,6 +35,9 @@ export function FlightDeck({
     aim = c.store.session.phase === 'aim';
   const metrics = deckMetrics(c),
     { fuel, impact, compactStatus } = metrics;
+  // Launch and Guide say in visible text why they wait, so the cue is not the dimmed colour alone.
+  // The line sits out of flow above them, so it moves nothing in the deck.
+  const wait = aim && !readiness.scene ? 'c-launch-wait' : undefined;
   return (
     <section
       ref={deck}
@@ -101,6 +107,11 @@ export function FlightDeck({
           ))}
         </div>
         <div className="c-actions">
+          {wait && (
+            <p id={wait} className="c-wait">
+              {readiness.reason}
+            </p>
+          )}
           {!c.store.session.parking && (
             <button
               className="pill"
@@ -116,7 +127,8 @@ export function FlightDeck({
               <button
                 className="pill"
                 aria-label={c.hints.hintBusy ? 'Finding guide' : 'Guide'}
-                disabled={c.hints.hintBusy || c.release.pending}
+                disabled={c.hints.hintBusy || c.release.pending || !readiness.scene}
+                aria-describedby={wait}
                 onClick={guide}
               >
                 <Icon name="guide" />
@@ -124,7 +136,8 @@ export function FlightDeck({
               </button>
               <button
                 className="primary"
-                disabled={c.release.pending || c.hydrating}
+                disabled={c.release.pending || c.hydrating || !readiness.scene}
+                aria-describedby={wait}
                 onClick={() => c.release.actions.launch()}
               >
                 {c.release.pending ? 'Preparing…' : 'Launch'}

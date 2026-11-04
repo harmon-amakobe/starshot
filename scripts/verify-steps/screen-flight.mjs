@@ -25,6 +25,13 @@ export default async (page, harness) => {
   assert.equal((await state()).levelId, 'moonshot');
   assert.equal((await state()).preferences.releaseMode, 'plan');
   await check('02-fresh-orbit');
+  // With the Moon model loaded, a coasting orbit keeps Launch and Guide usable, with no wait
+  // reason. Reduced motion starts the orbit paused.
+  assert.equal((await state()).paused, viewport === 'phone-reduced-motion');
+  for (const name of ['Launch', 'Guide']) {
+    await page.getByRole('button', { name, exact: true, disabled: false }).waitFor({ timeout: 5000 });
+    assert.equal(await button(name).getAttribute('aria-describedby'), null, `${name} waits`);
+  }
   await pause();
   const before = await state();
   const slider = page.getByRole('slider', { name: 'Move around orbit' });

@@ -42,5 +42,6 @@ export function useView(controller: CampaignController, state: Omit<SceneState, 
     };
     raf = requestAnimationFrame(draw); return () => { cancelAnimationFrame(raf); scene.dispose(); };
   }, []);
-  return { background, foreground, frame, frameRef, deck, deckHeight, entering, error };
+  // Readiness reads the same model the scene draws with.
+  return { background, foreground, frame, frameRef, deck, deckHeight, entering, error, model: lunarModel };
 }
