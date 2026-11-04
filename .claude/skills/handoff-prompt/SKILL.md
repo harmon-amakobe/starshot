@@ -23,7 +23,7 @@ the session's most degraded point, which is why you are handing off.
 | Routing | "would anything be lost with the cheaper tier?"; roster in `.claude/agents/` |
 | Definition of Done | `npm run gates` plus the conditional verifiers |
 | Context at close | the runtime's own telemetry, or unknown; any forced compaction (D40) |
-| Opening move and stop condition | the audit commands; in the V1 cloud run, hand over at 776,000 tokens of measured context, at a band close, or earlier when compaction or a hard limit would come first (D40); in any other session, at about 70% of the context after the current group's publish step (D30) |
+| Opening move and stop condition | the audit commands; in the V1 cloud run, hand over from 776,000 to 792,000 tokens of measured context and never earlier on a projected cost, at a band close, or earlier when compaction or a hard limit would come first (D40); in any other session, at about 70% of the context after the current group's publish step (D30) |
 
 ## Template
 
@@ -41,11 +41,12 @@ requires). Executors never push.
 Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.
 Context (V1 cloud run, D40): keep automatic and idle compaction off; never run
 /compact; hand over earlier if compaction or a hard limit would come first, after each
-published group when telemetry is unknown, and after any forced compaction.
-Stop: V1 cloud run at 776,000 tokens of measured context, at a band close, or earlier as
-above: finish bounded stabilization, emit this block again and start one verified
-successor (D40). Other sessions at about 70%: finish the current group's publish step,
-then emit this block again (D30).
+published group when telemetry is unknown, and after any forced compaction. No
+pull-request subscriptions; read each PR's checks yourself.
+Stop: V1 cloud run from 776,000 to 792,000 tokens of measured context, at a band close,
+or earlier as above, never on a projected cost: finish bounded stabilization, emit this
+block again and start one verified successor (D40). Other sessions at about 70%: finish
+the current group's publish step, then emit this block again (D30).
 ```
 
 ## Start the successor (D40)

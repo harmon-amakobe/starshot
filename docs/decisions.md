@@ -1053,6 +1053,8 @@ choose a production candidate or replace the owner's production approval.
 
 ## D40. Cloud sessions hand over at measured context, not a group count
 
+**Clarified 2026-11-04 (note at the end of this entry): handover starts from 776,000 to 792,000 tokens of measured context, never earlier on a projected cost; cloud sessions need not subscribe to pull-request activity.**
+
 *Date:* 2026-11-03. *Source:* owner's ruling for the cloud run of the remaining V1
 program (supersedes D30's handoff at about 70% of context and its count of two or
 three groups a session).
@@ -1107,3 +1109,24 @@ D30's group table, size rules, bounded reviews, band sweeps, fresh band-planning
 sessions and master review are unchanged. A session that hands over finishes or
 preserves its current group; partial work is labelled partial and kept. Sessions outside
 the V1 cloud run keep D30's handoff.
+
+**Note (2026-11-04): the owner's clarification, not a reversal, with one addition.** The
+owner set a window for the trigger: the budget is 800,000 tokens, and handover starts
+between 97% and 99% of it, so from 776,000 to 792,000 tokens of measured occupancy. The
+reserve is therefore 8,000 to 24,000 tokens. Passing 800,000 only to finish handover is
+unchanged, and the window stays at 776,000 to 792,000 on a larger runtime window. A
+projection of what the next part might cost is no reason to start earlier. A session
+that began handover at about 590,000 on such a projection started too early, as the
+rule to keep building until the trigger already implied.
+
+In the orchestrator's reading, D40's earlier handover for an unavoidable compaction or
+hard limit below 776,000 still applies, since the owner's words addressed a projected
+cost. A session whose supported controls cannot turn automatic compaction off reads the
+threshold from the runtime and records it. A threshold below 776,000 moves the start
+earlier, as D40 says. One inside the window does not: the session starts at 776,000 and
+treats the threshold as its ceiling. An estimated threshold is a projection and moves
+nothing, and a compaction that still arrives is disclosed as D40 requires.
+
+The addition: the owner said cloud sessions here need not subscribe to pull-request
+activity. In the orchestrator's reading they therefore do not, and the lead reads each
+PR's checks itself after opening it and before publishing the next group.
