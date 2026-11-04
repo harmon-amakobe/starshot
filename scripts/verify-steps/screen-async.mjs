@@ -3,15 +3,14 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // Hold actual worker replies by request ID, without changing the application worker.
-export default async function asyncProof(page, { viewport, log }) {
-  if (viewport !== 'desktop') return;
+// lunar-evidence.mjs passes phone sizes; alone, this step runs once, at the desktop size.
+const DESKTOP = { label: '', options: { viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' } };
+export default async function asyncProof(page, { viewport, log }, sizes = viewport === 'desktop' ? [DESKTOP] : []) {
+  if (!sizes.length) return;
   const records = [];
-  for (const kind of ['launch', 'hint'])
-    for (const failure of [false, true]) {
-      const context = await page
-        .context()
-        .browser()
-        .newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  for (const { label, options } of sizes)
+    for (const [kind, failure] of [['launch', false], ['launch', true], ['hint', false], ['hint', true]]) {
+      const context = await page.context().browser().newContext(options);
       await context.addInitScript(() => {
         const Native = window.Worker;
         window.__heldReplies = [];
@@ -79,7 +78,10 @@ export default async function asyncProof(page, { viewport, log }) {
         await button('Play').click();
         if (kind === 'launch') {
           await button('Guide').click();
-          await button('Apply guide').click({ timeout: 20000 });
+          // By keyboard: at 844x390 the flight deck covers the button for a pointer.
+          const apply = check.getByRole('button', { name: 'Apply guide', exact: true, disabled: false });
+          await apply.waitFor({ timeout: 20000 });
+          await apply.press('Enter');
           await check
             .getByRole('region', { name: 'Mission deck' })
             .getByRole('button')
@@ -140,7 +142,7 @@ export default async function asyncProof(page, { viewport, log }) {
           assert.equal((await state()).flightSummary, before.previewSummary);
         } else await button('Apply guide').waitFor();
         assert.deepEqual(errors, []);
-        const name = `${kind}-${failure ? 'failure' : 'success'}-owner`;
+        const name = `${label}${kind}-${failure ? 'failure' : 'success'}-owner`;
         await check.screenshot({ path: join(process.env.STARSHOT_PROBE_OUT, `${name}.png`) });
         records.push({ name, old, before, after, progress, errors });
         log(`${name}: old reply ignored while new owner's request remained pending`);
@@ -149,7 +151,7 @@ export default async function asyncProof(page, { viewport, log }) {
       }
     }
   writeFileSync(
-    join(process.env.STARSHOT_PROBE_OUT, 'async-owner.json'),
+    join(process.env.STARSHOT_PROBE_OUT, `${sizes[0].label}async-owner.json`),
     JSON.stringify(records, null, 2),
   );
 }
