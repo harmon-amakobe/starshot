@@ -136,5 +136,7 @@ export class CampaignScene {
       for (let i = 0; i < 96; i++) { const a = i / 96 * Math.PI * 2, b = (i + 1) / 96 * Math.PI * 2, mid = (a + b) / 2; if ((Math.cos(mid) * x[2] + Math.sin(mid) * y[2] >= 0) !== front) continue; ctx.beginPath(); ctx.moveTo(...point(inner, a)); ctx.lineTo(...point(outer, a)); ctx.lineTo(...point(outer, b)); ctx.lineTo(...point(inner, b)); ctx.closePath(); ctx.fill(); }
     }
   }
+  /** Blanks both canvases, so a level that waits for its data shows no frame drawn before it. */
+  clear() { this.ctx.setTransform(1, 0, 0, 1, 0, 0); this.ctx.clearRect(0, 0, this.background.width, this.background.height); this.three?.clear(); }
   dispose() { this.disposed = true; this.three?.dispose(); }
 }

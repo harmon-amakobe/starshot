@@ -36,7 +36,7 @@ export function FlightDeck({
   const metrics = deckMetrics(c),
     { fuel, impact, compactStatus } = metrics;
   // Launch and Guide say in visible text why they wait, so the cue is not the dimmed colour alone.
-  // The line sits out of flow above them, so it moves nothing in the deck.
+  // The line takes its own row above them: placed out of flow, it covered the orbit slider.
   const wait = aim && !readiness.scene ? 'c-launch-wait' : undefined;
   return (
     <section
@@ -83,6 +83,7 @@ export function FlightDeck({
           setPage={setPage}
           swipe={swipe}
           metrics={metrics}
+          readiness={readiness}
         />
       )}
       {aim && impact && (
@@ -167,6 +168,24 @@ export function FlightDeck({
           )}
         </div>
       </footer>
+    </section>
+  );
+}
+
+/**
+ * Where the Moon model is, over the blank sky that waits for it, with Retry after a failure. The
+ * polite live region in `CampaignApp` announces the same reason, so this panel is not one.
+ */
+export function MoonLoadPanel({ readiness, failed, retry }: { readiness: Readiness; failed: boolean; retry: () => void }) {
+  if (readiness.scene) return null;
+  return (
+    <section className="c-moon-load" aria-label="Moon data" tabIndex={-1}>
+      <p>{readiness.reason}</p>
+      {failed && (
+        <button className="pill" aria-label="Retry loading the Moon" onClick={retry}>
+          Retry
+        </button>
+      )}
     </section>
   );
 }

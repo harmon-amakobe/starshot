@@ -3,27 +3,40 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import type { LunarModel } from '@starshot/physics/lunar';
 import { CAMPAIGN } from '../levels';
-import { MISSIONS, MOONSHOT } from '../missions';
+import { MISSIONS, MOONSHOT, type Mission } from '../missions';
 import { AimHandle } from './AimHandle';
 import { finalRequest } from './contracts';
-import { FlightDeck } from './FlightDeck';
+import { DeckPages } from './DeckPages';
+import { FlightDeck, MoonLoadPanel } from './FlightDeck';
 import { useGestures } from './gestures';
-import { lunarReadiness, ownedCallback, READY, type Readiness } from './lunar-readiness';
+import { lunarLoadRun, lunarReadiness, ownedCallback, READY, type Readiness } from './lunar-readiness';
+import { MissionDeck } from './MissionDeck';
 import { fly, harness, REFERENCE } from './owner-harness.test-support';
+import { EMPTY_FRAME } from './scene-types';
 import { copySession, freshSession } from './session';
+import { useCameraViews } from './use-camera-views';
 import { restoreActions } from './use-restore';
 
 // The rule asks only whether a model is present, so any object stands in for the loaded one.
 const model = {} as LunarModel;
-const loading = lunarReadiness(MOONSHOT, null);
+const loading = lunarReadiness(MOONSHOT, null, false);
 
 describe('lunar readiness', () => {
-  it('readies every planetary level at once, with no Moon model', () => {
-    for (const level of MISSIONS.slice(1)) expect(lunarReadiness(level, null), level.id).toBe(READY);
+  it('readies every planetary level at once, with no Moon model, even after a failed load', () => {
+    for (const level of MISSIONS.slice(1)) for (const failed of [false, true])
+      expect(lunarReadiness(level, null, failed), level.id).toBe(READY);
   });
-  it('holds a Moon level, with a visible reason, until its model is present', () => {
+  it('holds a Moon level, with a visible reason for loading or failure, until its model is present', () => {
     expect(loading).toEqual({ scene: false, reason: 'Loading the Moon.' });
-    expect(lunarReadiness(MOONSHOT, model)).toBe(READY);
+    expect(lunarReadiness(MOONSHOT, null, true)).toEqual({ scene: false, reason: 'The Moon could not load.' });
+    for (const failed of [false, true]) expect(lunarReadiness(MOONSHOT, model, failed)).toBe(READY);
+  });
+  it('shows the reason over the empty sky, with Retry only after a failure', () => {
+    const retry = vi.fn(), panel = (failed: boolean) => renderToStaticMarkup(createElement(MoonLoadPanel,
+      { readiness: lunarReadiness(MOONSHOT, null, failed), failed, retry }));
+    expect(MoonLoadPanel({ readiness: READY, failed: true, retry })).toBeNull();
+    expect(panel(false)).toBe('<section class="c-moon-load" aria-label="Moon data" tabindex="-1"><p>Loading the Moon.</p></section>');
+    expect(panel(true)).toContain('<p>The Moon could not load.</p><button class="pill" aria-label="Retry loading the Moon">Retry</button>');
   });
 });
 
@@ -152,5 +165,118 @@ describe('a pull on the Moon', () => {
   it('starts only once the Moon model is present', () => {
     expect(pullWith(READY)).toBe(1);
     expect(pullWith(loading)).toBe(0);
+  });
+});
+
+describe('a Moon focus and the guide controls without the model', () => {
+  function camera(level: Mission, frame = EMPTY_FRAME) {
+    const preferences = vi.fn(), session = { preferences: { camera: 'system', orbit: [0, 0] } };
+    const c = { store: { level, session }, playback: { preferences }, release: { pending: false } };
+    let views: ReturnType<typeof useCameraViews> | undefined, gestures: ReturnType<typeof useGestures> | undefined;
+    function Probe() {
+      views = useCameraViews(c as unknown as Parameters<typeof useCameraViews>[0], () => frame, () => {});
+      gestures = useGestures(c as unknown as Parameters<typeof useGestures>[0],
+        { current: frame } as unknown as Parameters<typeof useGestures>[1], false, () => {}, () => {});
+      return null;
+    }
+    renderToStaticMarkup(createElement(Probe));
+    return { actions: views!.actions, gestures: gestures!, preferences };
+  }
+  it('moves no camera, zoom or pan from a frame that was never drawn', () => {
+    for (const ready of [false, true]) {
+      const view = camera(MOONSHOT, { ...EMPTY_FRAME, ready });
+      const point = { button: 0, pointerId: 1, clientX: 0, clientY: 0, currentTarget: { setPointerCapture() {} } };
+      view.actions.camera('orbit');
+      view.gestures.zoom(0.65);
+      view.gestures.world.onPointerDown(point as unknown as Parameters<typeof view.gestures.world.onPointerDown>[0]);
+      view.gestures.world.onPointerMove({ ...point, clientX: 30 } as unknown as Parameters<typeof view.gestures.world.onPointerMove>[0]);
+      expect(view.preferences, String(ready)).toHaveBeenCalledTimes(ready ? 3 : 0);
+    }
+  });
+  it('refuses a Moon focus on a planetary level before any focus state is written', () => {
+    const planet = camera(MISSIONS[1]!);
+    planet.actions.inspectBody('moon');
+    // A focus return written before the refusal would make closing the focus restore the camera.
+    planet.actions.closeFocus();
+    expect(planet.preferences).not.toHaveBeenCalled();
+    for (const [level, body] of [[MISSIONS[1]!, 'earth'], [MOONSHOT, 'moon']] as const) {
+      const view = camera(level);
+      view.actions.inspectBody(body);
+      expect(view.preferences, body).toHaveBeenCalledTimes(1);
+    }
+  });
+  it('holds Apply guide and both fine-aim inputs until the Moon model is present', () => {
+    const session = freshSession();
+    const c = { store: { session, level: MOONSHOT }, hints: { hint: { hits: true, aim: REFERENCE } },
+      release: { pending: false, actions: {} }, view: { active: null } };
+    const tags = (readiness: Readiness) => [
+      renderToStaticMarkup(createElement(MissionDeck, { c, open: true, toggle() {}, readiness } as unknown as Parameters<typeof MissionDeck>[0])),
+      renderToStaticMarkup(createElement(DeckPages, { c, frame: EMPTY_FRAME, page: 1, metrics: {}, readiness } as unknown as Parameters<typeof DeckPages>[0])),
+    ].join('').match(/<button class="primary"[^>]*>Apply guide|<input aria-label="(?:Aim angle|Departure speed)[^>]*>/g)!;
+    expect(tags(READY).map((tag) => tag.includes('disabled'))).toEqual([false, false, false]);
+    expect(tags(loading).map((tag) => tag.includes('disabled'))).toEqual([true, true, true]);
+  });
+});
+
+describe('a view load run', () => {
+  /** One run on a loader whose single pending load the test settles, as the memo shares it. */
+  function start(loader = deferredLoader(), level: Mission = MOONSHOT) {
+    const s = { token: { current: 'pilot-a' }, visit: { current: 0 }, level: 'moonshot' as string };
+    const log: unknown[] = [];
+    const run = lunarLoadRun(level, { token: s.token, visit: s.visit, mission: () => s.level },
+      { model: (next) => log.push(next), status: (status) => log.push(status) }, loader);
+    return { s, log, run, loader };
+  }
+  function deferredLoader() {
+    let settle = { resolve(_: LunarModel) {}, reject(_: Error) {} };
+    const pending = () => new Promise<LunarModel>((resolve, reject) => { settle = { resolve, reject }; });
+    let current = pending();
+    const load = vi.fn(() => current);
+    return { model: null, load, settle: () => settle, again: () => void (current = pending()) };
+  }
+  const flush = () => new Promise((done) => setTimeout(done));
+  it('starts no load on a planetary level', () => {
+    for (const level of MISSIONS.slice(1)) {
+      const r = start(deferredLoader(), level);
+      expect(r.run, level.id).toBeNull();
+      expect(r.loader.load).not.toHaveBeenCalled();
+    }
+  });
+  it('drops a late success or failure after disposal, or a change of pilot, visit or mission', async () => {
+    const changes: Record<string, (r: ReturnType<typeof start>) => void> = {
+      none: () => {},
+      disposal: (r) => r.run!.dispose(),
+      owner: (r) => void (r.s.token.current = 'pilot-b'),
+      visit: (r) => void r.s.visit.current++,
+      mission: (r) => void (r.s.level = 'first-light'),
+    };
+    for (const success of [true, false]) for (const [name, change] of Object.entries(changes)) {
+      const r = start();
+      change(r);
+      if (success) r.loader.settle().resolve(model);
+      else r.loader.settle().reject(new Error('offline'));
+      await flush();
+      const settled = name === 'none' ? (success ? [model, 'ready'] : ['failed']) : [];
+      expect(r.log, `${name} ${success}`).toEqual(['loading', ...settled]);
+    }
+  });
+  it('gives each run its own disposal, so the first of the two runs StrictMode makes stays quiet', async () => {
+    const first = start(), second = start(first.loader);
+    first.run!.dispose();
+    first.loader.settle().resolve(model);
+    await flush();
+    expect(first.log).toEqual(['loading']);
+    expect(second.log).toEqual(['loading', model, 'ready']);
+  });
+  it('retries a failed load through the same owned settle', async () => {
+    const r = start();
+    r.loader.settle().reject(new Error('offline'));
+    await flush();
+    r.loader.again();
+    r.run!.retry();
+    expect(r.loader.load).toHaveBeenCalledTimes(2);
+    r.loader.settle().resolve(model);
+    await flush();
+    expect(r.log).toEqual(['loading', 'failed', 'loading', model, 'ready']);
   });
 });

@@ -25,16 +25,22 @@ node scripts/verify-game.mjs --base /starshot/      # portable subpath hosting
 node scripts/verify-game.mjs --steps /tmp/steps.mjs # one shot() per acceptance criterion
 ```
 
-A steps file lives in the temp dir, not the repo:
+A one-off steps file lives in the temp dir; reusable steps live in `scripts/verify-steps/`:
 
 ```js
-export default async (page, { shot, viewport, log }) => {
+export default async (page, { shot, viewport, log, intend }) => {
   await page.getByRole("button", { name: /launch/i }).click();
   await page.waitForTimeout(1500);
   await shot("02-launched");            // name it after the criterion it proves
   log(await page.getByRole("status").innerText());
 };
 ```
+
+A step that must fail a request on purpose, such as a load-failure and Retry probe, calls
+`intend(url)` with the exact URL just before failing
+it. Each call excuses that one failed request and Chromium's resource-error line for it,
+nothing else, and a declared failure that never happens fails the run. Use it only for a
+failure the step then asserts on.
 
 Prefer role and label locators: if a control cannot be found by its accessible name,
 that is a finding, not a reason to use coordinates. Drag aiming can be driven with
@@ -43,8 +49,8 @@ that is a finding, not a reason to use coordinates. Drag aiming can be driven wi
 ## What a pass requires
 
 - One screenshot per criterion, opened and looked at.
-- Exit code 0: no console error, page error, failed request or horizontal overflow on
-  any context. Warnings are read and reported.
+- Exit code 0: no page error or horizontal overflow, and no console error or failed request
+  beyond those declared with `intend`, on any context. Warnings are read and reported.
 - Both sides of each gate: a hit and a miss, keyboard and touch aiming, reduced motion.
 - The `rAF` rate is a smoke signal only; headless Chromium is not a phone.
 

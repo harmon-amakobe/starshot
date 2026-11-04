@@ -132,5 +132,6 @@ export class ThreeScene {
     }
   }
   private disposeObject(object: THREE.Object3D) { object.traverse(p => { if (p instanceof THREE.Mesh || p instanceof THREE.Line) p.geometry.dispose(); (p.userData.ownedMaterials as THREE.Material[] | undefined)?.forEach(m => m.dispose()); }); }
+  clear() { this.renderer.clear(); }
   dispose() { this.disposed = true; this.disposeObject(this.craft); this.disposeObject(this.inspect); this.sphere.dispose(); this.textures.forEach(t => t.dispose()); this.renderer.dispose(); }
 }

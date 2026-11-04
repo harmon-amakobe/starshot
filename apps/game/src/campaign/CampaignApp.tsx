@@ -9,7 +9,7 @@ import { useDebugHook } from './debug-hook';
 import { useEscape } from './escape';
 import { Eye } from './EyeIcon';
 import { useArrivalSound, useFlightAudio } from './flight-audio';
-import { FlightDeck } from './FlightDeck';
+import { FlightDeck, MoonLoadPanel } from './FlightDeck';
 import { FocusTitle } from './FocusTitle';
 import { useShellAssets } from './fonts';
 import { useGestures } from './gestures';
@@ -79,7 +79,7 @@ export function CampaignApp() {
   frameRef.current = view.frameRef.current;
   measuredDeck.current = view.deckHeight;
   // Computed once per render: components take it as a prop, actions and gestures read the ref.
-  const readiness = lunarReadiness(c.store.level, view.model);
+  const readiness = lunarReadiness(c.store.level, view.model, view.status === 'failed');
   c.release.readiness.current = readiness;
   const frame = view.frame,
     live = useRef({ c, pilots, cloud, home, map, focus, inspection, frame });
@@ -139,10 +139,11 @@ export function CampaignApp() {
 
   const renderUI = !home && !hidden;
   useEffect(() => {
-    // A result card or inspection can unmount the button that held keyboard focus.
+    // A result card or inspection can unmount the button that held keyboard focus. While the Moon
+    // loads, Launch is disabled and cannot take focus, so the loading panel takes it.
     if (renderUI && !view.entering && !inspection && document.activeElement === document.body)
-      document.querySelector<HTMLButtonElement>('.c-deck .c-actions .primary')?.focus();
-  }, [renderUI, view.entering, inspection, focus, c.store.session.phase]);
+      document.querySelector<HTMLElement>('.c-deck .c-actions .primary:enabled, .c-moon-load')?.focus();
+  }, [renderUI, view.entering, inspection, focus, c.store.session.phase, readiness.scene, view.status]);
   return (
     <main
       className="game-shell campaign-shell"
@@ -170,7 +171,7 @@ export function CampaignApp() {
               <Icon name="menu" />
             </button>
           </header>
-          {!focus && <MissionDeck c={c} open={mission} toggle={openMission} />}
+          {!focus && <MissionDeck c={c} open={mission} toggle={openMission} readiness={readiness} />}
           {focus ? (
             <FocusTitle
               c={c}
@@ -206,6 +207,7 @@ export function CampaignApp() {
           )}
           <MapTools c={c} gestures={gestures} focus={focus} camera={camera} />
           {c.store.session.parking &&
+            frame.ready &&
             (frame.target[0] < 0 ||
               frame.target[0] > frame.width ||
               frame.target[1] < 70 ||
@@ -226,6 +228,7 @@ export function CampaignApp() {
             Hangar
           </button>
           {c.store.session.phase === 'result' && !focus && <ResultCard c={c} pick={pick} />}
+          <MoonLoadPanel readiness={readiness} failed={view.status === 'failed'} retry={view.retry} />
           <FlightDeck
             c={c}
             frame={frame}
@@ -271,7 +274,7 @@ export function CampaignApp() {
         />
       )}
       <div className="sr-only" role="status" aria-live="polite">
-        {c.notice || view.error}
+        {c.notice || view.error || (renderUI ? readiness.reason : '')}
       </div>
     </main>
   );

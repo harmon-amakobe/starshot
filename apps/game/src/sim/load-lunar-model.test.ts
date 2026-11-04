@@ -18,7 +18,7 @@ type Module = { lunarModel: LunarModel };
 /** An importer that records each call and lets the test settle it. */
 function deferredImporter() {
   const calls: { resolve(module: Module): void; reject(error: Error): void }[] = [];
-  const importer = vi.fn(() => new Promise<Module>((resolve, reject) => { calls.push({ resolve, reject }); }));
+  const importer = vi.fn((_failures: number) => new Promise<Module>((resolve, reject) => { calls.push({ resolve, reject }); }));
   return { importer, calls };
 }
 // A stand-in the loader only passes on; it never reads the rail.
@@ -64,6 +64,8 @@ describe('createLunarModelLoader', () => {
     expect(retry).not.toBe(failed);
     expect(importer).toHaveBeenCalledTimes(2);
     expect(loader.state).toBe('loading');
+    // The importer learns how many loads failed, so a retry can ask for a fresh module URL.
+    expect(importer.mock.calls).toEqual([[0], [1]]);
     calls[1]!.resolve({ lunarModel: model });
     expect(await retry).toBe(model);
     expect(loader.state).toBe('ready');

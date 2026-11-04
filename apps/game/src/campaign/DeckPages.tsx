@@ -2,6 +2,7 @@ import { BODIES, dateFromEt } from '@starshot/ephemeris';
 import { Icon } from '@starshot/presentation/icons';
 import { bodyName } from '../missions';
 import type { deckMetrics } from './deck-metrics';
+import type { Readiness } from './lunar-readiness';
 import type { SceneFrame } from './scene-types';
 import { distanceText, unitOf } from './session';
 import type { CampaignController } from './use-campaign';
@@ -12,6 +13,7 @@ export function DeckPages({
   setPage,
   swipe,
   metrics,
+  readiness,
 }: {
   c: CampaignController;
   frame: SceneFrame;
@@ -19,6 +21,7 @@ export function DeckPages({
   setPage: (value: number) => void;
   swipe: React.RefObject<number>;
   metrics: ReturnType<typeof deckMetrics>;
+  readiness: Readiness;
 }) {
   const p = c.store.session.preferences,
     aim = c.store.session.phase === 'aim',
@@ -84,7 +87,7 @@ export function DeckPages({
                 max={c.store.session.parking ? 35 : 360}
                 step="0.01"
                 value={Number(c.store.session.aim.angleDeg.toFixed(2))}
-                disabled={!aim || c.release.pending}
+                disabled={!aim || c.release.pending || !readiness.scene}
                 onChange={(e) => {
                   if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber))
                     c.release.actions.aim({
@@ -104,7 +107,7 @@ export function DeckPages({
                 max={c.store.level.vInfMaxKmS}
                 step="0.001"
                 value={Number(c.store.session.aim.speedKmS.toFixed(3))}
-                disabled={!aim || c.release.pending}
+                disabled={!aim || c.release.pending || !readiness.scene}
                 onChange={(e) => {
                   if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber))
                     c.release.actions.aim({
