@@ -27,7 +27,7 @@ export function aimActions(input: {
   const { time, setClock } = input.clock;
   const { setScore } = input.result;
   const { token, restoring } = input.hydration;
-  const { pending, setPending, snapping, releaseOwner, cancel } = input.state;
+  const { pending, setPending, snapping, releaseOwner, readiness, cancel } = input.state;
   function aim(value: Aim) {
     if (current.current.phase !== 'aim' || snapping) return;
     cancel();
@@ -113,8 +113,11 @@ export function aimActions(input: {
         : {}),
     }));
   }
+  // Launch, the aim handle's Enter and a YOLO release all come here, and each needs the scene.
+  // The matching preview is what the commit then waits for (launchGate), even from a coasting orbit.
   function launch(finalAim = current.current.aim) {
     if (current.current.phase !== 'aim' || restoring.current || pending || snapping) return;
+    if (!readiness.current.scene) return;
     freezeParking();
     const { aim: final, shot: request } = finalRequest(current.current, finalAim);
     change((s) => ({ ...s, aim: final, entered: true }));

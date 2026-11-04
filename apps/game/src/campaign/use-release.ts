@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { FlightRequest } from '../sim/flight-request';
 import { shotKey } from '../sim/preview';
 import type { FlightResponse as ShotResponse } from '../sim/protocol';
+import { READY, type Readiness } from './lunar-readiness';
 import { ReleaseOwner } from './release';
 
 import type { SimulationApi } from '../sim/useSimulation';
@@ -30,7 +31,8 @@ export function useRelease(input: {
     [snapping, setSnapping] = useState(false);
   const launching = useRef(false),
     releaseOwner = useRef(new ReleaseOwner()),
-    snapUntil = useRef(0);
+    snapUntil = useRef(0),
+    readiness = useRef<Readiness>(READY);
   const state = releaseState({
     pending,
     setPending,
@@ -39,6 +41,7 @@ export function useRelease(input: {
     launching,
     releaseOwner,
     snapUntil,
+    readiness,
   });
   const { cancel } = state;
   useLaunchCommit({ ...input, state });
@@ -47,6 +50,7 @@ export function useRelease(input: {
     pending,
     snapping,
     releaseOwner: releaseOwner.current,
+    readiness,
     cancel,
     actions,
     holdsSnap(now: number) {
@@ -82,5 +86,7 @@ export interface ReleaseState {
   launching: React.RefObject<boolean>;
   releaseOwner: React.RefObject<ReleaseOwner>;
   snapUntil: React.RefObject<number>;
+  /** Written by CampaignApp on each render, read by the actions and gestures when they run. */
+  readiness: React.RefObject<Readiness>;
   cancel: () => void;
 }

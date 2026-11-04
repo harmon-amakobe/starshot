@@ -27,7 +27,8 @@ export function useGestures(c: CampaignController, frame: RefObject<SceneFrame>,
   };
   const ring = {
     onPointerDown(e: PointerEvent<HTMLButtonElement>) {
-      if (drag.current || e.button !== 0 || c.release.pending || c.hydrating || c.store.session.phase !== 'aim') return;
+      // A pull needs the scene; the commit, not the pull, waits for a matching preview.
+      if (drag.current || e.button !== 0 || c.release.pending || c.hydrating || c.store.session.phase !== 'aim' || !c.release.readiness.current.scene) return;
       e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId);
       c.release.actions.freezeParking();
       const f = frame.current, rest = (f.height < 500 && f.width > 600 ? 15 : 22) * 1.12;

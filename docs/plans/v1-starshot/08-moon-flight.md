@@ -22,7 +22,7 @@ the PR2/PR3 exception does not. No numbered decision or size threshold changes.
 | Search transport | 240 | 9 | Cooperative worker dispatch, protocol fields and browser proof |
 | Model | 280 | 16 | Pure requests and explicit scene-model plumbing, still eagerly loaded |
 | Loader | 240 | 8 | Memoized dynamic loader with retry; the scene takes a nullable model each frame, still passed eagerly |
-| Readiness | 320 | 12 | Launch, pulling and Guide gated on the model and a matching preview, with the preview-key fixes; still eager |
+| Readiness | 320 | 12 | Launch, pulling and Guide gated on the model, the matching preview enforced at commit (deviation row 41), with the preview-key fixes; still eager |
 | Lazy | 280 | 9 | The main thread loads the rail on demand, with the loading and retry panel and the `lunar-loading.mjs` browser probe |
 | Evidence | 350 | 8 | Built-module, network, offline and asynchronous browser regressions |
 
@@ -116,7 +116,8 @@ Pass the ready model through `CampaignScene`, `makeFrame`, `scene-geometry` and
 `worldFor`. `use-view` or the scene owns loading, never request construction.
 Keep renderer and worker mounted. While loading, never display an old planetary
 frame as Moonshot or advance lunar time unseen. Show loading/error with explicit
-retry; gate lunar pulling and Launch until scene and matching preview are ready.
+retry; gate lunar pulling and Launch until scene and matching preview are ready (as
+ruled in deviation row 41, controls gate on the scene and the commit waits for the preview).
 Owner/mission changes and disposal reject late callbacks. A saved planetary pilot
 does not wait for the rail. No approximate Moon fallback or clamped date is allowed.
 
@@ -592,4 +593,55 @@ The entry `index-*.js` is 988,786 bytes, against 988,681 at the base; the loader
 | `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 18 files, 173 tests |
 | `npm run build` and `npm run build:prototype` | Both 0; the existing large-chunk warning remains |
 | `lunar-flight.mjs` at `/` | 0 on the final tree, 3 contexts: page errors 0, failed requests 0, no target under 44 px. The phone context logs 4 Chromium "GPU stall due to ReadPixels" warnings, as the base build does on this machine |
+| `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
+
+## Readiness result
+
+Based on Loader at `ce5a10f`. Paths start at `apps/game/src/`. Loading stays eager.
+`sim/useSimulation.ts:31` adds `PreviewQueue`, the hook's preview bookkeeping, which the hook now calls. It queues a `structuredClone` of each shot (`:42`), so the answered key is the key of the request posted (findings row 1). No production caller mutates a shot: both pass a fresh `finalRequest` (`campaign/use-campaign.ts:28`, `campaign/aim-actions.ts:125`), but nested arrays are shared (row 2). A failed answer clears the last key while it is still the last asked (`:62`), and a worker error clears it (`:69`), so the same shot can be asked again (row 3).
+`campaign/lunar-readiness.ts:18` returns `scene` and a visible `reason`; `ownedCallback` (`:35`) binds a late callback to its pilot, visit, mission and view. `CampaignApp.tsx:82` computes readiness once per render for `FlightDeck` and `AimHandle`, and writes `c.release.readiness` for the actions and gestures.
+Without the Moon model, Launch, Guide and the aim handle with its keys are disabled. Each is described by `#c-launch-wait`, a visible line above Launch that reads "Loading the Moon." and moves nothing (`FlightDeck.tsx:110` to `:140`, `AimHandle.tsx:26` to `:39`). A pull (`gestures.ts:31`) and the launch guard (`aim-actions.ts:120`) need the model too.
+One deviation: row 3 named failed answers, and a worker error clears the last key too.
+
+Open points and inputs for Lazy:
+- Ruling: pull and every control gate on the model; the matching preview is enforced at commit by `launchGate`, so a coasting orbit can still launch and guide (`campaign/use-launch-commit.ts:45` to `:47`, where `accepts` also rejects a mismatched shot). The builder's preview gate and its five browser-step edits were reverted.
+- `use-view.ts:46` returns the eager model. With the loader's null model, `scene` is false and the line reads "Loading the Moon." The panel and Retry are Lazy's.
+- Settle the load through `ownedCallback({ ...hydration, mission: () => store.current.current.levelId, disposed })`, with `disposed` set in the view effect's cleanup.
+- The pull gate (`gestures.ts:31`) is pinned by `lunar-readiness.test.ts:152`. With the model always present, only the ref write (`CampaignApp.tsx:83`) cannot be killed here. `lunar-loading.mjs` should try a pull and Enter while loading. The hook's calls into `PreviewQueue` have no React test.
+- Row 14: the camera focus is never saved and resets on a pilot change or level pick (`CampaignApp.tsx:91`, `pick`), and a planetary frame lists no Moon (`campaign/frame.ts:20`). A saved planetary pilot never waits on the rail. Lazy should still refuse a planetary `inspectBody('moon')` or load the model behind the panel.
+
+| Spec line | Proof |
+|---|---|
+| Answered key is the posted request's | `sim/preview.test.ts:79`, a shared array edited between queue and post; failed before the fix |
+| A failed preview can be asked again | `:93` and `:108`, failed before the fix |
+| Planetary at once; a Moon level waits for its model | `campaign/lunar-readiness.test.ts:20` and `:23` |
+| Launch waits for the matching preview, from a coasting orbit too | `:42`, added; `campaign/launch-commit.test.ts:65` and `campaign/aim-actions.test.ts:102` already pinned it |
+| The launch guard; the aim handle; Launch and Guide | `lunar-readiness.test.ts:30`, `:75` and `:81`, the last two on rendered controls |
+| Late callbacks: disposal, owner, visit, mission | `:98` each alone, `:115` through `restoreActions` |
+| A coasting orbit keeps Launch and Guide, with no wait reason | `screen-flight.mjs:28` to `:34` |
+
+There are 26 production mutants, all killed, each restored and checked with `cmp`. Vitest ran with `--fsModuleCache=false` on the four affected test files.
+
+| Mutant | Killing test |
+|---|---|
+| The rule ignores the model, or gates a planetary level (2) | `lunar-readiness.test.ts:23` and `:20` |
+| Each late-callback dimension ignored (4) | `:98` |
+| The guard skips readiness | `:30` |
+| The handle's disabled state, arrows, Enter or description ungated (4) | `:75` |
+| Launch or Guide not disabled, either without its description, or no reason line (5) | `:81` |
+| The queue keeps the caller's live shot; `lastKey` kept after a failed answer or a worker error, or cleared for a newer shot (4) | `sim/preview.test.ts:79`, `:93`, `:108` and `:108` |
+| The commit launches on any preview | `lunar-readiness.test.ts:42`; the two older tests fail only by timeout |
+| Launch or Guide disabled on a coasting orbit, or `CampaignApp` passes no model (3) | `screen-flight.mjs`, exit 1 at `:32` each |
+| `FlightDeck` gets no readiness | `node scripts/gates.mjs --only typecheck`, exit 1 (TS2741) |
+| A pull starts without the model (`gestures.ts:31`, added at review) | `lunar-readiness.test.ts:152` |
+
+Size against `ce5a10f`: 395 contentful added lines and 1 moved, in 16 files, against a budget of 320 lines and 12 files, review fixes included (deviation row 41). That is 147 code, 194 test, 7 browser-step, 46 note and 1 changelog lines; nothing was compressed. The extra files are the view and release plumbing, the test harness and one CSS line.
+The entry `index-*.js` is 989,705 bytes, against 988,786 at Loader; the worker's `lunar-*.js` is 99,312.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 205 tests |
+| `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts` | 0, 19 files, 184 tests |
+| `npm run build` and `npm run build:prototype` | Both 0; the large-chunk warning remains |
+| `lunar-flight.mjs`, `screen-flight.mjs`, `lunar-worker.mjs`, `screen-async.mjs`, `screen-split.mjs` and `screen-restore.mjs` at `/`, and `lunar-flight.mjs` at `/starshot/` | All 7 exit 0, 3 contexts each: page errors 0, failed requests 0, no target under 44 px. The phone logs 4 GL driver warnings, as at Loader. `screen-restore.mjs` reads the output of `screen-flight.mjs` |
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |

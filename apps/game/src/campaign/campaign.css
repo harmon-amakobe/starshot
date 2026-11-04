@@ -39,3 +39,4 @@
 .c-impact{margin:3px 0 5px;font-size:10px;color:#f2c98b;line-height:1.4}
 @media(max-height:500px) and (min-width:601px){.campaign-shell .entry-quiet{top:63px;bottom:auto}.campaign-shell .entry-notice{position:absolute;left:300px;top:0;width:245px;max-height:57px;overflow-y:auto;margin:0;font-size:9px}}
 @media(max-height:500px) and (min-width:601px){.campaign-shell .c-deck.expanded:has(.c-fine) .c-deck-page{height:72px}.campaign-shell .c-fine p{display:none}.campaign-shell .c-fine label{display:grid;gap:4px;flex:1;min-width:0}.campaign-shell .c-fine input{min-width:0;max-width:none;width:100%;padding:0 10px}.campaign-shell .c-fine{gap:12px}}
+.c-actions{position:relative}.c-wait{position:absolute;right:0;bottom:calc(100% + 12px);margin:0;font-size:9px;line-height:1.2;color:#b9d8d2;white-space:nowrap;pointer-events:none}

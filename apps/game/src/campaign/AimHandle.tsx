@@ -1,4 +1,5 @@
 import { useGestures } from './gestures';
+import type { Readiness } from './lunar-readiness';
 
 import type { SceneFrame } from './scene-types';
 import type { CampaignController } from './use-campaign';
@@ -8,10 +9,12 @@ export function AimHandle({
   c,
   gestures,
   frame,
+  readiness,
 }: {
   c: CampaignController;
   gestures: Gestures;
   frame: SceneFrame;
+  readiness: Readiness;
 }) {
   return (
     <>
@@ -20,9 +23,10 @@ export function AimHandle({
         className="c-ring-handle"
         style={{ left: frame.grip[0], top: frame.grip[1] }}
         aria-label="Pull engine ring to aim. Arrow keys adjust, Enter launches, Escape cancels."
-        disabled={c.release.pending || c.hydrating}
+        disabled={c.release.pending || c.hydrating || !readiness.scene}
+        aria-describedby={readiness.scene ? undefined : 'c-launch-wait'}
         onKeyDown={(e) => {
-          if (e.key.startsWith('Arrow')) {
+          if (e.key.startsWith('Arrow') && readiness.scene) {
             e.preventDefault();
             c.release.actions.aim({
               angleDeg:
@@ -32,7 +36,7 @@ export function AimHandle({
                 c.store.session.aim.speedKmS +
                 (e.key === 'ArrowUp' ? 0.05 : e.key === 'ArrowDown' ? -0.05 : 0),
             });
-          } else if (e.key === 'Enter' || e.key === ' ') {
+          } else if ((e.key === 'Enter' || e.key === ' ') && readiness.scene) {
             e.preventDefault();
             c.release.actions.launch();
           } else if (e.key === 'Escape') {

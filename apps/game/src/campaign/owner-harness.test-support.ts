@@ -4,6 +4,7 @@ import { runLunar } from '../sim/lunar';
 import { isLunar, type FlightRequest } from '../sim/flight-request';
 import type { FlightResponse } from '../sim/protocol';
 import { aimActions } from './aim-actions';
+import { READY, type Readiness } from './lunar-readiness';
 import { playbackControls } from './playback-controls';
 import { ReleaseOwner } from './release';
 import { freshSession, type Session } from './session';
@@ -30,6 +31,7 @@ export function harness(save = freshSession()) {
   const releaseOwner = { current: new ReleaseOwner() };
   const launching = { current: false };
   const snapUntil = { current: 0 };
+  const readiness = { current: READY as Readiness };
   const hydration = {
     token: { current: 'pilot-a' },
     visit: { current: 0 },
@@ -85,6 +87,7 @@ export function harness(save = freshSession()) {
       launching,
       releaseOwner,
       snapUntil,
+      readiness,
     });
     // The collaborators carry only the members these functions read, so the full types are cast.
     const parts = { store, clock, result, hydration, sim, preview, state, setNotice };
@@ -108,6 +111,7 @@ export function harness(save = freshSession()) {
     releaseOwner,
     launching,
     snapUntil,
+    readiness,
     log,
     held,
     flags,
