@@ -59,8 +59,9 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   when it next runs the gates.
 - D30's working shape is advisory: one to four specs per group, the bounded review and,
   outside the V1 cloud run, two or three groups a session with the hand-off at about
-  70%. D40's handover at 776,000 tokens of measured context, with its compaction
-  controls, is wholly advisory: no hook reads occupancy or sets compaction. Of D30's
+  70%. D40's handover from 776,000 to 792,000 tokens of measured context, its
+  compaction controls and its rule against pull-request subscriptions are wholly
+  advisory: no hook reads occupancy, sets compaction or denies a subscription. Of D30's
   shape, only the size check that PR4 adds enforces anything.
 - In Actions, `scripts/gates.mjs` prints a failed gate's raw output, so a line in it that
   starts with `::` acts as a workflow command. The jobs that run it hold a read-only

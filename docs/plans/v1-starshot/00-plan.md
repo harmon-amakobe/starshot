@@ -202,8 +202,8 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups, with two additional
-owner-decision checkpoints, for D39 and D40. Each has one branch, one
+The 42 implementation specs build in these 28 delivery groups, with three additional
+owner-decision checkpoints: D39, D40 and D40's window note. Each has one branch, one
 pull request and one bounded review. The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
@@ -221,7 +221,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR3a ownership edits | PR3a | `codex/v1-pr03a-ownership-edits` | `codex/v1-pr03a-ownership` | A2 |
 | PR3a search core | PR3a | `codex/v1-pr03a-search` | `codex/v1-pr03a-ownership-edits` | A2 |
 | PR3a search transport | PR3a | `codex/v1-pr03a-search-transport` | `codex/v1-pr03a-search` | A2 |
-| PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-pr03a-search-transport` | A2 |
+| D40 window checkpoint | Owner clarification, issue #20 | `codex/v1-session-window` | `codex/v1-pr03a-search-transport` | A2 |
+| PR3a model | PR3a | `codex/v1-pr03a-model` | `codex/v1-session-window` | A2 |
 | PR3a loading | PR3a | `codex/v1-pr03a-loading` | `codex/v1-pr03a-model` | A3 |
 | PR3a evidence | PR3a | `codex/v1-pr03a-evidence` | `codex/v1-pr03a-loading` | A3 |
 | PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-evidence` | A4 |
@@ -257,8 +258,8 @@ Starshot's. The master review is defined in D30.
 PR3a's [declared parts](08-moon-flight.md) retain one spec identity and issue #33.
 Each part has one member for sizing; the repetition does not increase any PR's cap.
 Its planning, model-plumbing and behavior/proof boundaries are independently reviewed.
-The session labels are estimates. The V1 cloud run hands over at D40's measured
-trigger; other sessions keep D30's handoff.
+The session labels are estimates. The V1 cloud run hands over in D40's measured
+window; other sessions keep D30's handoff.
 
 ## What PR0 carries
 
@@ -1677,7 +1678,7 @@ Approaches considered and rejected, so nobody re-derives them.
 ## Session protocol
 
 Every build session follows this order, for the orchestrator and for builders. In the
-V1 cloud run a session builds groups until D40's measured trigger or a band close
+V1 cloud run a session builds groups until D40's measured window or a band close
 (step 9). Other sessions build two or three groups and keep D30's handoff. Steps 2 to 8
 run once per group. The owner
 authorized continuation after this PR0 publication. Read [06-resumption.md](06-resumption.md)
@@ -1712,19 +1713,22 @@ before every group and [07-screen-split.md](07-screen-split.md) before PR2.
    --stdin`. Push the branch by name, and open the PR against the previous group's
    branch with `Part of #a, #b` for its members (or `Closes` for the PR that reaches
    `main`). Post the completion comments, and run `node scripts/sync-work.mjs --apply` if
-   `03-work.yaml` changed.
+   `03-work.yaml` changed. In the V1 cloud run, do not subscribe to pull-request
+   activity (D40 note); read the PR's checks through the GitHub connector or REST API after opening it and
+   before publishing the next group.
 8. **Record.** Update the acceptance results in the PR body, any deviation in
    [05-deviation-log.md](05-deviation-log.md), each issue's status and the
    [session handover](06-resumption.md#session-handover-d40) rows (D40).
 9. **Close a band.** After its last group: the `verify-all` sweep, a handoff, and for
    Bands B to E the next band's planning session in a fresh session, which also confirms
    that band's groups.
-10. **Hand over at the measured trigger.** The V1 cloud run uses D40's trigger: 776,000
-    tokens of measured context, or earlier when compaction or a hard limit would come
-    first. With no telemetry, record unknown and hand over after each published group.
+10. **Hand over in the measured window.** The V1 cloud run uses D40's window: 776,000
+    to 792,000 tokens of measured context, never earlier on a projected cost, or earlier
+    when compaction or a hard limit would come first. With no telemetry, record unknown
+    and hand over after each published group.
     Then start no new implementation or research and finish bounded stabilization.
     Update and push the [session handover](06-resumption.md#session-handover-d40) rows,
-    write the handoff below and start one verified successor. Work the trigger
+    write the handoff below and start one verified successor. Work that handover
     interrupts is pushed by name without a PR and labelled partial in the Next row.
     Keep automatic and idle compaction off and never run `/compact`; after a forced
     compaction, disclose it and hand over. Other sessions build two or three groups and
@@ -1759,11 +1763,12 @@ every command with its exit code.
 Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.
 Context (V1 cloud run, D40): keep automatic and idle compaction off; never run
 /compact; hand over earlier if compaction or a hard limit would come first, after each
-published group when telemetry is unknown, and after any forced compaction.
-Stop: V1 cloud run at 776,000 tokens of measured context, at a band close, or earlier as
-above: finish bounded stabilization, emit this block again and start one verified
-successor (D40). Other sessions at about 70%: finish the current group's publish step,
-then emit this block again (D30).
+published group when telemetry is unknown, and after any forced compaction. No
+pull-request subscriptions; read each PR's checks yourself.
+Stop: V1 cloud run from 776,000 to 792,000 tokens of measured context, at a band close,
+or earlier as above, never on a projected cost: finish bounded stabilization, emit this
+block again and start one verified successor (D40). Other sessions at about 70%: finish
+the current group's publish step, then emit this block again (D30).
 First commands:
   git status --short && git branch --show-current && git log --oneline -5
   gh pr list
