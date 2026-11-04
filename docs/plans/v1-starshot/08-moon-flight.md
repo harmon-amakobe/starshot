@@ -710,7 +710,7 @@ Without the allowance, the probe fails each context on the aborted chunk and its
 | `node scripts/check-copy-tells.mjs` and `node scripts/check-secrets.mjs` | Both 0; no copy finding on a line this part added |
 
 Open points, settled conservatively, and inputs for Evidence:
-- Size against `65969fa`: 605 contentful added lines in 21 files, review fixes and the untracked probe included, against a budget of 340 lines and 12 files. That is 145 production, 140 test, 21 harness, 235 probe, 63 note and 1 changelog lines; nothing was compressed. The orchestrator ruled Lazy stays one part (deviation row 42).
+- Size against `65969fa`: 609 contentful added lines in 21 files, the delta review's fixes included, review fixes and the untracked probe included, against a budget of 340 lines and 12 files. That is 145 production, 140 test, 22 harness, 235 probe, 66 note and 1 changelog lines; nothing was compressed. The orchestrator ruled Lazy stays one part (deviation row 42).
 - The retry URL needs the meta tag and its build plugin; in development a retry cannot refetch.
 - `CampaignScene.clear()` and `ThreeScene.clear()` exist because a same-width reset leaves WebGL drawn in Chromium.
 - On a switch to a waiting Moonshot, React still renders once with the planetary frame. The layout effect blanks the canvases and the frame before that render is painted; no probe times the paint itself.
