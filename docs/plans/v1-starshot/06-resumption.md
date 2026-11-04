@@ -167,11 +167,33 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-pr03a-model` (PR3a model), above the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, and PR3a model on `codex/v1-pr03a-model`; each PR's CI passed at its head |
-| Next | PR3a loading, issue #33, [lazy scene data and readiness](08-moon-flight.md#lazy-scene-data-and-readiness), branch `codex/v1-pr03a-loading`, base `codex/v1-pr03a-model`. Budget 360 lines and 14 files: reconcile files and size before the builder. Inputs from the [Model result](08-moon-flight.md#model-result): planetary frames never read the model, but its parameters are required, and `CampaignScene` takes it once at mount |
+| Stack tip | `codex/v1-review-lite` (D41 review checkpoint), above PR3a model #89, the D40 window checkpoint #88, search transport #87, search core #86, ownership edits #85, ownership guard #84 and the D40 checkpoint #83 |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, and the D41 review checkpoint on `codex/v1-review-lite`; each PR's CI passed at its head |
+| Next | PR3a loading, issue #33, [lazy scene data and readiness](08-moon-flight.md#lazy-scene-data-and-readiness), branch `codex/v1-pr03a-loading`, base `codex/v1-review-lite`. Budget 360 lines and 14 files: reconcile files and size with one `codebase-map` pass before the builder, then one lite review (D41). Inputs from the [Model result](08-moon-flight.md#model-result): planetary frames never read the model, but its parameters are required, and `CampaignScene` takes it once at mount |
 | Not run here | Physical-phone timing (optional under D39); WebKit worker interleaving; every criterion from PR3a loading onward |
 | Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: about 270,000 measured at the Model publication. The supported settings have not turned automatic compaction off: the runtime's session telemetry (autocompact_state) reports it enabled at 784,000, so this session starts handover at 776,000 and finishes before 784,000 |
+
+## Findings for the master review (D41)
+
+Lite reviews fix blockers and small should-fixes in a PR's own code. Every other finding
+waits here for the master review, which confirms or refutes each one and closes the
+confirmed ones in its fix group. A later PR that fixes one adds its number to the row;
+rows are never deleted. Line numbers are at the PR named in the source column.
+
+| # | Source | Finding | Proposed fix |
+|---|---|---|---|
+| 1 | Search transport review (#87), not verified here | The preview key is taken when a preview is queued (`apps/game/src/sim/useSimulation.ts:121` to `:124`) and answered later (`:86`), so a live reference can change in between | Derive the answered key from the posted request |
+| 2 | Search transport review (#87), not verified here | Planetary requests share the level's unfrozen `attractors` array (`apps/game/src/levels.ts:79`) | Copy or freeze the array in the request |
+| 3 | Search transport review (#87), not verified here | `requestPreview` skips a repeated key after a failed preview (`apps/game/src/sim/useSimulation.ts:122`) | Clear the last key when a preview fails |
+| 4 | Ownership guard review (#84) | The gate-pair mutant is killed only by a test timeout | Add a direct assertion that fails fast |
+| 5 | Search transport result (#87) | The Moon search yields with a zero-delay timer, about 4.4 ms per flight; a `MessageChannel` yield measured faster | PR3b chooses the yield |
+| 6 | Search transport result (#87) | Worker ordering is measured in Chromium only; WebKit and Firefox are unmeasured | PR3a evidence or the master review measures them |
+| 7 | Search transport result (#87) | CI's `verify-game` job passes no `--steps` (`.github/workflows/ci.yml:109` and `:110`), so the browser steps run only by hand | PR3a evidence or PR4 adds them to CI |
+| 8 | PR3a model review (#89) | The literal `86400` stays in `apps/game/src/sim/lunar.ts:19` and `apps/game/src/campaign/scene-geometry.ts:14` and `:17` | Use `DAY` from `@starshot/physics/lunar`; the value is identical |
+| 9 | PR3a model build (#89) | The guard's scan counts `*.test-support.ts` files and type-only imports as importers (`apps/game/src/sim/lunar-request.test.ts:22` and `:73`) | PR3a loading decides whether to exclude them |
+| 10 | PR3a model build (#89) | `apps/game/README.md` and `docs/architecture.md` do not name `sim/lunar-request.ts` or `sim/lunar-model.ts` | Add one line each |
+| 11 | D40 window review (#88) | `gh pr list` returns 403 in cloud sessions, yet the handoff skill (`.claude/skills/handoff-prompt/SKILL.md:17` and `:20`) and the plan's first commands use it | Name the GitHub connector or the REST call instead |
+| 12 | PR3a model review (#89) | The secrets gate runs without its private-name list in cloud sessions | The owner supplies the list, or the gap stays recorded |
 
 ## Publication and account boundaries
 

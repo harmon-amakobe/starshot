@@ -708,6 +708,11 @@ for one reviewer).
 cloud run, the count of two or three groups a session and the handoff at about 70% of
 context.**
 
+**Superseded in part by [D41](#d41-each-pull-request-gets-a-lite-review-the-master-review-carries-the-depth) (2026-11-04, the owner's call): each group's bounded
+review becomes a lite review, and non-blocking findings wait for the master review; the
+master review gains a findings-table input, one refuter per serious finding and a rerun
+of the affected acceptance commands.**
+
 **Decision.** The plan's specs stay as written, but they are built as PR groups. A group
 is one branch, one pull request and one review for one to four consecutive specs. It is
 named for its first member and based on the previous group's branch. The groups and
@@ -1130,3 +1135,69 @@ nothing, and a compaction that still arrives is disclosed as D40 requires.
 The addition: the owner said cloud sessions here need not subscribe to pull-request
 activity. In the orchestrator's reading they therefore do not, and the lead reads each
 PR's checks itself after opening it and before publishing the next group.
+
+---
+
+## D41. Each pull request gets a lite review; the master review carries the depth
+
+*Date:* 2026-11-04. *Source:* owner's ruling for the remaining V1 program: "lite reviews
+per PR and one large final one at the end, so that we do not spend too much time
+reviewing each". It tightens D30's bounded review and keeps D30's master review.
+
+**Decision.** Each pull request gets one lite review. The one deep review is the master
+review at the end of the program. Outside a program with a master review, the
+non-blocking findings go in the pull request body instead of the findings table.
+
+The lite review:
+
+- One `adversary` pass on the top tier, in a fresh context, against `.claude/rubrics/`
+  and the spec. It also reads the deviation log, the result note and the PR body against
+  the diff, and it reports per directory which files it opened.
+- It looks for blockers: a spec line not met, a broken non-negotiable, a claim or gate
+  that was not run, a new guard with no killed mutant, or a hygiene or copy failure.
+- It checks at most three of the builder's claims from scratch. It does not rerun the
+  full mutation batch, the production build or the browser steps, which the builder and
+  the lead already ran and reported with exit codes.
+- A domain lens joins only when a physics number, tolerance, fixture, integrator or
+  frozen setting changes (`physics-auditor`), or when the harness changes, as the
+  `verify-all` skill's table lists it (`rules-reviewer`). Plumbing that moves no number
+  does not call for it. Browser proof belongs to the Definition of Done, not to a review
+  lens.
+- At most two review agents per pull request. A delta pass, and an agent that a spec's
+  Proof names (PR3b's `verification-driver`), count as proof, not against the two. A
+  diff that needs both lenses gets both, and the lead logs the third agent in the
+  deviation log. No refuters, no second full round and no multi-agent workflow, whatever
+  the session's effort or cost setting. The lead judges each finding from the tree.
+- A documentation-only owner checkpoint gets one `rules-reviewer` pass.
+
+What is fixed now and what waits:
+
+- Blockers are fixed in the pull request. So is a should-fix in the pull request's own
+  new code when the fix is about 20 lines or fewer.
+- Every other finding goes to the
+  [findings for the master review](plans/v1-starshot/06-resumption.md#findings-for-the-master-review-d41)
+  table, with its file:line, its evidence and the proposed fix. That covers a should-fix
+  in older code, a coverage gap that predates the pull request, a note and a design
+  suggestion.
+- No delta pass, unless the fixes touched a physics number, a workflow or the harness;
+  then one pass of that domain's lens. The lead reads every other fix diff itself.
+
+The builder's proof does not change: tests for each spec line, a planted and restored
+mutant for each new guard, `npm run gates` and the browser steps the diff calls for.
+Before a builder, the lead uses one `codebase-map` pass, not a review panel.
+
+The master review keeps D30's shape and is the one deep review. It adds three steps: it
+takes the findings table as input, it sends each serious finding to one refuter, and
+after its fix group the affected acceptance commands run again. It does not excuse an
+earlier pull request from its own correctness or accessibility gates.
+
+**Why.** Per-part review had grown past the building it checked. For PR3a Model, a
+pre-build map and critique took about 660,000 subagent tokens and the review about
+456,000, against about 236,000 for the build. Most findings were records and extra
+tests that one review of the whole stack can batch.
+
+**Consequences.** `AGENTS.md`, the plan's operating step 5 and both handoff templates
+describe the lite review. D30's per-group review is superseded in part. Its group table,
+size rules and band sweeps are unchanged; its master review keeps its shape and gains
+the three steps above. The findings table lives in the resumption ledger beside the
+session handover packet.

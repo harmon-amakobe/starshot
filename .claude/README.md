@@ -57,7 +57,7 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - A file written by a shell command reaches a snapshot only at the next Edit or Write.
 - The Stop report reaches the human through `systemMessage`; the agent sees failures
   when it next runs the gates.
-- D30's working shape is advisory: one to four specs per group, the bounded review and,
+- D30's working shape is advisory: one to four specs per group, D41's lite review and,
   outside the V1 cloud run, two or three groups a session with the hand-off at about
   70%. D40's handover from 776,000 to 792,000 tokens of measured context, its
   compaction controls and its rule against pull-request subscriptions are wholly

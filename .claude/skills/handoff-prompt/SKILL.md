@@ -34,10 +34,12 @@ Deviations: <path#section>. Open-gate at close: <the line>.
 Done: <PR0 ..., group PR2 ...>. Next: group PR<m> (<members>) <titles>.
 Specs: <path#anchor>, ... Issues: #<a>, #<b>.
 You are the orchestrator (top tier). Route by "would anything be lost with the cheaper
-tier?". One builder at a time; one adversary per group against .claude/rubrics/, with
-physics-auditor, verification-driver or rules-reviewer when the diff calls for them
-(D30). DoD: npm run gates (+ verify-physics, verify-game, public-hygiene as the diff
-requires). Executors never push.
+tier?". One builder at a time; one lite review per PR (D41): one adversary, plus
+physics-auditor or rules-reviewer only when physics or the harness changes (a docs-only
+checkpoint gets rules-reviewer alone); blockers and small own-code fixes land in the
+PR, the rest go to
+06-resumption.md#findings-for-the-master-review-d41. DoD: npm run gates (+ verify-physics,
+verify-game, public-hygiene as the diff requires). Executors never push.
 Context at close: <measured tokens, or unknown>; compaction: <none, or forced and disclosed>.
 Context (V1 cloud run, D40): keep automatic and idle compaction off; never run
 /compact; hand over earlier if compaction or a hard limit would come first, after each
