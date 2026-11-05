@@ -94,6 +94,14 @@ impl BodyId {
             self.info().name
         }
     }
+
+    /// Index into Table 1 (Mercury 0 to Neptune 7), or None for a body Table 1 lacks.
+    pub(crate) fn planet_index(self) -> Option<usize> {
+        match self {
+            BodyId::Sun | BodyId::Moon => None,
+            planet => Some(planet as usize - 1),
+        }
+    }
 }
 
 impl fmt::Display for BodyId {

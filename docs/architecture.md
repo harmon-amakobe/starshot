@@ -181,7 +181,10 @@ workspace holds two crates.
       tests/golden.rs    every recorded output, bit for bit
     starshot-ephemeris/  the port of @starshot/ephemeris; depends on starshot-math alone
       src/time.rs        UTC <-> ET; et_from_iso takes a date or a date-time, else errs
-  fixtures/math/         data the Rust tests read with include_str!
+      src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
+      src/ephemeris.rs   the Ephemeris trait and Table1Ephemeris
+  fixtures/              data the Rust tests read with include_str!: math/golden.json,
+                         horizons/horizons.json (JPL), conformance/*.json (TypeScript)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -191,6 +194,14 @@ one release with its hardware paths turned off, so native code and wasm run the 
 software routines. `tests/golden.rs` compares every recorded output bit for bit on
 the machine that runs it. The physics, game and wasm crates follow in later pull
 requests, each using `starshot-math` for its maths.
+
+`starshot-ephemeris` keeps the TypeScript operation order, so arithmetic-only paths
+give the same bits. `packages/ephemeris/test/conformance.test.ts` writes what the
+TypeScript computes to `fixtures/conformance/table1.json` (with
+`STARSHOT_WRITE_CONFORMANCE=1`) and otherwise checks the file is unchanged; the Rust
+tests hold planet states within 1 m and 1 mm/s of it and time conversions to the bit.
+`vec::norm` is the square root of `x*x + y*y + z*z`, where TypeScript calls a
+three-argument `Math.hypot` that `libm` lacks.
 
 ## Conventions: units, frames and time
 
