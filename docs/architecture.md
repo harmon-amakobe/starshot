@@ -184,6 +184,7 @@ workspace holds two crates.
       src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
       src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
       src/rails.rs       reads data/ephem decade files; adds and multiplies only
+      src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
                          horizons/horizons.json (JPL), conformance/*.json (TypeScript)
 ```
@@ -211,7 +212,9 @@ field and offset, and evaluates a body by Clenshaw's recurrence in the order
 pack's 1950 to 2150 coverage from the rails and panics when the decade holding the ET
 is not loaded, because a silent fallback would let a preview and a server disagree.
 Outside coverage the planets come from Table 1 and the Moon panics. Earth's centre and
-the heliocentric Moon split the barycentre with the pack's Earth-Moon mass ratio.
+the heliocentric Moon split the barycentre with the pack's Earth-Moon mass ratio. The
+lunar model keeps the cached Horizons rail and its probes: the pack's Moon does not
+reach them, and replacing the rail is the owner's call.
 
 ## Conventions: units, frames and time
 
