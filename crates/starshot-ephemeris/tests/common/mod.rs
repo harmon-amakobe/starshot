@@ -4,7 +4,7 @@
 
 use serde_json::Value;
 use starshot_ephemeris::vec::{Vec3, norm, sub};
-use starshot_ephemeris::{BodyId, RailPack};
+use starshot_ephemeris::{BodyId, RailBody, RailPack};
 
 /// An f64 from 16 hex digits of its bits, the form the conformance fixtures store.
 pub fn bits(v: &Value) -> f64 {
@@ -59,6 +59,24 @@ pub const ARCMIN_BUDGET: [(&str, f64); 8] = [
 /// Length of a - b.
 pub fn dist(a: Vec3, b: Vec3) -> f64 {
     norm(sub(a, b))
+}
+
+/// A pack.json body id as the reader's body.
+pub fn rail_body(id: &str) -> RailBody {
+    let ids = [
+        "MERCURY", "VENUS", "EMB", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "MOON",
+    ];
+    RailBody::ALL[ids
+        .iter()
+        .position(|&n| n == id)
+        .unwrap_or_else(|| panic!("unknown body {id}"))]
+}
+
+/// FNV-1a 64 continued from `h` over `bytes`, as `tools/ephem`'s `pack.fnv1a64`.
+pub fn fnv1a64(h: u64, bytes: &[u8]) -> u64 {
+    bytes.iter().fold(h, |h, &b| {
+        (h ^ u64::from(b)).wrapping_mul(0x0000_0100_0000_01b3)
+    })
 }
 
 /// The committed pack's decade files, 1950 to 2140, in order.

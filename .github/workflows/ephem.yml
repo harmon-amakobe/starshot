@@ -1,15 +1,16 @@
-# ephem: tests tools/ephem offline when it, the rails pack in data/ephem or this file
-# changes (D17). The path filter keeps it out of the required gates check. The manual
-# regenerate job rebuilds the pack from NAIF's kernel and uploads it for a person to
-# review and commit; nothing here pushes. No secrets; the token is read-only.
+# ephem: tests tools/ephem offline when it, the rails pack in data/ephem, a fixture or
+# TypeScript constant its tests read or this file changes (D17). The path filter keeps
+# it out of the required gates check. The manual regenerate job rebuilds the pack from
+# NAIF's kernel and uploads it for a person to review and commit; nothing here pushes.
+# No secrets; the token is read-only.
 name: ephem
 
 on:
   pull_request:
-    paths: ["tools/ephem/**", "data/ephem/**", ".github/workflows/ephem.yml"]
+    paths: ["tools/ephem/**", "data/ephem/**", "fixtures/conformance/rails.json", "fixtures/horizons/**", "packages/ephemeris/src/bodies.ts", "packages/physics/src/launch.ts", ".github/workflows/ephem.yml"]
   push:
     branches: [main]
-    paths: ["tools/ephem/**", "data/ephem/**", ".github/workflows/ephem.yml"]
+    paths: ["tools/ephem/**", "data/ephem/**", "fixtures/conformance/rails.json", "fixtures/horizons/**", "packages/ephemeris/src/bodies.ts", "packages/physics/src/launch.ts", ".github/workflows/ephem.yml"]
   workflow_dispatch:
 
 # Nothing by default; each job asks for what its steps need.

@@ -1,10 +1,11 @@
 //! The interface the physics engine consumes, with Table 1 behind it as
-//! `packages/ephemeris/src/ephemeris.ts`.
+//! `packages/ephemeris/src/ephemeris.ts`, and the DE440 rails behind it (D17).
 
-use crate::bodies::{BodyId, PLANET_IDS, sphere_of_influence_km};
+use crate::bodies::{BodyId, EMRAT, PLANET_IDS, RailBody, sphere_of_influence_km};
 use crate::kepler::{ClassicalElements, state_from_elements};
+use crate::rails::RailPack;
 use crate::table1::planet_elements;
-use crate::vec::Vec3;
+use crate::vec::{Vec3, add, scale, sub};
 use core::f64::consts::PI;
 
 /// Heliocentric position [km] and velocity [km/s], ecliptic and equinox of J2000.
@@ -109,4 +110,130 @@ pub fn orbit_path(id: BodyId, et: f64, samples: usize, flatten: bool) -> Vec<Vec
 /// motion of M = L - varpi. Earth's is 365.25965 days, against the sidereal 365.25636.
 pub fn orbital_period_seconds(id: BodyId, et: f64) -> f64 {
     (2.0 * PI) / planet_elements(id, et).n
+}
+
+const RAIL_BODIES: [BodyId; 10] = [
+    BodyId::Sun,
+    PLANET_IDS[0],
+    PLANET_IDS[1],
+    PLANET_IDS[2],
+    PLANET_IDS[3],
+    PLANET_IDS[4],
+    PLANET_IDS[5],
+    PLANET_IDS[6],
+    PLANET_IDS[7],
+    BodyId::Moon,
+];
+
+/// The Moon's share of the barycentre's offset: Earth's centre is the barycentre less
+/// the geocentric Moon over 1 + EMRAT.
+const MOON_SHARE: f64 = 1.0 / (1.0 + EMRAT);
+
+/// The rails pack behind the `Ephemeris` trait (D17). Inside the pack's coverage every
+/// state comes from the rails, and the decade holding the ET must be loaded: the caller
+/// loads it before simulating, because a silent fallback would let the preview and a
+/// server disagree. Outside coverage the planets come from Table 1 and the Moon panics.
+/// `Earth` stays the Earth-Moon barycentre; `earth_centre` and the Moon split it with the
+/// pack's EMRAT. `flatten` is private and the Table 1 fallback is built from it, so the
+/// two can never disagree about z (D6).
+#[derive(Debug, Clone)]
+pub struct RailEphemeris {
+    pub pack: RailPack,
+    flatten: bool,
+}
+
+/// Panics for a NaN or infinite ET, which no decade holds: past this the Sun would answer
+/// the origin and Table 1 an all-NaN state.
+fn finite(et: f64, what: impl core::fmt::Display) {
+    assert!(
+        et.is_finite(),
+        "the rails ephemeris was asked for {what} at a non-finite ET ({et})"
+    );
+}
+
+impl RailEphemeris {
+    pub fn new(pack: RailPack, flatten: bool) -> RailEphemeris {
+        RailEphemeris { pack, flatten }
+    }
+
+    fn table1(&self) -> Table1Ephemeris {
+        Table1Ephemeris {
+            flatten: self.flatten,
+        }
+    }
+
+    /// The rails' state of `body`, None outside coverage. Panics inside coverage when the
+    /// decade is not loaded.
+    fn rail(&self, body: RailBody, et: f64) -> Option<State> {
+        let year = RailPack::decade_year(et)?;
+        let state = self.pack.state(body, et);
+        Some(
+            state
+                .unwrap_or_else(|| panic!("decade {year} not loaded (or it has no {body:?} rail)")),
+        )
+    }
+
+    /// Earth's centre and the geocentric Moon, unflattened. Panics outside coverage.
+    fn earth_and_moon(&self, et: f64) -> (State, State) {
+        let (Some(emb), Some(moon)) = (self.rail(RailBody::Emb, et), self.rail(RailBody::Moon, et))
+        else {
+            panic!(
+                "ET {et} is outside the rails' coverage {:?}, the only source of the Moon and Earth's centre",
+                self.pack.coverage()
+            );
+        };
+        let earth = State {
+            r: sub(emb.r, scale(moon.r, MOON_SHARE)),
+            v: sub(emb.v, scale(moon.v, MOON_SHARE)),
+        };
+        (earth, moon)
+    }
+
+    fn shaped(&self, s: State) -> State {
+        if self.flatten { flat(s) } else { s }
+    }
+
+    /// Heliocentric state of Earth's centre, inside coverage only.
+    pub fn earth_centre(&self, et: f64) -> State {
+        finite(et, "Earth's centre");
+        self.shaped(self.earth_and_moon(et).0)
+    }
+}
+
+impl Ephemeris for RailEphemeris {
+    fn bodies(&self) -> &[BodyId] {
+        &RAIL_BODIES
+    }
+
+    fn flattened(&self) -> bool {
+        self.flatten
+    }
+
+    fn state(&self, id: BodyId, et: f64) -> State {
+        finite(et, id);
+        let s = match (id, RailBody::of_planet(id)) {
+            (BodyId::Sun, _) => return ORIGIN,
+            (BodyId::Moon, _) => {
+                let (earth, moon) = self.earth_and_moon(et);
+                State {
+                    r: add(earth.r, moon.r),
+                    v: add(earth.v, moon.v),
+                }
+            }
+            (_, Some(body)) => match self.rail(body, et) {
+                Some(s) => s,
+                None => return self.table1().state(id, et),
+            },
+            (_, None) => panic!("the rails ephemeris has no {id}"),
+        };
+        self.shaped(s)
+    }
+
+    /// Table 1's semi-major axis for every source, so a sphere of influence does not
+    /// depend on where the positions come from. The Moon has none until PR20, so asking
+    /// for it panics.
+    fn soi_km(&self, id: BodyId, et: f64) -> f64 {
+        finite(et, id);
+        self.table1().soi_km(id, et)
+    }
 }

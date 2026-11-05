@@ -156,6 +156,13 @@ impl RailBody {
     }
 }
 
+/// The Earth-Moon mass ratio of DE440, `constants.emrat` in
+/// `data/ephem/de440s-100km/pack.json` (BODY399_GM / BODY301_GM of `gm_de440.tpc`);
+/// `tests/rails.rs` reads the JSON and compares the bits. It splits the rails' barycentre
+/// into Earth's centre and the Moon. The lunar model keeps its own study digits
+/// (`lunar::EARTH_GM`, `lunar::MOON_GM`); neither replaces the other in Band B.
+pub const EMRAT: f64 = 81.30056822149722;
+
 /// Laplace sphere-of-influence radius [km] of a body on an orbit of semi-major axis
 /// `a_km` about the Sun: a * (m / M_sun)^(2/5).
 pub fn sphere_of_influence_km(id: BodyId, a_km: f64) -> f64 {

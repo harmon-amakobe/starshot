@@ -2,7 +2,8 @@
 
 A small Python project that turns NASA/JPL data into the files Starshot's tests and
 game read (D17). It writes the Horizons test fixture, downloads and checks NAIF's DE440
-kernels, and fits and validates the rails pack in `data/ephem/`. It runs on a
+kernels, and fits and validates the rails pack in `data/ephem/`. Its `conformance`
+command writes the rails oracle the Rust reader is tested against. It runs on a
 contributor's machine or in the `ephem` workflow, never in the game.
 
 ## Commands
@@ -19,7 +20,9 @@ uv run --project tools/ephem --locked starshot-ephem kernel --path tools/ephem/.
 ```
 
 `build` and `validate` make and check the rails pack; `data/ephem/README.md` has both
-commands. `build` writes byte-identical decade files on one machine, and with
+commands. `conformance --pack data/ephem/de440s-100km` writes
+`fixtures/conformance/rails.json`, this tool's own evaluation of the committed pack,
+which the Rust reader must reproduce. `build` writes byte-identical decade files on one machine, and with
 `SOURCE_DATE_EPOCH` set an identical `pack.json` too. `validate` exits 1 when any body
 is over its budget.
 
