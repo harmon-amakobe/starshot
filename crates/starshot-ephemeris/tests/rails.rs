@@ -44,6 +44,9 @@ const VELOCITY_KMS: [(&str, f64); 10] = [
     ("earth centre", 1e-3),
     ("moon", 1e-2),
 ];
+/// Mercury's 1e-2 covers its segment ends. The five epochs sit inside segments, where
+/// Mercury stays under 2e-3, so a Mercury-only scale error of 0.015% still fails there.
+const MERCURY_AT_EPOCHS_KMS: f64 = 2e-3;
 
 fn velocity_kms(what: &str) -> f64 {
     let found = VELOCITY_KMS.iter().find(|(name, _)| *name == what);
@@ -137,6 +140,10 @@ fn every_body_is_within_150_km_of_horizons_at_every_epoch() {
             assert!(
                 dv < budget_kms,
                 "{what} at ET {et}: {dv} km/s from Horizons, budget {budget_kms}"
+            );
+            assert!(
+                what != "mercury" || dv < MERCURY_AT_EPOCHS_KMS,
+                "{what} at ET {et}"
             );
             (worst_r, worst_v) = (worst_r.max(dr), worst_v.max(dv));
         }
@@ -261,6 +268,12 @@ fn the_sun_at_a_nan_et_panics() {
 }
 
 #[test]
+#[should_panic(expected = "Mars at a non-finite ET (NaN)")]
+fn a_sphere_of_influence_at_a_nan_et_panics() {
+    RailEphemeris::new(RailPack::new(), false).soi_km(BodyId::Mars, f64::NAN);
+}
+
+#[test]
 #[should_panic(expected = "Mars at a non-finite ET (inf)")]
 fn an_infinite_et_panics() {
     RailEphemeris::new(RailPack::new(), false).state(BodyId::Mars, f64::INFINITY);
@@ -315,13 +328,27 @@ fn the_heliocentric_moon_and_the_split_velocities_hold() {
             "heliocentric Moon at ET {et}: {dr} km, {dv} km/s"
         );
         (worst_r, worst_v) = (worst_r.max(dr), worst_v.max(dv));
-        // The barycentre comes back on every axis, unflattened: within 1 mm and 1 um/s.
+        // The barycentre comes back on every axis, unflattened, and the Moon less Earth's
+        // centre is the pack's geocentric Moon: within 1 mm and 1e-12 km/s.
         let (centre, emb) = (eph.earth_centre(et), eph.state(BodyId::Earth, et));
+        let geo = eph.pack.state(RailBody::Moon, et).expect("Moon loaded");
         for axis in 0..3 {
             let r = (centre.r[axis] * EMRAT + s.r[axis]) / (EMRAT + 1.0);
             let v = (centre.v[axis] * EMRAT + s.v[axis]) / (EMRAT + 1.0);
             assert!((r - emb.r[axis]).abs() < 1e-6, "position {axis} at ET {et}");
-            assert!((v - emb.v[axis]).abs() < 1e-9, "velocity {axis} at ET {et}");
+            assert!(
+                (v - emb.v[axis]).abs() < 1e-12,
+                "velocity {axis} at ET {et}"
+            );
+            let (gr, gv) = (s.r[axis] - centre.r[axis], s.v[axis] - centre.v[axis]);
+            assert!(
+                (gr - geo.r[axis]).abs() < 1e-6,
+                "geocentric {axis} at ET {et}"
+            );
+            assert!(
+                (gv - geo.v[axis]).abs() < 1e-12,
+                "geocentric v {axis} at ET {et}"
+            );
         }
     }
     println!("heliocentric moon: worst {worst_r:.3} km and {worst_v:.3e} km/s against Horizons");
