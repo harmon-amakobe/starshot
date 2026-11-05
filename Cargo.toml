@@ -1,0 +1,34 @@
+# The Rust core (D16): every crate under crates/ shares these settings. Nothing here is
+# published, so the packages carry no version of their own and CI owns any later one.
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
+rust-version = "1.97"
+publish = false
+
+# Exact pin for libm: a new release may change a last bit, and the golden file in
+# fixtures/math must then be regenerated in a reviewed change, never by an update.
+# Without default features libm skips its hardware paths, so native builds run the
+# same software code that wasm runs.
+[workspace.dependencies]
+libm = { version = "=0.2.16", default-features = false }
+serde_json = "1"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+# Small wasm and native binaries; panic = "abort" keeps unwinding tables out of them.
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# Timing tests run optimised, so a budget measures the code that ships.
+[profile.test]
+opt-level = 2

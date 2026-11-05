@@ -202,8 +202,9 @@ already in the branch it bases on.
 
 ### PR groups (D30)
 
-The 42 implementation specs build in these 28 delivery groups, with five additional
-owner-decision checkpoints: D39, D40, D40's window note, D41 and D42. Each has one branch, one
+The 42 implementation specs build in these 28 delivery groups, some in declared parts, with five
+additional owner-decision checkpoints (D39, D40, D40's window note, D41 and D42) and one
+planning checkpoint for the Rust core. Each has one branch, one
 pull request and one lite review (D41). The preceding branch is its exact base. Only the
 new PR0 targets `main`; implementation continues above it after PR0 publication.
 Bands C to F remain provisional until detailed planning and readiness review.
@@ -233,9 +234,11 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR3b | PR3b | `codex/v1-pr03b-moon-campaign` | `codex/v1-pr03a-evidence-browser` | A4 |
 | PR3c | PR3c | `codex/v1-pr03c-stylesheets` | `codex/v1-pr03b-moon-campaign` | A4 |
 | PR4 | PR4, PR5 | `codex/v1-pr04-process-licence` | `codex/v1-pr03c-stylesheets` | A4 |
-| PR6 | PR6 | `codex/v1-pr06-rust-workspace` | `codex/v1-pr04-process-licence` | B1 |
-| PR7 | PR7, PR8 | `codex/v1-pr07-ephem-rails` | `codex/v1-pr06-rust-workspace` | B1 |
-| PR9 | PR9, PR10 | `codex/v1-pr09-ephemeris-crate` | `codex/v1-pr07-ephem-rails` | B2 |
+| PR6 maths crate | PR6 | `codex/v1-pr06-rust-workspace` | `codex/v1-pr04-process-licence` | B1 |
+| PR6 Rust gates | PR6 | `codex/v1-pr06-rust-gates` | `codex/v1-pr06-rust-workspace` | B1 |
+| PR7 | PR7, PR8 | `codex/v1-pr07-ephem-rails` | `codex/v1-pr06-rust-gates` | B1 |
+| Band B supplement | Planning checkpoint for the Rust core | `codex/v1-band-b-supplement` | `codex/v1-pr07-ephem-rails` | B1 |
+| PR9 | PR9, PR10 | `codex/v1-pr09-ephemeris-crate` | `codex/v1-band-b-supplement` | B2 |
 | PR11 | PR11, PR12 | `codex/v1-pr11-physics-crate` | `codex/v1-pr09-ephemeris-crate` | B2 |
 | PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr11-physics-crate` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
