@@ -84,6 +84,7 @@ dependencies = [
 name = "starshot-ephemeris"
 version = "0.0.0"
 dependencies = [
+ "serde_json",
  "starshot-math",
 ]
 
