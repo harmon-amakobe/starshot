@@ -35,8 +35,8 @@ fn stumpff_s(z: f64) -> f64 {
 /// The single-revolution Lambert problem by universal variables with a bracketed
 /// bisection, robust rather than fast: the orbit through `r1` and `r2` [km] in `tof`
 /// seconds under `mu` [km^3/s^2], going prograde (counterclockwise seen from ecliptic
-/// north) or not. Returns the velocities [km/s] at both ends, or None when the bracket
-/// holds no solution, as for a transfer of 180 degrees, whose plane is undefined.
+/// north) or not. Returns the velocities [km/s] at both ends, or None near a 180-degree
+/// transfer, whose plane is undefined, or with no bracket; a `tof` of 0 or less returns them.
 pub fn lambert(r1: Vec3, r2: Vec3, tof: f64, mu: f64, prograde: bool) -> Option<(Vec3, Vec3)> {
     let (n1, n2) = (norm(r1), norm(r2));
     // clamp keeps a NaN, as Math.min and Math.max do.

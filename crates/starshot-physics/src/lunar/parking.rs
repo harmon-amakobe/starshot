@@ -55,9 +55,9 @@ pub fn parking_state(
 }
 
 /// The craft at `launch_et` just after its burn of `delta_v_km_s`, `burn_angle_deg` from
-/// prograde towards `up`: the first sample of a lunar flight. The burn is not checked
-/// here; `simulate_lunar` (PR12) refuses one outside the fuel budget first
-/// (`flight.ts:47-50`).
+/// prograde towards `up`: the first sample of a lunar flight. The burn is unchecked;
+/// `simulate_lunar` (PR12) checks the fuel budget first (`flight.ts:47-50`). A `frame_et`
+/// of NaN with a valid orbit returns an error where the TypeScript returns a NaN state.
 pub fn departure(
     model: &LunarModel,
     parking: &ParkingOrbit,
@@ -65,10 +65,11 @@ pub fn departure(
     delta_v_km_s: f64,
     burn_angle_deg: f64,
 ) -> Result<State, LunarError> {
-    // flight.ts:53 turns the mean motion times the elapsed time into degrees, unwrapped,
-    // where parking_phase counts periods, so the burn's frame can differ from the parking
-    // state's in the last bits. Both the formula and its place before parking_state stay,
-    // so the rail is read in the TypeScript's order.
+    // flight.ts:53's unwrapped phase may differ from parking_phase's in the last bits. The
+    // rail is read first, as there, unless a NaN date would refuse before parking_state.
+    if parking.frame_et.unwrap_or(parking.epoch_et).is_nan() {
+        parking_state(model, parking, launch_et)?;
+    }
     let motion = sqrt(EARTH_GM / pow(parking.radius_km, 3.0));
     let phase = parking.phase_deg + (launch_et - parking.epoch_et) * motion * 180.0 / PI;
     let basis = model.basis(parking.frame_et.unwrap_or(parking.epoch_et), phase)?;
