@@ -295,7 +295,7 @@ epics:
           1950 to 2150, 100 km tier, every body within 150 km of DE440 every 5 days.
       - id: v1-ephemeris-crate
         title: "PR9: port time, bodies and Table 1 to starshot-ephemeris with the Horizons budgets"
-        labels: [kind:physics, area:ephemeris, priority:p1, status:blocked]
+        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
         actor: Agent
@@ -303,9 +303,12 @@ epics:
         depends_on: [v1-rust-workspace]
         body: |
           Same budgets as today's TypeScript test; a conformance fixture from the TypeScript side.
+          Readiness, checked 2026-11-05 against the supplement's PR9 and PR10 row: Cargo.toml exists,
+          horizons.json has geocentric.moon and heliocentric_extra.earth (G9), and G10 and G17 are
+          answered (deviation rows 78 and 79). Built as two declared parts (deviation row 77).
       - id: v1-rails-reader
         title: "PR10: read the rails pack in Rust, derive Earth's centre and check Table 1 densely"
-        labels: [kind:physics, area:ephemeris, priority:p1, status:blocked]
+        labels: [kind:physics, area:ephemeris, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
         actor: Agent
@@ -313,6 +316,10 @@ epics:
         depends_on: [v1-ephem-rails, v1-ephemeris-crate]
         body: |
           Closes the fixture under-sampling gap (register R18).
+          Readiness, checked 2026-11-05 against the supplement's PR9 and PR10 row: pack.json exists.
+          G6, G7 and G8 are answered for PR10 (deviation rows 91, 92, 98 and 99), and the velocity
+          budget is set (row 96). PR10 leaves the probes to the knot rail until the owner rules on G5.
+          Each lunar case names its test in tests/lunar.rs. Built as three declared parts (row 77).
       - id: v1-physics-core
         title: "PR11: port the integrator, gravity, Hermite, launch and Lambert to starshot-physics"
         labels: [kind:physics, area:physics, priority:p1, status:blocked]
