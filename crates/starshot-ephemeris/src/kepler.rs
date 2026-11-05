@@ -20,7 +20,7 @@ pub fn wrap_pi(x: f64) -> f64 {
 }
 
 /// Solve Kepler's equation M = E - e sin E for the eccentric anomaly E [rad] by Newton's
-/// method. Converges for 0 <= e < 1 (tested to e = 0.99).
+/// method. Converges for 0 <= e < 1 (tested to e = 0.999999).
 pub fn solve_kepler(mean_anomaly: f64, e: f64) -> f64 {
     let m = wrap_pi(mean_anomaly);
     // `Math.PI * Math.sign(M || 1)`: 0, -0 and NaN all start at +pi.

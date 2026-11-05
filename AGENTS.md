@@ -35,7 +35,7 @@ Each states its reason, so it applies to cases it does not list.
    *Why:* a mixed time scale is a silent 69-second error and a mixed unit is a factor
    of 1000; both still draw a plausible orbit, so nobody sees them.
 2. **A physics number without a JPL comparison is not a claim.** Accuracy is shown by
-   tests against Horizons fixtures (`packages/ephemeris/test`); energy and timing by
+   tests in `packages/ephemeris/test` against `fixtures/horizons/`; energy and timing by
    tests in `packages/physics/test`. Loosening a budget needs a decision entry.
    *Why:* the game's promise is the real Solar System; an unmeasured number is a guess
    that ships.
