@@ -142,7 +142,7 @@ One report per body, per pack or per program output, comparing it with a referen
   "schema": "ephem.validation/1",
   "subject": { "pack": "starshot-de440s-1950-2150-100km", "body": "MOON", "producer": "starshot | astlo <version>" },
   "reference": { "name": "JPL DE440", "via": "local kernel | Horizons API", "api_signature": "1.2", "ephemeris_source": "DE441" },
-  "sampling": { "from_et": -1577880000.0, "to_et": 4733553600.0, "step_s": 432000, "points": 14610 },
+  "sampling": { "from_et": -1577880000.0, "to_et": 4733553600.0, "step_s": 432000, "points": 14623 },
   "metrics": { "max_position_km": 54.3, "max_direction_arcmin": null, "rms_position_km": null },
   "budget": { "max_position_km": 150 },
   "pass": true

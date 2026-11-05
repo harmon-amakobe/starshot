@@ -6,3 +6,8 @@ generally not subject to copyright in the United States. The data is used with
 attribution to NASA/JPL-Caltech and carries no endorsement by NASA. Where a file is a
 derived or trimmed version of a NAIF kernel, the file names Starshot as its last
 modifier, as NAIF's rules require. See CREDITS.md.
+
+The DE440 rails pack in data/ephem/ is derived from NAIF's de440s.bsp
+(https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp) by
+Starshot's tools/ephem. Last modified by: Starshot. NAIF's rules for its kernels,
+including the last-modifier rule: https://naif.jpl.nasa.gov/naif/rules.html

@@ -10,6 +10,7 @@ description: Use when a change touches Starshot's ephemeris or physics packages,
 ```bash
 npx vitest run packages            # ephemeris vs Horizons, integrator, Lambert, launch
 npx vitest run apps/game           # shot settings and every level's known solution
+uv run --project tools/ephem --locked pytest tools/ephem/tests -q   # rails pack and its reports, offline
 ```
 
 Quote the pass counts. The rubric is `.claude/rubrics/physics.md`; for anything beyond a
@@ -30,9 +31,11 @@ Integrator: a circular 1 au orbit closes within 10 km with relative energy drift
 ## Refresh the Horizons fixtures
 
 ```bash
-python3 tools/horizons/fetch_fixtures.py    # stdlib only; needs ssd.jpl.nasa.gov
+uv run --project tools/ephem --locked starshot-ephem fixtures \
+  --out packages/ephemeris/test/fixtures/horizons.json   # needs ssd.jpl.nasa.gov; answers cached
 git diff --stat packages/ephemeris/test/fixtures/horizons.json
 npx vitest run packages/ephemeris
+uv run --project tools/ephem --locked pytest tools/ephem/tests -q
 ```
 
 Re-run only when the epoch list or the targets change. Never hand-edit the JSON. A
@@ -44,7 +47,7 @@ refreshed fixture that moves a result is a finding to explain, not a budget to r
    table, digit for digit, with the source in the comment.
 2. Physical data: `BODIES` in `packages/ephemeris/src/bodies.ts` (GM in km^3/s^2,
    radius in km, colour, name).
-3. Reference: add its Horizons id to `TARGETS` in `tools/horizons/fetch_fixtures.py`
+3. Reference: add its Horizons id to `TARGETS` in `tools/ephem/src/ephem/fixtures.py`
    (barycentre where the elements describe one) and refresh the fixtures.
 4. Budget: an `ARCMIN_BUDGET` entry justified by JPL's stated accuracy for that table.
 5. Prove it: the new test fails before step 1 and passes after.

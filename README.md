@@ -100,7 +100,8 @@ More detail: [docs/architecture.md](docs/architecture.md) (how the parts fit) an
 | `apps/prototype` | Design studies and the canonical credited observatory assets shared with the game |
 | `packages/ephemeris` | Planet positions from NASA/JPL's table, time conversions, planet sizes and masses |
 | `packages/physics` | The flight simulator, the launch model, and a launch-window finder |
-| `tools/horizons` | A small Python script that downloads the NASA/JPL reference positions the tests compare against |
+| `tools/ephem` | A Python tool that downloads the NASA/JPL reference positions the tests compare against and fits the DE440 rails |
+| `data/ephem` | Planet and Moon positions fitted from NASA/JPL's DE440, with a validation report for every body |
 | `tools/astlo-bench` | The scripts behind the first comparison of Mark Macharia's astlo engine with NASA/JPL (see below) |
 | `python/astlo` | Mark's astlo v12 with Starshot's fixes, one commit per fix, plus the wheel build, benchmarks and tests; his code, all rights reserved (see below) |
 | `third_party/astlo` | Mark's original astlo files, kept exactly as he published them, all rights reserved |

@@ -1,6 +1,11 @@
 {
  "source": "NASA/JPL Horizons API (https://ssd.jpl.nasa.gov/horizons/)",
- "frame": "heliocentric, ecliptic and mean equinox of J2000",
+ "frame": "ecliptic and mean equinox of J2000",
+ "centers": {
+  "states": "500@10",
+  "geocentric": "500@399",
+  "heliocentric_extra": "500@10"
+ },
  "units": {
   "r": "km",
   "v": "km/s",
@@ -553,5 +558,238 @@
     ]
    }
   ]
- }
+ },
+ "geocentric": {
+  "moon": [
+   {
+    "jdTdb": 2443375.5,
+    "r": [
+     -322059.9039094883,
+     -190021.4063089878,
+     8102.666878323216
+    ],
+    "v": [
+     0.5551135164842331,
+     -0.8852941269492068,
+     0.09059745032648864
+    ]
+   },
+   {
+    "jdTdb": 2451545.0,
+    "r": [
+     -291608.3841877129,
+     -274979.7416731504,
+     36271.19662699287
+    ],
+    "v": [
+     0.6435313889889519,
+     -0.7309839826871004,
+     -0.01150646473918648
+    ]
+   },
+   {
+    "jdTdb": 2461344.5,
+    "r": [
+     -81375.24918488222,
+     357437.4511829484,
+     22390.16378523187
+    ],
+    "v": [
+     -1.045104184718002,
+     -0.205938857736491,
+     -0.06601999645253265
+    ]
+   },
+   {
+    "jdTdb": 2466154.5,
+    "r": [
+     -174441.1495543004,
+     364284.6688419743,
+     25296.47148578256
+    ],
+    "v": [
+     -0.86884467458452,
+     -0.4388883157755137,
+     0.06347867732629679
+    ]
+   },
+   {
+    "jdTdb": 2469807.5,
+    "r": [
+     359580.5947708946,
+     116575.3803418467,
+     22387.25525948481
+    ],
+    "v": [
+     -0.2642336059806406,
+     0.9975510850862526,
+     -0.0674407882826894
+    ]
+   }
+  ]
+ },
+ "heliocentric_extra": {
+  "earth": [
+   {
+    "jdTdb": 2443375.5,
+    "r": [
+     127210800.0122872,
+     -82029360.80387285,
+     -3505.197658099234
+    ],
+    "v": [
+     15.65310368452081,
+     24.93476079065525,
+     0.000199134793511746
+    ]
+   },
+   {
+    "jdTdb": 2451545.0,
+    "r": [
+     -26499033.6774305,
+     144697296.7925493,
+     -611.1494259536266
+    ],
+    "v": [
+     -29.79426007043741,
+     -5.469294939770602,
+     0.0001817836785027449
+    ]
+   },
+   {
+    "jdTdb": 2461344.5,
+    "r": [
+     118309818.2151294,
+     89818484.5297085,
+     -6506.992567878217
+    ],
+    "v": [
+     -18.48404357352169,
+     23.6157751619341,
+     -0.0005690398177282674
+    ]
+   },
+   {
+    "jdTdb": 2466154.5,
+    "r": [
+     -24551705.05731756,
+     145038114.7453987,
+     -13178.26842977852
+    ],
+    "v": [
+     -29.84459658459536,
+     -5.078965053570608,
+     -2.080387306868658e-05
+    ]
+   },
+   {
+    "jdTdb": 2469807.5,
+    "r": [
+     -25672814.93326828,
+     144849457.7053936,
+     -16450.83630885929
+    ],
+    "v": [
+     -29.81226758915503,
+     -5.322774864735718,
+     0.001728443426722848
+    ]
+   }
+  ]
+ },
+ "fetched_utc": "2026-11-05T05:01:35Z",
+ "api_signature": "1.2",
+ "ephemeris_source": "DE441",
+ "queries": [
+  {
+   "series": "states.mercury",
+   "command": "199",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%27199%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:30Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.venus",
+   "command": "299",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%27299%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:31Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.earth",
+   "command": "3",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%273%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:32Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.mars",
+   "command": "4",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%274%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:32Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.jupiter",
+   "command": "5",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%275%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:33Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.saturn",
+   "command": "6",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%276%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:33Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.uranus",
+   "command": "7",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%277%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:34Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "states.neptune",
+   "command": "8",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%278%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:34Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "geocentric.moon",
+   "command": "301",
+   "center": "500@399",
+   "query": "format=json&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%40399%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:35Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  },
+  {
+   "series": "heliocentric_extra.earth",
+   "command": "399",
+   "center": "500@10",
+   "query": "format=json&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27VECTORS%27&CENTER=%27500%4010%27&REF_PLANE=%27ECLIPTIC%27&REF_SYSTEM=%27ICRF%27&VEC_TABLE=%272%27&OUT_UNITS=%27KM-S%27&CSV_FORMAT=%27YES%27&TIME_TYPE=%27TDB%27&TLIST_TYPE=%27JD%27&TLIST=%272443375.5+2451545.0+2461344.5+2466154.5+2469807.5%27",
+   "fetched_utc": "2026-11-05T05:01:35Z",
+   "api_signature": "1.2",
+   "ephemeris_source": "DE441"
+  }
+ ]
 }

@@ -18,7 +18,7 @@ git diff --name-only <base>...HEAD     # three dots: compare against the merge b
 
 | The diff touches | Also run |
 |---|---|
-| `packages/**`, `tools/horizons/**`, fixtures, `apps/game/src/sim/**` | `verify-physics`, then the `physics-auditor` agent for non-trivial changes |
+| `packages/**`, `tools/ephem/**`, `data/ephem/**`, fixtures, `apps/game/src/sim/**` | `verify-physics`, then the `physics-auditor` agent for non-trivial changes |
 | `apps/game/src/levels*` | `add-level` checklist and `verify-physics` |
 | anything a player sees (`apps/**` UI, styles, assets) | `verify-game` through the `verification-driver` agent |
 | `third_party/**` | `astlo-upstream` (and expect `third-party` to fail unless it is a sync) |

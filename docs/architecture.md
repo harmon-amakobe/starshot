@@ -9,7 +9,7 @@ planned next. Sections marked **Future** describe designs that are not built yet
   NASA/JPL "approximate positions"          NASA/JPL Horizons
   Table 1 (published numbers)               (reference positions)
              |                                        |
-             | copied digit for digit                 | tools/horizons/fetch_fixtures.py
+             | copied digit for digit                 | tools/ephem (starshot-ephem fixtures)
              v                                        v
   +-----------------------------+        +-----------------------------------+
   | packages/ephemeris          |<-------| test/fixtures/horizons.json       |
@@ -314,44 +314,20 @@ allows Starshot to use astlo's output (decisions D2 and D4). The fixed build in
 `python/astlo/` (D10) would be the natural candidate, and it too would need that licence
 and this gate.
 
-The contract: astlo (or any other source) would supply a data pack in which **every
-body records where its numbers came from and whether they passed validation**. The app
-uses a body's astlo numbers only if that body passed.
+The contract: astlo, or any other source, supplies its numbers as an `ephem.pack/1`
+pack with one `ephem.validation/1` report per body, the two formats `tools/ephem`
+already writes for the DE440 rails. Each body names where its numbers came from, and
+each report computes `pass` from its metrics. Both formats are specified in
+[astlo/directions.md](astlo/directions.md#the-shared-formats); the DE440 pack and its
+reports are in `data/ephem/` (see [its README](../data/ephem/README.md)). The app uses
+a body's astlo numbers only if that body's report passed.
 
-```json
-{
-  "schema": "ephem.snapshot/1",
-  "epoch": { "jd_tdb": 2461344.5 },
-  "frame": "ECLIPJ2000",
-  "center": "SUN",
-  "units": { "length": "km", "velocity": "km/s", "gm": "km^3/s^2" },
-  "bodies": [
-    {
-      "id": "EARTH",
-      "r": [0, 0, 0],
-      "v": [0, 0, 0],
-      "source": "reference",
-      "validation": {
-        "ref": "JPL Horizons",
-        "epochs": 5,
-        "max_direction_error_arcmin": 23.85,
-        "budget_arcmin": 1.5,
-        "pass": false
-      }
-    }
-  ]
-}
-```
-
-(The vectors above are placeholders; the validation numbers are illustrative.)
-
-- `source` is `"reference"` (NASA/JPL, Starshot's own ephemeris) or `"astlo"`.
 - The gate compares directions as seen from the Sun, at the same dates as the existing
   Horizons fixtures, against the same per-planet budgets as
   `packages/ephemeris/test/ephemeris.test.ts`. Distances alone are not enough: the
   [astlo evaluation](astlo-evaluation.md) found distances that matched while directions
   were off by up to 87 degrees.
-- A body that fails keeps `"source": "reference"`. The method is written up in
+- A body that fails keeps Starshot's own positions. The method is written up in
   `.claude/skills/astlo-upstream/reference.md`.
 
 ## Future: a leaderboard
