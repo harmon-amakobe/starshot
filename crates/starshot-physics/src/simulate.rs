@@ -131,7 +131,7 @@ pub struct SimulationResult {
 }
 
 /// `Math.min`: a NaN in either argument wins, where `f64::min` would drop it.
-fn js_min(a: f64, b: f64) -> f64 {
+pub(crate) fn js_min(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
     } else {
@@ -140,7 +140,7 @@ fn js_min(a: f64, b: f64) -> f64 {
 }
 
 /// `Math.max`, NaN winning as in `js_min`.
-fn js_max(a: f64, b: f64) -> f64 {
+pub(crate) fn js_max(a: f64, b: f64) -> f64 {
     if a.is_nan() || b.is_nan() {
         f64::NAN
     } else {

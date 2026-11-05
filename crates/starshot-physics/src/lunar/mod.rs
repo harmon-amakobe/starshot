@@ -1,12 +1,17 @@
 //! The lunar flight, as `packages/physics/src/lunar/`: the constants `model.ts` exports
-//! beyond the ones `LunarModel` reads, the errors, and the parking orbit with its departure
-//! burn. The flight itself is PR12's. The ephemeris crate's lunar items are re-exported
-//! here, as `index.ts` exports the whole model.
+//! beyond the ones `LunarModel` reads, the errors, the parking orbit with its departure
+//! burn, and the flight. The ephemeris crate's lunar items are re-exported here, as
+//! `index.ts` exports the whole model.
 
+pub mod flight;
 pub mod parking;
 
 use core::fmt;
 
+pub use flight::{
+    LunarFlight, LunarImpact, LunarRequest, LunarScope, LunarSettings, SETTINGS, request_for,
+    sample_flight, simulate_lunar,
+};
 pub use parking::{ParkingOrbit, departure, parking_period, parking_phase, parking_state};
 pub use starshot_ephemeris::lunar::{
     BASIS_PHASE_DEG, Basis, EARTH_GM, EarthMoon, LAUNCH_ET, LunarModel, MOON_GM, RailError, unit,
@@ -32,6 +37,13 @@ pub enum LunarError {
     InvalidParkingOrbit,
     /// The rail refused a date.
     Rail(RailError),
+    /// A burn below 0 or above `FUEL_BUDGET`, a non-finite input, a parking radius at or
+    /// inside Earth's, or no time to fly (`flight.ts:47-50`).
+    BurnOutsideBudget,
+    /// Ten times `max_steps` attempts without finishing (`flight.ts:98`).
+    SolverUnsettled,
+    /// `max_steps` accepted steps without finishing (`flight.ts:128`).
+    StepBudgetExceeded,
 }
 
 impl fmt::Display for LunarError {
@@ -39,6 +51,13 @@ impl fmt::Display for LunarError {
         match self {
             LunarError::InvalidParkingOrbit => write!(f, "Invalid parking orbit"),
             LunarError::Rail(e) => e.fmt(f),
+            LunarError::BurnOutsideBudget => {
+                write!(f, "The departure burn is outside the collector fuel budget")
+            }
+            LunarError::SolverUnsettled => write!(f, "The flight solver could not settle"),
+            LunarError::StepBudgetExceeded => {
+                write!(f, "The flight exceeded its integration budget")
+            }
         }
     }
 }
