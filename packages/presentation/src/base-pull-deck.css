@@ -1,0 +1,264 @@
+.pull-handle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 86px;
+  height: 86px;
+  border: 1px dashed rgba(255, 192, 70, 0.8);
+  border-radius: 50%;
+  background: rgba(255, 176, 0, 0.025);
+  touch-action: none;
+  box-shadow: 0 0 40px rgba(255, 176, 0, 0.07);
+}
+.pull-handle:hover,
+.pull-handle.pulling {
+  background: rgba(255, 176, 0, 0.09);
+  border-color: #ffbd31;
+  box-shadow: 0 0 34px rgba(255, 176, 0, 0.17);
+}
+.pull-coach {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: #f5d58f;
+  text-align: center;
+  pointer-events: none;
+}
+.pull-coach > span {
+  font-size: 24px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+.pull-coach button {
+  display: flex;
+  pointer-events: auto;
+  color: #c2cbd8;
+  font-size: 10px;
+  text-decoration: underline;
+  min-height: 44px;
+  margin: auto;
+}
+.pull-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.pull-lines path {
+  fill: none;
+  stroke: #ffb000;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 7px #ef950066);
+}
+.pull-lines line {
+  stroke: #ffe6a3;
+  stroke-width: 1;
+  stroke-dasharray: 3 6;
+  opacity: 0.7;
+}
+.flight-deck {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(880px, calc(100% - 36px));
+  border: 1px solid #63728a;
+  border-radius: 30px;
+  padding: 10px 18px 14px;
+  background: linear-gradient(
+    115deg,
+    rgba(20, 31, 47, 0.94),
+    rgba(12, 20, 33, 0.93)
+  );
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 70px #0005;
+}
+.deck-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+}
+.deck-title {
+  justify-content: flex-start;
+  padding: 0 5px;
+  font-weight: 500;
+}
+.deck-title svg {
+  width: 16px;
+}
+.collapsed .deck-title svg {
+  transform: rotate(180deg);
+}
+.detail-modes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.detail-modes button {
+  border-radius: 26px;
+  border: 1px solid transparent;
+  padding: 0 12px;
+}
+.detail-modes button.selected:has(span) {
+  border-color: #98721f;
+  background: #352c15;
+}
+.detail-modes button.selected:not(:has(span)) {
+  background: transparent;
+  filter: drop-shadow(0 0 6px #ffb00066);
+  font-weight: 700;
+}
+.detail-modes .selected svg {
+  stroke-width: 2.3;
+}
+.units {
+  color: #ffd077;
+  border-color: #8a713c;
+  background: rgba(255, 176, 0, 0.06);
+  font-size: 11px;
+}
+.unit-icon {
+  font-style: italic;
+  font-size: 19px;
+  letter-spacing: -2px;
+  margin-right: 4px;
+}
+.deck-body {
+  padding: 16px 3px 12px;
+}
+.instruments {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.fuel-instrument {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+.fuel-ring {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: conic-gradient(var(--amber) var(--fuel), #263347 0);
+  padding: 4px;
+  flex: none;
+}
+.fuel-ring strong {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding-top: 17px;
+  width: 100%;
+  height: 100%;
+  background: #152033;
+  border-radius: 50%;
+  font-size: 20px;
+}
+.fuel-instrument > div:last-child {
+  display: grid;
+  gap: 8px;
+}
+.fuel-instrument span,
+.flight-instruments span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.fuel-instrument b {
+  font-size: 12px;
+  font-weight: 400;
+}
+.prediction {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1.2;
+  background: #1b293c;
+  border-radius: 19px;
+  padding: 15px 18px;
+  min-height: 74px;
+}
+.prediction svg {
+  color: #bdcfdf;
+}
+.prediction div {
+  display: grid;
+  gap: 8px;
+}
+.prediction b {
+  font-size: 12px;
+  font-weight: 500;
+}
+.prediction span {
+  color: #aebccc;
+  font-size: 9px;
+}
+.prediction.hit {
+  background: #1b3436;
+}
+.prediction.hit svg {
+  color: #a8e6d5;
+}
+.fine-controls {
+  display: flex;
+  gap: 28px;
+  margin-top: 15px;
+  border-top: 1px solid #304057;
+  padding-top: 12px;
+}
+.fine-controls label {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  color: #c8d3df;
+}
+.fine-controls output {
+  color: var(--amber);
+}
+input[type="range"] {
+  accent-color: var(--amber);
+  height: 44px;
+  width: 100%;
+  min-width: 44px;
+  cursor: pointer;
+  margin: 0;
+}
+.deck-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #334158;
+  padding-top: 12px;
+}
+.collapsed .deck-actions {
+  margin-top: 8px;
+}
+.plane-lock {
+  margin-left: auto;
+  color: #9aabbf;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.flight-instruments {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 10px;
+}
+.flight-instruments > div {
+  display: grid;
+  gap: 10px;
+}
+.flight-instruments strong {
+  font-size: 21px;
+  font-weight: 500;
+}

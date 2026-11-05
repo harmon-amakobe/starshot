@@ -18,7 +18,15 @@
  * imports python/ or third_party/. The third-party gate also rejects any astlo path
  * string there; this check covers every import of those trees.
  *
- * Usage: node scripts/check-file-size.mjs [--update]
+ * Long lines: a .ts, .tsx, .mjs or .css file with lines over 160 characters warns, naming
+ * the file and the count. Compressed lines hide a file's size, because one line can hold a
+ * whole component (v1-starshot deviation 16). It never fails. A self-test on
+ * scripts/fixtures/size runs first through fileFindings, the per-file function the scan
+ * uses: each of the four languages must warn on a fixture with long lines and Rust must
+ * not, lines of exactly 160 characters must not, and CRLF endings must not add one. So a
+ * scan with no long-line warning means no file has long lines, not that the rule is off.
+ *
+ * Usage: node scripts/check-file-size.mjs [--update | --self-test]
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -31,6 +39,12 @@ const FAIL = 500;
 const SHAPE = { hooks: 12, state: 8, props: 10, areas: 3 };
 const BASELINE = "scripts/size-baseline.json";
 const EXT = new Set([".ts", ".tsx", ".rs", ".mjs", ".css"]);
+// PR3c names four languages; Rust waits for crates/ (D16).
+const LONG = 160;
+const LONG_EXT = new Set([".ts", ".tsx", ".mjs", ".css"]);
+const FIXTURES = "scripts/fixtures/size";
+// The scan and the self-test share this test, so a case for a path the scan skips fails.
+const measured = (f) => /^(apps|packages|scripts|crates)\//.test(f) && EXT.has(extname(f)) && !/(^|\/)(node_modules|dist|target)\//.test(f);
 
 const git = (args) => execFileSync("git", args, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 << 20, stdio: ["ignore", "pipe", "pipe"] });
 const read = (rel) => readFileSync(resolve(ROOT, rel), "utf8");
@@ -60,6 +74,72 @@ export function codeLines(text, ext) {
     n++;
   }
   return n;
+}
+
+/** Lines over LONG characters, counted in code points so a symbol counts once. */
+export function longLines(text) {
+  let n = 0;
+  for (const raw of text.split("\n")) {
+    const line = raw.replace(/\r$/, "");
+    if (line.length > LONG && [...line].length > LONG) n++;
+  }
+  return n;
+}
+
+/** The long-line warning for a file, or null when it has none or its language is not read. */
+export function longLineWarning(file, text) {
+  if (!LONG_EXT.has(extname(file))) return null;
+  const n = longLines(text);
+  return n ? `${file}: ${n} line(s) over ${LONG} characters; format it, so its code lines can be counted` : null;
+}
+
+/**
+ * Each fixture case names a file, the path it pretends to live at, the long lines its warning
+ * must report (0: none) and, with `crlf`, that its lines end in CRLF. Git stores the fixtures
+ * with LF (.gitattributes), so CRLF is applied here. Every problem names a relative path and
+ * the fix; a broken fixture fails the gate rather than throwing.
+ */
+function selfTest() {
+  const expect = `${FIXTURES}/expect.json`;
+  const restore = `restore it with git restore ${expect}`;
+  let cases;
+  try {
+    cases = JSON.parse(read(expect));
+  } catch (e) {
+    const why = e?.code === "ENOENT" ? "is missing" : e?.code ? "cannot be read" : "is not valid JSON";
+    return { cases: 0, problems: [`${expect} ${why}; ${restore}`] };
+  }
+  if (!Array.isArray(cases) || cases.length === 0) return { cases: 0, problems: [`${expect} must be a non-empty list of cases; ${restore}`] };
+  const problems = [];
+  const covered = new Map();
+  cases.forEach((c, i) => {
+    const { file, as, long, crlf } = c ?? {};
+    if (typeof file !== "string" || typeof as !== "string" || !Number.isInteger(long) || long < 0) {
+      problems.push(`${expect}: case ${i + 1} needs a string file and as and a whole-number long; fix the case or ${restore}`);
+      return;
+    }
+    const path = `${FIXTURES}/${file}`;
+    let text;
+    try {
+      text = read(path);
+    } catch {
+      problems.push(`${path} is missing or unreadable; restore it with git restore ${path}, or drop case ${i + 1} from ${expect}`);
+      return;
+    }
+    if (crlf) text = text.replaceAll("\n", "\r\n");
+    if (!measured(as)) problems.push(`${as}: the scan never reads this path, so case ${i + 1} proves nothing; fix the case or the listing`);
+    const got = fileFindings(as, text, {}).warnings.find((w) => w.startsWith(`${as}: `) && w.includes(` over ${LONG} characters`)) ?? null;
+    const want = long ? `${as}: ${long} line(s) over ${LONG} characters` : null;
+    const label = `${file} as ${as}${crlf ? " with CRLF" : ""}`;
+    if (want ? !got?.startsWith(want) : got !== null) problems.push(`${label}: expected ${want ?? "no warning"}, got ${got ?? "no warning"}; fix longLines or longLineWarning, or the case`);
+    const kinds = covered.get(extname(as)) ?? new Set();
+    covered.set(extname(as), kinds.add(long > 0 ? "warns" : "quiet"));
+  });
+  for (const ext of EXT) {
+    const need = LONG_EXT.has(ext) ? "warns" : "quiet";
+    if (!covered.get(ext)?.has(need)) problems.push(`${expect} has no ${ext} case that ${need === "warns" ? "expects a warning" : "expects none"}; add one`);
+  }
+  return { cases: cases.length, problems };
 }
 
 function shape(text) {
@@ -98,6 +178,31 @@ function layering(file, text) {
   return problems;
 }
 
+/**
+ * Every finding for one file: its code lines, size problems and warnings, long lines, shape
+ * and layering. The scan and the self-test both call it, so a check dropped here fails the
+ * self-test as well as going quiet in the scan.
+ */
+export function fileFindings(f, text, baselineFiles) {
+  const problems = [];
+  const warnings = [];
+  const lines = codeLines(text, extname(f));
+  const allowed = baselineFiles[f];
+  if (allowed !== undefined) {
+    if (lines > allowed) problems.push(`${f}: ${lines} code lines, above its baseline of ${allowed}; split it rather than raising the entry`);
+  } else if (lines > FAIL) problems.push(`${f}: ${lines} code lines, above the ${FAIL}-line limit; split it into smaller modules`);
+  else if (lines > WARN) warnings.push(`${f}: ${lines} code lines (warn above ${WARN})`);
+  const long = longLineWarning(f, text);
+  if (long) warnings.push(long);
+  if (f.endsWith(".tsx")) {
+    const s = shape(text);
+    const over = Object.keys(SHAPE).filter((k) => s[k] > SHAPE[k]);
+    if (over.length >= 2) warnings.push(`${f}: god-component signs: ${over.map((k) => `${k} ${s[k]} > ${SHAPE[k]}`).join(", ")}`);
+  }
+  if (/^(apps|packages)\//.test(f) && /\.[cm]?[jt]sx?$/.test(f)) problems.push(...layering(f, text));
+  return { lines, long: long !== null, problems, warnings };
+}
+
 function baseBaseline() {
   const base = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : "HEAD";
   try {
@@ -107,29 +212,32 @@ function baseBaseline() {
   }
 }
 
+const tested = selfTest();
+if (tested.problems.length) {
+  console.error("size: self-test FAILED, so a quiet long-line result would mean nothing:");
+  for (const p of tested.problems) console.error(`  ✗ ${p}`);
+  process.exit(1);
+}
+if (process.argv.includes("--self-test")) {
+  console.log(`size: self-test passed (${tested.cases} long-line cases)`);
+  process.exit(0);
+}
+
 const files = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
   .split("\0")
-  .filter((f) => /^(apps|packages|scripts|crates)\//.test(f) && EXT.has(extname(f)) && !/(^|\/)(node_modules|dist|target)\//.test(f) && existsSync(resolve(ROOT, f)));
+  .filter((f) => measured(f) && existsSync(resolve(ROOT, f)));
 const baseline = existsSync(resolve(ROOT, BASELINE)) ? JSON.parse(read(BASELINE)) : { files: {} };
 const problems = [];
 const warnings = [];
 const counts = new Map();
+let longFiles = 0;
 
 for (const f of files) {
-  const text = read(f);
-  const n = codeLines(text, extname(f));
-  counts.set(f, n);
-  const allowed = baseline.files[f];
-  if (allowed !== undefined) {
-    if (n > allowed) problems.push(`${f}: ${n} code lines, above its baseline of ${allowed}; split it rather than raising the entry`);
-  } else if (n > FAIL) problems.push(`${f}: ${n} code lines, above the ${FAIL}-line limit; split it into smaller modules`);
-  else if (n > WARN) warnings.push(`${f}: ${n} code lines (warn above ${WARN})`);
-  if (f.endsWith(".tsx")) {
-    const s = shape(text);
-    const over = Object.keys(SHAPE).filter((k) => s[k] > SHAPE[k]);
-    if (over.length >= 2) warnings.push(`${f}: god-component signs: ${over.map((k) => `${k} ${s[k]} > ${SHAPE[k]}`).join(", ")}`);
-  }
-  if (/^(apps|packages)\//.test(f) && /\.[cm]?[jt]sx?$/.test(f)) problems.push(...layering(f, text));
+  const found = fileFindings(f, read(f), baseline.files);
+  counts.set(f, found.lines);
+  if (found.long) longFiles++;
+  problems.push(...found.problems);
+  warnings.push(...found.warnings);
 }
 const previous = baseBaseline();
 for (const [f, allowed] of Object.entries(baseline.files)) {
@@ -157,4 +265,4 @@ if (files.length === 0) {
   console.error("size: FAILED, zero files measured; the file listing is broken, so a pass would be vacuous.");
   process.exit(1);
 }
-console.log(`size: ${files.length} file(s) measured, none over ${FAIL} code lines outside the baseline (${Object.keys(baseline.files).length} entr(ies)); ${warnings.length} warning(s); layering clean`);
+console.log(`size: ${files.length} file(s) measured, none over ${FAIL} code lines outside the baseline (${Object.keys(baseline.files).length} entr(ies)); ${warnings.length} warning(s); ${longFiles} file(s) with lines over ${LONG} characters; layering clean`);

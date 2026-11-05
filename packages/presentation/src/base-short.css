@@ -1,0 +1,271 @@
+@media (max-width: 380px) {
+  .units {
+    padding: 0 9px;
+  }
+  .detail-modes button {
+    padding: 0 6px;
+  }
+  .detail-modes button span {
+    font-size: 8px;
+  }
+  .mission-pill {
+    right: 50px;
+    padding: 0 9px;
+  }
+  .brand {
+    font-size: 20px;
+  }
+  .fuel-instrument {
+    gap: 5px;
+  }
+  .fuel-ring {
+    width: 44px;
+    height: 44px;
+  }
+  .fuel-ring strong {
+    padding-top: 12px;
+    font-size: 15px;
+  }
+  .prediction {
+    padding: 8px;
+  }
+  .deck-actions .primary {
+    padding: 0 14px;
+  }
+  .deck-actions .pill {
+    padding: 0 10px;
+  }
+  .hangar-deck nav button {
+    padding: 0 11px;
+  }
+}
+@media (max-height: 700px) and (min-width: 601px) {
+  .level-caption {
+    top: 90px;
+  }
+  .level-caption h1 {
+    font-size: 20px;
+  }
+  .camera-controls {
+    top: 120px;
+  }
+  .flight-deck {
+    width: min(760px, calc(100% - 170px));
+    padding-top: 6px;
+    padding-bottom: 10px;
+    bottom: 12px;
+  }
+  .deck-body {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .world-footer {
+    bottom: 255px;
+    font-size: 8px;
+  }
+  .hangar-entry {
+    bottom: 205px;
+  }
+  .hangar-caption {
+    top: 70px;
+  }
+  .hangar-caption h1 {
+    font-size: 26px;
+  }
+  .hangar-deck {
+    width: min(600px, calc(100% - 170px));
+    bottom: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  .hangar-deck p {
+    margin: 6px auto;
+  }
+  .model-tag {
+    display: none;
+  }
+}
+@media (max-height: 700px) and (max-width: 600px) {
+  .level-caption {
+    top: 86px;
+  }
+  .level-caption h1 {
+    font-size: 18px;
+    margin: 7px 0;
+  }
+  .level-caption p {
+    font-size: 8px;
+  }
+  .camera-controls {
+    top: 173px;
+  }
+  .world-footer {
+    bottom: 265px;
+  }
+  .hangar-entry {
+    bottom: 211px;
+  }
+  .pull-coach {
+    font-size: 9px;
+  }
+  .pull-coach button {
+    min-height: 44px;
+  }
+  .hangar-caption {
+    top: 85px;
+  }
+  .hangar-caption .model-tag {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.world-footer {
+  bottom: calc(var(--deck-height) + 88px);
+}
+.hangar-entry {
+  bottom: calc(var(--deck-height) + 28px);
+}
+@media (max-width: 600px) {
+  .fuel-instrument span,
+  .fuel-instrument b {
+    font-size: 10px;
+  }
+  .prediction b {
+    font-size: 11px;
+  }
+  .prediction span {
+    font-size: 9px;
+  }
+  .fuel-instrument {
+    flex: 0.9;
+  }
+  .prediction {
+    flex: 1.2;
+  }
+  .zoom-pills {
+    flex-direction: row;
+  }
+  .camera-controls {
+    align-items: flex-end;
+  }
+  .hangar-entry {
+    bottom: calc(var(--deck-height) + 24px);
+  }
+  .world-footer {
+    bottom: calc(var(--deck-height) + 77px);
+  }
+}
+@media (max-height: 700px) and (max-width: 600px) {
+  .camera-controls {
+    top: 174px;
+  }
+  .game-shell:has(.fine-controls) .camera-controls {
+    top: 158px;
+  }
+  .game-shell:has(.fine-controls) .world-footer {
+    display: none;
+  }
+}
+
+@media (max-height: 500px) and (min-width: 601px) {
+  .deck-body {
+    padding: 0 3px;
+  }
+  .deck-body .instruments {
+    display: none;
+  }
+  .fine-controls {
+    margin-top: 0;
+    padding-top: 0;
+    border: 0;
+  }
+  .fine-controls label {
+    font-size: 9px;
+  }
+  .game-shell:has(.fine-controls) .pull-coach {
+    display: none;
+  }
+  .world-footer {
+    display: none;
+  }
+  .hangar-entry {
+    top: 20px;
+    right: 130px;
+    left: auto;
+    bottom: auto;
+  }
+  .camera-controls {
+    top: 78px;
+    right: 20px;
+    flex-direction: row;
+    align-items: center;
+  }
+  .zoom-pills {
+    flex-direction: row;
+  }
+  .camera-controls > .pill {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+  .camera-controls > .pill span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .deck-actions {
+    padding-top: 8px;
+  }
+  .flight-deck {
+    padding-bottom: 8px;
+  }
+  .flight-instruments {
+    padding: 5px;
+  }
+  .flight-instruments strong {
+    font-size: 15px;
+  }
+  .hangar-caption {
+    top: 75px;
+  }
+  .hangar-caption p {
+    margin: 8px 0;
+  }
+  .hangar-deck p {
+    font-size: 9px;
+  }
+  .hangar-deck .inspection-controls {
+    gap: 10px;
+  }
+  .hangar-deck {
+    padding: 4px 12px;
+  }
+  .hangar-deck nav button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 600px) {
+  .world-footer {
+    left: auto;
+    right: 18px;
+    width: 200px;
+    max-width: calc(100% - 155px);
+    text-align: right;
+    bottom: calc(var(--deck-height) + 28px);
+  }
+  .scale-bar {
+    justify-content: flex-end;
+  }
+}

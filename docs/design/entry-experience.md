@@ -59,7 +59,7 @@ The travelled and future portions share the exact flight path and differ in patt
 | Module | Responsibility |
 | --- | --- |
 | `apps/prototype/src/entry/HomeMenu.tsx` | Entry hierarchy, Levels and local-profile panels |
-| `apps/prototype/src/entry/entry.css` | Responsive spacing, typography and menu surfaces |
+| `packages/presentation/src/entry.css` | Responsive spacing, typography and menu surfaces, shared with the game |
 | `apps/prototype/src/entry/profiles.ts` | Versioned save validation and canonical copying |
 | `apps/prototype/src/entry/use-profiles.ts` | Ownership, hydration and local persistence |
 | `apps/prototype/src/entry/presentation.ts` | Camera handoff timing and reduced motion |

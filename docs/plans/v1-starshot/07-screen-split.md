@@ -131,3 +131,34 @@ driver reviews the probe and actual UI evidence. Run the physics lens only if a
 numerical behavior changes; such a change must leave this behavior-preserving group or
 be explicitly justified and logged. Every new module stays below 300 code lines, the
 size baseline is empty, and no `CampaignApp` shape warning remains.
+
+## Stylesheet split result
+
+PR3c, issue #35, built to [PR3c](00-plan.md#pr3c-stylesheet-split) on `98a141c` (PR3b). It finishes deviation 16's cleanup for the stylesheets. Chromium 153.0.8010.12 under Playwright 1.63.0, Vite 8.3.5, Lightning CSS 1.33.0.
+
+The game's three presentation sheets and the campaign sheet held 140 compressed lines and the prototype's copies 60, 112,556 bytes in all. Formatted with Prettier 3.6.2 (run with `npx`, not added as a dependency), the game's sheets came to 5,248 lines. They are now 21 ordered parts of 115 to 285 lines: `packages/presentation/src/base-*.css` (9), `entry-*.css` (3) and `apps/game/src/campaign/campaign-*.css` (9). `base.css`, `entry.css` and `campaign.css` import them with `@import` in their old order, which Vite inlines before Lightning CSS minifies each chunk once. `cloud.css` is formatted in place. The prototype keeps only its font faces and imports the package sheets in the same cascade position (`apps/prototype/src/main.tsx:6` to `:9`); its two byte-identical copies are deleted. Four rules no source can render (`.tiny-earth`, `.tiny-moon`, `.pull-grip` and their 600 px block) are deleted. `scripts/check-file-size.mjs` warns, and never fails, on a line over 160 characters in `.ts`, `.tsx`, `.mjs` and `.css` files: 77 files today, none of them a stylesheet.
+
+| Case | Step | Contexts and exit |
+|---|---|---|
+| The split build equals a formatted, unsplit build byte for byte, for the game and the prototype | built CSS | 0 differences |
+| Against `98a141c`, the built CSS differs only by the four deleted rules and 30 spaces in 16 declarations (21 in the prototype), checked by the builder and again by the reviewer from fresh builds | built CSS, normalized | 0 differences |
+| Computed styles and steady screenshots under `98a141c`'s CSS equal this build's at 203 checkpoints, 9,518,828 values, with running animations finished at each swap | `style-identity.mjs` | all three; 0 |
+| The prototype's entry, five panels and aim screen | `compareSheets` steps | all three; 0 |
+| Moon layout steps | `lunar-campaign.mjs`, `lunar-loading.mjs` | all three; 0 and 0 |
+
+The lite review (an adversary and a `rules-reviewer`) found no blocker. Its fixes follow. The probe finishes transitions after each sheet swap, which a planted opacity change had slipped past, and refuses a baseline equal to the build. The long-line rule runs through one function that both the scan and the self-test call. A missing fixture or malformed `expect.json` fails with a fix message. The advisory lists in `.claude/README.md` and the `verify-gates` skill name the new warning. A `rules-reviewer` delta pass then found the self-test tied to the scanned paths one way only; the scan and the self-test now share one path test, so dropping `.css` or `scripts/` from the scan fails the self-test. The probe killed three mutants: an import reorder, a 0.1 px declaration change and a transitioned opacity change. The size check killed six: the scan call, the code-point count, `>=`, a dropped extension, the CR strip and a missing fixture.
+
+Left for the master review:
+- The probe covers the three default contexts and the elements in `<main>`. Short landscape, the 950, 900, 700 and 380 px blocks, hover and focus states rest on the built-CSS comparison.
+- The size gate prints 80 warnings, 77 of them long lines; a new compressed file would be one more among them. `.js` files are outside both checks (findings row 30).
+- The `/starshot/` subpath, WebKit and Firefox.
+
+| Command | Exit and result |
+|---|---|
+| `npm run gates` | 0, 13/13 gates, 235 tests |
+| `node scripts/check-file-size.mjs --self-test` | 0, 8 long-line cases |
+| `verify-game.mjs --steps scripts/verify-steps/style-identity.mjs` with `STARSHOT_STYLE_BASELINE` at a `98a141c` build | 0, 3 contexts, 203 checkpoints |
+| `verify-game.mjs --steps` `lunar-campaign` and `lunar-loading` at `/` | 0 and 0, 3 contexts |
+| `npm run build` and `npm run build:prototype` | 0 and 0 |
+
+Size against `98a141c`: 5,229 contentful lines formatted or moved and 200 compressed lines removed, which are mechanical. New content is 449 contentful lines. The probe has 249 and the size check 116, 14 of them moved. Fixtures add 37, import lists 31, the prototype's imports and comment 7, harness docs 4, other docs 4 and the coverage row 1. With these records the change spans 46 files: over the 20-file warning, and under D42's 800-line line for new content. Nothing was compressed.

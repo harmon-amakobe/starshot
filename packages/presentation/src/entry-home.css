@@ -1,0 +1,257 @@
+.game-shell[data-entry="true"]
+  > :not(.entry-shell):not(.world):not(.starfield) {
+  visibility: hidden;
+}
+.entry-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  isolation: isolate;
+  color: #e9e8df;
+  overflow: hidden;
+  transition: opacity 220ms ease;
+}
+.entry-shell.entering {
+  opacity: 0;
+  pointer-events: none;
+}
+.entry-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, #07111ce8 0%, #07111ca0 32%, #07111c00 64%),
+    linear-gradient(
+      0deg,
+      #06101bd9,
+      transparent 26%,
+      transparent 84%,
+      #07111c55
+    );
+}
+.entry-top {
+  position: absolute;
+  top: 28px;
+  left: 4.5%;
+  right: 4.5%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.entry-mark {
+  font-size: 24px;
+  letter-spacing: -3px;
+  font-weight: 700;
+}
+.entry-mark span {
+  color: #ffc457;
+  font-size: 20px;
+  margin-left: 6px;
+}
+.entry-build {
+  font-size: 10px;
+  color: #b4c5d1;
+}
+.entry-top > .pill {
+  margin-left: auto;
+  font-size: 11px;
+  max-width: 210px;
+}
+.entry-top > .pill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entry-title {
+  position: absolute;
+  left: 7%;
+  top: 24%;
+  max-width: 530px;
+}
+.entry-title .eyebrow {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #a8cbd7;
+}
+.entry-title h1 {
+  font-size: clamp(64px, 7.3vw, 112px);
+  line-height: 1.15;
+  letter-spacing: -8px;
+  font-weight: 500;
+  margin: 7px 0 14px;
+}
+.entry-title p {
+  color: #b6cbd5;
+  font-size: 12px;
+  line-height: 1.7;
+  max-width: 320px;
+}
+.entry-actions {
+  position: absolute;
+  left: 7%;
+  top: 52%;
+  width: 310px;
+}
+.entry-chapter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #c5d9e1;
+  margin-bottom: 16px;
+}
+.entry-chapter > span {
+  margin-left: auto;
+  color: #8fa8b9;
+  font-size: 9px;
+}
+.entry-chapter i {
+  width: 6px;
+  height: 6px;
+  background: #ade6dc;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #99dec3aa;
+}
+.entry-play {
+  width: 100%;
+  min-height: 70px;
+  padding: 12px 22px;
+  border-radius: 24px;
+  background: #ffbc43;
+  color: #172028;
+  justify-content: space-between;
+  box-shadow: 0 10px 40px #e7a82d12;
+}
+.entry-play:hover {
+  background: #ffcd70;
+  color: #172028;
+}
+.entry-play > span {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+.entry-play strong {
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.entry-play small {
+  font-size: 10px;
+  color: #4f482c;
+}
+.entry-play:disabled {
+  opacity: 0.8;
+  cursor: wait;
+}
+.entry-secondary {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+.entry-secondary > .pill {
+  flex: 1;
+  min-height: 48px;
+  background: #122130a6;
+  border-color: #5b7784;
+}
+.entry-quiet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: #839eae;
+  margin-top: 5px;
+}
+.entry-quiet button {
+  font-size: 10px;
+  min-width: 70px;
+}
+.entry-vessel-note {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #d7ebee;
+  font-size: 10px;
+  pointer-events: none;
+}
+.entry-vessel-note i {
+  width: 26px;
+  margin-top: 6px;
+  border-top: 1px solid #9dbac480;
+}
+.entry-vessel-note small {
+  display: block;
+  color: #8eaab8;
+  font-size: 8px;
+  margin-top: 6px;
+  max-width: 125px;
+  line-height: 1.6;
+}
+.entry-target {
+  position: absolute;
+  right: 8%;
+  top: 17%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #c6d7de;
+  pointer-events: none;
+}
+.entry-target small {
+  font-size: 9px;
+  color: #91aebd;
+  white-space: nowrap;
+}
+.entry-target.visible {
+  right: auto;
+  transform: translateX(-50%);
+}
+.entry-target.visible > span {
+  display: none;
+}
+.entry-target > span {
+  display: inline-block;
+  font-size: 22px;
+  color: #a0c7d3;
+}
+.entry-bottom {
+  position: absolute;
+  left: 7%;
+  right: 5%;
+  bottom: 30px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #c0d0d7;
+}
+.entry-bottom small {
+  display: block;
+  font-size: 8px;
+  color: #819eae;
+  margin-top: 6px;
+}
+.entry-bottom > div {
+  display: flex;
+  gap: 16px;
+}
+.entry-bottom button {
+  border: 1px solid #536a7899;
+  border-radius: 15px;
+  display: block;
+  text-align: left;
+  padding: 8px 16px;
+  min-height: 48px;
+  font-size: 10px;
+  min-width: 125px;
+  background: #0c1b2680;
+}
+.entry-notice {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #ebcc8b;
+  margin-top: 10px;
+}

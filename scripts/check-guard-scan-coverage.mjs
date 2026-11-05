@@ -24,7 +24,7 @@ const COVERAGE = {
   "third-party": ["third_party/astlo", "third_party/astlo.sha256", "third_party/astlo/LICENSE"],
   licence: ["REUSE.toml", "LICENSE", "LICENSES", "CREDITS.md", "package.json"],
   copy: ["scripts/copy-tells.json", "scripts/fixtures/copy/expect.json", "docs/copy-standard.md", "README.md", "apps/game/src", ".github/ISSUE_TEMPLATE", ".github/labels.yml"],
-  size: ["scripts/size-baseline.json", "apps/game/src", "packages", "scripts"],
+  size: ["scripts/size-baseline.json", "scripts/fixtures/size/expect.json", "apps/game/src", "packages", "scripts"],
   versions: ["package.json", "package-lock.json", "CHANGELOG.md", "scripts/release/release.test.mjs"],
   "instruction-dedup": ["AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"],
   "agent-frontmatter": [".claude/agents", ".claude/skills", "AGENTS.md"],

@@ -96,7 +96,7 @@ The current short fins are service structures, not aerodynamic steering surfaces
 | `apps/prototype/src/ui/engine-demo.ts` | Isolated hangar charge and collapse |
 | `apps/prototype/src/ui/observatory-session.ts` | Exact flight copy, geocentric clock and checkpoint validation |
 | `apps/prototype/public/observatory/hosted-mission.js` | Hosted lunar projection and mission content |
-| `apps/prototype/src/style.css` | Shell palette, panel shapes and responsive spacing |
+| `packages/presentation/src/base.css` | Shell palette, panel shapes and responsive spacing, shared with the game |
 
 Cream, cool field light and dark glass are adjustable material tokens. The engine and cabin
 proportions are deliberately easy to revise. Physical radii, the force model and
