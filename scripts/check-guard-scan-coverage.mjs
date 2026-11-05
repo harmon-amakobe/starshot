@@ -22,8 +22,17 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const COVERAGE = {
   secrets: ["AGENTS.md", "packages", "scripts", ".claude"],
   "third-party": ["third_party/astlo", "third_party/astlo.sha256", "third_party/astlo/LICENSE"],
-  licence: ["REUSE.toml", "LICENSE", "LICENSES", "CREDITS.md", "package.json"],
+  licence: ["REUSE.toml", "LICENSE", "LICENSES", "package.json"],
+  "dependency-licences": ["package-lock.json", "scripts/licence-allow.json"],
+  assets: [
+    "apps/game/assets/manifest.json", "apps/game/public",
+    "apps/prototype/public/observatory/assets-manifest.json", "apps/prototype/tools/verify-assets.mjs",
+  ],
+  credits: ["CREDITS.md", "apps/game/assets/manifest.json"],
   copy: ["scripts/copy-tells.json", "scripts/fixtures/copy/expect.json", "docs/copy-standard.md", "README.md", "apps/game/src", ".github/ISSUE_TEMPLATE", ".github/labels.yml"],
+  commits: [".git", "scripts/check-secrets.mjs"],
+  work: ["docs/plans/v1-starshot/03-work.yaml", "docs/plans/v1-starshot/work.lock.json", ".github/labels.yml"],
+  "pr-size": [".claude/README.md", "docs/plans/v1-starshot/00-plan.md"],
   size: ["scripts/size-baseline.json", "scripts/fixtures/size/expect.json", "apps/game/src", "packages", "scripts"],
   versions: ["package.json", "package-lock.json", "CHANGELOG.md", "scripts/release/release.test.mjs"],
   "instruction-dedup": ["AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"],

@@ -38,10 +38,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       # Optional: the owner's private-name list, comma-separated (docs/hosting.md). Run
-      # before npm ci, so no third-party package shares a step with it. Forks and pull
-      # requests from forks get no secrets; the scan then says its name rule is off.
-      - name: Secrets gate with the private-name list
-        run: node scripts/gates.mjs --only secrets
+      # before npm ci, so no third-party package shares a step with it; the commits gate
+      # needs only git and node, so it reads the list here too. Forks and pull requests
+      # from forks get no secrets; each scan then says its name rule is off.
+      - name: Secrets and commits gates with the private-name list
+        run: node scripts/gates.mjs --only secrets,commits
         env:
           STARSHOT_PRIVATE_NAMES: ${{ secrets.STARSHOT_PRIVATE_NAMES }} # zizmor: ignore[secrets-outside-env] one step reads it, before npm ci (see above)
       - run: npm ci
@@ -79,6 +80,36 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
+
+  pr-size:
+    name: pr-size
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    # Always runs, like dependency-review, so a skipped job still fails the aggregator
+    # (deviation 12). A push has no base to measure against, so its steps skip and the
+    # job passes. The script needs only git and Node's standard library, so it runs on
+    # the runner's own Node without setup-node or npm ci.
+    steps:
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Full history: the size is measured from the merge base with the base branch.
+          fetch-depth: 0
+      - if: github.event_name == 'pull_request'
+        name: Size against the group cap (D30)
+        # The base is fetched by name first, so the size never depends on which refs the
+        # checkout brought along, as for a pull request from a fork. A fork chooses its
+        # own branch name, so it could borrow a group's row: it always counts 1 member.
+        env:
+          # A deleted head repository reads as a fork, the safe side.
+          HEAD_IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}"
+          if [ "$HEAD_IS_FORK" = "true" ]; then set -- --members 1; fi
+          node scripts/check-pr-size.mjs --base "origin/${GITHUB_BASE_REF}" "$@"
 
   verify-game:
     name: verify-game
@@ -126,7 +157,7 @@ jobs:
     # counts as passing. No need has a job-level condition, so a skipped need means
     # something hid a check: that fails too. A job added later keeps to the same rule.
     if: always()
-    needs: [checks, workflow-lint, dependency-review, verify-game]
+    needs: [checks, workflow-lint, dependency-review, pr-size, verify-game]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}

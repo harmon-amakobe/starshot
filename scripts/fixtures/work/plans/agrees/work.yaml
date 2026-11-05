@@ -1,0 +1,13 @@
+# A program whose lock agrees with it. sync-work.mjs --self-test checks that
+# --check --program agrees passes here.
+program: agrees
+milestone: "Chapter 0: fixture"
+
+epics:
+  - id: ag-epic
+    title: "An epic the lock records"
+    labels: [kind:epic]
+    tasks:
+      - id: ag-task
+        title: "A task the lock records"
+        labels: [kind:chore]

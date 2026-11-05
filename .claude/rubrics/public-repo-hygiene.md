@@ -59,7 +59,8 @@ node scripts/check-copy-tells.mjs --commits main..HEAD
 
 - Starshot's own files are Apache-2.0, original media CC BY 4.0, and the name, logo and
   icon all rights reserved (D12). `REUSE.toml` labels every path; the `licence` gate
-  fails a file it does not cover and an art or audio file missing from `CREDITS.md`.
+  fails a file it does not cover. The `assets` gate fails a shipped file without a
+  manifest entry, and `credits` fails a `CREDITS.md` that differs from it.
 - Mark's astlo files keep his notice and are never relabelled, excerpted or summarised
   into our code (D2).
 - `python/astlo/astlo/**` is Mark's code with our fixes (D10): his headers stay, it is

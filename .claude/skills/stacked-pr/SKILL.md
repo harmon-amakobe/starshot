@@ -33,6 +33,8 @@ sign-off typed into it, then:
 ```bash
 git commit --author="Harmon Amakobe <73005556+harmon-amakobe@users.noreply.github.com>" -F <message file>
 git log -1 --format='%an <%ae>%n%cn <%ce>%n%(trailers)'   # author, committer, the trailers
+node scripts/check-secrets.mjs --stdin < <message file>
+node scripts/check-copy-tells.mjs --stdin --kind commit < <message file>
 ```
 
 The message file ends with these trailers, in this order:
@@ -48,7 +50,8 @@ owner, and the DCO check compares the sign-off with the author. Never add a
 `Signed-off-by:` for anyone but the owner, and only under that standing instruction. A
 commit without one gets a follow-up remediation commit from the owner, never a
 third-party sign-off (`.github/dco.yml`). Check the messages before the push:
-`node scripts/check-copy-tells.mjs --commits <below>..HEAD`.
+`node scripts/check-copy-tells.mjs --commits <below>..HEAD` and
+`node scripts/check-commits.mjs --base <below>`.
 
 ## Branch and publish
 

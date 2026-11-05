@@ -1,0 +1,7 @@
+{
+  "program": "agrees",
+  "issues": {
+    "ag-epic": { "number": 21, "id": 2000021, "node_id": "I_fixture21" },
+    "ag-task": { "number": 22, "id": 2000022, "node_id": "I_fixture22" }
+  }
+}

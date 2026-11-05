@@ -16,9 +16,9 @@ what it does not. Change it in the same pull request as the mechanism it describ
 | `RESEARCH_SURFACE` | A Claude Code session with web access and the repo mounted; NASA/JPL Horizons is reachable for fixtures. |
 | `BROWSER_CHANNEL` | Headless Chromium through Playwright, driven by `scripts/verify-game.mjs` (phone, desktop and reduced-motion contexts). CI runs the same script in the `verify-game` job of `.github/workflows/ci.yml`, which installs Playwright for that run only. Playwright is not a project dependency. |
 | `PLANS_DIR` | `docs/plans/`; binding decisions in `docs/decisions.md`. |
-| `PR_SIZE_CAP` | About 400 contentful lines or 20 files per spec, excluding lockfiles and fixture JSON; a PR group of n specs is held to n times that (D30). |
+| `PR_SIZE_CAP` | About 400 added lines or 20 changed files per spec. Every added line counts except in lockfiles, fixture JSON (`**/fixtures/**/*.json`), generated data (`data/ephem/`, `packages/core-wasm/pkg/`) and binary files. A PR group of n specs is held to n times that (D30). CI's `pr-size` job runs `scripts/check-pr-size.mjs`, which warns above n times the cap and fails above twice it. |
 | `LARGE_FILE_CAP` | 300 lines: above it, anchored edits only. |
-| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, copy, size, versions, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
+| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, dependency-licences, assets, credits, copy, commits, work, pr-size, size, versions, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
 | `COPY_STANDARD` | `docs/copy-standard.md` (D27), catalogue `scripts/copy-tells.json`; text typed into GitHub goes through `.github/workflows/copy-lint.yml`. |
 | `WORK_TRACKING` | `docs/plans/<program>/work.yaml` and `work.lock.json`, synced by `scripts/sync-work.mjs` from the orchestrator only (D23, `track-work` skill). |
 | `COMMIT_AUTHOR` | The owner, with a `Signed-off-by:` and the agent in a `Co-Authored-By:` trailer (D24); recipe in the `stacked-pr` skill. |
@@ -62,7 +62,7 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   70%. D40's handover from 776,000 to 792,000 tokens of measured context, its
   compaction controls and its rule against pull-request subscriptions are wholly
   advisory: no hook reads occupancy, sets compaction or denies a subscription. Of D30's
-  shape, only the size check that PR4 adds enforces anything.
+  shape, only the pr-size CI job enforces anything.
 - In Actions, `scripts/gates.mjs` prints a failed gate's raw output, so a line in it that
   starts with `::` acts as a workflow command. The jobs that run it hold a read-only
   token and no secret but the optional private-name list, in its own step.
@@ -72,8 +72,9 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
 - CI enforcement on `main` uses enabled Actions and a ruleset requiring the CI check.
   Preserve these settings during repository recovery (documented in `docs/hosting.md`).
 - Singleton and tier rules in the roster are advisory: nothing enforces them.
-- CI runs the `secrets` gate without the private-name list unless the owner sets the
-  `STARSHOT_PRIVATE_NAMES` secret, and a pull request from a fork never gets it.
+- CI runs the `secrets` and `commits` gates without the private-name list unless the
+  owner sets the `STARSHOT_PRIVATE_NAMES` secret, and a pull request from a fork never
+  gets it.
 - The copy gate cannot see text typed straight into GitHub. The `copy-lint` workflow
   checks issues, comments and pull request descriptions after they are posted.
   Review comments are not checked. Generated release notes come from the copy-checked changelog;
@@ -85,7 +86,11 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   has full history (`fetch-depth: 0` in `ci.yml`); without it, the baseline is checked
   against the file sizes alone.
 - The DCO check needs the owner to install the DCO app; until then `.github/dco.yml` is
-  inert and only review sees a missing sign-off.
+  inert, and the `commits` gate only warns on a missing sign-off.
+- The pull request that lands the collapsed stack on `main` is bigger than its row's cap,
+  so its `pr-size` result is expected to fail; the master review decides that landing.
+- Nothing compares an asset manifest entry's licence with the `REUSE.toml` label for the
+  same path. That agreement is advisory and kept by review.
 - `scripts/sync-work.mjs` sets project board fields only with a token that can read the
   owner's project; the default Actions token cannot.
 - The private-name rule of the `secrets` gate is only as good as its list, which is

@@ -65,19 +65,12 @@ Post one when work starts and one when it ends, on the issue, through the MCP is
 tools or `gh issue comment`. They follow the copy standard; check a draft with
 `node scripts/check-copy-tells.mjs --stdin --kind comment < draft.md`.
 
-At the claim:
+These two lines are the templates (D23, the plan's PR4 spec), the first at the claim
+and the second at completion. `CONTRIBUTING.md` points here rather than repeating them.
 
 ```text
-Claimed. Branch starshot/<topic>, based on <branch below>.
-Plan: <one line>, per <spec anchor>.
-```
-
-At completion:
-
-```text
-Pull request #<m>, stacked on #<k>.
-Gates: <n>/<n> passed, exit 0. Evidence: <tests, screenshots or the Horizons comparison>.
-Left open: <what is not done, or "nothing">.
+Claimed. Branch codex/v1-prNN-<topic>. Spec: docs/plans/v1-starshot/00-plan.md#<anchor>.
+Done in #<pr>. Gates: <n>/<n> passed, exit 0. Evidence: <one line per proof command>.
 ```
 
 ## When the plan changes

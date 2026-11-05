@@ -1,0 +1,18 @@
+{
+  "schema": "assets.manifest/1",
+  "assets": [
+    {
+      "id": "icon",
+      "kind": "image",
+      "title": "Starshot icon",
+      "files": [
+        { "path": "apps/game/public/icon.svg", "sha256": "1665af2ae24aab0c388c5dfc57ee16814a9aebf03713829e5d89eb57ada546fa" }
+      ],
+      "source": { "kind": "original" },
+      "licence": "LicenseRef-starshot-brand",
+      "attribution": "Harmon Amakobe",
+      "modifications": "None",
+      "aiGenerated": false
+    }
+  ]
+}

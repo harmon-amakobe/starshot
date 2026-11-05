@@ -1,0 +1,13 @@
+# A program whose lock has drifted: it names dr-gone, which this file lacks.
+# sync-work.mjs --self-test checks that --check over every program fails naming it.
+program: drifts
+milestone: "Chapter 0: fixture"
+
+epics:
+  - id: dr-epic
+    title: "An epic the lock records"
+    labels: [kind:epic]
+    tasks:
+      - id: dr-task
+        title: "A task the lock records"
+        labels: [kind:chore]

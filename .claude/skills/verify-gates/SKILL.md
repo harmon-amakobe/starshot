@@ -22,10 +22,16 @@ gate you did not run; say so.
 
 | Gate | Proves | Does not prove |
 |---|---|---|
-| `secrets` | no credential, email, personal path or hashed private name in any file | that commit messages or PR text are clean (pipe them through `--stdin`) |
+| `secrets` | no credential, email, personal path or hashed private name in any file | that PR text is clean (pipe it through `--stdin`); commit text is the `commits` gate's |
 | `third-party` | `third_party/astlo` matches its manifest byte for byte (D2) | that nothing was copied out of it into our code (review) |
-| `licence` | every file has a `REUSE.toml` record, `LICENSE` is Apache-2.0, every `package.json` says so, media are in `CREDITS.md` (D12) | that a credit is correct, or that an in-file SPDX header agrees (it warns) |
+| `licence` | every file has a `REUSE.toml` record, `LICENSE` is Apache-2.0, every `package.json` says so (D12) | that a `REUSE.toml` label matches the asset manifest, or that an in-file SPDX header agrees (it warns) |
+| `dependency-licences` | every package in `package-lock.json` has an allowed SPDX licence or an exact exception with a reason (D28) | Cargo dependencies (PR6), or that a declared licence matches the package's files |
+| `assets` | every file under `apps/game/public/` is in the asset manifest once with its hash, an open licence and no AI generation; every shipped observatory file is in its own manifest and verified (D14, D15) | that a recorded source or attribution is true |
+| `credits` | the game assets section of `CREDITS.md` matches the asset manifest (D15) | the hand-written observatory sections |
 | `copy` | no fail rule of `docs/copy-standard.md` in Markdown, UI strings, forms, work plans and, in CI, the PR's commits (D27) | that the prose is good: warnings pass |
+| `commits` | no secret, personal email, personal path or hashed private name in the author, committer or message of any commit since the base (D24) | a sign-off: a missing one only warns, and the DCO app enforces it |
+| `work` | the v1-starshot `work.yaml` and `work.lock.json` agree (D23) | that GitHub matches them: only `sync-work.mjs --apply` makes it so |
+| `pr-size` | the size check's cap, exclusions, member count and thresholds; CI's job measures the pull request (D30) | a pull request's size: that is the CI job, not the gate |
 | `size` | no file over 500 code lines off the baseline; the baseline only shrinks; `packages/` never imports `apps/`; nothing imports `python/` or `third_party/` (D28) | that a component is well split (its shape warnings pass), or that a count is honest: a line over 160 characters warns and passes |
 | `versions` | workspace and lock parity; release calculation, proposal, provenance and archive negative fixtures | that a candidate was tested on the hosted beta |
 | `instruction-dedup` | adapters share no 12-word run with `AGENTS.md` | that they do not paraphrase it |

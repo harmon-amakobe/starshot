@@ -203,6 +203,9 @@ verified asset or protected tag to force a retry through.
 
 Enable Actions and Dependency graph. Keep default workflow permissions read-only.
 Require the `gates` check and PRs on main; block force pushes and deletions.
+`gates` stays the one required check: `pr-size` and every other CI job feed it. The
+copy-lint workflow's `copy` check may be added once it has run on a pull request
+([owner step G6](plans/v1-starshot/04-ops-checklist.md#github)).
 Create `production`, `preview` and `release` environments. Production and release
 allow only main. Release has no Google variables or secrets. Preview allows the
 reviewed main, starshot and codex refs accepted by its provider.
