@@ -1,7 +1,7 @@
 # Benchmarking an astlo wheel against JPL (D4)
 
 The gate: for each planet, at each epoch in
-`packages/ephemeris/test/fixtures/horizons.json`, the angle between astlo's
+`fixtures/horizons/horizons.json`, the angle between astlo's
 heliocentric position vector and Horizons' must be within that planet's arcminute
 budget in `packages/ephemeris/test/ephemeris.test.ts`. Same targets (Earth-Moon
 barycentre for "earth", system barycentres for the giant planets), same frame

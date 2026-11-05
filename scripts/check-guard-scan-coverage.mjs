@@ -47,7 +47,7 @@ const COVERAGE = {
     "scripts/agent/stop-gates.sh",
   ],
   typecheck: ["tsconfig.json", "tsconfig.base.json", "packages/ephemeris/tsconfig.json", "packages/physics/tsconfig.json"],
-  test: ["vitest.config.ts", "packages/ephemeris/test", "packages/physics/test", "packages/ephemeris/test/fixtures/horizons.json"],
+  test: ["vitest.config.ts", "packages/ephemeris/test", "packages/physics/test", "fixtures/horizons/horizons.json"],
   build: ["apps/game/package.json"],
   "rust-fmt": ["Cargo.toml", "rust-toolchain.toml", "crates/starshot-math/src"],
   "rust-clippy": ["Cargo.toml", "Cargo.lock", "clippy.toml", "crates/starshot-math/src"],

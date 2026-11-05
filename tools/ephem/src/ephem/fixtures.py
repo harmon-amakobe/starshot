@@ -15,6 +15,9 @@ from pathlib import Path
 from .horizons import HorizonsError, fetch_vectors
 
 DEFAULT_CACHE = Path(__file__).resolve().parents[2] / ".cache" / "horizons"
+# The repository root, and in it the shared fixture tree the TypeScript and Rust tests read.
+ROOT = Path(__file__).resolve().parents[4]
+DEFAULT_FIXTURE = ROOT / "fixtures" / "horizons" / "horizons.json"
 SUN, EARTH = "500@10", "500@399"
 TARGETS = {"mercury": "199", "venus": "299", "earth": "3", "mars": "4", "jupiter": "5", "saturn": "6", "uranus": "7", "neptune": "8"}
 # Julian dates (TDB): Voyager 2 launch day, J2000, 2026-10-31, 2040-01-01, 2050-01-01.

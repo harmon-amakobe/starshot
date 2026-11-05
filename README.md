@@ -131,7 +131,7 @@ The error is measured as an angle seen from the Sun, in *arcminutes*. One arcmin
 
 Distances from the Sun agree with JPL to within 0.13%, and speeds to within 0.41%. The
 budgets live in `packages/ephemeris/test/ephemeris.test.ts`; the reference data is in
-`packages/ephemeris/test/fixtures/horizons.json`. The numbers match the accuracy
+`fixtures/horizons/horizons.json`. The numbers match the accuracy
 NASA/JPL itself quotes for this table: under an arcminute for the inner planets, up to
 about 10 arcminutes for Jupiter and Saturn.
 
