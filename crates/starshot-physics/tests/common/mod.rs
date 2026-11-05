@@ -31,6 +31,17 @@ pub fn table(name: &str, width: usize) -> Vec<Vec<f64>> {
     rows
 }
 
+/// The lambert section: prograde, the inputs, and the velocities or None.
+pub fn lambert_cases() -> Vec<(bool, Vec<f64>, Option<Vec<f64>>)> {
+    let file: Value = serde_json::from_str(PHYSICS).expect("fixture is valid JSON");
+    let rows = file["lambert"].as_array().expect("lambert");
+    let case = |r: &Value| {
+        let out = (!r[2].is_null()).then(|| row(&r[2]));
+        (r[0].as_bool().expect("prograde"), row(&r[1]), out)
+    };
+    rows.iter().map(case).collect()
+}
+
 /// The Sun's pull alone, as `simulate` builds its derivative.
 pub fn sun_only(t: f64, y: &State6, dy: &mut State6) {
     let (eph, mut a) = (Table1Ephemeris::default(), [0.0; 3]);

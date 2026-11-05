@@ -147,6 +147,10 @@ export const CAMPAIGN: readonly Level[] = [
     // Training: a capture zone three times Mars's real sphere of influence, said so in the HUD.
     captureZoneScale: 3,
     sim: SIM_SETTINGS,
+    // "(323 days)" is the Lambert time of flight, 1-day grid: the minimum that
+    // crates/starshot-physics/tests/lambert_fine.rs proves. D11's 326 days is the best node of
+    // the simulate test's 8-day grid, and the known solution's simulated flight is a third
+    // quantity (302.7 days to the training zone, 308.3 to the real sphere, measured 2026-11-01).
     par: par(2.982, "Cheapest direct transfer in the window: launch 2026-11-02, v-infinity 2.98 km/s (323 days)."),
   },
   {

@@ -1,14 +1,16 @@
 //! The Rust physics against the TypeScript, through `fixtures/conformance/physics.json`
 //! (written by `packages/physics/test/conformance.test.ts`). Hermite, launch, gravity and
-//! integrator steps are arithmetic only, so every bit is equal. `next_step` goes through
-//! `pow`, so it holds within 1e-15 relative.
+//! Sun-only integrator steps are arithmetic only, so every bit is equal. `next_step` goes
+//! through `pow` and `lambert` through `norm`, `acos`, `sin`, `pow` and their kin, so they
+//! hold within 1e-15 and 1e-9 relative.
 
 mod common;
 
-use common::{sun_only, table};
-use starshot_ephemeris::{BodyId, Ephemeris, State, Table1Ephemeris, Vec3};
+use common::{lambert_cases, sun_only, table};
+use starshot_ephemeris::vec::{Vec3, norm, sub};
+use starshot_ephemeris::{BodyId, Ephemeris, State, Table1Ephemeris};
 use starshot_physics::{
-    Dopri5, Knot, State6, StepTolerance, acceleration, c3, delta_v_from_leo, hermite,
+    Dopri5, Knot, State6, StepTolerance, acceleration, c3, delta_v_from_leo, hermite, lambert,
 };
 
 /// Whether two lists hold the same f64 bits.
@@ -121,4 +123,30 @@ fn next_step_matches_typescript_within_1e_15_relative() {
     let n = rows.len();
     println!("next_step: worst {worst:e} relative, {equal} of {n} bit for bit");
     assert!(worst < 1e-15, "next_step differs by {worst} relative");
+}
+
+#[test]
+fn lambert_matches_typescript_within_1e_9_relative() {
+    // Each velocity's difference over its length.
+    let off = |a: Vec3, b: Vec3| norm(sub(a, b)) / norm(b);
+    let cases = lambert_cases();
+    let (mut worst, mut equal) = (0.0_f64, 0);
+    for (prograde, input, expected) in &cases {
+        let (r1, r2) = (
+            [input[2], input[3], input[4]],
+            [input[5], input[6], input[7]],
+        );
+        let got = lambert(r1, r2, input[1], input[0], *prograde);
+        let (Some((v1, v2)), Some(want)) = (got, expected) else {
+            assert_eq!(got.is_none(), expected.is_none(), "{input:?}");
+            equal += 1;
+            continue;
+        };
+        let (w1, w2) = ([want[0], want[1], want[2]], [want[3], want[4], want[5]]);
+        worst = worst.max(off(v1, w1)).max(off(v2, w2));
+        equal += usize::from(same_bits(&[v1, v2].concat(), want));
+    }
+    let n = cases.len();
+    println!("lambert: worst {worst:e} relative, {equal} of {n} bit for bit");
+    assert!(worst < 1e-9, "lambert differs by {worst} relative");
 }
