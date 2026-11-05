@@ -12,7 +12,7 @@ planned next. Sections marked **Future** describe designs that are not built yet
              | copied digit for digit                 | tools/ephem (starshot-ephem fixtures)
              v                                        v
   +-----------------------------+        +-----------------------------------+
-  | packages/ephemeris          |<-------| test/fixtures/horizons.json       |
+  | packages/ephemeris          |<-------| fixtures/horizons/horizons.json   |
   |  elements.ts  (the table)   | tests  | (accuracy checked on every run)   |
   |  kepler.ts    (ellipse ->   |        +-----------------------------------+
   |               position)     |
@@ -167,7 +167,7 @@ no connection to Firebase or a real identity provider.
 
 The simulation is moving into one Rust core (D16), which the game will load as wasm.
 The TypeScript packages above stay the reference until it matches them. Today the
-workspace holds one crate.
+workspace holds two crates.
 
 ```
   Cargo.toml             workspace: edition 2024, unsafe code forbidden,
@@ -179,7 +179,14 @@ workspace holds one crate.
       src/lib.rs         sin, cos, atan2, pow, hypot ... over the libm crate
       examples/          gen_golden: writes fixtures/math/golden.json
       tests/golden.rs    every recorded output, bit for bit
-  fixtures/math/         data the Rust tests read with include_str!
+    starshot-ephemeris/  the port of @starshot/ephemeris; depends on starshot-math alone
+      src/time.rs        UTC <-> ET; et_from_iso takes a date or a date-time, else errs
+      src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
+      src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
+      src/rails.rs       reads data/ephem decade files; adds and multiplies only
+      src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
+  fixtures/              data the Rust tests read with include_str!: math/golden.json,
+                         horizons/horizons.json (JPL), conformance/*.json (TypeScript)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -187,8 +194,27 @@ between x86_64, arm64 and the browser engines. `starshot-math` calls the `libm` 
 instead: Rust ports of C maths routines built from basic IEEE operations, pinned to
 one release with its hardware paths turned off, so native code and wasm run the same
 software routines. `tests/golden.rs` compares every recorded output bit for bit on
-the machine that runs it. The ephemeris, physics, game and wasm crates follow in
-later pull requests, each using `starshot-math` for its maths.
+the machine that runs it. The physics, game and wasm crates follow in later pull
+requests, each using `starshot-math` for its maths.
+
+`starshot-ephemeris` keeps the TypeScript operation order, so arithmetic-only paths
+give the same bits. `packages/ephemeris/test/conformance.test.ts` writes what the
+TypeScript computes to `fixtures/conformance/table1.json` (with
+`STARSHOT_WRITE_CONFORMANCE=1`) and otherwise checks the file is unchanged; the Rust
+tests hold planet states within 1 m and 1 mm/s of it and time conversions to the bit.
+`vec::norm` is the square root of `x*x + y*y + z*z`, where TypeScript calls a
+three-argument `Math.hypot` that `libm` lacks.
+
+`RailPack` loads the decade files of `data/ephem/de440s-100km`, checking every header
+field and offset, and evaluates a body by Clenshaw's recurrence in the order
+`tools/ephem` uses, so it reproduces `fixtures/conformance/rails.json` (written by
+`starshot-ephem conformance`) bit for bit. `RailEphemeris` serves every state inside the
+pack's 1950 to 2150 coverage from the rails and panics when the decade holding the ET
+is not loaded, because a silent fallback would let a preview and a server disagree.
+Outside coverage the planets come from Table 1 and the Moon panics. Earth's centre and
+the heliocentric Moon split the barycentre with the pack's Earth-Moon mass ratio. The
+lunar model keeps the cached Horizons rail and its probes: the pack's Moon does not
+reach them, and replacing the rail is the owner's call.
 
 ## Conventions: units, frames and time
 

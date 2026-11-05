@@ -41,9 +41,15 @@ SPDX-FileCopyrightText = "Organization for Ethical Source (Contributor Covenant 
 SPDX-License-Identifier = "CC-BY-SA-4.0"
 
 # NASA/JPL data used as test fixtures and reference values (D17): Horizons responses and
-# values derived from DE440. The files are data, credited in CREDITS.md.
+# values derived from DE440 or the Horizons Moon rail. The files are data, credited in
+# CREDITS.md.
 [[annotations]]
-path = ["packages/ephemeris/test/fixtures/**", "python/astlo/tests/fixtures/**", "tools/ephem/tests/data/**"]
+path = ["fixtures/horizons/**", "python/astlo/tests/fixtures/**", "tools/ephem/tests/data/**"]
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
+SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
+
+[[annotations]]
+path = ["fixtures/conformance/rails.json", "fixtures/conformance/lunar.json"]
 SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 

@@ -1,5 +1,5 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import fixtures from "./fixtures/horizons.json" with { type: "json" };
 import {
   AU_KM,
   angleBetween,
@@ -18,7 +18,10 @@ import {
 } from "../src/index.js";
 
 type Fixture = { jdTdb: number; r: Vec3; v: Vec3 };
-const states = fixtures.states as unknown as Record<PlanetId, Fixture[]>;
+// The fixture lives in the top-level fixtures/ tree, which the Rust tests read too. It is
+// read from disk, since a JSON import from outside the package breaks tsc's rootDir.
+const fixtures = JSON.parse(readFileSync(new URL("../../../fixtures/horizons/horizons.json", import.meta.url), "utf8"));
+const states = fixtures.states as Record<PlanetId, Fixture[]>;
 
 // Angular (heliocentric) error budgets in arcminutes. JPL quotes up to ~10'
 // for Jupiter and Saturn over 1800-2050 with this table; inner planets ~1'.

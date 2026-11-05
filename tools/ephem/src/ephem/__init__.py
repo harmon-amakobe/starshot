@@ -8,6 +8,7 @@ them (D29).
 
 from .bodies import BODIES, BodySpec
 from .chebyshev import evaluate, fit, quantise
+from .conformance import conformance_text, rails_conformance
 from .constants import emrat, gm_values, pack_constants
 from .fixtures import EPOCHS_JD_TDB, SERIES, TARGETS, write_horizons_fixture
 from .generate import FitError, KernelSource, PositionSource, generate
