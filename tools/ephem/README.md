@@ -19,7 +19,9 @@ uv run --project tools/ephem --locked starshot-ephem kernel --path tools/ephem/.
 ```
 
 `build` and `validate` make and check the rails pack; `data/ephem/README.md` has both
-commands. `build` writes byte-identical decade files on one machine, and with
+commands. `conformance --pack data/ephem/de440s-100km` writes
+`fixtures/conformance/rails.json`, this tool's own evaluation of the committed pack,
+which the Rust reader must reproduce. `build` writes byte-identical decade files on one machine, and with
 `SOURCE_DATE_EPOCH` set an identical `pack.json` too. `validate` exits 1 when any body
 is over its budget.
 

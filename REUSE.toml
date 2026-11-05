@@ -48,6 +48,11 @@ SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot co
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 
 [[annotations]]
+path = ["fixtures/conformance/rails.json"]
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
+SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
+
+[[annotations]]
 path = ["apps/prototype/public/observatory/*-1k.jpg"]
 SPDX-FileCopyrightText = "Solar System Scope / INOVE"
 SPDX-License-Identifier = "CC-BY-4.0"

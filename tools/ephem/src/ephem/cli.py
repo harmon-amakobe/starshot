@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 
 from . import BODIES, KernelSource, ensure_gm_kernel, ensure_kernel, generate, pack_constants
-from . import read_pack, validate, write_horizons_fixture, write_pack, write_report
-from .fixtures import DEFAULT_CACHE, DEFAULT_FIXTURE
+from . import conformance_text, rails_conformance, read_pack, validate, write_horizons_fixture, write_pack, write_report
+from .fixtures import DEFAULT_CACHE, DEFAULT_FIXTURE, ROOT
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -28,6 +28,9 @@ def _parser() -> argparse.ArgumentParser:
     for flag in ("--kernel", "--pack"):
         v.add_argument(flag, type=Path, required=True)
     v.add_argument("--out", type=Path, help="where the reports go (default: the pack)")
+    c = sub.add_parser("conformance", help="write the rails oracle the Rust reader is tested against")
+    c.add_argument("--pack", type=Path, required=True)
+    c.add_argument("--out", type=Path, default=ROOT / "fixtures" / "conformance" / "rails.json")
     return p
 
 
@@ -53,6 +56,11 @@ def main(argv: list[str] | None = None) -> int:
         if not report.passed:
             print("validate: a body is over its budget", file=sys.stderr)
             return 1
+    elif args.command == "conformance":
+        data = rails_conformance(read_pack(args.pack))
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(conformance_text(data), encoding="utf-8")
+        print(f"wrote {len(data['points'])} points to {args.out}")
     return 0
 
 
