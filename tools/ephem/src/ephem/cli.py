@@ -9,14 +9,14 @@ from pathlib import Path
 
 from . import BODIES, KernelSource, ensure_gm_kernel, ensure_kernel, generate, pack_constants
 from . import read_pack, validate, write_horizons_fixture, write_pack, write_report
-from .fixtures import DEFAULT_CACHE
+from .fixtures import DEFAULT_CACHE, DEFAULT_FIXTURE
 
 
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="starshot-ephem", description="Starshot's ephemeris tool (D17).")
     sub = p.add_subparsers(dest="command", required=True)
     f = sub.add_parser("fixtures", help="write the Horizons test fixture")
-    f.add_argument("--out", type=Path, required=True)
+    f.add_argument("--out", type=Path, default=DEFAULT_FIXTURE, help="default: fixtures/horizons/horizons.json")
     f.add_argument("--cache", type=Path, default=DEFAULT_CACHE, help="Horizons answer cache")
     k = sub.add_parser("kernel", help="download and MD5-check de440s.bsp and gm_de440.tpc")
     k.add_argument("--path", type=Path, required=True, help="where de440s.bsp lives")

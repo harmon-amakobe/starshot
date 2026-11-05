@@ -48,7 +48,7 @@ def test_the_moon_and_the_sources_are_as_specified():
 def test_the_pack_agrees_with_horizons_at_the_fixture_epochs():
     # An independent check: Horizons (DE441 through the API) at five dates from 1977 to
     # 2049, against the same 150 km budget.
-    report = validate(read_pack(PACK), HorizonsFixture.from_file(ROOT / "packages/ephemeris/test/fixtures/horizons.json"))
+    report = validate(read_pack(PACK), HorizonsFixture.from_file(ROOT / "fixtures/horizons/horizons.json"))
     assert [r["subject"]["body"] for r in report.records] == BODIES
     for r in report.records:
         assert r["sampling"]["points"] == 5 and r["metrics"]["max_position_km"] <= 150.0, r["subject"]["body"]

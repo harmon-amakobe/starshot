@@ -8,7 +8,7 @@ from pathlib import Path
 from ephem import EPOCHS_JD_TDB, SERIES, TARGETS
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE = json.loads((ROOT / "packages/ephemeris/test/fixtures/horizons.json").read_text(encoding="utf-8"))
+FIXTURE = json.loads((ROOT / "fixtures/horizons/horizons.json").read_text(encoding="utf-8"))
 
 
 def test_every_series_is_present_at_the_five_epochs():

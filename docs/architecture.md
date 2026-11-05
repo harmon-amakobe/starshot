@@ -12,7 +12,7 @@ planned next. Sections marked **Future** describe designs that are not built yet
              | copied digit for digit                 | tools/ephem (starshot-ephem fixtures)
              v                                        v
   +-----------------------------+        +-----------------------------------+
-  | packages/ephemeris          |<-------| test/fixtures/horizons.json       |
+  | packages/ephemeris          |<-------| fixtures/horizons/horizons.json   |
   |  elements.ts  (the table)   | tests  | (accuracy checked on every run)   |
   |  kepler.ts    (ellipse ->   |        +-----------------------------------+
   |               position)     |
@@ -167,7 +167,7 @@ no connection to Firebase or a real identity provider.
 
 The simulation is moving into one Rust core (D16), which the game will load as wasm.
 The TypeScript packages above stay the reference until it matches them. Today the
-workspace holds one crate.
+workspace holds two crates.
 
 ```
   Cargo.toml             workspace: edition 2024, unsafe code forbidden,
@@ -179,6 +179,8 @@ workspace holds one crate.
       src/lib.rs         sin, cos, atan2, pow, hypot ... over the libm crate
       examples/          gen_golden: writes fixtures/math/golden.json
       tests/golden.rs    every recorded output, bit for bit
+    starshot-ephemeris/  the port of @starshot/ephemeris; depends on starshot-math alone
+      src/time.rs        UTC <-> ET; et_from_iso takes a date or a date-time, else errs
   fixtures/math/         data the Rust tests read with include_str!
 ```
 
@@ -187,8 +189,8 @@ between x86_64, arm64 and the browser engines. `starshot-math` calls the `libm` 
 instead: Rust ports of C maths routines built from basic IEEE operations, pinned to
 one release with its hardware paths turned off, so native code and wasm run the same
 software routines. `tests/golden.rs` compares every recorded output bit for bit on
-the machine that runs it. The ephemeris, physics, game and wasm crates follow in
-later pull requests, each using `starshot-math` for its maths.
+the machine that runs it. The physics, game and wasm crates follow in later pull
+requests, each using `starshot-math` for its maths.
 
 ## Conventions: units, frames and time
 

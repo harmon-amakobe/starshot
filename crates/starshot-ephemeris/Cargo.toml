@@ -1,0 +1,15 @@
+[package]
+name = "starshot-ephemeris"
+description = "Planet states from JPL's Table 1 and time scales (D4)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# The growth path's stage 3 (D29): nothing but starshot-math, so any producer of a pack
+# or an ephemeris can test against this crate without pulling in physics or the game.
+[dependencies]
+starshot-math = { path = "../starshot-math" }
+
+[lints]
+workspace = true

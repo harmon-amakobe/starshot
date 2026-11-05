@@ -238,8 +238,12 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR6 Rust gates | PR6 | `codex/v1-pr06-rust-gates` | `codex/v1-pr06-rust-workspace` | B1 |
 | PR7 | PR7, PR8 | `codex/v1-pr07-ephem-rails` | `codex/v1-pr06-rust-gates` | B1 |
 | Band B supplement | Planning checkpoint for the Rust core | `codex/v1-band-b-supplement` | `codex/v1-pr07-ephem-rails` | B1 |
-| PR9 | PR9, PR10 | `codex/v1-pr09-ephemeris-crate` | `codex/v1-band-b-supplement` | B2 |
-| PR11 | PR11, PR12 | `codex/v1-pr11-physics-crate` | `codex/v1-pr09-ephemeris-crate` | B2 |
+| PR9 time and bodies | PR9 | `codex/v1-pr09-time-bodies` | `codex/v1-band-b-supplement` | B2 |
+| PR9 Table 1 | PR9 | `codex/v1-pr09-table1` | `codex/v1-pr09-time-bodies` | B2 |
+| PR10 rails reader | PR10 | `codex/v1-pr10-rails-reader` | `codex/v1-pr09-table1` | B2 |
+| PR10 rail ephemeris | PR10 | `codex/v1-pr10-rail-ephemeris` | `codex/v1-pr10-rails-reader` | B2 |
+| PR10 lunar model | PR10 | `codex/v1-pr10-lunar-model` | `codex/v1-pr10-rail-ephemeris` | B2 |
+| PR11 | PR11, PR12 | `codex/v1-pr11-physics-crate` | `codex/v1-pr10-lunar-model` | B2 |
 | PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr11-physics-crate` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |

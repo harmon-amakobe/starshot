@@ -107,7 +107,7 @@ A wrong change in these is expensive or silent; plan first and say what you chec
   `OUTER_SIM_SETTINGS` and `simulateShot`.
 - `apps/game/src/levels.ts` (each level's `sim`, par, tolerance and capture zone) and
   the known solutions in `apps/game/src/levels.test.ts`.
-- `packages/ephemeris/test/fixtures/horizons.json`, `fixtures/math/golden.json` and
+- `fixtures/horizons/horizons.json`, `fixtures/math/golden.json` and
   `data/ephem/**` (regenerate, never hand-edit), and each rail's segment and degree in
   `tools/ephem/src/ephem/bodies.py`.
 - `python/astlo/astlo/**` (D10): Mark's code; change it only by one-topic fix commits,

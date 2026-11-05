@@ -13,7 +13,7 @@ Run them from the repository root; `uv` installs the versions in `tools/ephem/uv
 uv sync --project tools/ephem --locked
 uv run --project tools/ephem --locked pytest tools/ephem/tests -q        # no network
 # The Horizons fixture the TypeScript ephemeris tests read (10 requests, then cached).
-uv run --project tools/ephem --locked starshot-ephem fixtures --out packages/ephemeris/test/fixtures/horizons.json
+uv run --project tools/ephem --locked starshot-ephem fixtures --out fixtures/horizons/horizons.json
 # de440s.bsp (about 32 MB) and gm_de440.tpc, downloaded once and MD5-checked.
 uv run --project tools/ephem --locked starshot-ephem kernel --path tools/ephem/.cache/de440s.bsp
 ```

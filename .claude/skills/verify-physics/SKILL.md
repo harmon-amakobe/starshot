@@ -38,8 +38,8 @@ after.
 
 ```bash
 uv run --project tools/ephem --locked starshot-ephem fixtures \
-  --out packages/ephemeris/test/fixtures/horizons.json   # needs ssd.jpl.nasa.gov; answers cached
-git diff --stat packages/ephemeris/test/fixtures/horizons.json
+  --out fixtures/horizons/horizons.json   # needs ssd.jpl.nasa.gov; answers cached
+git diff --stat fixtures/horizons/horizons.json
 npx vitest run packages/ephemeris
 uv run --project tools/ephem --locked pytest tools/ephem/tests -q
 ```
