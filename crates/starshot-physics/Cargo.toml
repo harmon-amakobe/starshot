@@ -10,9 +10,9 @@ publish.workspace = true
 starshot-ephemeris = { path = "../starshot-ephemeris" }
 starshot-math = { path = "../starshot-math" }
 
-# float_roundtrip reads JSON numbers correctly rounded, as JavaScript does.
+# The tests read fixtures/conformance/physics.json, whose numbers are hex strings of bits.
 [dev-dependencies]
-serde_json = { workspace = true, features = ["float_roundtrip"] }
+serde_json.workspace = true
 
 [lints]
 workspace = true

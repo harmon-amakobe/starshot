@@ -10,9 +10,9 @@ pub const LEO_RADIUS_KM: f64 = 6371.0 + 200.0;
 
 /// The heliocentric start state of a probe that leaves Earth with excess velocity `v_inf`
 /// [km/s]. The escape hyperbola takes less than a day of a months-long flight, so the
-/// probe starts at Earth's centre (Table 1's Earth-Moon barycentre) at Earth's velocity
-/// plus `v_inf`, and the simulation switches Earth's gravity on once it is clear. The
-/// aim then agrees with a Lambert solution.
+/// probe starts at Table 1's Earth, the Earth-Moon barycentre (about 4,700 km from Earth's
+/// centre), at its velocity plus `v_inf`, and the simulation switches Earth's gravity on
+/// once it is clear. The aim then agrees with a Lambert solution.
 pub fn departure_state(eph: &dyn Ephemeris, et: f64, v_inf: Vec3) -> State {
     let earth = eph.state(BodyId::Earth, et);
     State {
