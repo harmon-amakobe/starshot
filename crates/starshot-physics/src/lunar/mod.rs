@@ -17,7 +17,7 @@ pub use starshot_ephemeris::lunar::{
     BASIS_PHASE_DEG, Basis, EARTH_GM, EarthMoon, LAUNCH_ET, LunarModel, MOON_GM, RailError, unit,
 };
 
-pub const DAY: f64 = 86400.0;
+pub const DAY: f64 = starshot_ephemeris::time::SECONDS_PER_DAY;
 /// Earth's radius [km] in the lunar study, not `BodyInfo`'s 6371.0084 (`model.ts:8`).
 pub const EARTH_RADIUS: f64 = 6371.0;
 pub const MOON_RADIUS: f64 = 1737.4;

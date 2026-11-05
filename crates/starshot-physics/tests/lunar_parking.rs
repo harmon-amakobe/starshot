@@ -169,7 +169,7 @@ fn departures_match_typescript_and_start_at_the_parking_position() {
 #[test]
 fn refusals_keep_the_typescript_text() {
     let (model, rows) = (model(), section("errors"));
-    assert_eq!(rows.len(), 10);
+    assert_eq!(rows.len(), 12);
     for row in &rows {
         let (orbit, et) = (orbit(&row[1..5]), bits(&row[5]));
         let got = match row[0].as_str() {
