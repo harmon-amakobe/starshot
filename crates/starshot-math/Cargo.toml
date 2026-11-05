@@ -1,0 +1,16 @@
+[package]
+name = "starshot-math"
+description = "The only home of Starshot's transcendental functions: libm, so every runtime gives the same bits (D16)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+libm.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true

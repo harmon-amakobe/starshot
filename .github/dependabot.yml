@@ -1,7 +1,8 @@
-# Dependency updates: npm monthly, GitHub Actions weekly, because a pinned action's
-# security fix should not wait a month. Each update is a pull request that CI gates like
-# any other. The 7-day cooldown skips releases younger than a week, so a hijacked
-# release has that week to be caught and pulled before it reaches a pull request here.
+# Dependency updates: npm and Cargo monthly, GitHub Actions weekly, because a pinned
+# action's security fix should not wait a month. Each update is a pull request that CI
+# gates like any other. The 7-day cooldown skips releases younger than a week, so a
+# hijacked release has that week to be caught and pulled before it reaches a pull
+# request here.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -14,6 +15,15 @@ updates:
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]
+  # libm is pinned exactly in Cargo.toml. A proposed libm release must pass the maths
+  # golden test, which fails if any recorded bit moved (D16).
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
   - package-ecosystem: github-actions
     directory: /
     schedule:

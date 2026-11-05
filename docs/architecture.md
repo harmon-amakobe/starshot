@@ -163,6 +163,33 @@ success or failure cannot launch or cancel a newer pilot's shot. The local cloud
 demo has a separate store, revisioned drafts and explicit conflict choices. It has
 no connection to Firebase or a real identity provider.
 
+### `crates/`: the Rust core
+
+The simulation is moving into one Rust core (D16), which the game will load as wasm.
+The TypeScript packages above stay the reference until it matches them. Today the
+workspace holds one crate.
+
+```
+  Cargo.toml             workspace: edition 2024, unsafe code forbidden,
+                         libm pinned exactly
+  rust-toolchain.toml    the one toolchain, for local work and CI
+  clippy.toml            rejects f64 and f32 sin, pow, mul_add and the rest
+  crates/
+    starshot-math/       the only home of transcendental functions
+      src/lib.rs         sin, cos, atan2, pow, hypot ... over the libm crate
+      examples/          gen_golden: writes fixtures/math/golden.json
+      tests/golden.rs    every recorded output, bit for bit
+  fixtures/math/         data the Rust tests read with include_str!
+```
+
+`f64::sin` and its relatives use the platform's maths library, whose last bit differs
+between x86_64, arm64 and the browser engines. `starshot-math` calls the `libm` crate
+instead: Rust ports of C maths routines built from basic IEEE operations, pinned to
+one release with its hardware paths turned off, so native code and wasm run the same
+software routines. `tests/golden.rs` compares every recorded output bit for bit on
+the machine that runs it. The ephemeris, physics, game and wasm crates follow in
+later pull requests, each using `starshot-math` for its maths.
+
 ## Conventions: units, frames and time
 
 These rules apply everywhere physics happens. Mixing them up still draws a believable

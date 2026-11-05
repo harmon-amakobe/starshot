@@ -1,0 +1,8 @@
+# The one Rust toolchain for local work and CI (D16). rustup reads this file, and
+# `rustup toolchain install` in the repository installs exactly this release with its
+# lint and format tools and the wasm target. A new release is a reviewed change here.
+[toolchain]
+channel = "1.97.0"
+profile = "minimal"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
