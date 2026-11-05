@@ -3,8 +3,8 @@
 #![allow(dead_code)]
 
 use serde_json::Value;
-use starshot_ephemeris::BodyId;
 use starshot_ephemeris::vec::{Vec3, norm, sub};
+use starshot_ephemeris::{BodyId, RailPack};
 
 /// An f64 from 16 hex digits of its bits, the form the conformance fixtures store.
 pub fn bits(v: &Value) -> f64 {
@@ -59,4 +59,38 @@ pub const ARCMIN_BUDGET: [(&str, f64); 8] = [
 /// Length of a - b.
 pub fn dist(a: Vec3, b: Vec3) -> f64 {
     norm(sub(a, b))
+}
+
+/// The committed pack's decade files, 1950 to 2140, in order.
+pub const DECADE_FILES: [&[u8]; 20] = [
+    include_bytes!("../../../../data/ephem/de440s-100km/1950.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/1960.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/1970.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/1980.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/1990.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2000.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2010.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2020.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2030.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2040.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2050.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2060.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2070.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2080.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2090.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2100.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2110.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2120.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2130.bin"),
+    include_bytes!("../../../../data/ephem/de440s-100km/2140.bin"),
+];
+
+/// A pack with every decade loaded.
+pub fn full_pack() -> RailPack {
+    let mut pack = RailPack::new();
+    for bytes in DECADE_FILES {
+        pack.load_decade(bytes)
+            .expect("committed decade file loads");
+    }
+    pack
 }

@@ -1,6 +1,6 @@
 [package]
 name = "starshot-ephemeris"
-description = "Planet states from JPL's Table 1 and time scales (D4)"
+description = "Planet states from JPL's Table 1, time scales and the DE440 rails reader (D4, D17)"
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
