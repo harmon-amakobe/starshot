@@ -51,6 +51,37 @@ fn tt_minus_utc_is_69_184_s_in_2026() {
     );
 }
 
+/// The UTC days from 1972 on that begin with a new TAI - UTC, as (year, month, TAI - UTC
+/// in s), from IERS Bulletin C (<https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat>).
+/// Written from the bulletin rather than from `src/time.rs`, so a wrong row there fails.
+#[rustfmt::skip]
+const BULLETIN_C: [(i64, i64, f64); 28] = [
+    (1972, 1, 10.0), (1972, 7, 11.0), (1973, 1, 12.0), (1974, 1, 13.0), (1975, 1, 14.0),
+    (1976, 1, 15.0), (1977, 1, 16.0), (1978, 1, 17.0), (1979, 1, 18.0), (1980, 1, 19.0),
+    (1981, 7, 20.0), (1982, 7, 21.0), (1983, 7, 22.0), (1985, 7, 23.0), (1988, 1, 24.0),
+    (1990, 1, 25.0), (1991, 1, 26.0), (1992, 7, 27.0), (1993, 7, 28.0), (1994, 7, 29.0),
+    (1996, 1, 30.0), (1997, 7, 31.0), (1999, 1, 32.0), (2006, 1, 33.0), (2009, 1, 34.0),
+    (2012, 7, 35.0), (2015, 7, 36.0), (2017, 1, 37.0),
+];
+
+#[test]
+fn tt_minus_utc_steps_on_each_bulletin_c_day_and_not_a_millisecond_before() {
+    // Before 1972 TAI - UTC was not a whole number of seconds; Starshot holds it at 10 s
+    // there, as time.ts does, so the first row's millisecond before checks that offset.
+    let mut before = 10.0;
+    for (year, month, tai_minus_utc) in BULLETIN_C {
+        let at = (days_from_civil(year, month, 1) * 86_400) as f64;
+        let day = format!("{year}-{month:02}-01");
+        assert_eq!(
+            tt_minus_utc(at - 0.001),
+            32.184 + before,
+            "1 ms before {day}"
+        );
+        assert_eq!(tt_minus_utc(at), 32.184 + tai_minus_utc, "{day}");
+        before = tai_minus_utc;
+    }
+}
+
 #[test]
 fn the_accepted_forms_name_the_same_instant() {
     let utc = et_from_iso("2026-11-02T01:00:00Z").unwrap();
