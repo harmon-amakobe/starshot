@@ -1,15 +1,18 @@
 # Physics rubric
 
 For any diff touching `packages/ephemeris`, `packages/physics`, the Horizons fixtures,
-the game's shot settings or level windows. A physics bug in Starshot rarely crashes;
-it draws a believable orbit in the wrong place. So the bar is evidence, not plausibility.
+`tools/ephem`, the DE440 rails in `data/ephem`, the game's shot settings or level
+windows. A physics bug in Starshot rarely crashes; it draws a believable orbit in the
+wrong place. So the bar is evidence, not plausibility.
 
 ## Frames
 
 - Heliocentric, ecliptic and equinox of J2000 everywhere in the packages.
-- "earth" is the Earth-Moon barycentre, as in JPL's Table 1; the giant planets are their
-  system barycentres. A comparison against Horizons uses the same targets
-  (`TARGETS` in `tools/ephem/src/ephem/fixtures.py`).
+- In Table 1 and the fixture's `states`, "earth" is the Earth-Moon barycentre (the
+  rails' EMB); the giant planets are their system barycentres. Earth's centre (399) is
+  the fixture's `heliocentric_extra.earth` and the origin of the geocentric Moon. A
+  comparison uses the same targets and centres (`TARGETS` and `SERIES` in
+  `tools/ephem/src/ephem/fixtures.py`).
 - The game's 2D world is `createEphemeris({ flatten: true })`, a projection onto the
   ecliptic used by both preview and launch (D6). A 3D claim tested only in 2D is
   unproven.
@@ -45,6 +48,7 @@ it draws a believable orbit in the wrong place. So the bar is evidence, not plau
 | Claim | Evidence that counts |
 |---|---|
 | Planet position accuracy | arcminute budgets against Horizons fixtures in `packages/ephemeris/test` |
+| Rail accuracy (D17) | each body's `ephem.validation/1` report in `data/ephem/*/validation/` within 150 km of the JPL kernel every 5 days, held by `tools/ephem/tests/test_committed_pack.py` |
 | Integrator accuracy | closure and energy tests in `packages/physics/test` |
 | A transfer is possible | `bestDirectTransfer` output, then the shot flown by `simulate` reaching SOI |
 | A level is winnable | a known-solution test flown with the level's own `sim` settings |

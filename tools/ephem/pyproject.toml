@@ -1,5 +1,6 @@
 [project]
 name = "starshot-ephem"
+# PEP 621 needs a version; the tool is never published, so it stays 0.1.0 (AGENTS.md rule 10: never hand-edit a version).
 version = "0.1.0"
 description = "Starshot's ephemeris tool: Horizons test fixtures, the DE440 kernel and the rails pack"
 readme = "README.md"

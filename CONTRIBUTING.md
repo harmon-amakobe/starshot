@@ -22,6 +22,10 @@ installs it with rustfmt, clippy and the wasm target the first time cargo runs h
 Without cargo, `npm run gates` skips the four Rust gates and counts them as skipped.
 Set `STARSHOT_REQUIRE_RUST=1` to make a missing toolchain fail instead, as CI does.
 
+To refresh the NASA/JPL reference data or rebuild the rails in `data/ephem/`, you also
+need [uv](https://docs.astral.sh/uv/). `npm run gates` does not run that tool's tests;
+run them with `uv run --project tools/ephem --locked pytest tools/ephem/tests -q`.
+
 ## The checks ("gates")
 
 A change is done when this passes:
@@ -283,7 +287,8 @@ The full recipe, with code, is the [add-level skill](.claude/skills/add-level/SK
    --out packages/ephemeris/test/fixtures/horizons.json`, and never hand-edit the result.
 4. Give it an accuracy budget in `packages/ephemeris/test/ephemeris.test.ts`, justified
    by JPL's stated accuracy for that table.
-5. Run `npm run gates`.
+5. Run `npm run gates` and
+   `uv run --project tools/ephem --locked pytest tools/ephem/tests -q`.
 
 ## Adding an asset
 
