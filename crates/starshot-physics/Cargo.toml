@@ -1,6 +1,6 @@
 [package]
 name = "starshot-physics"
-description = "Flight physics: the Dormand-Prince integrator, gravity and the patched-conic launch (D16)"
+description = "Flight physics: the Dormand-Prince integrator, gravity, patched-conic launch and Lambert (D16)"
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true

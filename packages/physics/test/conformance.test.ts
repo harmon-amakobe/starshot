@@ -1,7 +1,7 @@
 // Writes or checks fixtures/conformance/physics.json, the oracle the Rust physics crate is
-// held to (crates/starshot-physics/tests/conformance_physics.rs, PR11). With
-// STARSHOT_WRITE_CONFORMANCE=1 it writes the file; otherwise the file must equal this
-// output exactly. Inputs are stored too, so Rust starts from the same bits.
+// held to (crates/starshot-physics/tests/conformance_physics.rs and tests/lambert.rs,
+// PR11). With STARSHOT_WRITE_CONFORMANCE=1 it writes the file; otherwise the file must
+// equal this output exactly. Inputs are stored too, so Rust starts from the same bits.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
@@ -14,7 +14,7 @@ import {
   type BodyId,
   type Ephemeris,
 } from "@starshot/ephemeris";
-import { Dopri5, LEO_RADIUS_KM, acceleration, c3, deltaVFromLeo, hermite } from "../src/index.js";
+import { Dopri5, EARTH_GM, LEO_RADIUS_KM, acceleration, bestDirectTransfer, c3, deltaVFromLeo, hermite, lambert } from "../src/index.js";
 
 const OUT = new URL("../../../fixtures/conformance/physics.json", import.meta.url);
 const WRITE = process.env.STARSHOT_WRITE_CONFORMANCE === "1";
@@ -113,9 +113,44 @@ const nextStepRows = ERRORS.map((err) => [
   Dopri5.nextStep(3600, err),
 ]);
 
+// Short and long ways, both senses, hyperbolic flights, Earth's own GM, a 180-degree
+// transfer with no solution, and a near-parabolic flight: by lambert.ts's own time
+// equation, the time whose root is z = 9e-7, where the Stumpff series serves (|z| < 1e-6).
+const at = (eph: Ephemeris, id: BodyId, t: number) => eph.state(id, t).r;
+const [z0, n1, n2] = [9e-7, AU_KM, 1.2 * AU_KM];
+const [c0, s0] = [1 / 2 - z0 / 24 + (z0 * z0) / 720, 1 / 6 - z0 / 120 + (z0 * z0) / 5040];
+const y0 = n1 + n2 + (Math.sqrt(n1 * n2) * (z0 * s0 - 1)) / Math.sqrt(c0);
+const NEAR_PARABOLIC = ((y0 / c0) ** 1.5 * s0 + Math.sqrt(n1 * n2) * Math.sqrt(y0)) / Math.sqrt(MU_SUN);
+const LAMBERT: Array<[boolean, number, number, readonly number[], readonly number[]]> = [
+  [true, MU_SUN, 210 * DAY, at(eph3d, "earth", T_MARS), at(eph3d, "mars", T_MARS + 210 * DAY)],
+  [false, MU_SUN, 210 * DAY, at(eph3d, "earth", T_MARS), at(eph3d, "mars", T_MARS + 210 * DAY)],
+  ...[1000, 1500, 2500].map((days): [boolean, number, number, number[], number[]] =>
+    [true, MU_SUN, days * DAY, [...at(eph2d, "earth", T_TOUR)], [...at(eph2d, "saturn", T_TOUR + days * DAY)]]),
+  [true, MU_SUN, 700 * DAY, at(eph2d, "earth", T_TOUR), at(eph2d, "jupiter", T_TOUR + 700 * DAY)],
+  [true, MU_SUN, 40 * DAY, at(eph3d, "earth", T_MARS), at(eph3d, "mars", T_MARS + 40 * DAY)],
+  [true, MU_SUN, 5 * DAY, at(eph3d, "earth", T_MARS), at(eph3d, "mars", T_MARS + 5 * DAY)],
+  [true, MU_SUN, 120 * DAY, at(eph3d, "earth", T_MARS), at(eph3d, "venus", T_MARS + 120 * DAY)],
+  [true, EARTH_GM, 5 * 3600, [7000, 0, 0], [0, 42164, 100]],
+  [true, MU_SUN, 300 * DAY, [AU_KM, 0, 0], [-1.5 * AU_KM, 0, 0]],
+  [true, MU_SUN, NEAR_PARABOLIC, [n1, 0, 0], [0, n2, 0]],
+];
+const lambertRows = LAMBERT.map(([prograde, mu, tof, r1, r2]) => {
+  const sol = lambert([r1[0]!, r1[1]!, r1[2]!], [r2[0]!, r2[1]!, r2[2]!], tof, mu, prograde);
+  return [prograde, [mu, tof, ...r1, ...r2].map(bits), sol ? [...sol.v1, ...sol.v2].map(bits) : null];
+});
+
+// Today's Mars window grid in tests/lambert.rs (physics.test.ts): unflattened, 30 launches
+// every 4 days from 2026-10-01, flights of 150 + 10k days for k = 0 to 24.
+const start = etFromIso("2026-10-01");
+const launches = Array.from({ length: 30 }, (_, k) => start + k * 4 * DAY);
+const tofs = Array.from({ length: 25 }, (_, k) => (150 + k * 10) * DAY);
+const best = bestDirectTransfer(eph3d, "earth", "mars", launches, tofs)!;
+const bestRow = [best.launchEt, best.tof, ...best.vInf, best.vInfKmS, best.arrivalVInfKmS];
+
 function physicsJson(): string {
-  const rows = (list: number[][]) => list.map((row) => `    ${JSON.stringify(row.map(bits))}`).join(",\n");
-  const section = (name: string, columns: string[], list: number[][], last = false) =>
+  const rows = (list: unknown[][]) =>
+    list.map((row) => `    ${JSON.stringify(row.map((x) => (typeof x === "number" ? bits(x) : x)))}`).join(",\n");
+  const section = (name: string, columns: string[], list: unknown[][], last = false) =>
     [`  "${name}_columns": ${JSON.stringify(columns)},`, `  "${name}": [`, rows(list), last ? "  ]" : "  ],"];
   const xyz = (p: string) => [`${p}x`, `${p}y`, `${p}z`];
   const knotColumns = (k: string) => [`${k}.t`, ...xyz(`${k}.r`), ...xyz(`${k}.v`)];
@@ -136,14 +171,17 @@ function physicsJson(): string {
         "err2", ...xyz("y2.r"), ...xyz("y2.v")],
       stepRows,
     ),
-    ...section("next_step", ["h", "err", "nextStep"], nextStepRows, true),
+    ...section("next_step", ["h", "err", "nextStep"], nextStepRows),
+    ...section("lambert", ["prograde", "mu, tof, r1, r2", "v1, v2 or null"], lambertRows),
+    ...section("best_mars_2026", ["launchEt", "tof", ...xyz("vInf."), "vInfKmS", "arrivalVInfKmS"], [bestRow], true),
     "}",
     "",
   ].join("\n");
 }
 
 describe("physics conformance fixture", () => {
-  it("reaches both step-size clamps, and both accepted and rejected steps", () => {
+  it("covers each solver branch it names", () => {
+    expect(lambertRows.filter((row) => row[2] === null)).toHaveLength(1);
     expect(nextStepRows.map((row) => row[2]! / 3600)).toContain(5);
     expect(nextStepRows.map((row) => row[2]! / 3600)).toContain(0.2);
     expect(stepRows.some((row) => row[12]! > 1) && stepRows.some((row) => row[12]! <= 1)).toBe(true);
