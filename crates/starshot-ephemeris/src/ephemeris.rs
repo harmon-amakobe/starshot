@@ -233,6 +233,7 @@ impl Ephemeris for RailEphemeris {
     /// depend on where the positions come from. The Moon has none until PR20, so asking
     /// for it panics.
     fn soi_km(&self, id: BodyId, et: f64) -> f64 {
+        finite(et, id);
         self.table1().soi_km(id, et)
     }
 }
