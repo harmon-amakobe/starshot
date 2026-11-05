@@ -15,15 +15,19 @@
 pub mod bodies;
 pub mod ephemeris;
 pub mod kepler;
+pub mod rails;
 pub mod table1;
 pub mod time;
 pub mod vec;
 
-pub use bodies::{AU_KM, BodyId, BodyInfo, EARTH_ONLY_GM, PLANET_IDS, sphere_of_influence_km};
+pub use bodies::{
+    AU_KM, BodyId, BodyInfo, EARTH_ONLY_GM, PLANET_IDS, RailBody, sphere_of_influence_km,
+};
 pub use ephemeris::{
     Ephemeris, State, Table1Ephemeris, orbit_path, orbital_period_seconds, planet_state,
 };
 pub use kepler::{ClassicalElements, solve_kepler, state_from_elements, wrap_pi};
+pub use rails::{PackError, RailPack};
 pub use table1::{APPROX_ELEMENTS, APPROX_VALID_JD, planet_elements};
 pub use time::{
     TimeError, et_from_iso, et_from_jd_tdb, et_from_unix_ms, jd_tdb_from_et, tt_minus_utc,

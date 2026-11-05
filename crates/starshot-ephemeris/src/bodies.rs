@@ -107,6 +107,52 @@ impl fmt::Display for BodyId {
     }
 }
 
+/// A body's code in an `ephem.pack/1` decade file: NAIF ids 1 to 8 for the planets'
+/// system barycentres relative to the Sun, 301 for the Moon relative to Earth's centre.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum RailBody {
+    Mercury = 1,
+    Venus = 2,
+    /// The Earth-Moon barycentre, Table 1's "earth".
+    Emb = 3,
+    Mars = 4,
+    Jupiter = 5,
+    Saturn = 6,
+    Uranus = 7,
+    Neptune = 8,
+    /// The geocentric Moon.
+    Moon = 301,
+}
+
+impl RailBody {
+    /// Every body of the committed pack, in its table order.
+    pub const ALL: [RailBody; 9] = [
+        RailBody::Mercury,
+        RailBody::Venus,
+        RailBody::Emb,
+        RailBody::Mars,
+        RailBody::Jupiter,
+        RailBody::Saturn,
+        RailBody::Uranus,
+        RailBody::Neptune,
+        RailBody::Moon,
+    ];
+
+    pub fn code(self) -> u16 {
+        self as u16
+    }
+
+    pub fn from_code(code: u16) -> Option<RailBody> {
+        RailBody::ALL.into_iter().find(|b| b.code() == code)
+    }
+
+    /// The rail of a planet (`Earth` is the barycentre's), or None for the Sun, which is
+    /// the origin, and the Moon, whose rail is geocentric.
+    pub fn of_planet(id: BodyId) -> Option<RailBody> {
+        id.planet_index().map(|i| RailBody::ALL[i])
+    }
+}
+
 /// Laplace sphere-of-influence radius [km] of a body on an orbit of semi-major axis
 /// `a_km` about the Sun: a * (m / M_sun)^(2/5).
 pub fn sphere_of_influence_km(id: BodyId, a_km: f64) -> f64 {
