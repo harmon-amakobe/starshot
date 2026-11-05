@@ -248,7 +248,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR12 simulate | PR12 | `codex/v1-pr12-simulate` | `codex/v1-pr11-lambert-parking` | B2 |
 | PR12 simulate conformance | PR12 | `codex/v1-pr12-simulate-conformance` | `codex/v1-pr12-simulate` | B2 |
 | PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate-conformance` | B2 |
-| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-lunar-flight` | B3 |
+| PR12 records | PR12 | `codex/v1-pr12-records` | `codex/v1-pr12-lunar-flight` | B2 |
+| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-records` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
 | PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
@@ -1048,7 +1049,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR11: Physics crate, integrator and Lambert
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model`, then `codex/v1-pr11-lambert-parking` (two parts in the PR groups table, :246-247).
   **Issue** `v1-physics-core`. **Decisions** D16, D11. **Size** about 450 lines, 13 files.
 - **Goal.** Port `dopri5`, `gravity`, `hermite`, `launch` and `lambert` from
   `packages/physics/src/` to `crates/starshot-physics`, with today's tests and a
@@ -1080,7 +1081,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR12: Physics crate, simulate
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
+- **Branch** `codex/v1-pr12-simulate`, based on `codex/v1-pr11-lambert-parking`, then `codex/v1-pr12-simulate-conformance`, `codex/v1-pr12-lunar-flight` and the group's records in `codex/v1-pr12-records` (four parts in the PR groups table, :248-251).
   **Issue** `v1-physics-simulate`. **Decisions** D16, D6, D11. **Size** about 460 lines,
   6 files; warns.
 - **Goal.** Port `simulate` with encounter detection, the energy-consistent switch-on of
@@ -1091,7 +1092,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 |---|---|
 | `crates/starshot-physics/src/simulate.rs` | `SimulationConfig` (today's fields; `ephemeris: &dyn Ephemeris`), `Encounter`, `Termination` (`Duration`, `Impact`, `Sun`, `Escape`, `SoiReached`, `MaxSteps`), `SimulationResult` (`samples: Vec<Knot>`, `encounters`, `closest` as one `Option<Encounter>` per body, `termination`, `terminated_by`, `end_time`, `steps`), `simulate(&cfg)`, `sample_at(&result, t)`, the private `relative` and `refine_minimum` (golden section, 40 iterations, 1 s) with today's order |
 | `tests/simulate.rs` | Today's tests: the circular orbit closes within 10 km; sampling between samples is smooth; the Mars 2026 Lambert aim, found on today's grid (20 launches every 3 days from 2026-10-15, flights of 150 + 8k days), passes within 1.25 Mars spheres of influence (D11); Earth's gravity switches on energy-consistently exactly once; a Jupiter flyby is detected with its energy gain; aiming at a planet stops on impact; a 3-year preview takes under 400 ms (`std::time::Instant`, test profile optimised) |
-| `tests/conformance_simulate.rs` | Against `fixtures/conformance/simulate.json`: for each of 24 flights (the campaign's known solutions and par shots, misses, an impact, an escape and two outer-sandbox flights), the same termination and terminating body, the same step count, end position within 1 km, and closest approach per body within 1 km |
+| `tests/conformance_simulate.rs` | Against `fixtures/conformance/simulate.json`: for each of 24 flights (the campaign's known solutions and par shots, misses, an impact, an escape and two outer-sandbox flights), the same termination and terminating body, the same step count, end position and closest approach per body within 1 m, closest-approach time within 1 s, relative speed and last velocity within 1 m/s, and end time within 1 ms (deviation row 109) |
 | `packages/physics/test/conformance-simulate.test.ts` | New, write-or-compare; stores each flight's inputs with the excess-speed vector as exact bits (16 hex digits per component) and the outputs |
 | `fixtures/conformance/simulate.json` | Generated |
 | `CHANGELOG.md` | `[Unreleased]` |
@@ -1109,7 +1110,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR13: Game crate, shots and replays
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records` (group PR13).
   **Issue** `v1-game-shot`. **Decisions** D16, D6. **Size** about 430 lines, 11 files.
 - **Goal.** Port the shot model of `apps/game/src/sim/shot.ts` and add the replay format
   with canonical inputs and a physics version.
@@ -1134,7 +1135,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records` (group PR13).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.
