@@ -2,10 +2,11 @@
 
 Every asset the game ships is listed here with its source, its licence and the credit
 its licence asks for (D15). Starshot's own original art, audio and screenshots are
-CC BY 4.0 (D12); assets from elsewhere keep their own licence. The licence gate
-(`scripts/check-licence.mjs`) fails when a file under `apps/game/public/art/` or
-`apps/game/public/audio/` has no entry here. When the assets manifest lands, this page
-and the in-game credits are generated from it.
+CC BY 4.0 (D12); assets from elsewhere keep their own licence. Each file under
+`apps/game/public/` has an entry in `apps/game/assets/manifest.json` with its source,
+licence, attribution and hash. The `assets` gate (`scripts/check-assets.mjs`) checks
+that manifest. `node scripts/gen-credits.mjs` writes the game assets section below from
+it, and the `credits` gate fails when the two disagree.
 
 Starshot began as a fork of astlo by Mark Macharia
 ([@iamnothimbutwe](https://github.com/iamnothimbutwe)). No astlo code or data ships in
@@ -13,6 +14,23 @@ the game; see [NOTICE.md](NOTICE.md).
 
 Planet positions come from NASA/JPL's approximate planetary elements, checked against
 NASA/JPL Horizons; see [NOTICE.md](NOTICE.md#nasajpl-data).
+
+## Game assets
+
+The game's own assets, generated from the manifest. The sections after this one credit
+the observatory files. The game build ships them too, copied from
+`apps/prototype/public/observatory/` to `/observatory/`. They are recorded in that
+folder's `assets-manifest.json`, which the `assets` gate also checks, so those sections
+are written by hand.
+
+<!-- assets:start -->
+<!-- Generated from apps/game/assets/manifest.json by scripts/gen-credits.mjs. Edit the manifest, then run the script. -->
+
+### Images
+
+- Starshot icon: Harmon Amakobe. Licence: LicenseRef-starshot-brand.
+
+<!-- assets:end -->
 
 ## Planet textures
 

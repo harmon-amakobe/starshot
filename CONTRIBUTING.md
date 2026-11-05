@@ -31,8 +31,13 @@ It runs every check in one go and prints a table. It must end with
 |---|---|
 | `secrets` | The repository is public: no keys, tokens, personal emails, personal file paths or private project names |
 | `third-party` | `third_party/astlo` stays byte-for-byte as Mark published it |
-| `licence` | Every file has a licence record in `REUSE.toml`, `LICENSE` is Apache-2.0, and every art or audio file is in `CREDITS.md` |
+| `licence` | Every file has a licence record in `REUSE.toml`, and `LICENSE` is Apache-2.0 |
+| `dependency-licences` | Every locked npm package has a licence from `scripts/licence-allow.json`, or an exception with its reason |
+| `assets`, `credits` | Every file under `apps/game/public/` has a manifest entry with an open licence and its hash, and `CREDITS.md` matches that manifest |
 | `copy` | Text follows the [copy standard](docs/copy-standard.md): no em or en dashes, no stock phrases (below) |
+| `commits` | Commit authors and messages hold no secrets; a commit without a sign-off gets a warning |
+| `work` | The plan's issue list (`work.yaml`) agrees with its lock file |
+| `pr-size` | The pull request size check works; CI runs it on each pull request |
 | `size` | No file grows past 500 code lines unless it is on the shrinking baseline; packages never import the game |
 | `instruction-dedup`, `agent-frontmatter`, `guard-scan-coverage`, `hook-fixtures` | The agent setup stays consistent, and no check passes by scanning nothing |
 | `typecheck` | The TypeScript types agree across packages and the game |
@@ -83,6 +88,20 @@ with a link to the original.
   `docs/plans/<program>/work.yaml`; the orchestrator creates and updates them with
   `scripts/sync-work.mjs` (D23).
 
+## Claiming work, the board and status comments
+
+Claims follow **Claiming** above, issues come from each program's `work.yaml` as under
+**Epics**, and pull requests name their issue as under **Name the issue** below. CI never
+creates or edits issues from work.yaml; only the copy-lint workflow comments on and labels text
+that breaks the copy standard.
+
+- **The board** is one project with the fields Status, Priority, Size, Area, Actor and
+  Chapter. `scripts/sync-work.mjs` sets them from `work.yaml` when its token can reach
+  the project.
+- **Status comments.** The orchestrator posts one when it claims an issue and one when
+  the work is done, from the two lines in the
+  [track-work skill](.claude/skills/track-work/SKILL.md#status-comments).
+
 ## Pull requests: small, stacked, one at a time
 
 - **One pull request to `main` at a time.** If you need several steps, make a *stack*:
@@ -91,8 +110,10 @@ with a link to the original.
   merges as one.
   The [stacked-pr skill](.claude/skills/stacked-pr/SKILL.md) has the exact commands.
 - Name branches `starshot/<topic>`, for example `starshot/daily-challenge`.
-- Keep each pull request reviewable: roughly 400 changed lines or 20 files, not
-  counting lockfiles and test data.
+- Keep each pull request reviewable: roughly 400 added lines or 20 changed files. Every
+  added line counts except in lockfiles, fixture JSON, generated data and binary files.
+  CI's `pr-size` job warns above that and fails above twice it. A planned group of n
+  specs gets n times the cap (D30).
 - Fill in the [pull request template](.github/pull_request_template.md): what changed,
   which decisions it relies on, the gates table, and the evidence.
 - **Name the issue.** Inside a stack, write `Part of #n`. Write `Closes #n` only in the
@@ -247,6 +268,51 @@ The full recipe, with code, is the [add-level skill](.claude/skills/add-level/SK
 4. Give it an accuracy budget in `packages/ephemeris/test/ephemeris.test.ts`, justified
    by JPL's stated accuracy for that table.
 5. Run `npm run gates`.
+
+## Adding an asset
+
+Every file the game ships from `apps/game/public/` needs an entry in
+`apps/game/assets/manifest.json` (D15). The `assets` gate fails without one.
+
+1. **Check the licence.** It must be CC BY 4.0, CC0, OFL 1.1, Apache-2.0, the NASA
+   media terms or the Starshot brand licence. CC BY-SA 4.0 is accepted only for a
+   separately licensed data file (`"separateDataFile": true`). Non-commercial (NC) and
+   no-derivatives (ND) licences are refused (D14), and so are AI-generated assets (D15).
+2. **Add the entry.** `kind` is `texture`, `image`, `audio`, `font` or `data`. Your own
+   work uses `"source": { "kind": "original" }`; anything downloaded records where from.
+
+   ```json
+   {
+     "id": "earth-day",
+     "kind": "texture",
+     "title": "Earth day map",
+     "files": [{ "path": "apps/game/public/art/earth-2k.jpg", "sha256": "<hash of the file>" }],
+     "source": { "kind": "url", "url": "https://example.org/earth.jpg", "retrieved": "2026-11-04", "sha256": "<hash of the download>" },
+     "licence": "CC-BY-4.0",
+     "attribution": "Solar System Scope / INOVE",
+     "modifications": "Resized to 2048 x 1024",
+     "aiGenerated": false
+   }
+   ```
+
+3. **Hash each file**, and the original download for a `url` source. When a hash is
+   wrong, the gate prints the one the file has.
+
+   ```bash
+   sha256sum apps/game/public/art/earth-2k.jpg     # Git Bash and Linux; on macOS, shasum -a 256
+   ```
+
+4. **Write the credits and run the gates.** `CREDITS.md` is generated from the manifest,
+   so never edit its game assets section by hand.
+
+   ```bash
+   node scripts/gen-credits.mjs
+   npm run gates
+   ```
+
+The file also needs a licence record in `REUSE.toml` for the `licence` gate. Files under
+`apps/game/public/art/` and `audio/` are already CC BY 4.0 there; a file under another
+licence needs its own annotation.
 
 ## Accessibility
 

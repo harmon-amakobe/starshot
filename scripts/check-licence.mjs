@@ -4,8 +4,8 @@
  *
  * Fails when a tracked file matches no [[annotations]] path in REUSE.toml, when a licence
  * named there has no text in LICENSES/ (or a text there is never named), when LICENSE is
- * not the Apache-2.0 text, when a package.json declares another licence, or when an art or
- * audio file under apps/game/public has no entry in CREDITS.md (D15). An in-file SPDX
+ * not the Apache-2.0 text, or when a package.json declares another licence. Shipped media
+ * are check-assets.mjs's rule (D15), one gate per rule. An in-file SPDX
  * header that disagrees with REUSE.toml is a warning: the header wins under REUSE's default
  * precedence, so it is a record to fix, not a file without one.
  *
@@ -81,18 +81,13 @@ for (const f of manifests) {
   if (declared !== "Apache-2.0") problems.push(`${f}: "license" is ${JSON.stringify(declared)}, not "Apache-2.0" (D12)`);
 }
 
-const credits = existsSync(resolve(ROOT, "CREDITS.md")) ? read("CREDITS.md") : "";
-const media = files.filter((f) => /^apps\/game\/public\/(art|audio)\//.test(f));
-for (const f of media) {
-  if (!credits.includes(f) && !credits.includes(f.replace("apps/game/public/", ""))) problems.push(`${f}: no entry in CREDITS.md (source, licence, attribution; D15)`);
-}
-
 for (const w of warnings) console.log(`  ! ${w}`);
 if (covered === 0) problems.push("zero files checked; the file listing is broken, so a pass would be vacuous");
 if (problems.length) {
   console.error(`licence: FAILED, ${problems.length} problem(s):`);
   for (const p of problems) console.error(`  ✗ ${p}`);
-  console.error("Fix the record, not the check: label new paths in REUSE.toml, credit media in CREDITS.md, and keep LICENSE as published (D12).");
+  console.error("Fix the record, not the check: label new paths in REUSE.toml and keep LICENSE as published (D12).");
   process.exit(1);
 }
-console.log(`licence: ${covered} file(s) covered by ${annotations.length} REUSE.toml annotation(s); ${licenceFiles.length} licence text(s); ${manifests.length} package.json Apache-2.0; ${media.length} media file(s) credited; ${warnings.length} header warning(s)`);
+console.log(`licence: ${covered} file(s) covered by ${annotations.length} REUSE.toml annotation(s); ${licenceFiles.length} licence text(s); `
+  + `${manifests.length} package.json Apache-2.0; ${warnings.length} header warning(s)`);

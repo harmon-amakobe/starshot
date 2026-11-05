@@ -8,7 +8,8 @@ path = "**"
 SPDX-FileCopyrightText = "2026 Harmon Amakobe and Starshot contributors"
 SPDX-License-Identifier = "Apache-2.0"
 
-# Original art and audio (D12, D15). Each file also needs an entry in CREDITS.md.
+# Original art and audio (D12, D15). Each file also needs an entry in
+# apps/game/assets/manifest.json (check-assets.mjs), from which CREDITS.md is generated.
 [[annotations]]
 path = ["apps/game/public/art/**", "apps/game/public/audio/**"]
 SPDX-FileCopyrightText = "Starshot contributors; third-party sources as listed in CREDITS.md"

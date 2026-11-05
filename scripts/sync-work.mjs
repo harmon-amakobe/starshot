@@ -16,9 +16,11 @@
  *   node scripts/sync-work.mjs --program <name>             dry run: print what would change
  *   node scripts/sync-work.mjs --program <name> --apply     make the changes and write the lock
  *   node scripts/sync-work.mjs --program <name> --check     offline: fail if work.yaml and the lock disagree
+ *   node scripts/sync-work.mjs --check                      offline: the same for every program, one line each
  *   node scripts/sync-work.mjs --self-test                  offline: parse the fixture and print its plan
  * Options: --only <slug>, --repo <owner/repo> (default: the origin remote),
- *   --file <path> (a work.yaml outside docs/plans), --offline (plan from the lock alone).
+ *   --file <path> (a work.yaml outside docs/plans), --offline (plan from the lock alone),
+ *   --plans-dir <path> (where the program folders are; default docs/plans).
  * Token: GITHUB_TOKEN or GH_TOKEN; without one the dry run is offline. The project steps
  * run only when that token can read the project named by `project:` in work.yaml;
  * otherwise they print what they would set.
@@ -27,7 +29,7 @@
  * quoted and plain scalars, [flow, lists], | and > blocks). Its file name may carry a
  * prefix, as in 03-work.yaml; the lock is always work.lock.json in the same folder.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,18 +39,21 @@ import { client, all } from "./lib/github-rest.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const FIXTURE = "scripts/fixtures/work/work.yaml";
+const PLANS_FIXTURE = "scripts/fixtures/work/plans";
+const WORK_FILE = /(^|-)work\.ya?ml$/;
 const MARK = (slug) => `<!-- starshot-work: ${slug} -->`;
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 const ENUMS = { size: ["XS", "S", "M", "L", "XL"], priority: ["p0", "p1", "p2", "p3"], actor: ["Human", "Agent", "Either"] };
 const read = (p) => readFileSync(resolve(ROOT, p), "utf8");
 
 function parseArgs(argv) {
-  const o = { apply: false, check: false, selfTest: false, offline: false, program: null, only: null, repo: null, file: null };
+  const o = { apply: false, check: false, selfTest: false, offline: false, program: null, only: null, repo: null, file: null, plansDir: "docs/plans" };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const flag = { "--apply": "apply", "--check": "check", "--self-test": "selfTest", "--offline": "offline" }[a];
     if (flag) o[flag] = true;
     else if (["--program", "--only", "--repo", "--file"].includes(a) && argv[i + 1]) o[a.slice(2)] = argv[++i];
+    else if (a === "--plans-dir" && argv[i + 1]) o.plansDir = argv[++i];
     else throw new Error(`unknown or incomplete argument ${a}`);
   }
   return o;
@@ -57,11 +62,39 @@ function parseArgs(argv) {
 function locate(o) {
   if (o.file) return resolve(ROOT, o.file);
   if (!o.program) throw new Error("name the program with --program <name>, or a file with --file <path>");
-  const dir = resolve(ROOT, "docs/plans", o.program);
-  const found = existsSync(dir) ? readdirSync(dir).filter((f) => /(^|-)work\.ya?ml$/.test(f)).sort() : [];
+  const dir = resolve(ROOT, o.plansDir, o.program);
+  const found = existsSync(dir) ? readdirSync(dir).filter((f) => WORK_FILE.test(f)).sort() : [];
   if (found.includes("work.yaml")) return join(dir, "work.yaml");
-  if (found.length !== 1) throw new Error(`docs/plans/${o.program} needs exactly one work.yaml (found ${found.length})`);
+  if (found.length !== 1) throw new Error(`${o.plansDir}/${o.program} needs exactly one work.yaml (found ${found.length})`);
   return join(dir, found[0]);
+}
+
+/** Every program folder under the plans directory that holds a work.yaml, by name. */
+function programsIn(plansDir) {
+  const root = resolve(ROOT, plansDir);
+  if (!existsSync(root)) throw new Error(`${plansDir} does not exist`);
+  return readdirSync(root, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && readdirSync(join(root, d.name)).some((f) => WORK_FILE.test(f)))
+    .map((d) => d.name)
+    .sort();
+}
+
+/** One program's offline check: whether its work.yaml and lock agree, and the line to print. */
+function checkProgram(o, labelNames) {
+  try {
+    const path = locate(o);
+    const lockPath = join(dirname(path), "work.lock.json");
+    const work = loadWork(path, labelNames);
+    const lock = existsSync(lockPath) ? JSON.parse(readFileSync(lockPath, "utf8")) : null;
+    const { problems, note } = checkLock(work, lock);
+    // Ids are never removed, so a slug the lock has and work.yaml lacks goes back into work.yaml.
+    const fix = "Fix: if a slug is in the lock but not in work.yaml, restore its id in work.yaml (never remove a slug). "
+      + `Otherwise the orchestrator runs node scripts/sync-work.mjs --program ${o.program ?? "<name>"} --apply (track-work skill).`;
+    if (problems.length) return { ok: false, line: `sync-work: FAILED, ${relative(ROOT, path)} and its lock disagree:\n  ${problems.join("\n  ")}\n${fix}` };
+    return { ok: true, line: `sync-work: ${relative(ROOT, path)} is valid, ${work.items.length} issue(s)${note ? `; ${note}` : "; the lock agrees"}` };
+  } catch (e) {
+    return { ok: false, line: `sync-work: FAILED, ${o.program ?? o.file}: ${e.message}` };
+  }
 }
 
 export function loadLabels() {
@@ -272,6 +305,16 @@ function selfTest(labels) {
   expect(checkLock(work, lock).problems.length === 3, "the fixture lock should miss three slugs");
   const rows = offlinePlan(work, lock, labels);
   expect(rows.some((r) => r[0] === "fx-seed" && r[1] === "update" && r[2] === "#12") && rows.some((r) => r[0] === "fx-share" && r[1] === "create"), "offline plan");
+  // Through the command line, as the work gate and CI call it: two fixture programs, one
+  // whose lock names a slug its work.yaml lacks. Checking every program must name it.
+  const run = (...args) =>
+    spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...args, "--plans-dir", PLANS_FIXTURE], { cwd: ROOT, encoding: "utf8" });
+  const one = run("--check", "--program", "agrees");
+  expect(one.status === 0 && one.stdout.includes("agrees/work.yaml is valid"), `--check --program agrees should pass (exit ${one.status})`);
+  const every = run("--check");
+  const named = /drifts\/work\.yaml and its lock disagree[\s\S]*dr-gone/.test(every.stderr);
+  expect(every.status === 1 && every.stdout.includes("agrees/work.yaml is valid") && named,
+    `--check over every program should pass agrees and fail naming drifts (exit ${every.status})`);
   console.log(`sync-work: dry run of ${FIXTURE}, offline:`);
   printRows(rows);
   return problems;
@@ -292,22 +335,26 @@ async function main() {
       console.error(`sync-work: self-test FAILED: ${problems.join("; ")}`);
       process.exit(1);
     }
-    console.log("sync-work: self-test passed (parser, schema, bodies, copy check, lock check, offline plan)");
+    console.log("sync-work: self-test passed (parser, schema, bodies, copy check, lock check, offline plan, every-program check)");
+    return;
+  }
+  if (o.check) {
+    const labelNames = new Set(labels.map((l) => l.name));
+    // No program named: every program folder, so a second program's drift cannot hide.
+    const programs = o.program || o.file ? [o.program] : programsIn(o.plansDir);
+    if (!programs.length) {
+      console.error(`sync-work: FAILED, no program folder under ${o.plansDir} holds a work.yaml, so a pass would be vacuous`);
+      process.exit(1);
+    }
+    const results = programs.map((program) => checkProgram({ ...o, program }, labelNames));
+    for (const r of results) (r.ok ? console.log : console.error)(r.line);
+    if (results.some((r) => !r.ok)) process.exit(1);
     return;
   }
   const path = locate(o);
   const lockPath = join(dirname(path), "work.lock.json");
   const work = loadWork(path, new Set(labels.map((l) => l.name)));
   const lock = existsSync(lockPath) ? JSON.parse(readFileSync(lockPath, "utf8")) : null;
-  if (o.check) {
-    const { problems, note } = checkLock(work, lock);
-    if (problems.length) {
-      console.error(`sync-work: FAILED, ${relative(ROOT, path)} and its lock disagree:\n  ${problems.join("\n  ")}`);
-      process.exit(1);
-    }
-    console.log(`sync-work: ${relative(ROOT, path)} is valid, ${work.items.length} issue(s)${note ? `; ${note}` : "; the lock agrees"}`);
-    return;
-  }
   const copy = copyProblems(work, Object.fromEntries(Object.entries(lock?.issues ?? {}).map(([s, e]) => [s, e.number])));
   if (copy.length) {
     console.error(`sync-work: FAILED, text that breaks the copy standard (docs/copy-standard.md):\n  ${copy.join("\n  ")}`);

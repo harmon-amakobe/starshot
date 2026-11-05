@@ -62,6 +62,7 @@ people start from the README at the root.
 | `node scripts/check-copy-tells.mjs` | The copy gate; `--stdin --kind pr` for a body, `--commits <range>` for messages |
 | `node scripts/check-file-size.mjs` | The size, shape and layering gate, which also warns on lines over 160 characters; `--update` lowers the baseline, `--self-test` runs only the long-line fixtures |
 | `node scripts/check-licence.mjs` | The licence gate |
+| `node scripts/gen-credits.mjs` | Writes the game assets section of `CREDITS.md` from `apps/game/assets/manifest.json`; `--check` is the credits gate |
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |
 | `node scripts/verify-game.mjs` | Drives the built game in a headless browser on phone and desktop sizes |
 | `node scripts/verify-web-release.mjs` | Verifies offline flight, worker updates and cache ownership at the root and a portable subpath |
