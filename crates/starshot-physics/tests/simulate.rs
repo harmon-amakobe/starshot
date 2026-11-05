@@ -1,6 +1,8 @@
 //! Today's `simulate` tests (`packages/physics/test/physics.test.ts`) with today's
-//! assertions, the edges of a flight (its time limit, its step limit, sampling outside
-//! it), and the timing budget of a live aiming preview.
+//! assertions, each of the six endings, the step cap, NaN parity, sampling outside a
+//! flight, and the timing budget of a live aiming preview. Step counts and the Sun dive's
+//! aim are `fixtures/conformance/simulate.json`'s, copied as literals: the TypeScript
+//! flew the same steps.
 
 use core::f64::consts::PI;
 use starshot_ephemeris::time::SECONDS_PER_DAY as DAY;
@@ -35,6 +37,20 @@ fn circular(duration: f64) -> SimulationConfig<'static> {
         attractors: Some(&[]),
         ..SimulationConfig::new(&EPH_3D, 0.0, r0, v0, duration)
     }
+}
+
+/// A flight from Earth's centre on 2026-11-20, every planet pulling.
+fn from_earth(v_inf: Vec3, days: f64) -> SimulationConfig<'static> {
+    let t0 = date("2026-11-20");
+    let s0 = departure_state(&EPH_2D, t0, v_inf);
+    SimulationConfig {
+        depart_from: Some(BodyId::Earth),
+        ..SimulationConfig::new(&EPH_2D, t0, s0.r, s0.v, days * DAY)
+    }
+}
+
+fn ending(res: &SimulationResult) -> (Termination, Option<BodyId>) {
+    (res.termination, res.terminated_by)
 }
 
 #[test]
@@ -88,6 +104,8 @@ fn stops_at_the_step_limit_and_samples_clamp_outside_the_flight() {
     });
     assert_eq!(res.termination, Termination::MaxSteps);
     assert_eq!((res.steps, res.samples.len()), (5, 6));
+    // The first step tried is 6 hours, and a Sun-only orbit accepts it.
+    assert_eq!(res.samples[1].t, DAY / 4.0);
     let last = res.samples[5];
     assert_eq!(sample_at(&res, -DAY), res.samples[0]);
     assert_eq!(sample_at(&res, last.t + DAY), last);
@@ -117,15 +135,14 @@ fn reaches_mars_within_1_25_spheres_of_influence_with_the_2026_lambert_aim() {
 #[test]
 fn switches_earths_gravity_on_energy_consistently_exactly_once() {
     let (t0, duration) = (date("2026-11-20"), 20.0 * DAY);
-    let s0 = departure_state(&EPH_2D, t0, [0.0, 3.2, 0.0]);
     let run = |attractors: &[BodyId]| {
         simulate(&SimulationConfig {
             attractors: Some(attractors),
-            depart_from: Some(BodyId::Earth),
-            ..SimulationConfig::new(&EPH_2D, t0, s0.r, s0.v, duration)
+            ..from_earth([0.0, 3.2, 0.0], duration / DAY)
         })
     };
     let (on, off) = (run(&[BodyId::Earth]), run(&[]));
+    assert_eq!((on.steps, on.samples.len()), (25, 27));
     // The kick is a second knot at the same instant; there is exactly one.
     let s = &on.samples;
     let kicks: Vec<usize> = (1..s.len()).filter(|&i| s[i - 1].t == s[i].t).collect();
@@ -148,12 +165,7 @@ fn switches_earths_gravity_on_energy_consistently_exactly_once() {
     let off_by = ((u1 * u1 - (2.0 * gm) / d) / (u0 * u0) - 1.0).abs();
     println!("simulate: switch-on at {d:.0} km, energy off by {off_by:e}");
     assert!(off_by < 1e-12, "energy off by {off_by}");
-    let end = s[s.len() - 1];
-    assert_eq!(
-        end.t.to_bits(),
-        (t0 + duration).to_bits(),
-        "ends on t0 + duration"
-    );
+    assert_eq!(s[s.len() - 1].t, t0 + duration, "ends on t0 + duration");
 }
 
 #[test]
@@ -197,27 +209,28 @@ fn stops_on_impact_when_aimed_straight_at_a_planet() {
         attractors: Some(&[BodyId::Mars]),
         ..SimulationConfig::new(&EPH_2D, t0, earth.r, v1, tof * 1.2)
     });
-    assert_eq!(res.termination, Termination::Impact);
-    assert_eq!(res.terminated_by, Some(BodyId::Mars));
+    assert_eq!(ending(&res), (Termination::Impact, Some(BodyId::Mars)));
 }
 
-/// A straight pass by Mars at 50 km/s, aimed `miss` km from its centre, from 100,000 km
+/// A straight pass by Mars at 50 km/s, aimed `miss` km from its centre, from `from` km
 /// out. Mars bends a pass this fast by under 1 percent.
-fn pass_by_mars(miss: f64) -> SimulationResult {
-    let t = date("2026-11-20");
-    let mars = EPH_2D.state(BodyId::Mars, t + 2000.0);
-    let r0 = add(sub(mars.r, scale(mars.v, 2000.0)), [miss, 0.0, -100_000.0]);
-    let cfg = SimulationConfig {
+fn pass_by_mars(miss: f64, from: f64) -> SimulationConfig<'static> {
+    let (t, half) = (date("2026-11-20"), from / 50.0);
+    let mars = EPH_2D.state(BodyId::Mars, t + half);
+    let r0 = add(sub(mars.r, scale(mars.v, half)), [miss, 0.0, -from]);
+    let v0 = add(mars.v, [0.0, 0.0, 50.0]);
+    SimulationConfig {
         attractors: Some(&[BodyId::Mars]),
-        ..SimulationConfig::new(&EPH_2D, t, r0, add(mars.v, [0.0, 0.0, 50.0]), 4000.0)
-    };
-    simulate(&cfg)
+        ..SimulationConfig::new(&EPH_2D, t, r0, v0, 2.0 * half)
+    }
 }
 
 #[test]
 fn an_impact_is_a_pass_inside_the_surface_radius() {
     let radius = BodyId::Mars.info().radius_km;
-    let (hit, miss) = (pass_by_mars(0.8 * radius), pass_by_mars(1.2 * radius));
+    // 3 percent either side: Mars pulls these passes in to 0.966 and 1.026 radii.
+    let pass = |miss: f64| simulate(&pass_by_mars(miss * radius, 100_000.0));
+    let (hit, miss) = (pass(0.97), pass(1.03));
     let near = |res: &SimulationResult| res.closest[BodyId::Mars as usize].expect("a pass");
     let (h, m) = (near(&hit), near(&miss));
     println!(
@@ -225,32 +238,97 @@ fn an_impact_is_a_pass_inside_the_surface_radius() {
         h.distance_km / radius,
         m.distance_km / radius
     );
-    assert_eq!(
-        (hit.termination, hit.terminated_by),
-        (Termination::Impact, Some(BodyId::Mars))
-    );
+    assert_eq!(ending(&hit), (Termination::Impact, Some(BodyId::Mars)));
     assert!(h.impact && h.distance_km < radius);
     assert_eq!(miss.termination, Termination::Duration);
     assert!(!m.impact && m.distance_km > radius);
 }
 
 #[test]
+fn caps_the_step_within_5_spheres_of_influence() {
+    let soi = EPH_2D.soi_km(BodyId::Mars, date("2026-11-20"));
+    let first = |from: f64| {
+        let s = simulate(&pass_by_mars(0.0, from)).samples;
+        s[1].t - s[0].t
+    };
+    // Inside, a step moves 2 percent of the distance; outside, the first is 6 hours.
+    let (inside, outside) = (first(4.9 * soi), first(5.1 * soi));
+    let want = 0.02 * 4.9 * soi / 50.0;
+    assert!(
+        (inside / want - 1.0).abs() < 0.01,
+        "{inside} s, not {want} s"
+    );
+    assert!((outside - DAY / 4.0).abs() < 1e-3, "{outside} s");
+}
+
+#[test]
+fn stops_on_entering_the_sphere_of_influence_it_was_asked_for() {
+    let soi = EPH_2D.soi_km(BodyId::Mars, date("2026-11-20"));
+    let res = simulate(&SimulationConfig {
+        stop_at_soi_of: Some(BodyId::Mars),
+        ..pass_by_mars(0.0, 1.5 * soi)
+    });
+    let (s, n) = (&res.samples, res.samples.len());
+    let from_mars = |k: usize| norm(sub(s[k].r, EPH_2D.state(BodyId::Mars, s[k].t).r));
+    assert_eq!(ending(&res), (Termination::SoiReached, Some(BodyId::Mars)));
+    assert!(from_mars(n - 2) >= soi && from_mars(n - 1) < soi);
+    assert_eq!(res.end_time, s[n - 1].t);
+    let stop = res.closest[BodyId::Mars as usize].expect("the stop");
+    assert!(stop.t == res.end_time && stop.inside_soi && !stop.impact);
+}
+
+#[test]
+fn dives_into_the_sun_on_the_fixtures_61_steps() {
+    // The fixture's "Sun dive", its excess velocity -0.97 times Earth's, as bits.
+    let v = [0x4038_c8d1_9239_06eb, 0xc02f_01bd_63bb_ad6a].map(f64::from_bits);
+    let res = simulate(&from_earth([v[0], v[1], -0.0], 200.0));
+    assert_eq!(ending(&res), (Termination::Sun, Some(BodyId::Sun)));
+    assert_eq!((res.steps, res.samples.len()), (61, 63));
+    assert!(norm(res.samples[62].r) < 10.0 * BodyId::Sun.info().radius_km);
+}
+
+#[test]
+fn escapes_on_crossing_60_au() {
+    // Sun only, outward at 30 km/s from 2 million km inside 60 au.
+    let edge = 60.0 * AU_KM;
+    let res = simulate(&SimulationConfig {
+        v0: [30.0, 0.0, 0.0],
+        r0: [edge - 2e6, 0.0, 0.0],
+        ..circular(30.0 * DAY)
+    });
+    let s = &res.samples;
+    assert_eq!(ending(&res), (Termination::Escape, None));
+    assert!(norm(s[s.len() - 2].r) <= edge && norm(s[s.len() - 1].r) > edge);
+}
+
+#[test]
+fn a_nan_aim_ends_after_2_steps_as_the_typescript_does() {
+    // Math.min and Math.max pass a NaN on, where f64::min and f64::max drop it; a NaN step
+    // then ends the loop. simulate.ts, measured on both flights: 2 steps and 3 samples,
+    // then 1 step and 2 samples, each ending on its time limit at a NaN time.
+    let res = simulate(&from_earth([f64::NAN; 3], 1000.0));
+    // Beside Mars the step cap's speed is NaN, so the first step is too.
+    let near = simulate(&SimulationConfig {
+        v0: [f64::NAN; 3],
+        ..pass_by_mars(0.0, 100_000.0)
+    });
+    for (r, n) in [(res, 2), (near, 1)] {
+        assert_eq!((r.termination, r.steps), (Termination::Duration, n));
+        assert!(r.samples.len() == n as usize + 1 && r.end_time.is_nan());
+    }
+}
+
+#[test]
 fn a_three_year_preview_takes_under_400_ms() {
-    let t0 = date("2026-11-20");
-    let s0 = departure_state(&EPH_2D, t0, [-1.5, 3.5, 0.0]);
     let cfg = SimulationConfig {
         rtol: 1e-8,
         atol_km: 50.0,
-        depart_from: Some(BodyId::Earth),
-        ..SimulationConfig::new(&EPH_2D, t0, s0.r, s0.v, 3.0 * 365.0 * DAY)
+        ..from_earth([-1.5, 3.5, 0.0], 3.0 * 365.0)
     };
     let clock = Instant::now();
     let res = simulate(&cfg);
     let ms = clock.elapsed().as_secs_f64() * 1000.0;
-    println!(
-        "simulate: 3-year preview, {} steps in {ms:.2} ms",
-        res.steps
-    );
-    assert!(res.steps > 10);
+    assert_eq!(res.steps, 260);
+    println!("simulate: 3-year preview, 260 steps in {ms:.2} ms");
     assert!(ms < 400.0, "{ms} ms");
 }

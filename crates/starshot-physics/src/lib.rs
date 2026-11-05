@@ -1,6 +1,7 @@
 //! Flight physics in the Rust core (D16): the port of `@starshot/physics`'s integrator,
-//! gravity, patched-conic launch and Lambert solver, and the lunar parking orbit. Units are
-//! km, km/s and seconds of ET (TDB past J2000) in the heliocentric ecliptic J2000 frame.
+//! gravity, patched-conic launch, Lambert solver and `simulate`, and the lunar parking
+//! orbit. Units are km, km/s and seconds of ET (TDB past J2000) in the heliocentric
+//! ecliptic J2000 frame.
 //!
 //! The port keeps the TypeScript operation order, so the arithmetic-only paths (Hermite,
 //! gravity, launch and one integrator step) give the same bits;
