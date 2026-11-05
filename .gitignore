@@ -20,3 +20,9 @@ debug.log
 .firebase/
 gha-creds-*.json
 .firebaserc
+# tools/ephem: its local environment, the Horizons answer cache and NAIF kernels
+tools/ephem/.venv/
+tools/ephem/.cache/
+*.bsp
+*.tpc
+__pycache__/

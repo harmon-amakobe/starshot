@@ -88,8 +88,11 @@ licences.** `REUSE.toml` labels both, and `third_party/astlo/`, as `LicenseRef-a
   (E. M. Standish, Table 1, valid 1800 to 2050).
 - The reference positions used by the tests come from NASA/JPL's
   [Horizons](https://ssd.jpl.nasa.gov/horizons/) system, fetched with
-  `tools/horizons/fetch_fixtures.py` (Starshot's packages) and
+  `tools/ephem` (`starshot-ephem fixtures`, Starshot's packages) and
   `python/astlo/bench/fetch_fixtures.py` (the astlo fixes' test).
+- The rails pack in `data/ephem/` is derived from NASA/JPL's DE440 planetary ephemeris,
+  as NAIF publishes it in `de440s.bsp`, by `tools/ephem`. Starshot is its last modifier,
+  as [NAIF's rules](https://naif.jpl.nasa.gov/naif/rules.html) require.
 
 We thank the Solar System Dynamics group at JPL for making this data freely available.
 

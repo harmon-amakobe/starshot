@@ -1,0 +1,392 @@
+{
+  "schema": "ephem.pack/1",
+  "id": "starshot-de440s-1950-2150-100km",
+  "time_scale": "TDB",
+  "time_argument": "seconds past J2000 TDB (ET)",
+  "frame": "ECLIPJ2000",
+  "units": {
+    "length": "km",
+    "velocity": "km/s",
+    "gm": "km^3/s^2"
+  },
+  "generated": {
+    "by": "tools/ephem 0.1.0",
+    "utc": "2026-11-05T05:04:51Z",
+    "last_modifier": "Starshot"
+  },
+  "fit": {
+    "tolerance_km": 100.0,
+    "check_points_per_segment": 24
+  },
+  "bodies": [
+    {
+      "id": "MERCURY",
+      "naif_id": 1,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 2764800.0,
+        "degree": 12,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/MERCURY.json"
+    },
+    {
+      "id": "VENUS",
+      "naif_id": 2,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 22118400.0,
+        "degree": 15,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/VENUS.json"
+    },
+    {
+      "id": "EMB",
+      "naif_id": 3,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 22118400.0,
+        "degree": 12,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/EMB.json"
+    },
+    {
+      "id": "MARS",
+      "naif_id": 4,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 44236800.0,
+        "degree": 17,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/MARS.json"
+    },
+    {
+      "id": "JUPITER",
+      "naif_id": 5,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 44236800.0,
+        "degree": 8,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/JUPITER.json"
+    },
+    {
+      "id": "SATURN",
+      "naif_id": 6,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 44236800.0,
+        "degree": 8,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/SATURN.json"
+    },
+    {
+      "id": "URANUS",
+      "naif_id": 7,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 44236800.0,
+        "degree": 8,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/URANUS.json"
+    },
+    {
+      "id": "NEPTUNE",
+      "naif_id": 8,
+      "center": "SUN",
+      "center_naif_id": 10,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 44236800.0,
+        "degree": 8,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/NEPTUNE.json"
+    },
+    {
+      "id": "MOON",
+      "naif_id": 301,
+      "center": "EARTH",
+      "center_naif_id": 399,
+      "source": {
+        "kind": "spk",
+        "file": "de440s.bsp",
+        "md5": "3917ee56769db332790c751e2168843d",
+        "producer": "NASA/JPL"
+      },
+      "coverage_et": [
+        -1577880000.0,
+        4733553600.0
+      ],
+      "encoding": {
+        "kind": "chebyshev",
+        "segment_s": 2764800.0,
+        "degree": 15,
+        "c0": "f64",
+        "rest": "f32"
+      },
+      "validation": "validation/MOON.json"
+    }
+  ],
+  "constants": {
+    "emrat": 81.30056822149722,
+    "source": {
+      "kind": "pck",
+      "file": "gm_de440.tpc",
+      "md5": "a6bb37afab6815c9573a3ec208a8199a",
+      "producer": "NASA/JPL",
+      "emrat": "BODY399_GM / BODY301_GM"
+    }
+  },
+  "build": "700bbf7c7ca91c50",
+  "decades": [
+    {
+      "file": "1950.bin",
+      "from_et": -1577880000.0,
+      "to_et": -1262347200.0,
+      "bytes": 54272,
+      "sha256": "07d4e861b076fff878e09e9869ecc557f20d2d318196245b33eded036e001b47"
+    },
+    {
+      "file": "1960.bin",
+      "from_et": -1262347200.0,
+      "to_et": -946728000.0,
+      "bytes": 54272,
+      "sha256": "89ebfdd1c4dc5e151c8cc832eaf9ab60ba62a7dbc85ece6193f76f80548d0a53"
+    },
+    {
+      "file": "1970.bin",
+      "from_et": -946728000.0,
+      "to_et": -631195200.0,
+      "bytes": 54272,
+      "sha256": "dfa7e25ac5fbd698bf8fd1d43cf90e80afbd9107c1b11327ae3f78b35bf84ce0"
+    },
+    {
+      "file": "1980.bin",
+      "from_et": -631195200.0,
+      "to_et": -315576000.0,
+      "bytes": 54272,
+      "sha256": "719eef5486a0eecfb4c31c11e73f9f226aba40ef4ea14c08d1a02d9b2c273271"
+    },
+    {
+      "file": "1990.bin",
+      "from_et": -315576000.0,
+      "to_et": -43200.0,
+      "bytes": 54272,
+      "sha256": "97c895c858a5fb1492c2c9ef3aeab5e5bbc7883203513b2ebe48abbbef06ec72"
+    },
+    {
+      "file": "2000.bin",
+      "from_et": -43200.0,
+      "to_et": 315576000.0,
+      "bytes": 54272,
+      "sha256": "89b87a3b10f7d9701e467a9c5100cd522e53802201c5b7bc1eaede31725552b9"
+    },
+    {
+      "file": "2010.bin",
+      "from_et": 315576000.0,
+      "to_et": 631108800.0,
+      "bytes": 54272,
+      "sha256": "f5b9c11b7509750fcbd66a71b01220fcc81aadc87441da41a86292efa1655e59"
+    },
+    {
+      "file": "2020.bin",
+      "from_et": 631108800.0,
+      "to_et": 946728000.0,
+      "bytes": 54272,
+      "sha256": "2cbff041ff72ed9afd5777f4d2d79186241771c48943676ae7450957c96998aa"
+    },
+    {
+      "file": "2030.bin",
+      "from_et": 946728000.0,
+      "to_et": 1262260800.0,
+      "bytes": 54272,
+      "sha256": "cf16baf9c60f1b99d6d14cce52620c05ae4a4fa18021603f65c3c11bff3a295d"
+    },
+    {
+      "file": "2040.bin",
+      "from_et": 1262260800.0,
+      "to_et": 1577880000.0,
+      "bytes": 54272,
+      "sha256": "affae5990af794c3e122f256b051ad3be32720e52a55c965641bba21ed4ed1c3"
+    },
+    {
+      "file": "2050.bin",
+      "from_et": 1577880000.0,
+      "to_et": 1893412800.0,
+      "bytes": 54272,
+      "sha256": "e1693ef28a812cb73fde7b373fbe2458cdff9100c2ff4529cfe393f7f4503746"
+    },
+    {
+      "file": "2060.bin",
+      "from_et": 1893412800.0,
+      "to_et": 2209032000.0,
+      "bytes": 54272,
+      "sha256": "d1928dcb973aff3cfd9a43605adf1a096b6716528aaad398cdd9a1b5c475b74b"
+    },
+    {
+      "file": "2070.bin",
+      "from_et": 2209032000.0,
+      "to_et": 2524564800.0,
+      "bytes": 54272,
+      "sha256": "35d85214c1a30f5144e4805eac3ebbd69c42cafbb213ca0aa5447352cdbb6d56"
+    },
+    {
+      "file": "2080.bin",
+      "from_et": 2524564800.0,
+      "to_et": 2840184000.0,
+      "bytes": 54272,
+      "sha256": "b00749ca5370c875ae72a88c46bd7204a528e69d890d4f36b01c1d5fa4a731c2"
+    },
+    {
+      "file": "2090.bin",
+      "from_et": 2840184000.0,
+      "to_et": 3155716800.0,
+      "bytes": 54272,
+      "sha256": "73b729614e8778a9d13312571403f584032d19babd1460a805edc4215c4244ce"
+    },
+    {
+      "file": "2100.bin",
+      "from_et": 3155716800.0,
+      "to_et": 3471249600.0,
+      "bytes": 54272,
+      "sha256": "9d9cc6ceef8a256c9fe48fd26faee0b3bf596037db4ecb9d506ee9807446898e"
+    },
+    {
+      "file": "2110.bin",
+      "from_et": 3471249600.0,
+      "to_et": 3786782400.0,
+      "bytes": 54272,
+      "sha256": "60126b7cf3674e5e71e829a24d918bc904db9fdc31faaa87bcd1b0e7c562d8b2"
+    },
+    {
+      "file": "2120.bin",
+      "from_et": 3786782400.0,
+      "to_et": 4102401600.0,
+      "bytes": 54272,
+      "sha256": "12b2eb9504b836f2045ed1103e4acd7834624e9b96836ccfd6d8589e76e980c9"
+    },
+    {
+      "file": "2130.bin",
+      "from_et": 4102401600.0,
+      "to_et": 4417934400.0,
+      "bytes": 54272,
+      "sha256": "c9470dfef61cadecc1631ab533a61bd4d34c0cd2c2006927e5e07c466278ca6f"
+    },
+    {
+      "file": "2140.bin",
+      "from_et": 4417934400.0,
+      "to_et": 4733553600.0,
+      "bytes": 54272,
+      "sha256": "9848ce3da88dd169807832daa14434536eeb680b55401822604c5a7738c6d1b7"
+    }
+  ]
+}

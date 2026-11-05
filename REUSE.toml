@@ -43,7 +43,7 @@ SPDX-License-Identifier = "CC-BY-SA-4.0"
 # NASA/JPL data used as test fixtures and reference values (D17): Horizons responses and
 # values derived from DE440. The files are data, credited in CREDITS.md.
 [[annotations]]
-path = ["packages/ephemeris/test/fixtures/**", "python/astlo/tests/fixtures/**"]
+path = ["packages/ephemeris/test/fixtures/**", "python/astlo/tests/fixtures/**", "tools/ephem/tests/data/**"]
 SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 
@@ -76,3 +76,15 @@ SPDX-License-Identifier = "LicenseRef-Lucide-Feather"
 path = "packages/ephemeris/data/moon-rail.json"
 SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); assembled and last modified by starshot contributors"
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
+
+# The DE440 rails pack: derived from NAIF's de440s.bsp by tools/ephem, which NAIF's rules
+# ask to name as the last modifier (D17). Its README is Starshot's own prose.
+[[annotations]]
+path = "data/ephem/**"
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); derived and last modified by Starshot contributors"
+SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
+
+[[annotations]]
+path = "data/ephem/README.md"
+SPDX-FileCopyrightText = "2026 Harmon Amakobe and Starshot contributors"
+SPDX-License-Identifier = "Apache-2.0"

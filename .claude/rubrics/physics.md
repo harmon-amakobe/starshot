@@ -9,7 +9,7 @@ it draws a believable orbit in the wrong place. So the bar is evidence, not plau
 - Heliocentric, ecliptic and equinox of J2000 everywhere in the packages.
 - "earth" is the Earth-Moon barycentre, as in JPL's Table 1; the giant planets are their
   system barycentres. A comparison against Horizons uses the same targets
-  (`tools/horizons/fetch_fixtures.py` TARGETS).
+  (`TARGETS` in `tools/ephem/src/ephem/fixtures.py`).
 - The game's 2D world is `createEphemeris({ flatten: true })`, a projection onto the
   ecliptic used by both preview and launch (D6). A 3D claim tested only in 2D is
   unproven.

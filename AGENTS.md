@@ -17,11 +17,11 @@ media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 | `apps/game` | Vite + React + Three.js game with Canvas 2D fallback (D19); shot physics runs in a Web Worker |
 | `packages/ephemeris` | Planet states from JPL Table 1, time scales, bodies (D4) |
 | `packages/physics` | Integrator, patched-conic launch, encounters, Lambert |
-| `tools/horizons` | Stdlib Python that refreshes the Horizons test fixtures |
+| `tools/ephem` | Python that refreshes the Horizons test fixtures and builds the DE440 rails with their validation reports (D17) |
+| `data/ephem` | The generated DE440 rails pack and its reports, derived from NASA/JPL data |
 | `third_party/astlo` | Mark's original files, unchanged and all rights reserved (D2) |
 | `python/astlo` | `astlo/` and its dist-info: Mark's v12 source plus our fixes, one commit each, under his rights and not Starshot's licence (D10); the build, bench and tests beside them are ours (Apache-2.0) |
 | `crates/` | The Rust core (D16): `starshot-math` now; ephemeris, physics, game rules, wasm and FFI bindings to come |
-| `tools/ephem` (planned) | Python that builds DE440 rails and their validation report (D17) |
 | `docs/` | Decisions, plans, hosting, architecture |
 | `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Firebase releases |
 

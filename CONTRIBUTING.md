@@ -278,8 +278,9 @@ The full recipe, with code, is the [add-level skill](.claude/skills/add-level/SK
    digit from a cited NASA/JPL table.
 2. Add its mass (GM), radius, colour and name to `BODIES` in
    `packages/ephemeris/src/bodies.ts`.
-3. Add its Horizons ID to `tools/horizons/fetch_fixtures.py`, refresh the reference
-   data with `python3 tools/horizons/fetch_fixtures.py`, and never hand-edit the result.
+3. Add its Horizons ID to `TARGETS` in `tools/ephem/src/ephem/fixtures.py`, refresh the
+   reference data with `uv run --project tools/ephem --locked starshot-ephem fixtures
+   --out packages/ephemeris/test/fixtures/horizons.json`, and never hand-edit the result.
 4. Give it an accuracy budget in `packages/ephemeris/test/ephemeris.test.ts`, justified
    by JPL's stated accuracy for that table.
 5. Run `npm run gates`.

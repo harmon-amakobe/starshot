@@ -1,0 +1,29 @@
+{
+  "schema": "ephem.validation/1",
+  "subject": {
+    "pack": "starshot-de440s-1950-2150-100km",
+    "body": "MOON",
+    "producer": "starshot tools/ephem 0.1.0"
+  },
+  "reference": {
+    "name": "JPL DE440",
+    "via": "local kernel",
+    "api_signature": null,
+    "ephemeris_source": "de440s.bsp (MD5 3917ee56769db332790c751e2168843d)"
+  },
+  "sampling": {
+    "from_et": -1577880000.0,
+    "to_et": 4733553600.0,
+    "step_s": 432000.0,
+    "points": 14623
+  },
+  "metrics": {
+    "max_position_km": 56.81,
+    "max_direction_arcmin": 0.524349,
+    "rms_position_km": 13.807
+  },
+  "budget": {
+    "max_position_km": 150.0
+  },
+  "pass": true
+}

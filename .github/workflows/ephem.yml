@@ -1,0 +1,73 @@
+# ephem: tests tools/ephem offline when it, the rails pack in data/ephem or this file
+# changes (D17). The path filter keeps it out of the required gates check. The manual
+# regenerate job rebuilds the pack from NAIF's kernel and uploads it for a person to
+# review and commit; nothing here pushes. No secrets; the token is read-only.
+name: ephem
+
+on:
+  pull_request:
+    paths: ["tools/ephem/**", "data/ephem/**", ".github/workflows/ephem.yml"]
+  push:
+    branches: [main]
+    paths: ["tools/ephem/**", "data/ephem/**", ".github/workflows/ephem.yml"]
+  workflow_dispatch:
+
+# Nothing by default; each job asks for what its steps need.
+permissions: {}
+
+concurrency:
+  group: ephem-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: ephem tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.11.32"
+          enable-cache: false
+      - run: uv sync --project tools/ephem --locked
+      - run: uv run --project tools/ephem --locked pytest tools/ephem/tests -q  # no kernel, no network
+
+  regenerate:
+    name: regenerate the rails pack
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.11.32"
+          enable-cache: false
+      # Every command below MD5-checks a cached kernel, so a poisoned entry fails the job.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/kernels
+          key: de440s-3917ee56769db332790c751e2168843d-gm_de440-a6bb37afab6815c9573a3ec208a8199a
+      - run: uv sync --project tools/ephem --locked
+      - name: Kernels, build and validation
+        run: |
+          kernel="$RUNNER_TEMP/kernels/de440s.bsp"
+          pack="$RUNNER_TEMP/ephem-pack/de440s-100km"
+          uv run --project tools/ephem --locked starshot-ephem kernel --path "$kernel"
+          uv run --project tools/ephem --locked starshot-ephem build --kernel "$kernel" --from-year 1950 --to-year 2150 --out "$pack"
+          uv run --project tools/ephem --locked starshot-ephem validate --kernel "$kernel" --pack "$pack"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ephem-pack
+          path: ${{ runner.temp }}/ephem-pack
+          if-no-files-found: error
+          retention-days: 7
