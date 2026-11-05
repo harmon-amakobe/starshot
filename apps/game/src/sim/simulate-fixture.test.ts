@@ -4,12 +4,15 @@
  * (packages/physics/test/conformance-simulate.test.ts), because a package cannot import
  * the game. This holds every level flight to the request the game itself builds (D6): the
  * same launch, settings, attractors, target and time limit, and the same step count from
- * simulateShot. A level change that the fixture missed fails here.
+ * simulateShot. The aims come from the fixture, so a changed aim fails here only where
+ * levels.ts exports it: the Grand Tour's hint and par shot are compared to the bit. The
+ * known solutions live in levels.test.ts, which exports nothing, and the direct levels'
+ * par shots are searched afresh by the generator.
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createEphemeris, etFromIso, type PlanetId, type Vec3 } from "@starshot/ephemeris";
-import { CAMPAIGN, sandboxLevel, shotRequestFor } from "../levels.js";
+import { CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, sandboxLevel, shotRequestFor } from "../levels.js";
 import { DAY, simulateShot } from "./shot.js";
 
 interface FixtureFlight {
@@ -46,6 +49,16 @@ describe("the simulate conformance fixture flies the game's own requests", () =>
     // SIM_SETTINGS and OUTER_SIM_SETTINGS differ in their position tolerance.
     const tolerances = new Set(levelFlights.map((f) => f.input.sim?.atolKm));
     expect(tolerances.size).toBe(2);
+  });
+
+  it("flies the Grand Tour's exported hint and par shot to the bit", () => {
+    const aims = [["grand-tour hint", GRAND_TOUR_HINT], ["grand-tour par", GRAND_TOUR_PAR_SHOT]] as const;
+    for (const [name, aim] of aims) {
+      const { input } = flights.find((f) => f.input.name === name)!;
+      expect(input.launchIso, name).toBe(aim.launchIso);
+      // toBe is Object.is, so a sign of zero or a last bit counts.
+      input.vInf.forEach((hex, i) => expect(fromBits(hex), name).toBe(aim.vInf[i]));
+    }
   });
 
   for (const { input, output } of levelFlights) {
