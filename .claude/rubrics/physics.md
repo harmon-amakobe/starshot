@@ -47,7 +47,7 @@ wrong place. So the bar is evidence, not plausibility.
 
 | Claim | Evidence that counts |
 |---|---|
-| Planet position accuracy | arcminute budgets against Horizons fixtures in `packages/ephemeris/test` |
+| Planet position accuracy | arcminute budgets in `packages/ephemeris/test` against `fixtures/horizons/horizons.json` |
 | Rail accuracy (D17) | each body's `ephem.validation/1` report in `data/ephem/*/validation/` within 150 km of the JPL kernel every 5 days, held by `tools/ephem/tests/test_committed_pack.py` |
 | Integrator accuracy | closure and energy tests in `packages/physics/test` |
 | A transfer is possible | `bestDirectTransfer` output, then the shot flown by `simulate` reaching SOI |
