@@ -81,6 +81,7 @@ const ERRORS: Array<["parkingState" | "departure", ParkingOrbit, number]> = [
   ["departure", GAME, LAST + 1],
   ["departure", { epochEt: NaN, phaseDeg: 225, radiusKm: GAME.radiusKm }, LAUNCH_ET],
   ["departure", { ...GAME, frameEt: Infinity, radiusKm: 6000 }, LAUNCH_ET],
+  ["departure", { ...GAME, frameEt: NaN, radiusKm: 6000 }, LAUNCH_ET],
 ];
 const refusal = (run: () => unknown): string => {
   try {
