@@ -2,6 +2,13 @@
   "note": "Licences a locked dependency may carry (D12, D28), read by scripts/check-dependency-licences.mjs. No copyleft licence belongs in allowed; a package that needs one is an exception with its exact version, licence and reason, so an upgrade or a licence change is reviewed again.",
   "allowed": ["MIT", "ISC", "BSD-2-Clause", "BSD-3-Clause", "Apache-2.0", "0BSD", "CC0-1.0", "BlueOak-1.0.0", "Unlicense", "CC-BY-4.0"],
   "exceptions": [
+    {
+      "ecosystem": "cargo",
+      "package": "unicode-ident",
+      "version": "1.0.27",
+      "licence": "(MIT OR Apache-2.0) AND Unicode-3.0",
+      "reason": "Locked, never built: serde_core names serde_derive under a target that never matches. Unicode-3.0, for its data tables, is permissive."
+    },
     { "package": "lightningcss", "version": "1.33.0", "licence": "MPL-2.0", "reason": "Vite's CSS transformer: a build tool whose output carries none of its source files. MPL-2.0 is file-level copyleft and Starshot neither ships nor modifies its files." },
     { "package": "lightningcss-android-arm64", "version": "1.33.0", "licence": "MPL-2.0", "reason": "The lightningcss binary for this platform, under the same exception." },
     { "package": "lightningcss-darwin-arm64", "version": "1.33.0", "licence": "MPL-2.0", "reason": "The lightningcss binary for this platform, under the same exception." },

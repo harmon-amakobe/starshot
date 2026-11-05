@@ -15,8 +15,11 @@
  *    coverage fails on that.
  *  - `fast` is a filter flag on an entry, never a second list, so nothing drifts between
  *    two places.
- *  - Exit 0 only when every selected gate passed. The last line names what failed as
- *    "failing: a, b", which is what the Stop hook reads.
+ *  - Exit 0 only when every selected gate passed or skipped. The last line names what
+ *    failed as "failing: a, b", which is what the Stop hook reads.
+ *  - A Rust gate (needsCargo) without cargo reports skip, so a contributor without Rust
+ *    is not blocked; STARSHOT_REQUIRE_RUST=1 turns that into a failure, and CI sets it.
+ *    A skip is never counted as a pass: the last line reads "P/N passed, S skipped".
  *  - In GitHub Actions, a failed gate is also an ::error annotation and every run appends
  *    a table to the job summary, so a red check names its gate without opening the log.
  */
@@ -28,6 +31,12 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const NODE = process.execPath;
 
+/** cargo test prints one result line per suite; the summary adds them up. */
+function cargoTests(output) {
+  const suites = [...output.matchAll(/^test result: ok\. (\d+) passed/gm)];
+  return `cargo test: ${suites.reduce((n, m) => n + Number(m[1]), 0)} passed in ${suites.length} suite(s)`;
+}
+
 /** id, group, fast, command, and the one-line reason it exists. */
 export const GATES = [
   { id: "secrets", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-secrets.mjs"], why: "public repo: no secrets, emails, personal paths or private names" },
@@ -35,7 +44,7 @@ export const GATES = [
   { id: "licence", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-licence.mjs"],
     why: "every file has a licence record; LICENSE is Apache-2.0 (D12)" },
   { id: "dependency-licences", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-dependency-licences.mjs"],
-    why: "every locked dependency has an allowed licence or a recorded exception (D28)" },
+    why: "every locked npm package has an allowed licence or a recorded exception (D28)" },
   { id: "assets", group: "hygiene", fast: true, cmd: [NODE, "scripts/check-assets.mjs"],
     why: "every shipped asset has a manifest entry: source, open licence, attribution, hash (D14, D15)" },
   { id: "credits", group: "hygiene", fast: true, cmd: [NODE, "scripts/gen-credits.mjs", "--check"],
@@ -56,6 +65,15 @@ export const GATES = [
   { id: "typecheck", group: "code", fast: false, cmd: ["npx", "tsc", "-b"], needsDeps: true, ok: "tsc -b: no type errors", why: "types agree across packages and the game" },
   { id: "test", group: "code", fast: false, cmd: ["npx", "vitest", "run"], needsDeps: true, summary: /^\s*Tests\s+.*$/m, why: "physics vs Horizons, levels' known solutions" },
   { id: "build", group: "code", fast: false, cmd: ["npm", "run", "build", "-w", "@starshot/game"], needsDeps: true, summary: /built in .*$/m, why: "the static site builds" },
+  { id: "rust-fmt", group: "rust", fast: false, cmd: ["cargo", "fmt", "--all", "--check"], needsCargo: true, ok: "cargo fmt: every file formatted",
+    fix: "run cargo fmt --all", why: "the Rust workspace is formatted (AC2)" },
+  { id: "rust-clippy", group: "rust", fast: false, cmd: ["cargo", "clippy", "--workspace", "--all-targets", "--locked", "--", "-D", "warnings"],
+    needsCargo: true, ok: "cargo clippy: no warnings", fix: "fix what cargo clippy reports",
+    why: "no lint, and no f64 or f32 transcendental method in any crate (D16)" },
+  { id: "rust-test", group: "rust", fast: false, cmd: ["cargo", "test", "--workspace", "--locked"], needsCargo: true, summary: cargoTests,
+    fix: "run cargo test --workspace and fix the failing test", why: "the Rust tests pass, the maths golden bits included (AC2, AC6)" },
+  { id: "rust-licences", group: "rust", fast: false, cmd: [NODE, "scripts/check-dependency-licences.mjs", "--cargo"], needsCargo: true,
+    why: "every locked crate has an allowed licence or a recorded exception (D28)" },
 ];
 
 function parseArgs(argv) {
@@ -99,14 +117,24 @@ export const annotation = (id, summary) => `::error title=${escapeProperty(`gate
 // row. Backslashes are doubled first, so one in the text cannot cancel a pipe's escape.
 export const tableCell = (s) => String(s).replace(/\r\n|\r|\n/g, " ").replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 
+// A skipped gate has ok false and skipped true, so code that forgets skips fails closed.
+export const verdict = (r) => (r.ok ? "pass" : r.skipped ? "skip" : "FAIL");
+const failedIds = (results) => results.filter(({ r }) => verdict(r) === "FAIL").map(({ g }) => g.id);
+
+/** "P/N passed", with ", S skipped" when any skipped: passes alone make P. */
+export function tally(results) {
+  const passed = results.filter(({ r }) => r.ok).length;
+  const skipped = results.filter(({ r }) => verdict(r) === "skip").length;
+  return `${passed}/${results.length} passed${skipped ? `, ${skipped} skipped` : ""}`;
+}
+
 /** The job-summary section for one run: a heading that names the selection, then the table. */
 export function summaryMarkdown(results, label) {
-  const failed = results.filter(({ r }) => !r.ok).map(({ g }) => g.id);
-  const tally = `${results.length - failed.length}/${results.length} passed`;
-  const lines = [`### gates (${tableCell(label)}): ${tally}${failed.length ? `, failing: ${failed.join(", ")}` : ""}`, ""];
+  const failed = failedIds(results);
+  const lines = [`### gates (${tableCell(label)}): ${tally(results)}${failed.length ? `, failing: ${failed.join(", ")}` : ""}`, ""];
   lines.push("| Gate | Group | Result | Time | Summary |", "|---|---|---|---:|---|");
   for (const { g, r } of results) {
-    lines.push(`| ${g.id} | ${g.group} | ${r.ok ? "pass" : "FAIL"} | ${r.ms} ms | ${tableCell(r.summary)} |`);
+    lines.push(`| ${g.id} | ${g.group} | ${verdict(r)} | ${r.ms} ms | ${tableCell(r.summary)} |`);
   }
   return `${lines.join("\n")}\n\n`;
 }
@@ -122,7 +150,7 @@ function selectionLabel(opts) {
 /** Annotations and the job summary. Neither changes the exit code: the gates decide that. */
 function reportToActions(results, opts) {
   if (process.env.GITHUB_ACTIONS !== "true") return;
-  for (const { g, r } of results) if (!r.ok) console.log(annotation(g.id, r.summary || "failed with no output"));
+  for (const { g, r } of results) if (verdict(r) === "FAIL") console.log(annotation(g.id, r.summary || "failed with no output"));
   const file = process.env.GITHUB_STEP_SUMMARY;
   if (!file) return;
   try {
@@ -136,11 +164,47 @@ function reportToActions(results, opts) {
 const tail = (text, n) => text.trimEnd().split("\n").slice(-n).join("\n");
 const lastLine = (text) => text.trimEnd().split("\n").filter((l) => l.trim()).at(-1)?.trim() ?? "";
 
+let cargo;
+/** Whether cargo starts, asked once a run. Through rustup it also installs the pinned toolchain. */
+const cargoFound = () => (cargo ??= spawnSync("cargo", ["--version"], { cwd: ROOT, stdio: "ignore", shell: process.platform === "win32" }).status === 0);
+export const CARGO_SKIP = "cargo not found; set STARSHOT_REQUIRE_RUST=1 to fail instead";
+export const CARGO_REQUIRED = "cargo not found and STARSHOT_REQUIRE_RUST=1; install Rust with rustup, which reads rust-toolchain.toml";
+
+/** A Rust gate's result when cargo is missing, or null when it runs. */
+export function cargoMissing(gate, found, env) {
+  if (!gate.needsCargo || found) return null;
+  if (env.STARSHOT_REQUIRE_RUST === "1") return { ok: false, ms: 0, summary: CARGO_REQUIRED, output: "" };
+  return { ok: false, skipped: true, ms: 0, summary: CARGO_SKIP, output: "" };
+}
+
+/** The skip rule checks itself before any gate runs: a broken rule would let a missing cargo read as a pass. */
+export function selfTest() {
+  const rust = { needsCargo: true };
+  const skip = cargoMissing(rust, false, {});
+  const required = cargoMissing(rust, false, { STARSHOT_REQUIRE_RUST: "1" });
+  const runs = [{ g: { id: "a" }, r: { ok: true } }, { g: { id: "b" }, r: skip ?? { ok: true } }];
+  const problems = [];
+  if (!skip || verdict(skip) !== "skip") problems.push("a missing cargo must report skip");
+  if (!required || verdict(required) !== "FAIL") problems.push("a missing cargo with STARSHOT_REQUIRE_RUST=1 must fail");
+  if (cargoMissing(rust, true, {}) || cargoMissing({}, false, {})) problems.push("a gate must run when cargo is found or not needed");
+  if (tally(runs) !== "1/2 passed, 1 skipped" || failedIds(runs).length) problems.push(`a skip must count apart (got "${tally(runs)}")`);
+  // Every gate that runs cargo skips and counts like the others, and the fast subset (the
+  // Stop hook) never starts cargo.
+  for (const g of GATES) {
+    const cargo = g.group === "rust" || g.cmd[0] === "cargo" || g.cmd.includes("--cargo");
+    if (cargo && (!g.needsCargo || g.fast)) problems.push(`${g.id} runs cargo, so it needs needsCargo and no fast flag`);
+  }
+  if (!GATES.some((g) => g.id === "rust-licences" && g.cmd.includes("--cargo"))) problems.push("rust-licences must check the crates (--cargo)");
+  return problems;
+}
+
 function run(gate, verbose) {
   const t0 = Date.now();
   if (gate.needsDeps && !existsSync(resolve(ROOT, "node_modules"))) {
     return { ok: false, ms: 0, summary: "node_modules is missing; run npm ci first", output: "" };
   }
+  const missing = cargoMissing(gate, !gate.needsCargo || cargoFound(), process.env);
+  if (missing) return missing;
   const [cmd, ...args] = gate.cmd;
   const r = spawnSync(cmd, args, {
     cwd: ROOT,
@@ -153,9 +217,12 @@ function run(gate, verbose) {
   const output = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   const ok = r.status === 0 && !r.error;
   let summary = r.error ? `could not start: ${r.error.message}` : lastLine(output);
-  if (ok && gate.summary) summary = gate.summary.exec(output)?.[0].trim() ?? summary;
+  if (ok && gate.summary) summary = (typeof gate.summary === "function" ? gate.summary(output) : gate.summary.exec(output)?.[0].trim()) ?? summary;
   if (ok && gate.ok) summary = gate.ok;
-  if (!ok) summary = output.split("\n").find((l) => /error/i.test(l))?.trim() ?? summary;
+  if (!ok) summary = output.split("\n").find((l) => /error|^Diff in /i.test(l))?.trim() ?? summary;
+  // The summary is a public CI annotation: no machine path, and the fix stays in the cut.
+  summary = summary.split(ROOT).join(".");
+  if (!ok && gate.fix) summary = `${summary.slice(0, 136 - gate.fix.length)}; ${gate.fix}`;
   if (verbose && output.trim()) console.log(output.trimEnd());
   else if (!ok && output.trim()) console.log(tail(output, 40));
   return { ok, ms: Date.now() - t0, summary: summary.slice(0, 140), output };
@@ -173,6 +240,11 @@ function main() {
     for (const g of GATES) console.log(`${g.id.padEnd(20)} ${g.group.padEnd(14)} ${g.fast ? "fast" : "    "}  ${g.why}`);
     return;
   }
+  const broken = selfTest();
+  if (broken.length) {
+    console.error(`gates: self-test FAILED: ${broken.join("; ")}; fix cargoMissing, verdict or tally, or the GATES entry it names, in scripts/gates.mjs`);
+    process.exit(2);
+  }
   let gates;
   try {
     gates = select(opts);
@@ -188,21 +260,21 @@ function main() {
   for (const g of gates) {
     console.log(`── ${g.id} (${g.group})`);
     const r = run(g, opts.verbose);
-    console.log(`   ${r.ok ? "pass" : "FAIL"}  ${r.summary}`);
+    console.log(`   ${verdict(r)}  ${r.summary}`);
     results.push({ g, r });
   }
   console.log("\ngate                 group          result  time");
   for (const { g, r } of results) {
-    console.log(`${g.id.padEnd(20)} ${g.group.padEnd(14)} ${(r.ok ? "pass" : "FAIL").padEnd(7)} ${String(r.ms).padStart(6)} ms`);
+    console.log(`${g.id.padEnd(20)} ${g.group.padEnd(14)} ${verdict(r).padEnd(7)} ${String(r.ms).padStart(6)} ms`);
   }
   reportToActions(results, opts);
-  const failed = results.filter(({ r }) => !r.ok).map(({ g }) => g.id);
+  const failed = failedIds(results);
   const total = results.reduce((s, { r }) => s + r.ms, 0);
   if (failed.length) {
-    console.log(`\ngates: ${results.length - failed.length}/${results.length} passed in ${total} ms; failing: ${failed.join(", ")}`);
+    console.log(`\ngates: ${tally(results)} in ${total} ms; failing: ${failed.join(", ")}`);
     process.exit(1);
   }
-  console.log(`\ngates: ${results.length}/${results.length} passed in ${total} ms`);
+  console.log(`\ngates: ${tally(results)} in ${total} ms`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();

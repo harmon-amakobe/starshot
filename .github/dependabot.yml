@@ -24,8 +24,9 @@ updates:
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
+  # Also the composite actions under .github/actions, which pin actions of their own.
   - package-ecosystem: github-actions
-    directory: /
+    directories: ["/", "/.github/actions/*"]
     schedule:
       interval: weekly
     cooldown:

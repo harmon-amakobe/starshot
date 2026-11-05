@@ -58,9 +58,9 @@ people start from the README at the root.
 
 | Command | What it does |
 |---|---|
-| `npm run gates` | Every check, as CI runs it. `npm run gates:fast` is the static subset |
+| `npm run gates` | Every check, as CI runs it; without cargo the four Rust gates skip. `npm run gates:fast` is the static subset |
 | `node scripts/check-copy-tells.mjs` | The copy gate; `--stdin --kind pr` for a body, `--commits <range>` for messages |
-| `node scripts/check-file-size.mjs` | The size, shape and layering gate, which also warns on lines over 160 characters; `--update` lowers the baseline, `--self-test` runs only the long-line fixtures |
+| `node scripts/check-file-size.mjs` | The size, shape and layering gate, which also warns on lines over 160 characters; `--update` lowers the baseline, `--self-test` runs only its long-line fixtures and Rust rule cases |
 | `node scripts/check-licence.mjs` | The licence gate |
 | `node scripts/gen-credits.mjs` | Writes the game assets section of `CREDITS.md` from `apps/game/assets/manifest.json`; `--check` is the credits gate |
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |

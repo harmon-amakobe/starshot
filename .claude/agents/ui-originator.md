@@ -45,5 +45,6 @@ from `@starshot/physics` with the shared shot settings (D6); no hand-tuned orbit
 
 ## Before you report
 
-`npm run gates` with its exit code, and `node scripts/verify-game.mjs` (or a stated
-reason you could not run it). Hand screenshot review to `verification-driver` by name.
+`npm run gates` with its exit code and last line, and `node scripts/verify-game.mjs`
+(or a stated reason you could not run it). Hand screenshot review to
+`verification-driver` by name.

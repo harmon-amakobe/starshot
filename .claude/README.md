@@ -18,7 +18,7 @@ what it does not. Change it in the same pull request as the mechanism it describ
 | `PLANS_DIR` | `docs/plans/`; binding decisions in `docs/decisions.md`. |
 | `PR_SIZE_CAP` | About 400 added lines or 20 changed files per spec. Every added line counts except in lockfiles, fixture JSON (`**/fixtures/**/*.json`), generated data (`data/ephem/`, `packages/core-wasm/pkg/`) and binary files. A PR group of n specs is held to n times that (D30). CI's `pr-size` job runs `scripts/check-pr-size.mjs`, which warns above n times the cap and fails above twice it. |
 | `LARGE_FILE_CAP` | 300 lines: above it, anchored edits only. |
-| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, dependency-licences, assets, credits, copy, commits, work, pr-size, size, versions, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build). Fast subset: `npm run gates:fast`. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
+| `GATE_COMMANDS` | `npm run gates` (secrets, third-party, licence, dependency-licences, assets, credits, copy, commits, work, pr-size, size, versions, instruction-dedup, agent-frontmatter, guard-scan-coverage, hook-fixtures, typecheck, test, build, rust-fmt, rust-clippy, rust-test, rust-licences; without cargo the four Rust gates skip, and a skip is not a pass). CI's `checks` job gets Rust from `.github/actions/setup-rust-wasm` and sets `STARSHOT_REQUIRE_RUST=1`, so there they fail instead; the `rust-arm64` job runs `cargo test` on arm64. Fast subset: `npm run gates:fast`, which never starts cargo. Before a push, also `node scripts/check-copy-tells.mjs --commits <base>..HEAD`. |
 | `COPY_STANDARD` | `docs/copy-standard.md` (D27), catalogue `scripts/copy-tells.json`; text typed into GitHub goes through `.github/workflows/copy-lint.yml`. |
 | `WORK_TRACKING` | `docs/plans/<program>/work.yaml` and `work.lock.json`, synced by `scripts/sync-work.mjs` from the orchestrator only (D23, `track-work` skill). |
 | `COMMIT_AUTHOR` | The owner, with a `Signed-off-by:` and the agent in a `Co-Authored-By:` trailer (D24); recipe in the `stacked-pr` skill. |
@@ -87,6 +87,15 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   against the file sizes alone.
 - The DCO check needs the owner to install the DCO app; until then `.github/dco.yml` is
   inert, and the `commits` gate only warns on a missing sign-off.
+- Locally the Rust gates skip without cargo, and the Stop hook never runs them. Until
+  PR15 only CI's `checks` and `rust-arm64` jobs enforce Rust.
+- `setup-rust-wasm` falls back to the unpinned `sh.rustup.rs` script on a runner
+  without rustup.
+- Clippy cannot see a disallowed call inside another crate's macro.
+- The size gate's D16 fence check cannot see `RUSTFLAGS` or `CLIPPY_CONF_DIR` set in a
+  workflow, or cargo config outside the repository.
+- `release.yml` runs the gates without `setup-rust-wasm` or `STARSHOT_REQUIRE_RUST`, so
+  its Rust gates use the runner's rustup or skip.
 - The pull request that lands the collapsed stack on `main` is bigger than its row's cap,
   so its `pr-size` result is expected to fail; the master review decides that landing.
 - Nothing compares an asset manifest entry's licence with the `REUSE.toml` label for the

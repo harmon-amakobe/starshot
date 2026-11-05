@@ -9,7 +9,8 @@
  *  2. every gate script in scripts/gates.mjs exists, and every scripts/check-*.mjs is
  *     registered there (a written-but-unregistered check is a false sense of safety);
  *  3. every hook script .claude/settings.json runs exists;
- *  4. CI runs the registry (the workflow calls npm run gates).
+ *  4. CI runs the registry (the workflow calls npm run gates), and each job that runs it
+ *     sets STARSHOT_REQUIRE_RUST, so a missing toolchain fails CI instead of skipping.
  * A row is added in the same change that adds a gate.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -33,7 +34,7 @@ const COVERAGE = {
   commits: [".git", "scripts/check-secrets.mjs"],
   work: ["docs/plans/v1-starshot/03-work.yaml", "docs/plans/v1-starshot/work.lock.json", ".github/labels.yml"],
   "pr-size": [".claude/README.md", "docs/plans/v1-starshot/00-plan.md"],
-  size: ["scripts/size-baseline.json", "scripts/fixtures/size/expect.json", "apps/game/src", "packages", "scripts"],
+  size: ["scripts/size-baseline.json", "scripts/fixtures/size/expect.json", "apps/game/src", "packages", "scripts", "crates"],
   versions: ["package.json", "package-lock.json", "CHANGELOG.md", "scripts/release/release.test.mjs"],
   "instruction-dedup": ["AGENTS.md", "CLAUDE.md", ".github/copilot-instructions.md"],
   "agent-frontmatter": [".claude/agents", ".claude/skills", "AGENTS.md"],
@@ -48,6 +49,10 @@ const COVERAGE = {
   typecheck: ["tsconfig.json", "tsconfig.base.json", "packages/ephemeris/tsconfig.json", "packages/physics/tsconfig.json"],
   test: ["vitest.config.ts", "packages/ephemeris/test", "packages/physics/test", "packages/ephemeris/test/fixtures/horizons.json"],
   build: ["apps/game/package.json"],
+  "rust-fmt": ["Cargo.toml", "rust-toolchain.toml", "crates/starshot-math/src"],
+  "rust-clippy": ["Cargo.toml", "Cargo.lock", "clippy.toml", "crates/starshot-math/src"],
+  "rust-test": ["Cargo.lock", "crates/starshot-math/tests", "fixtures/math/golden.json"],
+  "rust-licences": ["Cargo.lock", "scripts/licence-allow.json"],
 };
 
 const problems = [];
@@ -104,8 +109,18 @@ if (existsSync(settingsPath)) {
 }
 
 const ci = resolve(ROOT, ".github/workflows/ci.yml");
-if (existsSync(ci) && !/npm run gates\b/.test(readFileSync(ci, "utf8"))) {
+const ciText = existsSync(ci) ? readFileSync(ci, "utf8") : "";
+if (ciText && !/npm run gates\b/.test(ciText)) {
   problems.push(".github/workflows/ci.yml does not run npm run gates, so CI enforces none of the registry");
+}
+// Jobs sit two spaces in under jobs:. The one that runs the registry must require Rust,
+// in its own env or a step's; the same line in another job does not count.
+const gateJobs = ciText.split(/^(?=  [\w-]+:\s*$)/m).slice(1).filter((j) => /^\s*(?:-\s*)?run:\s*npm run gates\b/m.test(j));
+if (ciText && gateJobs.length === 0) problems.push(".github/workflows/ci.yml has no job with a run: npm run gates step");
+for (const job of gateJobs) {
+  if (!/^\s*STARSHOT_REQUIRE_RUST: "1"\s*$/m.test(job)) {
+    problems.push(`.github/workflows/ci.yml: job ${job.trim().split(":")[0]} runs npm run gates without STARSHOT_REQUIRE_RUST: "1"; set it in that job`);
+  }
 }
 
 if (problems.length) {
@@ -113,4 +128,5 @@ if (problems.length) {
   for (const p of problems) console.error(`  ✗ ${p}`);
   process.exit(1);
 }
-console.log(`guard-scan-coverage: ${GATES.length} gate(s), ${rows} input path(s), ${registered.size} check script(s), ${hooks} hook script reference(s) all resolve; CI runs the registry`);
+const counted = `${GATES.length} gate(s), ${rows} input path(s), ${registered.size} check script(s), ${hooks} hook script reference(s)`;
+console.log(`guard-scan-coverage: ${counted} all resolve; CI runs the registry and requires Rust`);

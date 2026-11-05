@@ -16,7 +16,11 @@
  *
  * Layering: packages/ never import from apps/, and nothing in apps/ or packages/
  * imports python/ or third_party/. The third-party gate also rejects any astlo path
- * string there; this check covers every import of those trees.
+ * string there; this check covers every import of those trees. For the Rust core, the
+ * rules of scripts/lib/rust-rules.mjs apply: no include or #[path] in crates/ reaches
+ * python/ or third_party/; no attribute, crate manifest, Cargo.toml lints entry, extra
+ * clippy.toml or .cargo/config switches off the D16 fence (disallowed methods and
+ * forbidden unsafe code); the list is in that file's header.
  *
  * Long lines: a .ts, .tsx, .mjs or .css file with lines over 160 characters warns, naming
  * the file and the count. Compressed lines hide a file's size, because one line can hold a
@@ -32,6 +36,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, extname, posix } from "node:path";
 import { fileURLToPath } from "node:url";
+import { crateManifest, fenceFindings, rustFindings, rustSelfTest } from "./lib/rust-rules.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const WARN = 300;
@@ -200,6 +205,7 @@ export function fileFindings(f, text, baselineFiles) {
     if (over.length >= 2) warnings.push(`${f}: god-component signs: ${over.map((k) => `${k} ${s[k]} > ${SHAPE[k]}`).join(", ")}`);
   }
   if (/^(apps|packages)\//.test(f) && /\.[cm]?[jt]sx?$/.test(f)) problems.push(...layering(f, text));
+  if (f.startsWith("crates/") && f.endsWith(".rs")) problems.push(...rustFindings(f, text));
   return { lines, long: long !== null, problems, warnings };
 }
 
@@ -213,19 +219,23 @@ function baseBaseline() {
 }
 
 const tested = selfTest();
+const rust = rustSelfTest();
+tested.problems.push(...rust.problems);
 if (tested.problems.length) {
-  console.error("size: self-test FAILED, so a quiet long-line result would mean nothing:");
+  console.error("size: self-test FAILED, so a quiet long-line or Rust rule result would mean nothing:");
   for (const p of tested.problems) console.error(`  ✗ ${p}`);
   process.exit(1);
 }
 if (process.argv.includes("--self-test")) {
-  console.log(`size: self-test passed (${tested.cases} long-line cases)`);
+  console.log(`size: self-test passed (${tested.cases} long-line cases, ${rust.cases} Rust rule cases)`);
   process.exit(0);
 }
 
-const files = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
+const listed = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
   .split("\0")
-  .filter((f) => measured(f) && existsSync(resolve(ROOT, f)));
+  .filter((f) => f && existsSync(resolve(ROOT, f)));
+const files = listed.filter(measured);
+const manifests = listed.filter((f) => /^crates\/[^/]+\/Cargo\.toml$/.test(f));
 const baseline = existsSync(resolve(ROOT, BASELINE)) ? JSON.parse(read(BASELINE)) : { files: {} };
 const problems = [];
 const warnings = [];
@@ -239,6 +249,8 @@ for (const f of files) {
   problems.push(...found.problems);
   warnings.push(...found.warnings);
 }
+for (const f of manifests) problems.push(...crateManifest(f, read(f)));
+problems.push(...fenceFindings(listed, read));
 const previous = baseBaseline();
 for (const [f, allowed] of Object.entries(baseline.files)) {
   if (!counts.has(f)) problems.push(`${BASELINE}: ${f} no longer exists; delete its entry`);
@@ -265,4 +277,6 @@ if (files.length === 0) {
   console.error("size: FAILED, zero files measured; the file listing is broken, so a pass would be vacuous.");
   process.exit(1);
 }
-console.log(`size: ${files.length} file(s) measured, none over ${FAIL} code lines outside the baseline (${Object.keys(baseline.files).length} entr(ies)); ${warnings.length} warning(s); ${longFiles} file(s) with lines over ${LONG} characters; layering clean`);
+const sized = `${files.length} file(s) measured, none over ${FAIL} code lines outside the baseline (${Object.keys(baseline.files).length} entr(ies))`;
+const found = `${warnings.length} warning(s); ${longFiles} file(s) with lines over ${LONG} characters`;
+console.log(`size: ${sized}; ${found}; layering clean; ${manifests.length} crate manifest(s) take the workspace lints; D16 fence intact`);

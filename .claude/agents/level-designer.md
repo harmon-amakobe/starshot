@@ -43,6 +43,6 @@ name private people or projects in level text.
 
 ## Before you report
 
-`npx vitest run apps/game` and `npm run gates` with exit codes; the search output you
-used (launch, tof, v-infinity, C3); and a screenshot pass request for
-`verification-driver` if the level adds anything visible.
+`npx vitest run apps/game` and `npm run gates` with exit codes and the gates' last
+line; the search output you used (launch, tof, v-infinity, C3); and a screenshot pass
+request for `verification-driver` if the level adds anything visible.

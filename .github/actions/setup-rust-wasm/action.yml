@@ -1,0 +1,43 @@
+# The one way CI gets Rust (D16). Every job that builds the Rust core uses this action,
+# so the toolchain is always the one rust-toolchain.toml names and the jobs never drift.
+name: Set up Rust and wasm
+description: Install the pinned Rust toolchain, restore the Cargo cache and add wasm-bindgen-cli.
+inputs:
+  wasm-bindgen:
+    description: Install wasm-bindgen-cli; "false" skips it in jobs that build no wasm.
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    # Hosted runners usually ship rustup; a self-hosted or new image may not. The path
+    # added to GITHUB_PATH is fixed, never input, so the github-env finding is ignored.
+    - name: Install rustup when the runner lacks it
+      shell: bash
+      run: | # zizmor: ignore[github-env]
+        if ! command -v rustup >/dev/null 2>&1; then
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain none
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+        fi
+        rustup --version
+    # rust-toolchain.toml names the release, rustfmt, clippy and the wasm target. Since
+    # rustup 1.28, `rustup show` alone may not install, so the install is explicit.
+    - name: Install the toolchain from rust-toolchain.toml
+      shell: bash
+      run: |
+        rustup toolchain install
+        rustup show
+    # Also caches ~/.cargo/bin, so wasm-bindgen-cli is built once per cache key.
+    - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+    # PR15 pins the wasm-bindgen crate to this same version; the two must change together.
+    - name: Install wasm-bindgen-cli unless it is already there
+      if: inputs.wasm-bindgen != 'false'
+      shell: bash
+      env:
+        WASM_BINDGEN_VERSION: "0.2.130"
+      run: |
+        if [ "$(wasm-bindgen --version 2>/dev/null)" != "wasm-bindgen $WASM_BINDGEN_VERSION" ]; then
+          cargo install --locked wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION"
+        fi
+        wasm-bindgen --version
