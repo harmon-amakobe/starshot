@@ -226,7 +226,7 @@ so they belong to PR11.
 
 ## PR11 and PR12: physics crate, lunar departure and flight
 
-The group builds on `codex/v1-pr09-ephemeris-crate` (00-plan.md:242).
+The group builds on `codex/v1-pr10-lunar-model` (00-plan.md:246).
 
 ### Files and types
 
@@ -282,7 +282,7 @@ within 1 km (00-plan.md:1086).
 
 ## PR13 and PR14: game crate with the lunar variant
 
-The group builds on `codex/v1-pr11-physics-crate` (00-plan.md:243).
+The group builds on `codex/v1-pr11-physics-crate` (00-plan.md:247).
 
 ### Files and types
 

@@ -48,8 +48,10 @@ pub const AU_KM: f64 = 149597870.7;
 /// `packages/physics/src/launch.ts`. `BodyInfo` for Earth holds the Earth-Moon system.
 pub const EARTH_ONLY_GM: f64 = 398600.435507;
 
-/// GM values are the JPL DE440 system values; radii are IAU mean radii. Sources:
-/// <https://ssd.jpl.nasa.gov/astro_par.html> and
+/// GM values are JPL DE440 system values except Earth's: 403503.235502 is DE430's Earth
+/// plus Moon, where DE440's (BODY399_GM plus BODY301_GM of `gm_de440.tpc`) is
+/// 403503.235625. The digits stay those of `bodies.ts`, which the port matches bit for
+/// bit. Radii are IAU mean radii. Sources: <https://ssd.jpl.nasa.gov/astro_par.html> and
 /// <https://ssd.jpl.nasa.gov/planets/phys_par.html>.
 // The Sun's GM keeps every digit `bodies.ts` writes, more than an f64 holds; the compiler
 // rounds the literal as JavaScript does, so the two GMs are the same bits.

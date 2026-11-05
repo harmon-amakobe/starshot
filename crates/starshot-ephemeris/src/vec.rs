@@ -23,8 +23,10 @@ pub fn dot(a: Vec3, b: Vec3) -> f64 {
 
 /// Length. TypeScript calls a three-argument `Math.hypot`, which `libm` lacks and each
 /// engine implements its own way; this is the square root of `x*x + y*y + z*z` in that
-/// order (09-rust-supplement.md, G10). It agrees to about one unit in the last place,
-/// and no Starshot length comes near the overflow that `hypot` guards against.
+/// order (09-rust-supplement.md, G10). It differs from V8's `Math.hypot(x, y, z)` in 35 to
+/// 39 percent of random vectors, by 1 unit in the last place in nearly all of them and by
+/// 3 at most (3 million vectors, Node 22, 2026-11-05). No Starshot length comes near the
+/// overflow that `hypot` guards against.
 pub fn norm(a: Vec3) -> f64 {
     starshot_math::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
 }

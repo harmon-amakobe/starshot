@@ -78,7 +78,11 @@ pub fn et_from_unix_ms(ms: i64) -> f64 {
 /// UTC milliseconds since the Unix epoch for an ET, as `dateFromEt(et).getTime()`. None
 /// for a non-finite ET or a time outside the range a `Date` can hold.
 pub fn unix_ms_from_et(et: f64) -> Option<i64> {
-    // One fixed-point step is exact except within a second of a leap second.
+    // One fixed-point step looks TT - UTC up at UTC plus TT - UTC, not at UTC. In the last
+    // 42.184 to 68.184 s before each leap second (the TT - UTC then in force; 68,184 ms
+    // before 2017-01-01) the lookup already sees the new second, so
+    // `unix_ms_from_et(et_from_unix_ms(ms))` is ms - 1000 there. `dateFromEt` in time.ts
+    // does the same, and table1.json's leap-second rows hold both to it.
     let mut unix = (et / SECONDS_PER_DAY + J2000_JD - UNIX_EPOCH_JD) * SECONDS_PER_DAY;
     unix -= tt_minus_utc(unix);
     let ms = js_round(unix * 1000.0);

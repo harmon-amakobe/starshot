@@ -68,7 +68,11 @@ fn time_conversions_match_typescript_bit_for_bit() {
         );
     }
     let unix = file["unix"].as_array().expect("unix");
-    assert_eq!(unix.len(), 200);
+    assert_eq!(
+        unix.len(),
+        256,
+        "200 seeded times, then each leap second and the ms before it"
+    );
     for row in unix {
         let ms = row[0].as_i64().expect("whole ms");
         let et = et_from_unix_ms(ms);
