@@ -184,6 +184,7 @@ workspace holds two crates.
       src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
       src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
       src/rails.rs       reads data/ephem decade files; adds and multiplies only
+      src/hermite.rs     the cubic between two knots, in hermite.ts's operation order
       src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
                          horizons/horizons.json (JPL), conformance/*.json (TypeScript)
@@ -203,7 +204,12 @@ TypeScript computes to `fixtures/conformance/table1.json` (with
 `STARSHOT_WRITE_CONFORMANCE=1`) and otherwise checks the file is unchanged; the Rust
 tests hold planet states within 1 m and 1 mm/s of it and time conversions to the bit.
 `vec::norm` is the square root of `x*x + y*y + z*z`, where TypeScript calls a
-three-argument `Math.hypot` that `libm` lacks.
+three-argument `Math.hypot` that `libm` lacks. The lunar generator,
+`packages/physics/test/conformance-lunar.test.ts`, writes
+`fixtures/conformance/lunar.json` the same way. `tests/lunar.rs` reads the knot rail
+from `packages/ephemeris/data/moon-rail.json` and holds relative states and the model's
+constants to the bit, Earth and Moon within 1 m and 1 mm/s, and basis components
+within 1e-15.
 
 `RailPack` loads the decade files of `data/ephem/de440s-100km`, checking every header
 field and offset, and evaluates a body by Clenshaw's recurrence in the order

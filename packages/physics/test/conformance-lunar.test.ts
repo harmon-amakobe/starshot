@@ -5,7 +5,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import rail from "@starshot/ephemeris/moon-rail.json";
-import { DAY, LAUNCH_ET, LunarModel } from "../src/lunar/index";
+import { DAY, EARTH_GM, LAUNCH_ET, LunarModel, MOON_GM } from "../src/lunar/index";
 
 const OUT = new URL("../../../fixtures/conformance/lunar.json", import.meta.url);
 const WRITE = process.env.STARSHOT_WRITE_CONFORMANCE === "1";
@@ -21,6 +21,16 @@ const model = new LunarModel(rail);
 // The fixed frame, a sub-day launch, lunar day 27 and every probe (09-rust-supplement.md).
 const MODEL_ETS = [LAUNCH_ET, LAUNCH_ET + 321, LAUNCH_ET + 27 * DAY, ...rail.probes.map((p) => p[0]!)];
 const BASES: Array<[number, number]> = [[LAUNCH_ET, 225], [LAUNCH_ET + 321, 225], [LAUNCH_ET + 27 * DAY, 90]];
+// Relative-only times spread along the rail, one in each of 64 segments at a golden-ratio
+// fraction of it (0 for the first), so every Hermite term is pinned off the knots. Fixed,
+// not random, so every run writes the same file.
+const KNOTS = rail.knots.length / 7;
+const SPREAD_ETS = Array.from({ length: 64 }, (_, i) => {
+  const k = 1 + Math.floor((i * (KNOTS - 3)) / 64);
+  const t = rail.knots[k * 7]!;
+  const f = i * 0.61803398875;
+  return t + (rail.knots[(k + 1) * 7]! - t) * (f - Math.floor(f));
+});
 
 function lunarJson(): string {
   const modelRows = MODEL_ETS.flatMap((et) => {
@@ -29,6 +39,12 @@ function lunarJson(): string {
     const states = [["relative", relative], ["earth", earth], ["moon", moon]] as const;
     return states.map(([kind, s]) => [kind, bits(et), ...s.r.map(bits), ...s.v.map(bits)]);
   });
+  const spreadRows = SPREAD_ETS.map((et) => {
+    const s = model.relative(et);
+    return ["relative", bits(et), ...s.r.map(bits), ...s.v.map(bits)];
+  });
+  // model.ts's exports as bits, so the Rust constants cannot drift by a digit unseen.
+  const constants = { EARTH_GM: bits(EARTH_GM), MOON_GM: bits(MOON_GM), LAUNCH_ET: bits(LAUNCH_ET) };
   const basisRows = BASES.flatMap(([et, phase]) => {
     const b = model.basis(et, phase);
     return (["right", "up", "normal"] as const).map((k) => [k, bits(et), bits(phase), ...b[k].map(bits)]);
@@ -38,10 +54,11 @@ function lunarJson(): string {
     "{",
     '  "schema": "starshot.conformance-lunar/1",',
     '  "generator": "STARSHOT_WRITE_CONFORMANCE=1 npx vitest run packages/physics/test/conformance-lunar.test.ts",',
-    `  "rail": ${JSON.stringify({ sourceSha256: rail.sourceSha256, knots: rail.knots.length / 7 })},`,
+    `  "rail": ${JSON.stringify({ sourceSha256: rail.sourceSha256, knots: KNOTS })},`,
+    `  "constants": ${JSON.stringify(constants)},`,
     '  "model_columns": ["kind", "et", "rx", "ry", "rz", "vx", "vy", "vz"],',
     '  "model": [',
-    rows(modelRows),
+    rows([...modelRows, ...spreadRows]),
     "  ],",
     '  "basis_columns": ["vector", "et", "phaseDeg", "x", "y", "z"],',
     '  "basis": [',

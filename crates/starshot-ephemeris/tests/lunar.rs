@@ -1,19 +1,18 @@
 //! The lunar model against its JPL probes, the barycentre identity and the TypeScript
 //! model (`fixtures/conformance/lunar.json`, written by
-//! `packages/physics/test/conformance-lunar.test.ts`), with the rail's edges.
+//! `packages/physics/test/conformance-lunar.test.ts`), with the rail's edges and
+//! Hermite's equal-time knots.
 
 mod common;
 
 use common::{bits, dist, parse};
-use starshot_ephemeris::lunar::{
-    BASIS_PHASE_DEG, EARTH_GM, LAUNCH_ET, LunarModel, MOON_GM, RailError,
-};
+use starshot_ephemeris::lunar::{EARTH_GM, LAUNCH_ET, LunarModel, MOON_GM, RailError};
+use starshot_ephemeris::time::SECONDS_PER_DAY as DAY;
 use starshot_ephemeris::vec::{add, scale};
-use starshot_ephemeris::{BodyId, Ephemeris, State, Table1Ephemeris};
+use starshot_ephemeris::{BodyId, Ephemeris, Knot, State, Table1Ephemeris, hermite};
 
 const RAIL: &str = include_str!("../../../packages/ephemeris/data/moon-rail.json");
 const LUNAR: &str = include_str!("../../../fixtures/conformance/lunar.json");
-const DAY: f64 = 86400.0;
 
 fn rail() -> (Vec<f64>, Vec<Vec<f64>>) {
     let file = parse(RAIL);
@@ -79,6 +78,23 @@ fn row_state(row: &serde_json::Value) -> State {
     }
 }
 
+/// Every component's bits: `assert_eq!` on a `State` would let 0.0 equal -0.0.
+fn state_bits(s: State) -> Vec<u64> {
+    s.r.iter().chain(&s.v).map(|x| x.to_bits()).collect()
+}
+
+#[test]
+fn the_constants_are_model_ts_bits() {
+    let constants = &parse(LUNAR)["constants"];
+    for (name, value) in [
+        ("EARTH_GM", EARTH_GM),
+        ("MOON_GM", MOON_GM),
+        ("LAUNCH_ET", LAUNCH_ET),
+    ] {
+        assert_eq!(value.to_bits(), bits(&constants[name]).to_bits(), "{name}");
+    }
+}
+
 #[test]
 fn the_model_matches_typescript() {
     let (file, model) = (parse(LUNAR), model());
@@ -88,14 +104,19 @@ fn the_model_matches_typescript() {
         Some(rail().0.len() as u64 / 7)
     );
     let rows = file["model"].as_array().expect("model rows");
-    assert_eq!(rows.len(), 3 * 8);
+    // 8 times with all three states, then 64 relative states spread along the rail.
+    assert_eq!(rows.len(), 3 * 8 + 64);
     let (mut worst_r, mut worst_v) = (0.0_f64, 0.0_f64);
     for row in rows {
         let (et, want) = (bits(&row[1]), row_state(row));
         let b = model.bodies(et).expect("inside the rail");
         match row[0].as_str().expect("kind") {
             // Search and Hermite are arithmetic only: the same bits.
-            "relative" => assert_eq!(model.relative(et), Ok(want), "relative at {et}"),
+            "relative" => assert_eq!(
+                state_bits(model.relative(et).expect("inside the rail")),
+                state_bits(want),
+                "relative at {et}"
+            ),
             // Through Table 1's sin and cos: PR9's bounds, 1 m and 1 mm/s.
             kind => {
                 let got = if kind == "earth" { b.earth } else { b.moon };
@@ -123,8 +144,8 @@ fn the_model_matches_typescript() {
         }
     }
     println!("lunar basis: worst component {worst:e} from TypeScript");
+    // model.ts's `basis()` defaults to 225 degrees and exports no name for it.
     assert_eq!(model.default_basis(), model.basis(LAUNCH_ET, 225.0));
-    assert_eq!((LAUNCH_ET, BASIS_PHASE_DEG), (846853269.184, 225.0));
 }
 
 #[test]
@@ -160,13 +181,33 @@ fn a_knot_time_gives_that_knot_exactly() {
         5.0, 0.0, 0.0,
     ];
     let model = LunarModel::new(&knots).expect("valid");
-    // An interior knot starts the later segment (s = 0); the last knot ends the last one.
+    // The cubic returns a knot's own bits at s = 0 and s = 1, so either segment gives an
+    // interior knot exactly; the search takes the later one, as model.ts does.
     for (t, r, v) in [(0.0, 1.0, 0.0), (10.0, 2.0, 3.0), (20.0, 9.0, 5.0)] {
         assert_eq!(
             model.relative(t).map(|s| (s.r[0], s.v[0])),
             Ok((r, v)),
             "{t}"
         );
+    }
+}
+
+#[test]
+fn knots_at_one_time_give_the_first_knots_state() {
+    // h = 0 would divide by zero; hermite.ts returns the first knot instead.
+    let a = Knot {
+        t: 5.0,
+        r: [1.0, 2.0, 3.0],
+        v: [4.0, 5.0, 6.0],
+    };
+    let b = Knot {
+        t: 5.0,
+        r: [7.0, 8.0, 9.0],
+        v: [-1.0, -2.0, -3.0],
+    };
+    for t in [5.0, 6.0] {
+        let want = State { r: a.r, v: a.v };
+        assert_eq!(state_bits(hermite(&a, &b, t)), state_bits(want), "{t}");
     }
 }
 
@@ -192,6 +233,12 @@ fn malformed_knot_arrays_are_refused() {
     assert_eq!(
         LunarModel::new(&bad).map(|_| ()),
         Err(RailError::NotFinite(9))
+    );
+    bad = two;
+    bad[12] = f64::INFINITY;
+    assert_eq!(
+        LunarModel::new(&bad).map(|_| ()),
+        Err(RailError::NotFinite(12))
     );
     bad = two;
     bad[7] = 0.0;
