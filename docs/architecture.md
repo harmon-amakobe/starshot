@@ -187,7 +187,8 @@ workspace holds two crates.
                          no transcendental call
       tests/             rails tests embed data/ephem/de440s-100km/*.bin (include_bytes!)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
-                         horizons/horizons.json (JPL), conformance/*.json (TypeScript)
+                         horizons/horizons.json (JPL), conformance/table1.json
+                         (TypeScript), conformance/rails.json (tools/ephem)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -207,9 +208,10 @@ tests hold planet states within 1 m and 1 mm/s of it and time conversions to the
 three-argument `Math.hypot` that `libm` lacks.
 
 `RailPack` loads the decade files of `data/ephem/de440s-100km`, checking every header
-field and offset, and evaluates a body by Clenshaw's recurrence in the order
-`tools/ephem` uses, so it reproduces `fixtures/conformance/rails.json` (written by
-`starshot-ephem conformance`) bit for bit. `RailEphemeris` serves every state inside the
+field but the build, which must match across loaded decades, and every offset. It
+evaluates a body by Clenshaw's recurrence in the order `tools/ephem` uses, so it
+reproduces `fixtures/conformance/rails.json` (written by `starshot-ephem conformance`)
+bit for bit. `RailEphemeris` serves every state inside the
 pack's 1950 to 2150 coverage from the rails and panics when the decade holding the ET
 is not loaded, because a silent fallback would let a preview and a server disagree.
 Outside coverage the planets come from Table 1 and the Moon panics. Earth's centre and

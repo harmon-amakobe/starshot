@@ -6,9 +6,14 @@ import math
 from pathlib import Path
 
 from ephem import EPOCHS_JD_TDB, SERIES, TARGETS
+from ephem.cli import _parser
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = json.loads((ROOT / "fixtures/horizons/horizons.json").read_text(encoding="utf-8"))
+
+
+def test_the_fixtures_command_writes_this_file_by_default():
+    assert _parser().parse_args(["fixtures"]).out == ROOT / "fixtures" / "horizons" / "horizons.json"
 
 
 def test_every_series_is_present_at_the_five_epochs():
