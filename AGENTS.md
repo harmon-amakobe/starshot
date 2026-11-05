@@ -107,8 +107,9 @@ A wrong change in these is expensive or silent; plan first and say what you chec
   `OUTER_SIM_SETTINGS` and `simulateShot`.
 - `apps/game/src/levels.ts` (each level's `sim`, par, tolerance and capture zone) and
   the known solutions in `apps/game/src/levels.test.ts`.
-- `packages/ephemeris/test/fixtures/horizons.json` and `fixtures/math/golden.json`
-  (regenerate, never hand-edit).
+- `packages/ephemeris/test/fixtures/horizons.json`, `fixtures/math/golden.json` and
+  `data/ephem/**` (regenerate, never hand-edit), and each rail's segment and degree in
+  `tools/ephem/src/ephem/bodies.py`.
 - `python/astlo/astlo/**` (D10): Mark's code; change it only by one-topic fix commits,
   per the `astlo-upstream` skill.
 - `third_party/**` (D2), `.github/workflows/**`, `.github/actions/**`, `clippy.toml`,
@@ -161,7 +162,7 @@ Load a skill when its trigger appears; the index is how agents know they exist.
 |---|---|---|
 | `verify-gates` | a change is believed done; the Definition of Done | `.claude/skills/verify-gates/` |
 | `verify-all` | a full sweep before review, handoff or merge | `.claude/skills/verify-all/` |
-| `verify-physics` | ephemeris, physics, fixtures, tolerances, adding a body | `.claude/skills/verify-physics/` |
+| `verify-physics` | ephemeris, physics, fixtures, DE440 rails, tolerances, adding a body | `.claude/skills/verify-physics/` |
 | `verify-game` | proving the game works on phone and desktop | `.claude/skills/verify-game/` |
 | `add-level` | designing a level on a real launch window | `.claude/skills/add-level/` |
 | `astlo-upstream` | syncing, benchmarking or fixing Mark's astlo; rebasing `python/astlo` | `.claude/skills/astlo-upstream/` |
@@ -179,10 +180,10 @@ npm ci            # once per clone
 npm run gates     # hygiene, agent-context, code and rust groups; must exit 0, a skip is not a pass
 ```
 
-Plus, by what the diff touched: `verify-physics` for packages or fixtures,
-`verify-game` for anything a player sees, `public-hygiene` before pushing. Report the
-commands with their exit codes and the gates' last line, which counts any skip.
-`npm run gates:fast` is the Stop hook's subset, not a shorter DoD.
+Plus, by what the diff touched: `verify-physics` for packages, fixtures, `tools/ephem`
+or `data/ephem`; `verify-game` for anything a player sees; `public-hygiene` before
+pushing. Report the commands with their exit codes and the gates' last line, which
+counts any skip. `npm run gates:fast` is the Stop hook's subset, not a shorter DoD.
 
 ## Where to look next
 

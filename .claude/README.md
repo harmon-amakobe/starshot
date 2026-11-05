@@ -96,6 +96,10 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   workflow, or cargo config outside the repository.
 - `release.yml` runs the gates without `setup-rust-wasm` or `STARSHOT_REQUIRE_RUST`, so
   its Rust gates use the runner's rustup or skip.
+- `npm run gates` runs neither the `tools/ephem` nor the `python/astlo` tests: they run
+  in path-filtered workflows that are not required checks. No gate reads Python
+  dependency licences, and nothing proves `data/ephem/**` was regenerated rather than
+  hand-edited; its hashes show only that its files agree with `pack.json`.
 - The pull request that lands the collapsed stack on `main` is bigger than its row's cap,
   so its `pr-size` result is expected to fail; the master review decides that landing.
 - Nothing compares an asset manifest entry's licence with the `REUSE.toml` label for the

@@ -29,6 +29,7 @@ people start from the README at the root.
 | [plans/v1-starshot/06-resumption.md](plans/v1-starshot/06-resumption.md) | Current acceptance ledger, accepted gameplay and remaining lunar/Rust proof |
 | [plans/v1-starshot/07-screen-split.md](plans/v1-starshot/07-screen-split.md) | Current campaign file/symbol mapping and verification for PR2/PR3 |
 | [plans/v1-starshot/08-moon-flight.md](plans/v1-starshot/08-moon-flight.md) | Remaining lunar scope, declared delivery parts, budgets and proof |
+| [plans/v1-starshot/09-rust-supplement.md](plans/v1-starshot/09-rust-supplement.md) | Lunar files, types, golden cases and readiness checks for Band B, PR9 to PR17 (D38) |
 | [plans/pr0-bootstrap.md](plans/pr0-bootstrap.md) | The record of the bootstrap pull request (D8) |
 | [plans/current-game-release.md](plans/current-game-release.md) | The active release: publish the existing game and verify its domain before the first main merge (D34) |
 | [plans/current-game-release/work.yaml](plans/current-game-release/work.yaml) | The release epic and task, tracked separately from the remaining program |

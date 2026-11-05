@@ -34,18 +34,18 @@ Historical evidence in PR16 is retained but must be repeated where later changes
 
 | Criterion | Base disposition and remaining proof |
 |---|---|
-| AC1 | Existing npm gates remain required. Rust-required gates start at PR6; no Rust workspace exists yet. |
-| AC2 | Pending PR6. Run locked fmt, clippy and workspace tests. |
+| AC1 | Existing npm gates remain required. PR6 adds the Rust workspace and the `rust` gates; CI's `checks` job requires them with `STARSHOT_REQUIRE_RUST=1`, and locally they skip without cargo, counted as skips. |
+| AC2 | PR6 adds the locked fmt, clippy and test commands (`rust-fmt`, `rust-clippy` and `rust-test` in `scripts/gates.mjs:68-74`), run by the rust gates and CI's `checks` job with `STARSHOT_REQUIRE_RUST=1`. |
 | AC3 | TypeScript Horizons fixtures exist in `packages/ephemeris/test/ephemeris.test.ts`. Rust comparisons remain PR9/10. |
-| AC4 | Pending DE440 pack, 1950 to 2150, five-day validation, 150 km budget for every body including the geocentric Moon. Tighter lunar probes and D38 conformance remain additional requirements. |
+| AC4 | PR8's pack in `data/ephem/de440s-100km` is validated against the DE440 kernel every 5 days from 1950 to 2150, decade edges and the end included: every body is within 150 km (largest Mars 86.606 km, Moon 56.810 km; `VALIDATION.md` there). The tighter lunar probes stay with the knot rail and are not relaxed; G5 in the [supplement](09-rust-supplement.md#open-gaps) is open for the owner. D38 conformance remains an additional requirement. |
 | AC5 | Pending Rust dense Table 1 test over 1950 to 2050. |
-| AC6 | Pending native x86_64/arm64, V8 and JavaScriptCore golden bit comparisons. Lunar captured states join the corpus. |
+| AC6 | Native x86_64 and native arm64 now agree on all 7,916 maths golden cases (PR6, CI job `rust-arm64`). V8 and JavaScriptCore remain for PR15. Lunar captured states join the corpus. |
 | AC7 | Existing TypeScript energy/timing tests remain the oracle. Rust closure, switching and preview timing remain PR11/12. |
 | AC8 | Current known solutions are in `apps/game/src/levels.test.ts`. Rust catalogue, deterministic search and later content remain pending. |
 | AC9 | Pending measured wasm, JavaScript and texture gates. Existing Three.js does not establish any size budget. |
 | AC10 | PR16 supplies browser and offline evidence for the current game. Repeat where changes affect it; full chapter proof remains pending. Human trials and physical-phone timing are optional under D39. |
 | AC11 | Existing copy gate remains required at every publication. No new copy exemptions. |
-| AC12 | File licensing exists. PR5 adds the `dependency-licences`, `assets` and `credits` gates: 79 locked packages pass, 12 by exact exception (deviation 53); `apps/game/assets/manifest.json` lists every file under `apps/game/public/`, and the observatory files the game ships stay checked against their own manifest; the game assets block of `CREDITS.md` is generated. The Cargo part arrives with PR6. |
+| AC12 | File licensing exists. PR5 adds the `dependency-licences`, `assets` and `credits` gates: 79 locked packages pass, 12 by exact exception (deviation 53); `apps/game/assets/manifest.json` lists every file under `apps/game/public/`, and the observatory files the game ships stay checked against their own manifest; the game assets block of `CREDITS.md` is generated. PR6 adds the Cargo part as the `rust-licences` gate. |
 | AC13 | Existing file scan remains required. PR4 adds the `commits` gate, which scans every commit's author, committer and message in the branch range; PR text is still scanned by hand with `--stdin` before posting. |
 | AC14 | Pending PR17. Keep TypeScript until both apps and the game worker pass measured conformance. |
 | AC15 | Pending backend source and emulator Rules tests in PR30/31. No cloud administration is implied. |
@@ -67,8 +67,8 @@ Each listed group's spec still supplies its detailed acceptance commands.
 | PR3c | Separate maintenance group. Recount compressed CSS, split without changing cascade, compare computed styles and screenshots. |
 | PR4 | PR size, commit and work gates remain. Preserve current release tools and CI protections. |
 | PR5 | Manifest, dependency licence checking and generated credits remain. Existing media notices are input evidence. |
-| PR6 | Rust workspace, software maths, deterministic build flags and mandatory Rust gates remain. |
-| PR7, PR8 | Ephemeris tooling, Horizons refresh and validated DE440 pack remain. Interim Moon rail is retained until replacement passes. |
+| PR6 | Built in two parts (#100, #101): the workspace, `starshot-math` with 7,916 golden cases, the clippy fence and the `rust` gates. V8 and JavaScriptCore bits remain for PR15. |
+| PR7, PR8 | Built (#102): `tools/ephem`, the refreshed Horizons fixture and the validated DE440 pack. The interim Moon rail stays until a replacement passes its probes (G5 in the [Rust core supplement](09-rust-supplement.md)). |
 | PR9, PR10 | Rust Table 1, time scales and rail reader remain, including dense comparisons. |
 | PR11, PR12 | Rust integrator, Lambert and simulation remain. Include lunar success/miss/impact and captured departure states. |
 | PR13, PR14 | Rust requests, replay format, level catalogue, scoring and hints remain, including the lunar variant. |
@@ -144,6 +144,7 @@ all four runtimes. PR16/17 update both apps and their worker/offline loaders bef
 TypeScript deletion. Record a concrete readiness check in each issue; if a file, type
 or proof is still unspecified, keep `agent-ready` off until that supplement is complete.
 PR9 to PR17 are marked blocked for this planning work; the orchestrator resolves it before assignment.
+The [Rust core supplement](09-rust-supplement.md) holds these mappings, golden cases and readiness lists.
 
 Under D39, these former player criteria are optional release-feedback questions:
 
@@ -167,9 +168,9 @@ It holds only public facts (D40, non-negotiable 4).
 
 | Field | Current value, updated after each reviewed group and material decision |
 |---|---|
-| Stack tip | `codex/v1-pr06-rust-gates` (PR6 Rust gates), above PR6 maths crate, the PR4 group #99, PR3c #98, PR3b #97 and the rest of the linear stack down to PR0 #78 |
-| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, PR3a loader #91, readiness #92, lazy #93, evidence bundle #94, D42 proof checkpoint #95, PR3a evidence browser #96 PR3b Moon campaign #97, PR3c stylesheet split #98, the PR4 group #99 and PR6 in two parts; CI passed at #88 to #99. Issue bodies are mirrored by hand through the GitHub connector when `03-work.yaml` changes, since `sync-work.mjs --apply` needs a token this environment lacks |
-| Next | The PR7 group (PR7, PR8; issues #40 and #41), branch `codex/v1-pr07-ephem-rails`: built in its own worktree on `3263b09`, it rebases onto `codex/v1-pr06-rust-gates` before its gates, lite review and push (D42). Then the Band B supplement checkpoint, `codex/v1-band-b-supplement`, which carries the drafted supplement for PR9 to PR17; its open gaps G2, G4 and G5 need owner rulings before PR13, PR17 and PR18 |
+| Stack tip | `codex/v1-band-b-supplement` (this checkpoint), above the PR7 group #102, PR6 Rust gates #101, PR6 maths crate #100, the PR4 group #99, PR3c #98, PR3b #97 and the rest of the linear stack down to PR0 #78 |
+| Done | PR0 #78, PR2 #79, PR3a plan #80, PR3a precision #81, D39 checkpoint #82, D40 checkpoint #83, PR3a ownership guard #84, ownership edits #85, search core #86, search transport #87, D40 window checkpoint #88, PR3a model #89, D41 review checkpoint #90, PR3a loader #91, readiness #92, lazy #93, evidence bundle #94, D42 proof checkpoint #95, PR3a evidence browser #96, PR3b Moon campaign #97, PR3c stylesheet split #98, the PR4 group #99, PR6 maths crate #100, PR6 Rust gates #101, the PR7 group #102 and this Band B supplement checkpoint; CI passed at #88 to #101; #102 pending at handover. Issue bodies are mirrored by hand through the GitHub connector when `03-work.yaml` changes, since `sync-work.mjs --apply` needs a token this environment lacks |
+| Next | The PR9 group (PR9, PR10; issues #42 and #43), branch `codex/v1-pr09-ephemeris-crate` on `codex/v1-band-b-supplement`, after the orchestrator confirms the supplement's readiness rows for it. The owner's rulings on G2, G4 and G5 are needed before PR13, PR17, and PR10 or PR18 respectively |
 | Not run here | Physical-phone timing (optional under D39); WebKit and Firefox; compressed transfer on the real host; the `/starshot/` repeats and Canvas 2D passes that D42 defers to the master review |
 | Context at close | Previous lead: about 570,000 of 1,000,000 tokens measured at the Search transport publication and about 590,000 when it began handover on a projected cost, which the owner judged too early (D40 note); compaction none. This session: 777,472 measured after the Evidence browser publication, inside the D40 window, where handover began; compaction none. The runtime's session telemetry (autocompact_state) has read automatic compaction off since the Readiness publication, so the 776,000 to 792,000 window applies in full |
 
@@ -222,6 +223,12 @@ rows are never deleted. Line numbers are at the PR named in the source column.
 | 38 | PR6 review | `starshot-math` has no three-argument `hypot`, while `vec.ts` and `simulate.ts` use `Math.hypot(x, y, z)`; nesting the two-argument form will not reproduce V8's bits | PR9 and PR11 choose the `norm` formula and extend the golden set (supplement gap G10) |
 | 39 | PR6 review | A cargo that exists but cannot start reads as "cargo not found" and skips locally | CI requires Rust; decide whether a local start failure should fail instead |
 | 40 | PR6 result | The D16 fence check cannot see `RUSTFLAGS` or `CLIPPY_CONF_DIR` set in a workflow, or cargo configuration outside the repository; deleting the size scan's call to the fence check passes on a clean tree, as for its other scan hooks | Decide whether CI asserts an empty `RUSTFLAGS`, and whether each scan hook gets a self-test through the scan path |
+| 41 | PR8 physics audit | The pack's Moon (32-day segments, degree 15) misses the lunar probes by 1.412 to 44.126 km and 8.15e-5 to 8.68e-4 km/s, against budgets of 0.1 km and 1.1e-5 km/s (`packages/physics/test/lunar.test.ts:17-18`). Over 2026 to 2028 a 16-day degree-15 tier gives 0.028 km and 7.7e-6 km/s, an 8-day degree-12 tier 0.017 km and 2.2e-7 km/s | The owner rules before PR10 or PR18 (supplement gap G5): D33 says the rails replace the knot rail and keep its probes as a cross-check (docs/decisions.md:842-843) |
+| 42 | PR8 physics audit | Segment boundaries jump by up to 96.8 km (Jupiter) and 36.7 km (Moon); the reports set no velocity budget, and differentiated fit errors reach 6.36e-3 km/s for the Moon. Sampled maxima are not bounds: the Moon reaches 60.24 km on a 1-minute grid against 56.81 km reported | PR10 and PR12 decide whether the integrator stops at segment edges, and set a velocity budget |
+| 43 | PR7 review | The Horizons client retries only HTTP 429 and 503, and neither retries nor wraps a `URLError` or a non-JSON 200 answer (`tools/ephem/src/ephem/horizons.py:69-78`). The cache-mismatch, retry-exhaustion and short-row paths and the CLI's exit codes are untested; `KernelSource` has no offline test; the `regenerate` job validates only against the same kernel source | Add the tests, and a Horizons cross-check to the `regenerate` job |
+| 44 | PR7 review | `pack.read` accepts a manifest file entry outside the pack directory (`tools/ephem/src/ephem/pack.py:212`) and NaN coefficients, and raises an error other than `PackError` on a subnormal segment or a manifest without bodies (`:162`) | Harden the reader before PR10's Rust reader relies on the format |
+| 45 | PR7 review | `npm run gates` runs neither the `tools/ephem` nor the `python/astlo` tests, and no gate reads Python dependency licences | Decide whether a required check runs them |
+| 46 | PR6 records | PR6 added `fixtures/math/golden.json` with no `physics-auditor` pass (deviation 76), though D41 gives a fixture change that lens | The master review runs the physics lens on `starshot-math` and its golden set, or the owner rules it unneeded |
 
 ## Publication and account boundaries
 
