@@ -103,9 +103,12 @@ const FLIGHTS: Array<[string, ShotRequest]> = [
   ["study miss", requestFor(3.24, 20)], ["study impact", requestFor(3.24, -20)],
   ["study graze", requestFor(3.24, 17.210867496829703)], ["tighter settings", { ...requestFor(3.24, 0), settings: TIGHT }],
   ...[0, 0.05, 0.2, 0.5].map((dv): [string, ShotRequest] => [`weak pull ${dv}`, requestFor(dv, 0)]),
+  // A Moon impact; stopped at a zone 0.1 km up, the same burn enters it first in that step.
+  ["Moon impact", requestFor(3.24, 2)], ["Moon impact, stopped", { ...requestFor(3.24, 2), approachRadiusKm: 1737.5, stopAtEntry: true }],
 ];
 // requestFor's clamp and windows: the call's burn and angle, then the request it builds.
-const REQUESTS = [[3.24, 0], [3.24, -20], [0, 0], [0.05, 0], [0.2, 0], [0.5, 0], [-1, 0], [5, 0], [NaN, 0], [1, 90]];
+// 2.864 km/s reaches about 95,000 km, inside flight.ts:28's 100,000 km local threshold.
+const REQUESTS = [[3.24, 0], [3.24, -20], [0, 0], [0.05, 0], [0.2, 0], [0.5, 0], [-1, 0], [5, 0], [NaN, 0], [1, 90], [2.864, 0]];
 // Each refusal of simulateLunar. The horizon is launch plus 7 days past the rail's end
 // (lunar.test.ts:54-57); a burn straight down hits Earth within the rail, so only the check
 // refuses the second.

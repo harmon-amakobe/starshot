@@ -93,9 +93,9 @@ fn the_real_soi_stop_ends_at_the_first_entry() {
     assert_eq!(first, start.r.map(f64::to_bits));
     let (last, before) = flight.samples.split_last().expect("samples");
     assert_eq!(Some(last.t.to_bits()), flight.entry_et.map(f64::to_bits));
-    let off = (moon_distance(&model, last) - MOON_SOI_KM).abs();
-    println!("real-SOI stop: {off:e} km off the sphere");
-    assert!(off < 0.005, "{off} km");
+    let inside = MOON_SOI_KM - moon_distance(&model, last);
+    println!("real-SOI stop: {inside:e} km inside the sphere");
+    assert!(inside > 0.0 && inside < 0.005, "{inside} km");
     let outside = |k: &Knot| moon_distance(&model, k) >= MOON_SOI_KM;
     assert!(before.iter().all(outside));
     let rerun = fly(&model, &q);
@@ -227,12 +227,12 @@ fn request_for_matches_typescript_and_clamps_the_burn() {
 /// Each flight's steps, ending and entry equal the TypeScript's. Its entry and end times
 /// hold within 5 ms, inside the 0.01 s of `flight.test.ts:53`, except the study graze's:
 /// it crosses its zone so slowly that 0.3 m is 0.03 s, so the crossing is held in distance
-/// as well. A closest approach is flat to millimetres for a second or more, so the
-/// TypeScript's closest time is held in distance (deviation row 101).
+/// as well. A closest distance is rough, not flat: Table 1's Earth jitters it by about
+/// 1e-6 to 1e-5 km every 10 ms, so closest times hold within 1 s and in distance (row 101).
 #[test]
 fn flights_match_typescript() {
     let (model, rows) = (model(), section("flights"));
-    assert_eq!(rows.len(), 12);
+    assert_eq!(rows.len(), 14);
     // Entry and end, and closest times [s]; closest, last position, the zone at the
     // TypeScript's entry, and the closest distance at its closest time [km].
     let mut worst = [0.0_f64; 6];
@@ -270,12 +270,12 @@ fn flights_match_typescript() {
         worst = [0, 1, 2, 3, 4, 5].map(|i| worst[i].max(gaps[i]));
     }
     println!("worst {worst:?}");
-    // Measured: the graze's 0.031 s; 2.9e-4 km, 0.084 km (5 ms of heliocentric speed at
-    // a stop), 5.9e-4 km (the 1 ms bisection) and 1.8e-5 km.
-    let [times, _, closest_km, last_km, zone, flat] = worst;
+    // Measured: the graze's 0.031 s, the miss's closest 0.78 s; 2.9e-4 km, 0.084 km (2.8 ms
+    // of heliocentric speed at a stop), 9.3e-4 km (the 1 ms bisection) and 1.8e-5 km.
+    let [times, closest_time, closest_km, last_km, zone, rough] = worst;
     assert!(
-        times < 0.05 && closest_km < 1e-3 && last_km < 0.1,
+        times < 0.05 && closest_time < 1.0 && closest_km < 5e-4 && last_km < 0.1,
         "{worst:?}"
     );
-    assert!(zone < 1e-3 && flat < 5e-5, "{worst:?}");
+    assert!(zone < 1e-3 && rough < 5e-5, "{worst:?}");
 }
