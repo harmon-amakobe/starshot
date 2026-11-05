@@ -167,7 +167,7 @@ no connection to Firebase or a real identity provider.
 
 The simulation is moving into one Rust core (D16), which the game will load as wasm.
 The TypeScript packages above stay the reference until it matches them. Today the
-workspace holds two crates.
+workspace holds three crates.
 
 ```
   Cargo.toml             workspace: edition 2024, unsafe code forbidden,
@@ -188,9 +188,16 @@ workspace holds two crates.
       src/hermite.rs     the cubic between two knots, in hermite.ts's operation order
       src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
       tests/             rails tests embed data/ephem/de440s-100km/*.bin (include_bytes!)
+    starshot-physics/    the port of @starshot/physics; depends on the two crates above
+      src/dopri5.rs      Dormand-Prince 5(4) steps and step-size control
+      src/gravity.rs     the Sun and planets, with each planet's indirect term
+      src/launch.rs      the patched-conic departure and delta-v from low Earth orbit
+      src/hermite.rs     re-exports starshot-ephemeris's Hermite (one copy)
+      tests/conformance_physics.rs  against the TypeScript: arithmetic paths bit for bit
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
-                         horizons/horizons.json (JPL), conformance/table1.json and
-                         lunar.json (TypeScript), conformance/rails.json (tools/ephem)
+                         horizons/horizons.json (JPL), conformance/table1.json,
+                         lunar.json and physics.json (TypeScript), conformance/rails.json
+                         (tools/ephem)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -198,8 +205,8 @@ between x86_64, arm64 and the browser engines. `starshot-math` calls the `libm` 
 instead: Rust ports of C maths routines built from basic IEEE operations, pinned to
 one release with its hardware paths turned off, so native code and wasm run the same
 software routines. `tests/golden.rs` compares every recorded output bit for bit on
-the machine that runs it. The physics, game and wasm crates follow in later pull
-requests, each using `starshot-math` for its maths.
+the machine that runs it. The game and wasm crates follow in later pull requests,
+each using `starshot-math` for its maths.
 
 `starshot-ephemeris` keeps the TypeScript operation order, so arithmetic-only paths
 give the same bits. `packages/ephemeris/test/conformance.test.ts` writes what the

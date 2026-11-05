@@ -243,8 +243,11 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR10 rails reader | PR10 | `codex/v1-pr10-rails-reader` | `codex/v1-pr09-table1` | B2 |
 | PR10 rail ephemeris | PR10 | `codex/v1-pr10-rail-ephemeris` | `codex/v1-pr10-rails-reader` | B2 |
 | PR10 lunar model | PR10 | `codex/v1-pr10-lunar-model` | `codex/v1-pr10-rail-ephemeris` | B2 |
-| PR11 | PR11, PR12 | `codex/v1-pr11-physics-crate` | `codex/v1-pr10-lunar-model` | B2 |
-| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr11-physics-crate` | B3 |
+| PR11 integrator | PR11 | `codex/v1-pr11-physics-crate` | `codex/v1-pr10-lunar-model` | B2 |
+| PR11 Lambert and parking | PR11 | `codex/v1-pr11-lambert-parking` | `codex/v1-pr11-physics-crate` | B2 |
+| PR12 simulate | PR12 | `codex/v1-pr12-simulate` | `codex/v1-pr11-lambert-parking` | B2 |
+| PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate` | B2 |
+| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-lunar-flight` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
 | PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
