@@ -977,7 +977,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR9: Ephemeris crate
 
-- **Branch** `codex/v1-pr09-ephemeris-crate`, based on `codex/v1-pr07-ephem-rails` (group PR9).
+- **Branch** `codex/v1-pr09-time-bodies`, based on `codex/v1-band-b-supplement`, then `codex/v1-pr09-table1` (two parts in the PR groups table, :241-242).
   **Issue** `v1-ephemeris-crate`. **Decisions** D16, D17, D4. **Size** about 520 lines
   (about 190 of tests), 18 files; warns.
 - **Goal.** `starshot-ephemeris` reproduces today's `@starshot/ephemeris`: time scales,
@@ -1015,7 +1015,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR10: Rails reader
 
-- **Branch** `codex/v1-pr09-ephemeris-crate`, based on `codex/v1-pr07-ephem-rails` (group PR9).
+- **Branch** `codex/v1-pr10-rails-reader`, based on `codex/v1-pr09-table1`, then `codex/v1-pr10-rail-ephemeris` and `codex/v1-pr10-lunar-model` (three parts in the PR groups table, :243-245).
   **Issue** `v1-rails-reader`. **Decisions** D17. **Size** about 430 lines, 8 files.
 - **Goal.** Read the decade files in Rust, evaluate positions and velocities with adds
   and multiplies only, derive Earth's centre and the heliocentric Moon, and check Table 1
@@ -1044,7 +1044,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR11: Physics crate, integrator and Lambert
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr09-ephemeris-crate` (group PR11).
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
   **Issue** `v1-physics-core`. **Decisions** D16, D11. **Size** about 450 lines, 13 files.
 - **Goal.** Port `dopri5`, `gravity`, `hermite`, `launch` and `lambert` from
   `packages/physics/src/` to `crates/starshot-physics`, with today's tests and a
@@ -1076,7 +1076,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR12: Physics crate, simulate
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr09-ephemeris-crate` (group PR11).
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
   **Issue** `v1-physics-simulate`. **Decisions** D16, D6, D11. **Size** about 460 lines,
   6 files; warns.
 - **Goal.** Port `simulate` with encounter detection, the energy-consistent switch-on of

@@ -2,8 +2,8 @@
 //!
 //! Time scales, bodies and NASA/JPL's Table 1 with its Kepler solver, behind the
 //! `Ephemeris` trait the physics crate consumes; the DE440 rails reader behind the same
-//! trait (D17). Units are km, km/s and seconds of ET (TDB past J2000) in the
-//! heliocentric ecliptic J2000 frame.
+//! trait (D17); and the lunar model of the Moon-first campaign (D33, D38). Units are km,
+//! km/s and seconds of ET (TDB past J2000) in the heliocentric ecliptic J2000 frame.
 //!
 //! The port keeps the TypeScript operation order. Arithmetic-only paths then give the
 //! same bits as the TypeScript; paths through `sin` and `cos` agree within the bounds
@@ -17,7 +17,9 @@
 
 pub mod bodies;
 pub mod ephemeris;
+pub mod hermite;
 pub mod kepler;
+pub mod lunar;
 pub mod rails;
 pub mod table1;
 pub mod time;
@@ -30,6 +32,7 @@ pub use ephemeris::{
     Ephemeris, RailEphemeris, State, Table1Ephemeris, orbit_path, orbital_period_seconds,
     planet_state,
 };
+pub use hermite::{Knot, hermite};
 pub use kepler::{ClassicalElements, solve_kepler, state_from_elements, wrap_pi};
 pub use rails::{PackError, RailPack};
 pub use table1::{APPROX_ELEMENTS, APPROX_VALID_JD, planet_elements};

@@ -12,7 +12,7 @@ publish.workspace = true
 starshot-math = { path = "../starshot-math" }
 
 # float_roundtrip parses JSON numbers correctly rounded, as JavaScript does, so a test
-# that reads a fixture sees the same f64 bits the TypeScript tests see.
+# that reads the Moon rail or a fixture sees the same f64 bits the TypeScript tests see.
 [dev-dependencies]
 serde_json = { workspace = true, features = ["float_roundtrip"] }
 

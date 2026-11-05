@@ -185,10 +185,12 @@ workspace holds two crates.
       src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
       src/rails.rs       reads data/ephem decade files: adds, multiplies and divides;
                          no transcendental call
+      src/hermite.rs     the cubic between two knots, in hermite.ts's operation order
+      src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
       tests/             rails tests embed data/ephem/de440s-100km/*.bin (include_bytes!)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
-                         horizons/horizons.json (JPL), conformance/table1.json
-                         (TypeScript), conformance/rails.json (tools/ephem)
+                         horizons/horizons.json (JPL), conformance/table1.json and
+                         lunar.json (TypeScript), conformance/rails.json (tools/ephem)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -205,7 +207,12 @@ TypeScript computes to `fixtures/conformance/table1.json` (with
 `STARSHOT_WRITE_CONFORMANCE=1`) and otherwise checks the file is unchanged; the Rust
 tests hold planet states within 1 m and 1 mm/s of it and time conversions to the bit.
 `vec::norm` is the square root of `x*x + y*y + z*z`, where TypeScript calls a
-three-argument `Math.hypot` that `libm` lacks.
+three-argument `Math.hypot` that `libm` lacks. The lunar generator,
+`packages/physics/test/conformance-lunar.test.ts`, writes
+`fixtures/conformance/lunar.json` the same way. `tests/lunar.rs` reads the knot rail
+from `packages/ephemeris/data/moon-rail.json` and holds relative states and the model's
+constants to the bit, Earth and Moon within 1 m and 1 mm/s, and basis components
+within 1e-15.
 
 `RailPack` loads the decade files of `data/ephem/de440s-100km`, checking every header
 field but the build, which must match across loaded decades, and every offset. It
@@ -215,7 +222,9 @@ bit for bit. `RailEphemeris` serves every state inside the
 pack's 1950 to 2150 coverage from the rails and panics when the decade holding the ET
 is not loaded, because a silent fallback would let a preview and a server disagree.
 Outside coverage the planets come from Table 1 and the Moon panics. Earth's centre and
-the heliocentric Moon split the barycentre with the pack's Earth-Moon mass ratio.
+the heliocentric Moon split the barycentre with the pack's Earth-Moon mass ratio. The
+lunar model keeps the cached Horizons rail and its probes: the pack's Moon does not
+reach them, and replacing the rail is the owner's call.
 
 ## Conventions: units, frames and time
 
