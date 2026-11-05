@@ -1,0 +1,18 @@
+[package]
+name = "starshot-physics"
+description = "Flight physics: the Dormand-Prince integrator, gravity and the patched-conic launch (D16)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+starshot-ephemeris = { path = "../starshot-ephemeris" }
+starshot-math = { path = "../starshot-math" }
+
+# float_roundtrip reads JSON numbers correctly rounded, as JavaScript does.
+[dev-dependencies]
+serde_json = { workspace = true, features = ["float_roundtrip"] }
+
+[lints]
+workspace = true
