@@ -1,0 +1,10 @@
+[
+  { "file": "long.txt", "as": "apps/game/src/fixture.css", "long": 2 },
+  { "file": "long.txt", "as": "apps/game/src/fixture.ts", "long": 2 },
+  { "file": "long.txt", "as": "apps/game/src/Fixture.tsx", "long": 2 },
+  { "file": "long.txt", "as": "scripts/fixture.mjs", "long": 2 },
+  { "file": "long.txt", "as": "crates/fixture/src/lib.rs", "long": 0 },
+  { "file": "formatted.txt", "as": "packages/presentation/src/fixture.css", "long": 0 },
+  { "file": "long.txt", "as": "apps/game/src/fixture.css", "long": 2, "crlf": true },
+  { "file": "formatted.txt", "as": "packages/presentation/src/fixture.css", "long": 0, "crlf": true }
+]

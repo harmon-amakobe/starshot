@@ -60,7 +60,7 @@ people start from the README at the root.
 |---|---|
 | `npm run gates` | Every check, as CI runs it. `npm run gates:fast` is the static subset |
 | `node scripts/check-copy-tells.mjs` | The copy gate; `--stdin --kind pr` for a body, `--commits <range>` for messages |
-| `node scripts/check-file-size.mjs` | The size, shape and layering gate; `--update` lowers the baseline |
+| `node scripts/check-file-size.mjs` | The size, shape and layering gate, which also warns on lines over 160 characters; `--update` lowers the baseline, `--self-test` runs only the long-line fixtures |
 | `node scripts/check-licence.mjs` | The licence gate |
 | `node scripts/sync-work.mjs` | Issues as code (D23), described below |
 | `node scripts/verify-game.mjs` | Drives the built game in a headless browser on phone and desktop sizes |

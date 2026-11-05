@@ -1,0 +1,270 @@
+@media (max-height: 500px) and (min-width: 601px) {
+  .c-target-cue {
+    right: 16px;
+    top: 170px;
+    bottom: auto;
+    font-size: 9px;
+    max-width: 150px;
+  }
+}
+
+.c-phase-range {
+  grid-column: 1/-1;
+}
+.c-phase-range input {
+  padding: 0;
+  cursor: pointer;
+  accent-color: #ffca6a;
+}
+@media (min-width: 800px) {
+  .c-planning:has(.c-phase-range) {
+    grid-template-columns:
+      minmax(130px, 1fr) 90px 44px minmax(140px, 1.4fr)
+      125px;
+    align-items: end;
+  }
+  .c-planning .c-phase-range {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .c-planning output {
+    grid-column: 5;
+    grid-row: 1;
+    align-self: center;
+    line-height: 1.7;
+  }
+  .c-planning:not(:has(.c-phase-range)) output {
+    grid-column: 1/-1;
+  }
+}
+
+@media (max-height: 500px) and (min-width: 601px) {
+  .campaign-shell .c-deck {
+    top: 70px;
+    bottom: 10px;
+    right: 12px;
+    left: auto;
+    transform: none;
+    width: min(390px, 46vw);
+    padding: 7px 11px;
+    overflow-y: auto;
+    border-radius: 24px;
+  }
+  .campaign-shell .c-deck .c-deck-heading {
+    min-height: 44px;
+  }
+  .campaign-shell .c-deck .c-deck-preferences {
+    gap: 0;
+  }
+  .campaign-shell .c-deck .c-units span,
+  .campaign-shell .c-deck .c-compact,
+  .campaign-shell .c-caption {
+    display: none;
+  }
+  .campaign-shell .c-deck .c-planning {
+    grid-template-columns: minmax(0, 1fr) 82px 44px;
+    gap: 4px 8px;
+  }
+  .campaign-shell .c-deck .c-planning .c-phase-range {
+    grid-column: 1/-1;
+    grid-row: auto;
+  }
+  .campaign-shell .c-deck .c-planning output {
+    grid-column: 1/-1;
+    grid-row: auto;
+    font-size: 8px;
+    line-height: 1.4;
+  }
+  .campaign-shell .c-deck .c-deck-footer {
+    flex-direction: row;
+    gap: 4px;
+  }
+  .campaign-shell .c-deck .c-cameras button {
+    padding: 0 5px;
+  }
+  .campaign-shell .c-deck .c-actions > .pill {
+    width: 44px;
+    padding: 0;
+  }
+  .campaign-shell .c-deck .c-actions > .pill span {
+    display: none;
+  }
+  .campaign-shell .c-deck .c-actions > .primary {
+    padding: 0 12px;
+  }
+  .campaign-shell .c-map-tools {
+    left: 20px;
+    right: auto;
+    top: 65px;
+    flex-direction: row;
+    gap: 7px;
+  }
+  .campaign-shell .c-hangar-button {
+    top: auto;
+    bottom: 10px;
+    left: 20px;
+    width: auto;
+  }
+  .campaign-shell .c-target-cue {
+    top: auto;
+    bottom: 10px;
+    left: 130px;
+    right: auto;
+    max-width: 210px;
+    font-size: 9px;
+  }
+  .campaign-shell .c-deck.expanded .c-page-tabs {
+    left: 48px !important;
+    right: 4px !important;
+    top: 4px;
+    justify-content: flex-start;
+  }
+  .campaign-shell .c-deck.expanded .c-deck-preferences {
+    visibility: hidden;
+  }
+  .campaign-shell .c-deck .c-timeline {
+    position: static;
+    padding: 0;
+    margin: 0;
+    left: auto;
+    right: auto;
+    top: auto;
+  }
+  .campaign-shell .c-focus-title {
+    top: 117px;
+    max-width: 180px;
+  }
+}
+
+.c-planning label > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.c-planning .c-parking-time {
+  display: inline;
+  font-size: 8px;
+  color: #96b7c5;
+}
+.c-planning .c-phase-range {
+  gap: 0;
+}
+@media (min-width: 800px) {
+  .c-planning:has(.c-phase-range) {
+    grid-template-columns: minmax(165px, 1fr) 90px 44px minmax(140px, 1fr);
+  }
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .campaign-shell .c-deck .c-planning {
+    grid-template-columns: minmax(0, 1fr) 82px 44px;
+  }
+  .campaign-shell .c-deck .c-planning .c-parking-time {
+    font-size: 7px;
+  }
+}
+
+.c-release-setting {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  color: #c8dbe5;
+}
+.c-release-setting select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid #62768a88;
+  border-radius: 12px;
+  background: #142536;
+  color: #d9e8ef;
+  font: inherit;
+}
+.c-impact {
+  margin: 3px 0 5px;
+  font-size: 10px;
+  color: #f2c98b;
+  line-height: 1.4;
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .campaign-shell .entry-quiet {
+    top: 63px;
+    bottom: auto;
+  }
+  .campaign-shell .entry-notice {
+    position: absolute;
+    left: 300px;
+    top: 0;
+    width: 245px;
+    max-height: 57px;
+    overflow-y: auto;
+    margin: 0;
+    font-size: 9px;
+  }
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .campaign-shell .c-deck.expanded:has(.c-fine) .c-deck-page {
+    height: 72px;
+  }
+  .campaign-shell .c-fine p {
+    display: none;
+  }
+  .campaign-shell .c-fine label {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .campaign-shell .c-fine input {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    padding: 0 10px;
+  }
+  .campaign-shell .c-fine {
+    gap: 12px;
+  }
+}
+.c-deck-footer:has(.c-wait) {
+  position: relative;
+}
+.campaign-shell .c-wait {
+  position: absolute;
+  right: 0;
+  top: -7px;
+  margin: 0;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #15263a;
+  font-size: 9px;
+  line-height: 1.2;
+  color: #b9d8d2;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.c-moon-load {
+  position: absolute;
+  right: 24px;
+  bottom: calc(var(--deck-height) + 64px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #65798c8f;
+  border-radius: 30px;
+  background: #101c2ce8;
+  color: #d9e8ef;
+  font-size: 10px;
+}
+.c-moon-load p {
+  margin: 0;
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .c-moon-load {
+    left: 20px;
+    top: 125px;
+    right: auto;
+    bottom: auto;
+  }
+}

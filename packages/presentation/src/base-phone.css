@@ -1,0 +1,276 @@
+@media (max-width: 600px) {
+  .topbar {
+    left: 17px;
+    right: 17px;
+    top: max(16px, env(safe-area-inset-top));
+  }
+  .brand {
+    font-size: 22px;
+  }
+  .brand span {
+    font-size: 8px;
+    max-width: 130px;
+    line-height: 1.6;
+  }
+  .topbar > .pill {
+    padding: 0;
+    width: 44px;
+  }
+  .topbar > .pill span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .mission-pill {
+    font-size: 10px;
+    gap: 6px;
+    padding: 0 12px;
+    left: auto;
+    right: 54px;
+    transform: none;
+  }
+  .level-caption {
+    left: 20px;
+    top: 105px;
+  }
+  .level-caption .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1.7px;
+  }
+  .level-caption h1 {
+    font-size: 21px;
+    line-height: 1.25;
+    margin: 10px 0;
+  }
+  .level-caption p {
+    font-size: 9px;
+    max-width: 220px;
+    line-height: 1.5;
+  }
+  .camera-controls {
+    top: 230px;
+    right: 14px;
+    gap: 7px;
+  }
+  .moon-marker {
+    font-size: 10px;
+  }
+  .moon-marker span {
+    font-size: 8px;
+  }
+  .moon-marker.offscreen {
+    padding: 8px 10px;
+    max-width: 145px;
+  }
+  .world-footer {
+    bottom: 300px;
+    font-size: 8px;
+    left: 19px;
+    gap: 6px;
+  }
+  .scale-bar i {
+    width: 80px;
+  }
+  .hangar-entry {
+    bottom: 245px;
+    left: 19px;
+    padding: 0 13px;
+    font-size: 11px;
+  }
+  .flight-deck {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
+    padding: 8px 13px 12px;
+    border-radius: 26px;
+  }
+  .deck-heading {
+    gap: 4px;
+  }
+  .deck-title {
+    min-width: 44px;
+    padding: 0;
+  }
+  .deck-title span {
+    display: none;
+  }
+  .deck-title svg {
+    width: 18px;
+  }
+  .units {
+    padding: 0 12px;
+    gap: 6px;
+    font-size: 9px;
+  }
+  .units svg {
+    width: 18px;
+  }
+  .detail-modes {
+    gap: 0;
+  }
+  .detail-modes button {
+    padding: 0 8px;
+    gap: 5px;
+    font-size: 9px;
+  }
+  .detail-modes svg {
+    width: 18px;
+  }
+  .deck-body {
+    padding: 13px 1px 12px;
+  }
+  .instruments {
+    align-items: stretch;
+    gap: 9px;
+  }
+  .fuel-instrument {
+    gap: 8px;
+    flex: 0.94;
+  }
+  .fuel-ring {
+    width: 49px;
+    height: 49px;
+    padding: 3px;
+  }
+  .fuel-ring strong {
+    padding-top: 13px;
+    font-size: 17px;
+  }
+  .fuel-instrument > div:last-child {
+    gap: 5px;
+  }
+  .fuel-instrument span {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .fuel-instrument b {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .prediction {
+    padding: 10px;
+    min-height: 66px;
+    border-radius: 16px;
+    gap: 7px;
+    flex: 1.12;
+  }
+  .prediction svg {
+    display: none;
+  }
+  .prediction b {
+    font-size: 9px;
+    line-height: 1.45;
+  }
+  .prediction span {
+    font-size: 7px;
+    line-height: 1.5;
+  }
+  .prediction div {
+    gap: 4px;
+  }
+  .deck-actions {
+    gap: 6px;
+    padding-top: 10px;
+  }
+  .deck-actions .primary {
+    padding: 0 17px;
+    font-size: 11px;
+  }
+  .deck-actions .pill {
+    padding: 0 12px;
+    font-size: 10px;
+  }
+  .deck-actions .text-button {
+    font-size: 9px;
+    padding: 0 4px;
+    min-width: 64px;
+  }
+  .plane-lock {
+    display: none;
+  }
+  .fine-controls {
+    gap: 17px;
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+  .fine-controls label {
+    font-size: 8px;
+  }
+  .flight-instruments {
+    padding: 3px;
+    gap: 12px;
+  }
+  .flight-instruments span {
+    font-size: 8px;
+  }
+  .flight-instruments strong {
+    font-size: 14px;
+  }
+  .flight-instruments .fuel-left {
+    display: none;
+  }
+  .result-card {
+    top: 36%;
+    padding: 20px;
+    width: calc(100% - 55px);
+  }
+  .result-card h2 {
+    font-size: 21px;
+  }
+  .result-card p {
+    font-size: 10px;
+  }
+  .aim-buttons {
+    left: 16px;
+    bottom: 260px;
+    width: 250px;
+  }
+  .hangar-caption {
+    top: 105px;
+    left: 23px;
+  }
+  .hangar-caption h1 {
+    font-size: 25px;
+    margin-top: 12px;
+  }
+  .hangar-caption p {
+    font-size: 10px;
+    margin: 10px 0 15px;
+  }
+  .model-tag {
+    font-size: 8px;
+  }
+  .hangar-close {
+    top: 20px;
+    right: 18px;
+    font-size: 10px;
+  }
+  .hangar-deck {
+    bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 25px;
+  }
+  .hangar-deck nav {
+    gap: 0;
+  }
+  .hangar-deck nav button {
+    padding: 0 14px;
+    font-size: 11px;
+  }
+  .hangar-deck p {
+    font-size: 9px;
+    line-height: 1.7;
+    margin: 11px auto;
+  }
+  .pull-handle {
+    width: 76px;
+    height: 76px;
+  }
+  .pull-coach {
+    font-size: 10px;
+  }
+  .pull-coach > span {
+    font-size: 20px;
+  }
+}

@@ -26,7 +26,7 @@ gate you did not run; say so.
 | `third-party` | `third_party/astlo` matches its manifest byte for byte (D2) | that nothing was copied out of it into our code (review) |
 | `licence` | every file has a `REUSE.toml` record, `LICENSE` is Apache-2.0, every `package.json` says so, media are in `CREDITS.md` (D12) | that a credit is correct, or that an in-file SPDX header agrees (it warns) |
 | `copy` | no fail rule of `docs/copy-standard.md` in Markdown, UI strings, forms, work plans and, in CI, the PR's commits (D27) | that the prose is good: warnings pass |
-| `size` | no file over 500 code lines off the baseline; the baseline only shrinks; `packages/` never imports `apps/`; nothing imports `python/` or `third_party/` (D28) | that a component is well split (its shape warnings pass) |
+| `size` | no file over 500 code lines off the baseline; the baseline only shrinks; `packages/` never imports `apps/`; nothing imports `python/` or `third_party/` (D28) | that a component is well split (its shape warnings pass), or that a count is honest: a line over 160 characters warns and passes |
 | `versions` | workspace and lock parity; release calculation, proposal, provenance and archive negative fixtures | that a candidate was tested on the hosted beta |
 | `instruction-dedup` | adapters share no 12-word run with `AGENTS.md` | that they do not paraphrase it |
 | `agent-frontmatter` | agents and skills load; read-only roles hold no writing tool; index complete | that descriptions trigger well |

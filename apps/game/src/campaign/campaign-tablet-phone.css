@@ -1,0 +1,237 @@
+@media (max-width: 950px) {
+  .c-deck {
+    width: calc(100% - 28px);
+    padding: 9px 14px 10px;
+  }
+  .c-deck-footer {
+    gap: 7px;
+  }
+  .c-cameras button {
+    padding: 0 8px;
+  }
+  .c-actions > .pill {
+    padding: 0 10px;
+  }
+  .c-actions > .primary {
+    padding: 0 14px;
+  }
+  .c-cameras span {
+    display: none;
+  }
+  .c-instruments {
+    gap: 15px;
+  }
+  .c-prediction {
+    padding: 12px;
+  }
+  .c-deck-heading {
+    gap: 7px;
+  }
+  .c-deck-title span {
+    display: none;
+  }
+  .c-compact {
+    gap: 12px;
+  }
+  .c-mission {
+    width: calc(100% - 240px);
+  }
+  .c-mission-body {
+    width: calc(100vw - 45px);
+  }
+}
+@media (max-width: 600px) {
+  .c-topbar {
+    inset: 16px 18px auto;
+  }
+  .c-brand {
+    font-size: 22px;
+  }
+  .c-mission {
+    top: 16px;
+    left: auto;
+    right: 72px;
+    transform: none;
+    width: auto;
+  }
+  .c-mission-toggle {
+    font-size: 9px;
+    padding: 0 11px !important;
+    gap: 5px !important;
+  }
+  .c-mission-toggle svg {
+    width: 16px;
+  }
+  .c-mission-body {
+    position: absolute;
+    top: 46px;
+    right: -53px;
+    width: calc(100vw - 36px);
+    padding: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-radius: 22px;
+  }
+  .c-mission-body > div:first-child {
+    flex: 1;
+    min-width: 160px;
+  }
+  .c-mission-body label {
+    flex: 0 0 145px;
+  }
+  .c-mission-body p {
+    font-size: 9px;
+  }
+  .c-mission-body .c-guide {
+    max-width: none;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .c-guide small {
+    width: 100%;
+    font-size: 8px;
+  }
+  .c-caption {
+    top: 83px;
+    left: 21px;
+    max-width: 230px;
+  }
+  .c-caption .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .c-caption h1 {
+    font-size: 23px;
+    margin: 7px 0;
+  }
+  .c-caption p {
+    font-size: 9px;
+    max-width: 190px;
+  }
+  .c-map-tools {
+    top: 76px;
+    right: 13px;
+    gap: 6px;
+  }
+  .c-zoom button {
+    width: 44px;
+  }
+  .c-map-tools .c-size {
+    font-size: 8px !important;
+    gap: 6px;
+    padding: 0 9px !important;
+  }
+  .size-icon {
+    font-size: 16px;
+  }
+  .c-speed output {
+    min-width: 52px;
+    font-size: 9px;
+  }
+  .c-speed button {
+    font-size: 13px;
+  }
+  .c-hangar-button {
+    left: 17px;
+    bottom: calc(var(--deck-height) + 13px);
+    font-size: 10px;
+    padding: 0 12px !important;
+  }
+  .c-scale {
+    right: 18px;
+    bottom: calc(var(--deck-height) + 20px);
+    font-size: 8px;
+    gap: 5px;
+  }
+  .c-deck {
+    width: calc(100% - 22px);
+    bottom: 11px;
+    padding: 7px 11px 10px;
+    border-radius: 25px;
+  }
+  .c-deck-heading {
+    gap: 0;
+  }
+  .c-deck-title {
+    width: 44px;
+    min-width: 44px;
+  }
+  .c-deck-preferences {
+    gap: 2px;
+  }
+  .c-units {
+    padding: 0 9px !important;
+    font-size: 9px !important;
+    gap: 6px !important;
+  }
+  .c-units svg {
+    width: 18px;
+  }
+  .c-modes button {
+    font-size: 9px;
+    padding: 0 9px;
+    gap: 5px;
+  }
+  .c-modes svg {
+    width: 18px;
+    height: 18px;
+  }
+  .c-deck-page {
+    height: 105px;
+    padding: 10px 1px 2px;
+  }
+  .c-instruments {
+    gap: 12px;
+  }
+  .c-fuel {
+    min-width: 97px;
+    gap: 5px;
+    grid-template-columns: 1fr;
+  }
+  .c-fuel strong {
+    grid-column: 1;
+    grid-row: auto;
+    font-size: 24px;
+  }
+  .c-fuel strong small {
+    font-size: 9px;
+  }
+  .c-fuel > span {
+    font-size: 9px;
+  }
+  .c-fuel > small {
+    grid-column: 1;
+    font-size: 7px;
+  }
+  .c-prediction {
+    min-height: 85px;
+    padding: 10px;
+    gap: 0;
+  }
+  .c-prediction > svg {
+    display: none;
+  }
+  .c-prediction b {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .c-prediction span {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .c-prediction > div {
+    gap: 5px;
+  }
+  .c-page-tabs {
+    gap: 2px;
+    margin: 1px 0;
+  }
+  .c-page-tabs button {
+    font-size: 8px;
+    padding: 0 8px;
+    gap: 5px;
+  }
+}

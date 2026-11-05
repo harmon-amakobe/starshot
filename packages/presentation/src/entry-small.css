@@ -1,0 +1,264 @@
+@media (max-width: 600px) {
+  .entry-shade {
+    background: linear-gradient(
+      0deg,
+      #06111bf5 0%,
+      #071522cf 38%,
+      transparent 67%,
+      #07111c44
+    );
+  }
+  .entry-top {
+    top: 20px;
+    left: 22px;
+    right: 22px;
+  }
+  .entry-build {
+    font-size: 8px;
+    max-width: 80px;
+    line-height: 1.5;
+  }
+  .entry-top > .pill {
+    padding: 0 12px;
+    max-width: 145px;
+    font-size: 10px;
+  }
+  .entry-title {
+    top: 13%;
+    left: 25px;
+  }
+  .entry-title .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .entry-title h1 {
+    font-size: 57px;
+    letter-spacing: -4px;
+    margin: 5px 0;
+  }
+  .entry-title p {
+    display: none;
+  }
+  .entry-actions {
+    top: auto;
+    bottom: 118px;
+    left: 24px;
+    width: calc(100% - 48px);
+  }
+  .entry-chapter {
+    margin-bottom: 11px;
+    font-size: 9px;
+  }
+  .entry-play {
+    min-height: 62px;
+    border-radius: 22px;
+  }
+  .entry-play strong {
+    font-size: 19px;
+  }
+  .entry-secondary {
+    margin-top: 10px;
+    gap: 10px;
+  }
+  .entry-secondary > .pill {
+    min-height: 44px;
+    font-size: 11px;
+  }
+  .entry-quiet {
+    margin-top: 1px;
+  }
+  .entry-bottom {
+    left: 24px;
+    right: 24px;
+    bottom: 22px;
+  }
+  .entry-bottom > span {
+    display: none;
+  }
+  .entry-bottom > div {
+    width: 100%;
+    gap: 10px;
+  }
+  .entry-bottom button {
+    flex: 1;
+    min-height: 49px;
+    font-size: 10px;
+    text-align: center;
+  }
+  .entry-bottom small {
+    font-size: 8px;
+  }
+  .entry-vessel-note {
+    max-width: 122px;
+    font-size: 9px;
+  }
+  .entry-vessel-note i {
+    display: none;
+  }
+  .entry-vessel-note small {
+    font-size: 7px;
+  }
+  .entry-target {
+    top: 38%;
+    right: 25px;
+    font-size: 9px;
+    gap: 6px;
+  }
+  .entry-target small {
+    font-size: 8px;
+  }
+  .entry-target > span {
+    font-size: 17px;
+  }
+  .entry-panel {
+    top: 86px;
+    bottom: 20px;
+    left: 16px;
+    width: calc(100% - 32px);
+    border-radius: 26px;
+  }
+  .entry-panel > header {
+    padding: 10px 16px;
+  }
+  .entry-panel-body {
+    padding: 22px 18px;
+  }
+  .entry-panel h2 {
+    font-size: 24px;
+  }
+  .entry-panel p {
+    font-size: 11px;
+  }
+  .entry-panel form {
+    flex-wrap: wrap;
+  }
+  .entry-panel form label {
+    flex-basis: 60%;
+  }
+}
+@media (max-height: 700px) and (max-width: 600px) {
+  .entry-actions {
+    bottom: 99px;
+  }
+  .entry-title {
+    top: 14%;
+  }
+  .entry-title h1 {
+    font-size: 50px;
+  }
+  .entry-chapter {
+    font-size: 8px;
+  }
+  .entry-play {
+    min-height: 56px;
+  }
+  .entry-play small {
+    font-size: 9px;
+  }
+  .entry-secondary {
+    margin-top: 8px;
+  }
+  .entry-quiet {
+    height: 39px;
+  }
+  .entry-bottom {
+    bottom: 15px;
+  }
+  .entry-target {
+    top: 40%;
+  }
+  .entry-vessel-note {
+    display: none;
+  }
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .entry-top {
+    top: 15px;
+  }
+  .entry-title {
+    top: 27%;
+    left: 6%;
+  }
+  .entry-title h1 {
+    font-size: 63px;
+    letter-spacing: -5px;
+  }
+  .entry-title p {
+    display: none;
+  }
+  .entry-title .eyebrow {
+    font-size: 9px;
+  }
+  .entry-actions {
+    left: 6%;
+    top: 54%;
+    width: 280px;
+  }
+  .entry-chapter {
+    display: none;
+  }
+  .entry-play {
+    min-height: 55px;
+    padding: 8px 18px;
+    border-radius: 20px;
+  }
+  .entry-play strong {
+    font-size: 18px;
+  }
+  .entry-play small {
+    font-size: 8px;
+  }
+  .entry-secondary {
+    margin-top: 8px;
+    gap: 8px;
+  }
+  .entry-secondary > .pill {
+    min-height: 44px;
+    font-size: 10px;
+  }
+  .entry-quiet {
+    position: absolute;
+    left: 300px;
+    bottom: 0;
+    white-space: nowrap;
+  }
+  .entry-bottom {
+    left: auto;
+    right: 24px;
+    bottom: 15px;
+  }
+  .entry-bottom > span {
+    display: none;
+  }
+  .entry-bottom button {
+    min-width: 105px;
+    min-height: 44px;
+    font-size: 9px;
+  }
+  .entry-target {
+    top: 21%;
+    right: 7%;
+  }
+  .entry-vessel-note {
+    display: none;
+  }
+  .entry-panel {
+    top: 70px;
+    bottom: 12px;
+    left: 5%;
+    width: 520px;
+  }
+  .entry-panel > header {
+    padding: 5px 18px;
+  }
+  .entry-panel-body {
+    padding: 16px 22px;
+  }
+  .entry-panel h2 {
+    font-size: 23px;
+  }
+}
+
+.entry-panel form[hidden] {
+  display: none;
+}

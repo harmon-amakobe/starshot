@@ -78,8 +78,9 @@ exercised by `scripts/check-hook-fixtures.mjs` in both directions.
   checks issues, comments and pull request descriptions after they are posted.
   Review comments are not checked. Generated release notes come from the copy-checked changelog;
   later manual edits to a published release body are outside that gate.
-- The copy gate's `warn` rules and the size gate's god-component signs are heuristics
-  with estimated limits (D27, D28). They print and pass; only review acts on them.
+- The copy gate's `warn` rules, and the size gate's god-component signs and its warning
+  on lines over 160 characters, are heuristics with estimated limits (D27, D28). They
+  print and pass; the Stop hook reports only failures, so only review acts on them.
 - The size gate compares its baseline with the base branch in CI only when the checkout
   has full history (`fetch-depth: 0` in `ci.yml`); without it, the baseline is checked
   against the file sizes alone.

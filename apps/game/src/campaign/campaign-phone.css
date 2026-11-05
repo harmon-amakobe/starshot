@@ -1,0 +1,211 @@
+@media (max-width: 600px) {
+  .c-deck-footer {
+    flex-direction: column-reverse;
+    padding-top: 7px;
+    gap: 7px;
+  }
+  .c-cameras {
+    width: 100%;
+    justify-content: space-between;
+    border: 0;
+  }
+  .c-cameras button {
+    flex: 1;
+    padding: 0 4px;
+    gap: 6px;
+  }
+  .c-cameras span {
+    display: inline;
+    font-size: 9px;
+  }
+  .c-actions {
+    width: 100%;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .c-actions > .pill {
+    padding: 0 10px;
+    font-size: 9px;
+    gap: 6px;
+  }
+  .c-actions > .primary {
+    padding: 0 16px;
+    font-size: 10px;
+  }
+  .c-actions svg {
+    width: 16px;
+    height: 16px;
+  }
+  .c-fine {
+    gap: 10px;
+  }
+  .c-fine p {
+    display: none;
+  }
+  .c-fine label {
+    font-size: 9px;
+  }
+  .c-fine label span {
+    font-size: 7px;
+  }
+  .c-fine input {
+    font-size: 14px;
+  }
+  .c-telemetry {
+    gap: 12px;
+  }
+  .c-telemetry span {
+    font-size: 8px;
+  }
+  .c-telemetry strong {
+    font-size: 10px;
+  }
+  .c-compact {
+    gap: 6px;
+    min-width: 0;
+  }
+  .c-compact > div {
+    min-width: 52px;
+    font-size: 8px;
+  }
+  .c-mini-angle {
+    font-size: 8px;
+  }
+  .c-mini-status {
+    display: none;
+  }
+  .c-deck.collapsed .c-units span {
+    display: none;
+  }
+  .c-deck.collapsed .c-units {
+    width: 44px;
+    padding: 0 !important;
+  }
+  .c-deck.collapsed .c-deck-preferences {
+    gap: 0;
+  }
+  .c-body-label {
+    font-size: 9px;
+    padding: 0 9px;
+  }
+  .c-body-label small {
+    font-size: 7px;
+  }
+  .c-focus-title {
+    left: 21px;
+    top: 87px;
+    max-width: 235px;
+  }
+  .c-focus-title h1 {
+    font-size: 27px;
+  }
+  .c-focus-title p {
+    font-size: 9px;
+  }
+  .c-focus-close {
+    right: 72px;
+    top: 16px;
+  }
+  .c-result {
+    padding: 20px;
+  }
+  .c-result h2 {
+    font-size: 21px;
+  }
+  .c-result .eyebrow {
+    font-size: 8px;
+  }
+  .c-result p {
+    font-size: 10px;
+  }
+  .c-stars {
+    font-size: 25px;
+    margin: 9px 0;
+  }
+  .c-symbol-note {
+    font-size: 7px;
+  }
+  .campaign-shell .entry-vessel-note {
+    left: 58%;
+    top: 34%;
+    display: none;
+  }
+  .c-warning {
+    top: 67px;
+    width: calc(100% - 42px);
+    font-size: 9px;
+    text-align: center;
+  }
+  .campaign-shell .entry-panel {
+    width: calc(100% - 32px);
+  }
+  .c-body-popup {
+    width: calc(100% - 40px);
+    top: 22%;
+    gap: 10px;
+    justify-content: space-between;
+    font-size: 11px;
+  }
+  .c-body-popup .primary {
+    padding: 0 14px;
+  }
+}
+@media (max-height: 740px) and (max-width: 600px) {
+  .c-deck-page {
+    height: 88px;
+    padding-top: 7px;
+  }
+  .c-deck-footer {
+    flex-direction: row;
+  }
+  .c-cameras {
+    width: auto;
+  }
+  .c-cameras span {
+    display: none;
+  }
+  .c-cameras button {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+  .c-actions {
+    width: auto;
+    flex: 1;
+    justify-content: flex-end;
+  }
+  .c-actions > .pill span {
+    display: none;
+  }
+  .c-actions > .pill {
+    padding: 0;
+    width: 44px;
+  }
+  .c-actions > .primary {
+    padding: 0 15px;
+  }
+  .c-deck-footer {
+    gap: 4px;
+  }
+  .c-page-tabs {
+    margin: 0;
+  }
+  .c-fuel strong {
+    font-size: 22px;
+  }
+  .c-fuel > small {
+    display: none;
+  }
+  .c-prediction {
+    min-height: 75px;
+  }
+  .c-telemetry > div {
+    gap: 8px;
+  }
+  .c-result {
+    top: calc((100% - var(--deck-height)) / 2 + 20px);
+  }
+  .c-symbol-note {
+    display: none;
+  }
+}

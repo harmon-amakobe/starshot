@@ -1,0 +1,230 @@
+.level-caption {
+  top: 102px;
+  left: 28px;
+  max-width: 270px;
+}
+.level-caption h1 {
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  margin: 9px 0;
+}
+.level-caption p {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.level-caption.charged {
+  opacity: 0;
+}
+.moon-marker.on-world {
+  transform: translateY(-50%);
+  justify-items: start;
+}
+.earth-label {
+  transform: translateY(-50%);
+}
+.pull-coach {
+  left: auto;
+  right: 24px;
+  top: calc(34% + 58px);
+  transform: none;
+  max-width: 110px;
+}
+.pull-coach button {
+  border: 1px solid #526077;
+  border-radius: 22px;
+  background: #122033;
+  text-decoration: none;
+  padding: 0 11px;
+}
+.world-footer {
+  left: auto;
+  right: 24px;
+  bottom: calc(var(--deck-height) + 18px);
+  text-align: right;
+  max-width: 300px;
+  gap: 5px;
+}
+.world-footer > b {
+  display: none;
+}
+.scale-bar {
+  justify-content: flex-end;
+}
+.hangar-entry {
+  bottom: calc(var(--deck-height) + 24px);
+}
+.engine-demo-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.engine-demo-controls label {
+  flex: 1;
+  min-width: 90px;
+  font-size: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.engine-demo-controls output {
+  color: #baf3ff;
+}
+.engine-demo-controls input {
+  accent-color: #baf3ff;
+}
+.engine-demo-controls button {
+  font-size: 11px;
+  padding: 0 14px;
+}
+.hangar-deck:has(.engine-demo-controls) .inspection-controls {
+  margin-top: 6px;
+}
+.demo-handle {
+  border-color: #c0f5ff;
+  box-shadow: 0 0 20px #8de3ff24;
+}
+.demo-handle:after {
+  border-color: #8ee7fc99;
+}
+.demo-handle:hover {
+  background: #b0eaff14;
+}
+@media (max-width: 900px) {
+  .pull-coach {
+    right: 18px;
+    top: 190px;
+  }
+  .world-footer {
+    left: auto;
+    right: 18px;
+  }
+  .level-caption {
+    top: 104px;
+    left: 24px;
+    max-width: 260px;
+  }
+}
+@media (max-width: 600px) {
+  .level-caption {
+    top: 92px;
+    left: 20px;
+    max-width: 210px;
+  }
+  .level-caption h1 {
+    font-size: 18px;
+  }
+  .level-caption p {
+    font-size: 10px;
+    max-width: 205px;
+  }
+  .camera-controls,
+  .game-shell:has(.fine-controls) .camera-controls {
+    top: 160px;
+  }
+  .pull-coach {
+    top: 108px;
+    right: 14px;
+  }
+  .world-footer {
+    width: 210px;
+    max-width: calc(100% - 145px);
+    font-size: 8px;
+  }
+  .engine-demo-controls {
+    gap: 8px;
+  }
+  .engine-demo-controls button {
+    font-size: 10px;
+    padding: 0 10px;
+  }
+  .hangar-deck:has(.engine-demo-controls) p {
+    font-size: 10px;
+    line-height: 1.5;
+    margin: 8px 0;
+  }
+  .hangar-deck:has(.engine-demo-controls) .inspection-controls {
+    font-size: 9px;
+  }
+  .hangar-caption p {
+    max-width: 280px;
+    line-height: 1.6;
+  }
+  .moon-marker span {
+    font-size: 9px;
+  }
+}
+@media (max-height: 500px) and (min-width: 601px) {
+  .level-caption {
+    top: 84px;
+    left: 24px;
+    max-width: 200px;
+  }
+  .level-caption h1 {
+    font-size: 17px;
+  }
+  .level-caption p {
+    font-size: 10px;
+  }
+  .camera-controls {
+    top: 78px;
+  }
+  .pull-coach {
+    top: 132px;
+    right: 20px;
+  }
+  .world-footer {
+    display: none;
+  }
+  .hangar-entry {
+    top: 20px;
+    bottom: auto;
+  }
+  .hangar-caption {
+    top: 72px;
+    left: 24px;
+  }
+  .hangar-caption h1 {
+    font-size: 23px;
+    margin-top: 7px;
+  }
+  .hangar-caption p {
+    font-size: 10px;
+    margin: 7px 0;
+  }
+  .hangar-deck:has(.engine-demo-controls) {
+    width: calc(100% - 80px);
+    padding: 4px 12px;
+  }
+  .hangar-deck:has(.engine-demo-controls) p {
+    display: none;
+  }
+  .hangar-deck:has(.engine-demo-controls) .inspection-controls {
+    position: absolute;
+    top: -50px;
+    right: 0;
+  }
+  .engine-demo-controls {
+    gap: 12px;
+  }
+  .engine-demo-controls label {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .engine-demo-controls input {
+    width: 160px;
+  }
+  .hangar-deck:has(.engine-demo-controls) .inspection-controls > span {
+    display: none;
+  }
+}
+
+.deck-cameras .parking-camera {
+  flex: none;
+  width: 44px;
+  padding: 0;
+  border-left: 1px solid #526077;
+  border-radius: 0 22px 22px 0;
+}

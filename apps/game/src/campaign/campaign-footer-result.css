@@ -1,0 +1,232 @@
+.c-page-tabs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 0 0 5px;
+}
+.c-page-tabs button {
+  gap: 7px;
+  font-size: 9px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 20px;
+  background: transparent;
+}
+.c-page-tabs button i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #748b9f;
+}
+.c-page-tabs .selected {
+  color: #ffd07a;
+}
+.c-page-tabs .selected i {
+  background: #ffbd4b;
+  box-shadow: 0 0 9px #ffb42470;
+}
+.c-deck-footer {
+  border-top: 1px solid #65788b42;
+  padding-top: 9px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.c-cameras {
+  display: flex;
+  align-items: center;
+  border: 1px solid #6c829855;
+  border-radius: 25px;
+  padding: 1px;
+}
+.c-cameras button {
+  padding: 0 11px;
+  font-size: 9px;
+  border-radius: 22px;
+  gap: 6px;
+}
+.c-cameras .selected {
+  background: transparent;
+  color: #ffc563;
+}
+.c-cameras .selected svg {
+  filter: drop-shadow(0 0 6px #ffb43566);
+}
+.c-cameras svg {
+  width: 17px;
+  height: 17px;
+}
+.c-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.c-actions > .pill {
+  font-size: 10px;
+  padding: 0 13px;
+  min-height: 44px;
+}
+.c-actions > .primary {
+  padding: 0 19px;
+  min-height: 44px;
+  font-size: 11px;
+}
+.c-actions svg {
+  width: 17px;
+  height: 17px;
+}
+.c-timeline {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: -4px;
+  margin-bottom: 3px;
+  font-size: 9px;
+  color: #a6becc;
+}
+.c-timeline input {
+  flex: 1;
+  height: 44px !important;
+}
+.c-timeline output {
+  width: 38px;
+}
+.c-compact {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  font-size: 10px;
+}
+.c-compact > div {
+  min-width: 80px;
+  max-width: 150px;
+  flex: 1;
+  display: grid;
+  gap: 7px;
+}
+.c-compact span b {
+  float: right;
+  font-weight: 500;
+  color: #e0e8e7;
+}
+.c-mini-status {
+  font-size: 9px;
+  font-weight: 400;
+  color: #b9d8d2;
+}
+.c-deck.collapsed {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.c-mini-angle {
+  white-space: nowrap;
+}
+.c-result {
+  position: absolute;
+  top: calc((100% - var(--deck-height)) / 2);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  width: min(460px, calc(100% - 40px));
+  padding: 25px;
+  border-radius: 28px;
+  border: 1px solid #7a93a5b0;
+  background: #142535e8;
+  backdrop-filter: blur(22px);
+  box-shadow: 0 15px 60px #0006;
+  text-align: center;
+}
+.c-result h2 {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+  margin: 10px 0;
+}
+.c-result p {
+  font-size: 11px;
+  color: #acc5d1;
+  margin-top: 5px;
+}
+.c-stars {
+  font-size: 29px;
+  letter-spacing: 7px;
+  color: #ffc55e;
+  margin: 12px 0;
+}
+.c-result .result-actions {
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+.c-result button {
+  font-size: 10px;
+  min-height: 44px;
+}
+.c-focus-title {
+  position: absolute;
+  left: 30px;
+  top: 100px;
+  z-index: 8;
+  max-width: 330px;
+}
+.c-focus-title h1 {
+  font-size: 31px;
+  font-weight: 500;
+  margin: 8px 0;
+}
+.c-focus-title p {
+  font-size: 10px;
+  color: #a4bdcc;
+  margin: 7px 0;
+}
+.c-focus-title .pill {
+  font-size: 10px;
+  margin-top: 8px;
+}
+.c-focus-close {
+  position: absolute;
+  top: 20px;
+  right: 80px;
+  z-index: 12;
+  padding: 0 !important;
+  width: 44px;
+}
+.c-show-ui {
+  position: absolute;
+  right: 24px;
+  top: 20px;
+  padding: 0 !important;
+  width: 44px;
+  z-index: 30;
+}
+.sandbox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.campaign-cards .level-card {
+  min-height: 95px;
+}
+.campaign-shell .entry-vessel-note {
+  left: 70%;
+  top: 62%;
+}
+.campaign-shell .entry-notice {
+  max-height: 50px;
+  overflow: hidden;
+}
+.campaign-shell .entry-quiet {
+  gap: 5px;
+}
+.campaign-shell .hangar-deck {
+  z-index: 12;
+}
+.campaign-shell .hangar-caption,
+.campaign-shell .hangar-close {
+  z-index: 8;
+}
+.campaign-shell .entry-panel {
+  width: min(580px, 86%);
+}

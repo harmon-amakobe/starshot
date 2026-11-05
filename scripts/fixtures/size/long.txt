@@ -1,0 +1,4 @@
+/* Two lines over 160 characters and one of exactly 160, which is not over. */
+.deck{position:absolute;bottom:12px;left:50%;width:min(880px,100% - 36px);padding:10px 18px 14px;border-radius:30px}.deck h2{margin:0;font-size:14px;letter-spacing:1px}
+/* exactly 160 characters ................................................................................................................................... */
+.ring{width:64px;height:64px;border-radius:50%;border:2px solid #f4c66a}.ring:hover{border-color:#ffe2a0}.ring.waiting{left:50%;top:calc((100% - 120px)/2)}.ring i{display:none}

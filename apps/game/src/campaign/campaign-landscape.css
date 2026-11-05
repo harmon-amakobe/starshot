@@ -1,0 +1,271 @@
+@media (max-height: 500px) and (min-width: 601px) {
+  .c-topbar {
+    inset: 12px 20px auto;
+  }
+  .c-brand {
+    font-size: 21px;
+  }
+  .c-mission {
+    top: 12px;
+    width: calc(100% - 330px);
+  }
+  .c-mission-body {
+    width: min(650px, calc(100vw - 40px));
+    padding: 12px;
+  }
+  .c-mission-body p {
+    font-size: 8px;
+  }
+  .c-caption {
+    top: 72px;
+    left: 20px;
+    max-width: 190px;
+  }
+  .c-caption h1 {
+    font-size: 20px;
+  }
+  .c-caption .eyebrow {
+    font-size: 8px;
+  }
+  .c-caption p {
+    font-size: 8px;
+    max-width: 160px;
+  }
+  .c-map-tools {
+    top: 69px;
+    right: 16px;
+    gap: 5px;
+  }
+  .c-map-tools .c-size {
+    display: none;
+  }
+  .c-deck {
+    width: min(780px, calc(100% - 36px));
+    padding: 4px 13px 7px;
+    bottom: 8px;
+  }
+  .c-deck-page {
+    height: 65px;
+    padding: 2px;
+  }
+  .c-instruments {
+    gap: 20px;
+  }
+  .c-fuel {
+    display: flex;
+    min-width: 220px;
+    gap: 12px;
+  }
+  .c-fuel > span {
+    font-size: 9px;
+  }
+  .c-fuel strong {
+    font-size: 23px;
+  }
+  .c-fuel meter {
+    width: 50px;
+  }
+  .c-fuel > small {
+    display: none;
+  }
+  .c-prediction {
+    min-height: 57px;
+    padding: 7px 12px;
+  }
+  .c-prediction span:last-child {
+    display: none;
+  }
+  .c-prediction b {
+    font-size: 10px;
+  }
+  .c-prediction span {
+    font-size: 8px;
+  }
+  .c-page-tabs {
+    position: absolute;
+    right: 18px;
+    top: 48px;
+    gap: 0;
+    flex-direction: column;
+    display: none;
+  }
+  .c-deck-page {
+    margin-right: 0;
+  }
+  .c-deck-footer {
+    padding-top: 4px;
+    gap: 5px;
+  }
+  .c-deck-heading {
+    min-height: 44px;
+  }
+  .c-deck-footer .c-cameras span {
+    display: inline;
+  }
+  .c-deck-footer .c-cameras button {
+    padding: 0 8px;
+    font-size: 8px;
+  }
+  .c-hangar-button {
+    left: 20px;
+    top: 125px;
+    bottom: auto;
+    width: 120px;
+    font-size: 10px;
+  }
+  .c-scale {
+    display: none;
+  }
+  .c-fine {
+    gap: 12px;
+  }
+  .c-fine label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9px;
+  }
+  .c-fine label span {
+    display: none;
+  }
+  .c-fine input {
+    height: 44px;
+    font-size: 12px;
+    max-width: 100px;
+  }
+  .c-fine p {
+    font-size: 8px;
+  }
+  .c-deck-page {
+    height: 0;
+    padding: 0;
+    visibility: hidden;
+  }
+  .c-deck.expanded .c-page-tabs {
+    display: flex;
+    position: static;
+    flex-direction: row;
+    justify-content: center;
+    margin: 0;
+  }
+  .c-deck.expanded:has(.c-fine) .c-deck-page,
+  .c-deck.expanded:has(.c-telemetry) .c-deck-page {
+    height: 50px;
+    visibility: visible;
+  }
+  .c-deck.expanded:has(.c-fine) .c-page-tabs,
+  .c-deck.expanded:has(.c-telemetry) .c-page-tabs {
+    display: none;
+  }
+  .c-deck.expanded:has(.c-fine) .c-deck-footer,
+  .c-deck.expanded:has(.c-telemetry) .c-deck-footer {
+    padding-top: 4px;
+  }
+  .c-timeline {
+    position: absolute;
+    left: 140px;
+    right: 170px;
+    top: -53px;
+    border-radius: 20px;
+    padding: 0 12px;
+    background: #152536d9;
+  }
+  .c-result {
+    top: calc((100% - var(--deck-height)) / 2 + 12px);
+    padding: 12px 20px;
+    width: 400px;
+  }
+  .c-result .eyebrow {
+    display: none;
+  }
+  .c-result h2 {
+    font-size: 18px;
+    margin: 0 0 5px;
+  }
+  .c-stars {
+    font-size: 20px;
+    margin: 5px 0;
+  }
+  .c-result p {
+    font-size: 9px;
+  }
+  .c-result .result-actions {
+    margin-top: 8px;
+  }
+  .c-focus-title {
+    top: 75px;
+    left: 20px;
+    max-width: 230px;
+  }
+  .c-focus-title h1 {
+    font-size: 24px;
+  }
+  .c-focus-title p {
+    font-size: 8px;
+  }
+  .c-symbol-note {
+    display: none;
+  }
+  .c-body-label {
+    font-size: 9px;
+  }
+  .c-warning {
+    font-size: 8px;
+    top: 61px;
+  }
+  .campaign-shell .entry-vessel-note {
+    display: none;
+  }
+}
+.c-body-hit {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 2;
+  padding: 0;
+  background: transparent !important;
+}
+.c-body-hit:focus-visible {
+  outline-offset: 3px;
+}
+.c-deck.collapsed .c-deck-footer {
+  margin-top: 5px;
+}
+.c-deck.collapsed .c-deck-footer .c-actions > .pill span {
+  display: none;
+}
+.c-deck.collapsed .c-deck-footer .c-cameras span {
+  display: none;
+}
+.c-deck.collapsed .c-deck-footer {
+  flex-direction: row;
+}
+.c-deck.collapsed .c-cameras {
+  width: auto;
+}
+.c-deck.collapsed .c-actions {
+  width: auto;
+  flex: 1;
+  justify-content: flex-end;
+}
+@media (max-width: 600px) {
+  .c-map-tools {
+    top: 76px;
+  }
+  .c-deck.collapsed .c-actions > .pill {
+    width: 44px;
+    padding: 0;
+  }
+  .c-deck.collapsed .c-cameras button {
+    width: 44px;
+    padding: 0;
+  }
+}
+
+.c-game-ui {
+  display: contents;
+}
+.c-game-ui[inert] > * {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

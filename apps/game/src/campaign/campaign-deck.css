@@ -1,0 +1,285 @@
+.c-map-tools {
+  position: absolute;
+  right: 24px;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 5;
+}
+.c-zoom {
+  padding: 0 !important;
+  gap: 0 !important;
+}
+.c-zoom button {
+  width: 44px;
+  padding: 0;
+}
+.c-size {
+  font-size: 10px !important;
+  padding: 0 13px !important;
+}
+.size-icon {
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.c-speed {
+  padding: 0 !important;
+  gap: 0 !important;
+  min-height: 44px;
+}
+.c-speed button {
+  width: 44px;
+  padding: 0;
+  font-size: 15px;
+}
+.c-speed output {
+  font-size: 10px;
+  min-width: 68px;
+  text-align: center;
+}
+.c-hangar-button {
+  position: absolute;
+  left: 25px;
+  bottom: calc(var(--deck-height) + 20px);
+  font-size: 11px;
+  z-index: 5;
+}
+.c-scale {
+  position: absolute;
+  right: 26px;
+  bottom: calc(var(--deck-height) + 23px);
+  font-size: 9px;
+  color: #90a9bc;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+.c-scale i {
+  display: block;
+  width: 100px;
+  height: 5px;
+  border: 1px solid #7893a8;
+  border-top: 0;
+}
+.c-warning {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 13px;
+  border-radius: 15px;
+  background: #3b2f1eed;
+  color: #f2cc84;
+  font-size: 10px;
+  z-index: 11;
+}
+.c-deck {
+  position: absolute;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(960px, calc(100% - 42px));
+  z-index: 10;
+  padding: 10px 20px 12px;
+  border: 1px solid #65798c8f;
+  border-radius: 30px;
+  background: linear-gradient(120deg, #1b2c3cdb, #101c2ce8);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 15px 65px #0005;
+  overflow: hidden;
+}
+.c-deck-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+}
+.c-deck-title {
+  padding: 0;
+  gap: 8px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.c-deck.expanded .c-deck-title svg {
+  transform: rotate(180deg);
+}
+.c-deck-preferences {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: auto;
+}
+.c-modes {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.c-modes button {
+  min-height: 44px;
+  padding: 0 12px;
+  font-size: 10px;
+}
+.c-modes .pill.selected {
+  border-color: #bc903e;
+  background: #71541929;
+  color: #ffd079;
+}
+.c-modes .icon-only {
+  padding: 0;
+  min-width: 44px;
+  width: 44px;
+}
+.c-units {
+  font-size: 10px !important;
+  padding: 0 13px !important;
+  white-space: nowrap;
+}
+.unit-symbol {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -2px;
+  min-width: 22px;
+}
+.c-deck-page {
+  height: 113px;
+  padding: 12px 2px 7px;
+  overflow: hidden;
+}
+.c-instruments {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  height: 100%;
+}
+.c-fuel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 7px 13px;
+  min-width: 210px;
+}
+.c-fuel > span {
+  font-size: 10px;
+  color: #abc2d1;
+}
+.c-fuel strong {
+  grid-row: 1/3;
+  grid-column: 2;
+  font-size: 29px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.c-fuel strong small {
+  font-size: 11px;
+  margin-left: 4px;
+  color: #a8becd;
+}
+.c-fuel > small {
+  font-size: 9px;
+  grid-column: 1/3;
+  color: #8ca5b8;
+}
+.campaign-shell meter {
+  display: block;
+  width: 100%;
+  height: 7px;
+  border: 0;
+  appearance: none;
+  border-radius: 10px;
+  background: #304354;
+}
+.campaign-shell meter::-webkit-meter-bar {
+  height: 7px;
+  border: 0;
+  background: #304354;
+}
+.campaign-shell meter::-webkit-meter-optimum-value {
+  background: linear-gradient(90deg, #83c6cf, #ffd07a);
+  border-radius: 10px;
+}
+.campaign-shell meter::-moz-meter-bar {
+  background: #ffbd4b;
+}
+.c-prediction {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  flex: 1;
+  background: #9ac5d308;
+  border: 1px solid #728ba02d;
+  padding: 13px 20px;
+  border-radius: 20px;
+  min-height: 86px;
+}
+.c-prediction > svg {
+  width: 29px;
+  height: 29px;
+  color: #c7dddf;
+}
+.c-prediction > div {
+  display: grid;
+  gap: 6px;
+}
+.c-prediction b {
+  font-size: 12px;
+  font-weight: 500;
+  color: #d6e7e6;
+}
+.c-prediction span {
+  font-size: 10px;
+  color: #93b2c1;
+}
+.c-fine {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  height: 100%;
+}
+.c-fine label {
+  display: grid;
+  gap: 5px;
+  font-size: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.c-fine label span {
+  font-size: 8px;
+  color: #91a8ba;
+}
+.c-fine input {
+  width: 100%;
+  font-size: 15px;
+}
+.c-fine p {
+  font-size: 9px;
+  color: #a0b5c7;
+  max-width: 190px;
+}
+.c-telemetry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: 100%;
+}
+.c-telemetry > div {
+  display: grid;
+  gap: 12px;
+  flex: 1;
+}
+.c-telemetry span {
+  font-size: 9px;
+  color: #9bb6c7;
+}
+.c-telemetry strong {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.c-telemetry small {
+  font-size: 9px;
+}
