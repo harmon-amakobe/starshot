@@ -16,6 +16,12 @@ npm run dev     # play your local copy
 Please do not add or upgrade dependencies in the same pull request as other work. If
 you need a new one, say why in its own pull request.
 
+To change the Rust core under `crates/`, you also need Rust through
+[rustup](https://rustup.rs/). `rust-toolchain.toml` pins the release, and rustup
+installs it with rustfmt, clippy and the wasm target the first time cargo runs here.
+Without cargo, `npm run gates` skips the four Rust gates and counts them as skipped.
+Set `STARSHOT_REQUIRE_RUST=1` to make a missing toolchain fail instead, as CI does.
+
 ## The checks ("gates")
 
 A change is done when this passes:
@@ -25,7 +31,8 @@ npm run gates
 ```
 
 It runs every check in one go and prints a table. It must end with
-`gates: n/n passed`. CI runs the same command on every pull request.
+`gates: n/n passed`, or `gates: p/n passed, s skipped` when Rust is missing. CI runs the
+same command on every pull request, with Rust required.
 
 | Gate | What it protects |
 |---|---|
@@ -39,10 +46,13 @@ It runs every check in one go and prints a table. It must end with
 | `work` | The plan's issue list (`work.yaml`) agrees with its lock file |
 | `pr-size` | The pull request size check works; CI runs it on each pull request |
 | `size` | No file grows past 500 code lines unless it is on the shrinking baseline; packages never import the game |
+| `versions` | Package versions, release notes and the lockfile agree; CI owns version numbers |
 | `instruction-dedup`, `agent-frontmatter`, `guard-scan-coverage`, `hook-fixtures` | The agent setup stays consistent, and no check passes by scanning nothing |
 | `typecheck` | The TypeScript types agree across packages and the game |
 | `test` | Planet positions against NASA/JPL, the flight simulator, and every level's known solution |
 | `build` | The website still builds |
+| `rust-fmt`, `rust-clippy`, `rust-test` | The Rust workspace is formatted, lint-clean and tested; its maths goes through `starshot-math` |
+| `rust-licences` | Every locked crate has a licence from `scripts/licence-allow.json`, or an exception with its reason |
 
 Useful variations: `npm run gates:fast` (the quick static checks only),
 `node scripts/gates.mjs --list` (what each gate is for) and
@@ -236,6 +246,11 @@ NASA/JPL or with a known physical result. Loosening a test budget needs a new en
 [docs/decisions.md](docs/decisions.md). The
 [verify-physics skill](.claude/skills/verify-physics/SKILL.md) lists the budgets and how
 to refresh the NASA/JPL reference data.
+
+The physics is moving into the Rust core under `crates/` (D16), so changing it needs the
+Rust toolchain (see [Set up](#set-up)). Every `sin`, `cos`, `pow` and the like goes
+through the `starshot-math` crate, whose results are recorded bit for bit in
+`fixtures/math/golden.json` and checked on x86_64 and arm64.
 
 ## How to add a level
 

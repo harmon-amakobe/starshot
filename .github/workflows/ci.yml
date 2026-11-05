@@ -26,6 +26,9 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+    # The Rust gates fail here when cargo is missing, instead of skipping (scripts/gates.mjs).
+    env:
+      STARSHOT_REQUIRE_RUST: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +49,28 @@ jobs:
         env:
           STARSHOT_PRIVATE_NAMES: ${{ secrets.STARSHOT_PRIVATE_NAMES }} # zizmor: ignore[secrets-outside-env] one step reads it, before npm ci (see above)
       - run: npm ci
+      # Nothing builds wasm until PR15, so this job skips wasm-bindgen-cli too.
+      - uses: $/.github/actions/setup-rust-wasm
+        with:
+          wasm-bindgen: "false"
       - run: npm run gates
+
+  # The maths golden file on arm64: the first measurement that phones and the x86_64
+  # checks job give the same bits (D16, AC6).
+  rust-arm64:
+    name: rust-arm64
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/.github/actions/setup-rust-wasm
+        with:
+          wasm-bindgen: "false"
+      - run: cargo test --workspace --locked
 
   workflow-lint:
     name: workflow-lint
@@ -157,7 +181,7 @@ jobs:
     # counts as passing. No need has a job-level condition, so a skipped need means
     # something hid a check: that fails too. A job added later keeps to the same rule.
     if: always()
-    needs: [checks, workflow-lint, dependency-review, pr-size, verify-game]
+    needs: [checks, rust-arm64, workflow-lint, dependency-review, pr-size, verify-game]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions: {}

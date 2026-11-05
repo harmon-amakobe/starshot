@@ -16,7 +16,9 @@ node scripts/gates.mjs --only test --verbose # one gate with full output while f
 ```
 
 Report the final table and the `gates: n/n passed` line. A gate you did not run is a
-gate you did not run; say so.
+gate you did not run; say so. A `skip` is not a pass: without cargo the line reads
+`gates: p/n passed, s skipped`, and `STARSHOT_REQUIRE_RUST=1` makes the four Rust gates
+fail instead.
 
 ## What passing proves, and what it does not
 
@@ -25,7 +27,7 @@ gate you did not run; say so.
 | `secrets` | no credential, email, personal path or hashed private name in any file | that PR text is clean (pipe it through `--stdin`); commit text is the `commits` gate's |
 | `third-party` | `third_party/astlo` matches its manifest byte for byte (D2) | that nothing was copied out of it into our code (review) |
 | `licence` | every file has a `REUSE.toml` record, `LICENSE` is Apache-2.0, every `package.json` says so (D12) | that a `REUSE.toml` label matches the asset manifest, or that an in-file SPDX header agrees (it warns) |
-| `dependency-licences` | every package in `package-lock.json` has an allowed SPDX licence or an exact exception with a reason (D28) | Cargo dependencies (PR6), or that a declared licence matches the package's files |
+| `dependency-licences` | every package in `package-lock.json` has an allowed SPDX licence or an exact exception with a reason (D28) | crates (that is `rust-licences`), or that a declared licence matches the package's files |
 | `assets` | every file under `apps/game/public/` is in the asset manifest once with its hash, an open licence and no AI generation; every shipped observatory file is in its own manifest and verified (D14, D15) | that a recorded source or attribution is true |
 | `credits` | the game assets section of `CREDITS.md` matches the asset manifest (D15) | the hand-written observatory sections |
 | `copy` | no fail rule of `docs/copy-standard.md` in Markdown, UI strings, forms, work plans and, in CI, the PR's commits (D27) | that the prose is good: warnings pass |
@@ -41,6 +43,10 @@ gate you did not run; say so.
 | `typecheck` | types agree across packages and the game | runtime behaviour |
 | `test` | physics vs Horizons, integrator accuracy, levels' known solutions, game logic | anything without a test |
 | `build` | the static site compiles | that it runs: drive it (`verify-game`) |
+| `rust-fmt` | `cargo fmt --all --check`: the workspace is formatted | anything, when it reports `skip` because cargo is missing |
+| `rust-clippy` | no lint; no `f64` or `f32` `sin`, `pow`, `mul_add` and the like in any crate (D16) | a call inside another crate's macro |
+| `rust-test` | the Rust tests, every golden maths output bit for bit on this machine | arm64 bits: the `rust-arm64` CI job runs them |
+| `rust-licences` | every crate in `cargo metadata` has an allowed licence or an exact exception (D28) | the workspace's own crates, which it skips |
 
 ## Adding a gate
 
@@ -49,7 +55,8 @@ A regression that slipped through review earns a small check script. All in one 
 1. `scripts/check-<thing>.mjs`: node, no dependencies, exits non-zero with a message
    naming the fix, and fails when it scanned nothing.
 2. One entry in `GATES` in `scripts/gates.mjs`; `fast: true` only if it is static and
-   well under a second.
+   well under a second. A gate that starts cargo takes `group: "rust"` and
+   `needsCargo: true`, never `fast`.
 3. A `COVERAGE` row in `scripts/check-guard-scan-coverage.mjs` naming its inputs.
 4. Break the invariant on a copy and watch the check fail before calling it done.
 

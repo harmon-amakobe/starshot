@@ -20,7 +20,7 @@ media CC BY 4.0, and the name and logo are reserved (D12, `TRADEMARK.md`).
 | `tools/horizons` | Stdlib Python that refreshes the Horizons test fixtures |
 | `third_party/astlo` | Mark's original files, unchanged and all rights reserved (D2) |
 | `python/astlo` | `astlo/` and its dist-info: Mark's v12 source plus our fixes, one commit each, under his rights and not Starshot's licence (D10); the build, bench and tests beside them are ours (Apache-2.0) |
-| `crates/` (planned) | The Rust core: maths, ephemeris, physics, game rules, wasm and FFI bindings (D16) |
+| `crates/` | The Rust core (D16): `starshot-math` now; ephemeris, physics, game rules, wasm and FFI bindings to come |
 | `tools/ephem` (planned) | Python that builds DE440 rails and their validation report (D17) |
 | `docs/` | Decisions, plans, hosting, architecture |
 | `scripts/`, `.claude/`, `.github/` | Gates, hooks, agent roster, skills, CI and Firebase releases |
@@ -107,12 +107,14 @@ A wrong change in these is expensive or silent; plan first and say what you chec
   `OUTER_SIM_SETTINGS` and `simulateShot`.
 - `apps/game/src/levels.ts` (each level's `sim`, par, tolerance and capture zone) and
   the known solutions in `apps/game/src/levels.test.ts`.
-- `packages/ephemeris/test/fixtures/horizons.json` (regenerate, never hand-edit).
+- `packages/ephemeris/test/fixtures/horizons.json` and `fixtures/math/golden.json`
+  (regenerate, never hand-edit).
 - `python/astlo/astlo/**` (D10): Mark's code; change it only by one-topic fix commits,
   per the `astlo-upstream` skill.
-- `third_party/**` (D2), `.github/workflows/**`, `.claude/settings.json`,
-  `scripts/agent/**`, `scripts/gates.mjs` and `scripts/check-*.mjs`: the harness
-  itself. A hook fails open; a gate fails closed and says how to fix it.
+- `third_party/**` (D2), `.github/workflows/**`, `.github/actions/**`, `clippy.toml`,
+  `Cargo.toml`, `rust-toolchain.toml`, `.claude/settings.json`, `scripts/agent/**`,
+  `scripts/gates.mjs`, `scripts/check-*.mjs` and `scripts/lib/**`: the harness itself.
+  A hook fails open; a gate fails closed and says how to fix it.
 
 ## How agents work together
 
@@ -174,13 +176,13 @@ Load a skill when its trigger appears; the index is how agents know they exist.
 
 ```bash
 npm ci            # once per clone
-npm run gates     # hygiene, agent-context, typecheck, test, build; must exit 0
+npm run gates     # hygiene, agent-context, code and rust groups; must exit 0, a skip is not a pass
 ```
 
 Plus, by what the diff touched: `verify-physics` for packages or fixtures,
 `verify-game` for anything a player sees, `public-hygiene` before pushing. Report the
-commands with their exit codes. `npm run gates:fast` is the Stop hook's subset, not a
-shorter DoD.
+commands with their exit codes and the gates' last line, which counts any skip.
+`npm run gates:fast` is the Stop hook's subset, not a shorter DoD.
 
 ## Where to look next
 

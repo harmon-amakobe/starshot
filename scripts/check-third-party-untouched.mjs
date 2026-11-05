@@ -98,16 +98,18 @@ if (problems.length) {
   console.error("A deliberate upstream sync follows .claude/skills/astlo-upstream/SKILL.md, which re-hashes with --write.");
   process.exit(1);
 }
-// AGENTS.md rule 3: nothing in Starshot's own TypeScript (packages/, apps/) depends on
-// or points into Mark's code, in either copy.
+// AGENTS.md rule 3: nothing in Starshot's own code (packages/, apps/ and the Rust crates)
+// depends on or points into Mark's code, in either copy.
 const leaks = [];
-const ownFiles = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "packages", "apps"], { cwd: ROOT, encoding: "utf8" })
+const OWN = ["packages", "apps", "crates"];
+const ownFiles = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", ...OWN], { cwd: ROOT, encoding: "utf8" })
   .split("\0")
-  .filter((f) => f && /\.(?:[cm]?[jt]sx?|json)$/.test(f) && !f.endsWith("package-lock.json") && existsSync(resolve(ROOT, f)));
+  .filter((f) => f && /\.(?:[cm]?[jt]sx?|json|rs|toml)$/.test(f) && !f.endsWith("package-lock.json") && existsSync(resolve(ROOT, f)));
 for (const f of ownFiles) {
   const text = readFileSync(resolve(ROOT, f), "utf8");
   if (/(?:third_party|python)\/astlo\b/.test(text)) leaks.push(`${f}: points into an astlo copy`);
   if (f.endsWith("package.json") && /"astlo"\s*:/.test(text)) leaks.push(`${f}: lists astlo as a dependency`);
+  if (f.endsWith("Cargo.toml") && /^\s*astlo\s*=/m.test(text)) leaks.push(`${f}: lists astlo as a dependency`);
 }
 if (leaks.length) {
   console.error(`third-party: FAILED, Starshot's own code reaches into astlo (AGENTS.md rule 3):`);
@@ -115,4 +117,5 @@ if (leaks.length) {
   console.error(D2);
   process.exit(1);
 }
-console.log(`third-party: ${expected.size} file(s) in ${DIR} match ${MANIFEST}; ${ownFiles.length} file(s) in packages/ and apps/ stay clear of astlo`);
+const own = `${ownFiles.length} file(s) in packages/, apps/ and crates/`;
+console.log(`third-party: ${expected.size} file(s) in ${DIR} match ${MANIFEST}; ${own} stay clear of astlo`);

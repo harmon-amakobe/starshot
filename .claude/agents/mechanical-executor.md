@@ -46,4 +46,4 @@ version field; no private names, emails or personal paths in anything you write.
 ## Report
 
 The search with before and after counts, files changed, `npm run gates` with its exit
-code, and anything escalated with the decision framed.
+code and last line, and anything escalated with the decision framed.
