@@ -156,4 +156,5 @@ fn lambert_matches_typescript_within_1e_9_relative() {
     let n = cases.len();
     println!("lambert: worst {worst:e} relative, {equal} of {n} bit for bit");
     assert!(worst < 1e-9, "lambert differs by {worst} relative");
+    assert!(equal >= 10, "{equal} of {n} bit for bit");
 }

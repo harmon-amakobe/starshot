@@ -67,7 +67,7 @@ const fly = (parking: ParkingOrbit | undefined, launchEt: number, dv: number, an
   return { used, start: simulateLunar(model, request).samples[0]! };
 };
 const [FIRST, LAST] = [rail.knots[0]!, rail.knots.at(-7)!];
-// frameEt is never checked: an infinite one reaches the rail, which refuses it.
+// frameEt is never checked: an infinite one reaches the rail, which refuses it before the radius.
 const ERRORS: Array<["parkingState" | "departure", ParkingOrbit, number]> = [
   ["parkingState", { ...GAME, radiusKm: EARTH_RADIUS }, LAUNCH_ET],
   ["parkingState", { ...GAME, epochEt: NaN }, LAUNCH_ET],
@@ -80,6 +80,8 @@ const ERRORS: Array<["parkingState" | "departure", ParkingOrbit, number]> = [
   ["departure", { ...GAME, radiusKm: 6000 }, LAUNCH_ET],
   ["departure", GAME, LAST + 1],
   ["departure", { epochEt: NaN, phaseDeg: 225, radiusKm: GAME.radiusKm }, LAUNCH_ET],
+  ["departure", { ...GAME, frameEt: Infinity, radiusKm: 6000 }, LAUNCH_ET],
+  ["departure", { ...GAME, frameEt: NaN, radiusKm: 6000 }, LAUNCH_ET],
 ];
 const refusal = (run: () => unknown): string => {
   try {
