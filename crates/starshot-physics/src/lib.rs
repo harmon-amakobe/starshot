@@ -15,9 +15,13 @@ pub mod hermite;
 pub mod lambert;
 pub mod launch;
 pub mod lunar;
+pub mod simulate;
 
 pub use dopri5::{Dopri5, State6, StepTolerance};
 pub use gravity::acceleration;
 pub use hermite::{Knot, hermite};
 pub use lambert::{DirectTransfer, best_direct_transfer, lambert};
 pub use launch::{LEO_RADIUS_KM, c3, delta_v_from_leo, departure_state};
+pub use simulate::{
+    Encounter, SimulationConfig, SimulationResult, Termination, sample_at, simulate,
+};

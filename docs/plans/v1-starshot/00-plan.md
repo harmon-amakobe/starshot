@@ -246,7 +246,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR11 integrator | PR11 | `codex/v1-pr11-physics-crate` | `codex/v1-pr10-lunar-model` | B2 |
 | PR11 Lambert and parking | PR11 | `codex/v1-pr11-lambert-parking` | `codex/v1-pr11-physics-crate` | B2 |
 | PR12 simulate | PR12 | `codex/v1-pr12-simulate` | `codex/v1-pr11-lambert-parking` | B2 |
-| PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate` | B2 |
+| PR12 simulate conformance | PR12 | `codex/v1-pr12-simulate-conformance` | `codex/v1-pr12-simulate` | B2 |
+| PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate-conformance` | B2 |
 | PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-lunar-flight` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
