@@ -8,7 +8,7 @@
 
 mod common;
 
-use common::bits;
+use common::{LUNAR, bits, lunar_model as model, lunar_section as section};
 use serde_json::Value;
 use starshot_ephemeris::State;
 use starshot_ephemeris::vec::{Vec3, norm, sub};
@@ -19,9 +19,6 @@ use starshot_physics::lunar::{
     parking_state,
 };
 
-const RAIL: &str = include_str!("../../../packages/ephemeris/data/moon-rail.json");
-const LUNAR: &str = include_str!("../../../fixtures/conformance/lunar.json");
-
 /// The game's orbit: 200 km up, phase 225 degrees, in the plane fixed at `LAUNCH_ET` (D38).
 const GAME: ParkingOrbit = ParkingOrbit {
     frame_et: Some(LAUNCH_ET),
@@ -29,17 +26,6 @@ const GAME: ParkingOrbit = ParkingOrbit {
     phase_deg: 225.0,
     radius_km: 6571.0,
 };
-
-fn model() -> LunarModel {
-    let rail: Value = serde_json::from_str(RAIL).expect("the rail is valid JSON");
-    let knots: Vec<f64> = serde_json::from_value(rail["knots"].clone()).expect("knots");
-    LunarModel::new(&knots).expect("the committed rail is valid")
-}
-
-fn section(name: &str) -> Vec<Vec<Value>> {
-    let file: Value = serde_json::from_str(LUNAR).expect("fixture is valid JSON");
-    serde_json::from_value(file[name].clone()).expect(name)
-}
 
 /// An orbit stored as frameEt (null to fall back to the epoch), epochEt, phaseDeg, radiusKm.
 fn orbit(cols: &[Value]) -> ParkingOrbit {

@@ -1,14 +1,14 @@
 // Writes or checks fixtures/conformance/lunar.json, the oracle for the Rust lunar model
 // (crates/starshot-ephemeris/tests/lunar.rs, PR10) and parking orbit
-// (crates/starshot-physics/tests/lunar_parking.rs, PR11). With STARSHOT_WRITE_CONFORMANCE=1
-// it writes the file; otherwise the file must equal this output exactly. PR12 adds flight
-// cases to the same file.
+// (crates/starshot-physics/tests/lunar_parking.rs, PR11) and flight
+// (crates/starshot-physics/tests/lunar_flight.rs, PR12). With STARSHOT_WRITE_CONFORMANCE=1
+// it writes the file; otherwise the file must equal this output exactly.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import rail from "@starshot/ephemeris/moon-rail.json";
 import {
-  DAY, EARTH_GM, EARTH_RADIUS, FUEL_BUDGET, LAUNCH_ET, LunarModel, MOON_GM, MOON_RADIUS, MOON_SOI_KM,
-  parkingPeriod, parkingPhase, parkingState, requestFor, simulateLunar, type ParkingOrbit,
+  DAY, EARTH_GM, EARTH_RADIUS, FUEL_BUDGET, LAUNCH_ET, LunarModel, MOON_GM, MOON_RADIUS, MOON_SOI_KM, SETTINGS,
+  parkingPeriod, parkingPhase, parkingState, requestFor, simulateLunar, type ParkingOrbit, type ShotRequest,
 } from "../src/lunar/index";
 
 const OUT = new URL("../../../fixtures/conformance/lunar.json", import.meta.url);
@@ -80,6 +80,44 @@ const ERRORS: Array<["parkingState" | "departure", ParkingOrbit, number]> = [
   ["departure", { ...GAME, radiusKm: 6000 }, LAUNCH_ET],
   ["departure", GAME, LAST + 1],
 ];
+
+// PR12: the golden flights of 09-rust-supplement.md, from lunar.test.ts and the prototype's
+// flight.test.ts. A request is stored as its seven numbers, scope, six settings, parking
+// orbit (or null) and stop flag.
+const requestBits = (q: ShotRequest) => [
+  ...[q.launchEt, q.parkingRadiusKm, q.parkingPhaseDeg, q.deltaVKmS, q.burnAngleDeg, q.durationSeconds, q.approachRadiusKm].map(bits),
+  q.scope,
+  ...[q.settings.rtol, q.settings.atolPos, q.settings.atolVel, q.settings.maxStep, q.settings.maxSteps].map(bits),
+  bits(q.settings.nearBodyFraction),
+  q.parking ? orbitBits(q.parking) : null,
+  q.stopAtEntry ?? false,
+];
+const real = (angle: number, stopAtEntry: boolean): ShotRequest =>
+  ({ ...requestFor(3.24, angle), parking: GAME, approachRadiusKm: MOON_SOI_KM, stopAtEntry });
+const TIGHT = { ...SETTINGS, rtol: 1e-12, atolPos: 0.0001, atolVel: 1e-10, maxStep: 600 };
+const FLIGHTS: Array<[string, ShotRequest]> = [
+  ["real-SOI stop", real(0, true)], ["SOI graze", real(17.33167459468716, false)],
+  ["SOI graze, stopped", real(17.33167459468716, true)], ["study hit", requestFor(3.24, 0)],
+  ["study miss", requestFor(3.24, 20)], ["study impact", requestFor(3.24, -20)],
+  ["study graze", requestFor(3.24, 17.210867496829703)], ["tighter settings", { ...requestFor(3.24, 0), settings: TIGHT }],
+  ...[0, 0.05, 0.2, 0.5].map((dv): [string, ShotRequest] => [`weak pull ${dv}`, requestFor(dv, 0)]),
+];
+// requestFor's clamp and windows: the call's burn and angle, then the request it builds.
+const REQUESTS = [[3.24, 0], [3.24, -20], [0, 0], [0.05, 0], [0.2, 0], [0.5, 0], [-1, 0], [5, 0], [NaN, 0], [1, 90]];
+// Each refusal of simulateLunar. The horizon is launch plus 7 days past the rail's end
+// (lunar.test.ts:54-57); a burn straight down hits Earth within the rail, so only the check
+// refuses the second.
+const BASE = requestFor(3.24, 0);
+const FLIGHT_ERRORS: Array<[string, ShotRequest]> = [
+  ["over budget", { ...BASE, deltaVKmS: 3.5500000000000003 }], ["negative burn", { ...BASE, deltaVKmS: -1e-9 }],
+  ["NaN burn", { ...BASE, deltaVKmS: NaN }], ["infinite angle", { ...BASE, burnAngleDeg: Infinity }],
+  ["NaN launch", { ...BASE, launchEt: NaN }], ["NaN phase", { ...BASE, parkingPhaseDeg: NaN }],
+  ["Earth-radius parking", { ...BASE, parkingRadiusKm: EARTH_RADIUS }], ["no time", { ...BASE, durationSeconds: 0 }],
+  ["endless time", { ...BASE, durationSeconds: Infinity }], ["rail horizon", { ...BASE, launchEt: LAST - DAY }],
+  ["rail horizon, early impact", { ...BASE, burnAngleDeg: -90, launchEt: LAST - DAY }],
+  ["unsettled", { ...BASE, settings: { ...SETTINGS, rtol: 0, atolPos: 1e-300, atolVel: 1e-300, maxSteps: 1 } }],
+  ["step budget", { ...BASE, settings: { ...SETTINGS, maxSteps: 5 } }],
+];
 const refusal = (run: () => unknown): string => {
   try {
     run();
@@ -121,6 +159,14 @@ function lunarJson(): string {
     const run = fn === "parkingState" ? () => parkingState(model, orbit, et) : () => fly(orbit, et, 3.24, 0);
     return [fn, ...orbitBits(orbit), bits(et), refusal(run)];
   });
+  const knotBits = (k: { t: number; r: readonly number[]; v: readonly number[] }) => [k.t, ...k.r, ...k.v].map(bits);
+  const flightRows = FLIGHTS.map(([name, request]) => {
+    const f = simulateLunar(model, request);
+    const outputs = [f.entryEt === null ? null : bits(f.entryEt), f.impact, ...[f.closestKm, f.closestEt, f.endEt].map(bits)];
+    return [name, requestBits(request), ...outputs, f.steps, knotBits(f.samples[0]!), knotBits(f.samples.at(-1)!)];
+  });
+  const requestRows = REQUESTS.map(([dv, angle]) => [bits(dv!), bits(angle!), requestBits(requestFor(dv!, angle!))]);
+  const flightErrorRows = FLIGHT_ERRORS.map(([name, q]) => [name, requestBits(q), refusal(() => simulateLunar(model, q))]);
   const rows = (list: unknown[]) => list.map((row) => `    ${JSON.stringify(row)}`).join(",\n");
   return [
     "{",
@@ -148,6 +194,20 @@ function lunarJson(): string {
     '  "errors_columns": ["function", "frameEt", "epochEt", "phaseDeg", "radiusKm", "et", "message"],',
     '  "errors": [',
     rows(errorRows),
+    "  ],",
+    '  "request_columns": ["launchEt", "parkingRadiusKm", "parkingPhaseDeg", "deltaVKmS", "burnAngleDeg", "durationSeconds",' +
+      ' "approachRadiusKm", "scope", "rtol", "atolPos", "atolVel", "maxStep", "maxSteps", "nearBodyFraction", "parking", "stopAtEntry"],',
+    '  "flight_columns": ["case", "request", "entryEt", "impact", "closestKm", "closestEt", "endEt", "steps", "first", "last"],',
+    '  "flights": [',
+    rows(flightRows),
+    "  ],",
+    '  "requests_columns": ["deltaVKmS", "burnAngleDeg", "request"],',
+    '  "requests": [',
+    rows(requestRows),
+    "  ],",
+    '  "flight_errors_columns": ["case", "request", "message"],',
+    '  "flight_errors": [',
+    rows(flightErrorRows),
     "  ]",
     "}",
     "",

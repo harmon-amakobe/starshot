@@ -6,9 +6,25 @@
 use serde_json::Value;
 use starshot_ephemeris::time::SECONDS_PER_DAY as DAY;
 use starshot_ephemeris::{State, Table1Ephemeris, Vec3};
+use starshot_physics::lunar::LunarModel;
 use starshot_physics::{Dopri5, State6, StepTolerance, acceleration};
 
 pub const PHYSICS: &str = include_str!("../../../../fixtures/conformance/physics.json");
+pub const LUNAR: &str = include_str!("../../../../fixtures/conformance/lunar.json");
+const RAIL: &str = include_str!("../../../../packages/ephemeris/data/moon-rail.json");
+
+/// The lunar model on the committed Moon rail.
+pub fn lunar_model() -> LunarModel {
+    let rail: Value = serde_json::from_str(RAIL).expect("the rail is valid JSON");
+    let knots: Vec<f64> = serde_json::from_value(rail["knots"].clone()).expect("knots");
+    LunarModel::new(&knots).expect("the committed rail is valid")
+}
+
+/// A section of `lunar.json` as rows of JSON values.
+pub fn lunar_section(name: &str) -> Vec<Vec<Value>> {
+    let file: Value = serde_json::from_str(LUNAR).expect("fixture is valid JSON");
+    serde_json::from_value(file[name].clone()).expect(name)
+}
 
 /// An f64 from 16 hex digits of its bits, the form the conformance fixtures store.
 pub fn bits(v: &Value) -> f64 {
