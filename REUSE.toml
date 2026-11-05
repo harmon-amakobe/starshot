@@ -50,7 +50,7 @@ SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 
 [[annotations]]
 path = ["fixtures/conformance/rails.json", "fixtures/conformance/lunar.json"]
-SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); file assembled by Starshot contributors"
+SPDX-FileCopyrightText = "NASA/JPL-Caltech (data); derived and last modified by Starshot contributors"
 SPDX-License-Identifier = "LicenseRef-NASA-JPL-Data"
 
 [[annotations]]

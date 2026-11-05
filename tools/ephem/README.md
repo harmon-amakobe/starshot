@@ -2,7 +2,8 @@
 
 A small Python project that turns NASA/JPL data into the files Starshot's tests and
 game read (D17). It writes the Horizons test fixture, downloads and checks NAIF's DE440
-kernels, and fits and validates the rails pack in `data/ephem/`. It runs on a
+kernels, and fits and validates the rails pack in `data/ephem/`. Its `conformance`
+command writes the rails oracle the Rust reader is tested against. It runs on a
 contributor's machine or in the `ephem` workflow, never in the game.
 
 ## Commands

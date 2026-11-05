@@ -1,18 +1,23 @@
 //! The DE440 rails reader (D17): `ephem.pack/1` decade files from `data/ephem/de440s-100km`,
-//! evaluated with adds and multiplies only, so every runtime gives the same bits.
+//! evaluated with adds, multiplies and divides; no transcendental call. IEEE 754 rounds
+//! each correctly and floor is exact, so every runtime gives the same bits.
 //!
 //! A decade file (little-endian): "SSEP", u16 version 1, u16 body count, u64 pack build
 //! (FNV-1a 64 over the data sections of all decade files), f64 start and end ET; then 24
 //! bytes per body (u16 code, u16 degree, u32 segment count, f64 segment length [s], u32
 //! data offset, u32 reserved 0); then per body, per segment, the f64 c0 of x, y and z and
 //! the f32 c1..c_degree of x, then y, then z. Segments tile the decade from its start; the
-//! last ends at the decade's end and maps its own shorter span to -1 to 1. Every field is
-//! checked on load, so a malformed file is an error, never a read out of bounds.
+//! last ends at the decade's end and maps its own shorter span to -1 to 1. The reader
+//! refuses a structurally malformed file, non-finite data and a build that differs from
+//! the decades already loaded, so a bad file is an error, never a read out of bounds.
+//! Content integrity (a flipped mantissa bit, a changed segment length that still tiles)
+//! is the loader's job: pack.json's SHA-256 of each file covers both, and the FNV-1a
+//! build covers the data sections.
 //!
 //! Evaluation follows `tools/ephem`'s `pack.Pack.position` and `chebyshev.evaluate` step
-//! for step, so `fixtures/conformance/rails.json`, which they wrote, is reproduced bit for
-//! bit. A time on a segment or decade boundary takes the later segment, except the pack's
-//! last instant, which belongs to the last segment.
+//! for step, in their operation order, so it gives their bits. A time on a segment or
+//! decade boundary takes the later segment, except the pack's last instant, which belongs
+//! to the last segment.
 
 use crate::bodies::RailBody;
 use crate::ephemeris::State;
@@ -44,8 +49,9 @@ const STARTS: [f64; DECADES + 1] = {
 const HEADER: usize = 32;
 const ENTRY: usize = 24;
 
-/// Why a decade file was refused. Each names what was checked, so a corrupt download or
-/// a pack from another build is reported, never read.
+/// Why a decade file was refused. Each names what was checked: the file's structure, its
+/// finite data and its build against the decades already loaded. A corruption that keeps
+/// all three still loads; the loader's SHA-256 check of each file catches it.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PackError {
     /// Shorter than the 32-byte header.
@@ -65,10 +71,14 @@ pub enum PackError {
     /// Degree 0, a segment length that is not finite and positive, or a reserved field
     /// that is not 0.
     BadEntry(u16),
-    /// The segment count does not tile the decade.
+    /// The segment count does not tile the decade, or the last segment would start at or
+    /// after the decade's end, leaving it a span of 0.
     SegmentCount(u16),
     /// A data section does not start where the previous one ends, or runs past the file.
     DataOffset(u16),
+    /// A c0 or a widened f32 coefficient is NaN or infinite: it would load, then positions
+    /// in its segment would be NaN or infinite.
+    BadCoefficient(u16),
     /// Bytes after the last data section.
     TrailingBytes,
     /// The file's pack build differs from that of the decades already loaded: two
@@ -89,6 +99,7 @@ impl fmt::Display for PackError {
             PackError::BadEntry(c) => write!(f, "body {c} has a bad table entry"),
             PackError::SegmentCount(c) => write!(f, "body {c}'s segments do not tile the decade"),
             PackError::DataOffset(c) => write!(f, "body {c}'s data is outside its section"),
+            PackError::BadCoefficient(c) => write!(f, "body {c} has a non-finite coefficient"),
             PackError::TrailingBytes => write!(f, "bytes after the last data section"),
             PackError::MixedBuilds { loaded, file } => {
                 write!(
@@ -192,6 +203,12 @@ fn parse(bytes: &[u8]) -> Result<Decade, PackError> {
         if f64::from(segments) != ((to_et - from_et) / segment_s).ceil() {
             return Err(PackError::SegmentCount(code));
         }
+        // The last segment's start as segment() computes it: at the decade's end, its span
+        // would be 0 and x there 0 / 0. The checks above leave segments at least 1 and
+        // every operand finite, so >= is the negated < without a NaN case.
+        if from_et + f64::from(segments - 1) * segment_s >= to_et {
+            return Err(PackError::SegmentCount(code));
+        }
         // Data sections are contiguous, in table order, and end exactly at the file end.
         let (degree, segments) = (usize::from(degree), segments as usize);
         let record = 24 + 12 * degree;
@@ -215,6 +232,9 @@ fn parse(bytes: &[u8]) -> Result<Decade, PackError> {
                 }
             }
         }
+        if coeffs.iter().any(|c| !c.is_finite()) {
+            return Err(PackError::BadCoefficient(code));
+        }
         expected += record * segments;
         blocks.push(Block {
             body,
@@ -235,7 +255,8 @@ fn parse(bytes: &[u8]) -> Result<Decade, PackError> {
 }
 
 /// The sum of c_k T_k(x), by Clenshaw's recurrence in the order of `tools/ephem`'s
-/// `chebyshev.evaluate`. Adds and multiplies only.
+/// `chebyshev.evaluate`. Adds and multiplies only; the divisions that map a time to x are
+/// in `RailPack::segment`.
 pub fn clenshaw(c: &[f64], x: f64) -> f64 {
     let Some((&c0, rest)) = c.split_first() else {
         return 0.0;
@@ -286,13 +307,12 @@ impl RailPack {
                 file: decade.build,
             });
         }
-        let k = STARTS
+        // parse() accepts only decade starts; if that ever changes, refuse, never drop.
+        let k = STARTS[..DECADES]
             .iter()
             .position(|&s| s == decade.from_et)
-            .unwrap_or(DECADES);
-        if let Some(slot) = self.decades.get_mut(k) {
-            *slot = Some(decade);
-        }
+            .ok_or(PackError::NotADecade(decade.from_et, decade.to_et))?;
+        self.decades[k] = Some(decade);
         Ok(())
     }
 

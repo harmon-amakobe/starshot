@@ -183,11 +183,14 @@ workspace holds two crates.
       src/time.rs        UTC <-> ET; et_from_iso takes a date or a date-time, else errs
       src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
       src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
-      src/rails.rs       reads data/ephem decade files; adds and multiplies only
+      src/rails.rs       reads data/ephem decade files: adds, multiplies and divides;
+                         no transcendental call
       src/hermite.rs     the cubic between two knots, in hermite.ts's operation order
       src/lunar.rs       the Moon from its knot rail, the fixed parking basis (D38)
+      tests/             rails tests embed data/ephem/de440s-100km/*.bin (include_bytes!)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
-                         horizons/horizons.json (JPL), conformance/*.json (TypeScript)
+                         horizons/horizons.json (JPL), conformance/table1.json and
+                         lunar.json (TypeScript), conformance/rails.json (tools/ephem)
 ```
 
 `f64::sin` and its relatives use the platform's maths library, whose last bit differs
@@ -212,9 +215,10 @@ constants to the bit, Earth and Moon within 1 m and 1 mm/s, and basis components
 within 1e-15.
 
 `RailPack` loads the decade files of `data/ephem/de440s-100km`, checking every header
-field and offset, and evaluates a body by Clenshaw's recurrence in the order
-`tools/ephem` uses, so it reproduces `fixtures/conformance/rails.json` (written by
-`starshot-ephem conformance`) bit for bit. `RailEphemeris` serves every state inside the
+field but the build, which must match across loaded decades, and every offset. It
+evaluates a body by Clenshaw's recurrence in the order `tools/ephem` uses, so it
+reproduces `fixtures/conformance/rails.json` (written by `starshot-ephem conformance`)
+bit for bit. `RailEphemeris` serves every state inside the
 pack's 1950 to 2150 coverage from the rails and panics when the decade holding the ET
 is not loaded, because a silent fallback would let a preview and a server disagree.
 Outside coverage the planets come from Table 1 and the Moon panics. Earth's centre and

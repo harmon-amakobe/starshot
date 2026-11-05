@@ -7,9 +7,11 @@ mod common;
 
 use common::{DECADE_FILES, bits, dist, fnv1a64, full_pack, num, parse, planet, rail_body, vec3};
 use starshot_ephemeris::rails::{PACK_END_YEAR, PACK_FIRST_YEAR, decade_start_et};
+use starshot_ephemeris::time::SECONDS_PER_DAY;
+use starshot_ephemeris::vec::add;
 use starshot_ephemeris::{
-    BodyId, EMRAT, Ephemeris, PackError, RailBody, RailEphemeris, RailPack, Table1Ephemeris,
-    et_from_jd_tdb,
+    BodyId, EMRAT, Ephemeris, PLANET_IDS, PackError, RailBody, RailEphemeris, RailPack,
+    Table1Ephemeris, et_from_jd_tdb,
 };
 
 const PACK_JSON: &str = include_str!("../../../data/ephem/de440s-100km/pack.json");
@@ -18,12 +20,37 @@ const RAILS: &str = include_str!("../../../fixtures/conformance/rails.json");
 
 /// AC4 and D17: every body within 150 km of JPL, the geocentric Moon included.
 const BUDGET_KM: f64 = 150.0;
-/// The reader's velocity budgets against Horizons [km/s] (PR10 edge cases): PR8 fitted and
-/// checked positions only. Measured at the five epochs on 2026-11-05: planets up to
-/// 8.5e-4 (Mars), Earth's centre 1.3e-4, the Moon 5.6e-3; PR8's physics audit found the
-/// Moon's differentiated fit up to 6.36e-3 between them. Earth's centre takes the planets'.
-const PLANET_VELOCITY_KMS: f64 = 2e-3;
-const MOON_VELOCITY_KMS: f64 = 1e-2;
+/// Velocity budgets against Horizons [km/s] (PR10 edge cases), by the names the tests
+/// use ("earth" is the barycentre; "moon" is geocentric and heliocentric alike). PR8 fitted
+/// positions only, and these tests check velocity only at the five fixture epochs. Each
+/// budget is about twice the worst a review audit found sampling the rails against
+/// de440s.bsp at 33 points a segment, ends included, 1950 to 2150 (no committed test
+/// reproduces it): Mercury 5.421e-3 at a segment end (7.485e-4 inside |x| <= 0.9), Venus
+/// 7.083e-4, the barycentre 4.387e-4, Mars 8.799e-4, the giants 1.707e-4 to 1.716e-4,
+/// Earth's centre 4.779e-4, the Moon 6.362e-3 geocentric and 6.303e-3 heliocentric. At
+/// the five epochs on 2026-11-05: Mercury 1.130e-4, Venus 6.594e-4, the barycentre
+/// 1.292e-4, Mars 8.535e-4, the giants about 1.60e-4, Earth's centre 1.277e-4, the Moon
+/// 5.623e-3. The giants share 1.6e-4 at segment starts: it is the derivative of each
+/// 512-day degree-8 segment's fit of the Sun's reflex motion.
+const VELOCITY_KMS: [(&str, f64); 10] = [
+    ("mercury", 1e-2),
+    ("venus", 2e-3),
+    ("earth", 1e-3),
+    ("mars", 2e-3),
+    ("jupiter", 5e-4),
+    ("saturn", 5e-4),
+    ("uranus", 5e-4),
+    ("neptune", 5e-4),
+    ("earth centre", 1e-3),
+    ("moon", 1e-2),
+];
+
+fn velocity_kms(what: &str) -> f64 {
+    let found = VELOCITY_KMS.iter().find(|(name, _)| *name == what);
+    found
+        .unwrap_or_else(|| panic!("no velocity budget for {what}"))
+        .1
+}
 
 #[test]
 fn the_pack_matches_its_manifest_build_emrat_and_coverage() {
@@ -79,20 +106,16 @@ fn every_body_is_within_150_km_of_horizons_at_every_epoch() {
     let fixture = parse(HORIZONS);
     let pack = full_pack();
     let eph = RailEphemeris::new(pack.clone(), false);
-    let mut cases: Vec<(&str, &serde_json::Value, f64)> = [
+    let mut cases: Vec<(&str, &serde_json::Value)> = [
         "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune",
     ]
     .into_iter()
-    .map(|name| (name, &fixture["states"][name], PLANET_VELOCITY_KMS))
+    .map(|name| (name, &fixture["states"][name]))
     .collect();
-    cases.push(("moon", &fixture["geocentric"]["moon"], MOON_VELOCITY_KMS));
-    cases.push((
-        "earth centre",
-        &fixture["heliocentric_extra"]["earth"],
-        PLANET_VELOCITY_KMS,
-    ));
-    for (what, refs, velocity_kms) in cases {
-        let refs = refs.as_array().expect("epochs");
+    cases.push(("moon", &fixture["geocentric"]["moon"]));
+    cases.push(("earth centre", &fixture["heliocentric_extra"]["earth"]));
+    for (what, refs) in cases {
+        let (refs, budget_kms) = (refs.as_array().expect("epochs"), velocity_kms(what));
         assert_eq!(
             refs.len(),
             5,
@@ -112,8 +135,8 @@ fn every_body_is_within_150_km_of_horizons_at_every_epoch() {
             );
             assert!(dr < BUDGET_KM, "{what} at ET {et}: {dr} km from Horizons");
             assert!(
-                dv < velocity_kms,
-                "{what} at ET {et}: {dv} km/s from Horizons"
+                dv < budget_kms,
+                "{what} at ET {et}: {dv} km/s from Horizons, budget {budget_kms}"
             );
             (worst_r, worst_v) = (worst_r.max(dr), worst_v.max(dv));
         }
@@ -185,7 +208,7 @@ fn boundaries_nan_and_coverage_follow_the_rules() {
 #[test]
 fn outside_coverage_the_planets_are_table_1() {
     let eph = RailEphemeris::new(RailPack::new(), true);
-    let et = decade_start_et(1950) - 86400.0;
+    let et = decade_start_et(1950) - SECONDS_PER_DAY;
     for id in [BodyId::Mars, BodyId::Earth] {
         assert_eq!(
             eph.state(id, et),
@@ -196,6 +219,18 @@ fn outside_coverage_the_planets_are_table_1() {
         eph.soi_km(BodyId::Mars, 0.0),
         Table1Ephemeris::default().soi_km(BodyId::Mars, 0.0)
     );
+    // Inside coverage too: a sphere of influence never comes from the rails' distance.
+    let (rails, et) = (RailEphemeris::new(full_pack(), false), 846853269.184);
+    for id in PLANET_IDS {
+        let table1 = Table1Ephemeris::default().soi_km(id, et);
+        assert_eq!(rails.soi_km(id, et), table1, "{id}");
+    }
+}
+
+#[test]
+#[should_panic(expected = "Table 1 has no elements for Moon")]
+fn the_moon_has_no_sphere_of_influence_yet() {
+    RailEphemeris::new(full_pack(), false).soi_km(BodyId::Moon, 846853269.184);
 }
 
 #[test]
@@ -207,15 +242,34 @@ fn inside_coverage_an_unloaded_decade_panics() {
 }
 
 #[test]
-#[should_panic(expected = "no Moon rail")]
+#[should_panic(expected = "outside the rails' coverage")]
 fn outside_coverage_the_moon_panics() {
     RailEphemeris::new(full_pack(), false).state(BodyId::Moon, decade_start_et(2150) + 1.0);
 }
 
 #[test]
-#[should_panic(expected = "NaN ET")]
+#[should_panic(expected = "Venus at a non-finite ET (NaN)")]
 fn a_nan_et_panics() {
     RailEphemeris::new(full_pack(), false).state(BodyId::Venus, f64::NAN);
+}
+
+// The Sun answers before any rail is read, and Table 1 answers outside coverage.
+#[test]
+#[should_panic(expected = "Sun at a non-finite ET (NaN)")]
+fn the_sun_at_a_nan_et_panics() {
+    RailEphemeris::new(RailPack::new(), false).state(BodyId::Sun, f64::NAN);
+}
+
+#[test]
+#[should_panic(expected = "Mars at a non-finite ET (inf)")]
+fn an_infinite_et_panics() {
+    RailEphemeris::new(RailPack::new(), false).state(BodyId::Mars, f64::INFINITY);
+}
+
+#[test]
+#[should_panic(expected = "Earth's centre at a non-finite ET (-inf)")]
+fn earths_centre_at_minus_infinity_panics() {
+    RailEphemeris::new(full_pack(), false).earth_centre(f64::NEG_INFINITY);
 }
 
 #[test]
@@ -241,6 +295,39 @@ fn the_moon_and_earths_centre_split_the_barycentre_with_emrat() {
 }
 
 #[test]
+fn the_heliocentric_moon_and_the_split_velocities_hold() {
+    let fixture = parse(HORIZONS);
+    let eph = RailEphemeris::new(full_pack(), false);
+    let (earth, moon) = (
+        &fixture["heliocentric_extra"]["earth"],
+        &fixture["geocentric"]["moon"],
+    );
+    let (mut worst_r, mut worst_v) = (0.0_f64, 0.0_f64);
+    for k in 0..5 {
+        assert_eq!(earth[k]["jdTdb"], moon[k]["jdTdb"], "one epoch");
+        let et = et_from_jd_tdb(num(&earth[k]["jdTdb"]));
+        let s = eph.state(BodyId::Moon, et);
+        let r = add(vec3(&earth[k]["r"]), vec3(&moon[k]["r"]));
+        let v = add(vec3(&earth[k]["v"]), vec3(&moon[k]["v"]));
+        let (dr, dv, budget_kms) = (dist(s.r, r), dist(s.v, v), velocity_kms("moon"));
+        assert!(
+            dr < BUDGET_KM && dv < budget_kms,
+            "heliocentric Moon at ET {et}: {dr} km, {dv} km/s"
+        );
+        (worst_r, worst_v) = (worst_r.max(dr), worst_v.max(dv));
+        // The barycentre comes back on every axis, unflattened: within 1 mm and 1 um/s.
+        let (centre, emb) = (eph.earth_centre(et), eph.state(BodyId::Earth, et));
+        for axis in 0..3 {
+            let r = (centre.r[axis] * EMRAT + s.r[axis]) / (EMRAT + 1.0);
+            let v = (centre.v[axis] * EMRAT + s.v[axis]) / (EMRAT + 1.0);
+            assert!((r - emb.r[axis]).abs() < 1e-6, "position {axis} at ET {et}");
+            assert!((v - emb.v[axis]).abs() < 1e-9, "velocity {axis} at ET {et}");
+        }
+    }
+    println!("heliocentric moon: worst {worst_r:.3} km and {worst_v:.3e} km/s against Horizons");
+}
+
+#[test]
 fn malformed_files_are_refused_never_read() {
     let good = DECADE_FILES[7];
     let with = |at: usize, bytes: &[u8]| {
@@ -258,6 +345,11 @@ fn malformed_files_are_refused_never_read() {
     assert_eq!(
         with(16, &(span.0 + 1.0).to_le_bytes()),
         Err(PackError::NotADecade(span.0 + 1.0, span.1))
+    );
+    // A moved end, which only parse's span check sees: load_decade looks up the start.
+    assert_eq!(
+        with(24, &(span.1 + 1.0).to_le_bytes()),
+        Err(PackError::NotADecade(span.0, span.1 + 1.0))
     );
     assert_eq!(
         with(6, &u16::MAX.to_le_bytes()),
@@ -317,4 +409,53 @@ fn malformed_files_are_refused_never_read() {
             let _ = RailPack::new().load_decade(&file);
         }
     }
+}
+
+/// A 2140 decade file holding only the Moon at degree 1: `segments` declared, at most
+/// three written, every axis's c0 and c1 set to `c`.
+fn moon_2140(segments: u32, segment_s: f64, c: (f64, f32)) -> Vec<u8> {
+    let span = [2140, 2150].map(|y| decade_start_et(y).to_le_bytes());
+    let mut file = [&b"SSEP\x01\0\x01\0"[..], &[0; 8], &span[0], &span[1]].concat();
+    file.extend([301u16.to_le_bytes(), 1u16.to_le_bytes()].concat());
+    file.extend(segments.to_le_bytes());
+    file.extend(segment_s.to_le_bytes());
+    // The data offset, just past the header and the one table entry; then reserved 0.
+    file.extend([56u32, 0].map(u32::to_le_bytes).concat());
+    for _ in 0..segments.min(3) {
+        file.extend([c.0; 3].map(f64::to_le_bytes).concat());
+        file.extend([c.1; 3].map(f32::to_le_bytes).concat());
+    }
+    file
+}
+
+#[test]
+fn hand_built_decades_meet_each_guard() {
+    let span = decade_start_et(2150) - decade_start_et(2140);
+    let load =
+        |segments, segment_s, c| RailPack::new().load_decade(&moon_2140(segments, segment_s, c));
+    let zero = (0.0, 0.0);
+    // u32::MAX segments: the file-end check refuses them before a 206 GB allocation.
+    let tiny = span / (f64::from(u32::MAX) - 0.5);
+    assert_eq!(load(u32::MAX, tiny, zero), Err(PackError::DataOffset(301)));
+    assert_eq!(load(1, 0.0, zero), Err(PackError::BadEntry(301)));
+    assert_eq!(
+        load(1, span, (0.0, f32::NAN)),
+        Err(PackError::BadCoefficient(301))
+    );
+    assert_eq!(
+        load(1, span, (f64::INFINITY, 0.0)),
+        Err(PackError::BadCoefficient(301))
+    );
+    // Just under half the decade tiles it in three, but the third starts at its end.
+    let half = (span / 2.0).next_down();
+    assert_eq!(load(3, half, zero), Err(PackError::SegmentCount(301)));
+    // One segment as long as the decade: the pack's last instant is x = 1 in it, so
+    // c0 + c1 = 1.5 on each axis.
+    let mut pack = RailPack::new();
+    pack.load_decade(&moon_2140(1, span, (1.0, 0.5)))
+        .expect("one segment");
+    assert_eq!(
+        pack.position(RailBody::Moon, pack.coverage().1),
+        Some([1.5; 3])
+    );
 }

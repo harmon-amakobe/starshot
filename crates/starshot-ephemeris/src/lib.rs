@@ -6,10 +6,12 @@
 //! km/s and seconds of ET (TDB past J2000) in the heliocentric ecliptic J2000 frame.
 //!
 //! The port keeps the TypeScript operation order. Arithmetic-only paths then give the
-//! same bits as the TypeScript; paths through `sin`, `cos` or `pow` agree within the
-//! bounds `tests/conformance_table1.rs` states. Every transcendental function comes from
-//! `starshot-math`, which is this crate's only dependency (D29, stage 3 of the growth
-//! path).
+//! same bits as the TypeScript; paths through `sin` and `cos` agree within the bounds
+//! `tests/conformance_table1.rs` states. `pow` is used only for the sphere of influence,
+//! and its one difference, Saturn's at 1 to 2 ulp from V8, is a row of the deviation log
+//! (`docs/plans/v1-starshot/05-deviation-log.md`). Every transcendental function comes
+//! from `starshot-math`, which is this crate's only dependency (D29, stage 3 of the
+//! growth path).
 
 #![forbid(unsafe_code)]
 

@@ -21,6 +21,11 @@ const ORIGIN: State = State {
 };
 
 /// A state for any listed body at any ET (TDB seconds past J2000).
+///
+/// # Panics
+///
+/// An implementation may panic for a body it cannot place, as Table 1 does for the Moon:
+/// asking for one is a programming error, not input.
 pub trait Ephemeris {
     fn bodies(&self) -> &[BodyId];
     /// Whether every orbit is projected onto the ecliptic (z = 0).
@@ -101,7 +106,8 @@ pub fn orbit_path(id: BodyId, et: f64, samples: usize, flatten: bool) -> Vec<Vec
         .collect()
 }
 
-/// Orbital period [s] from the mean motion at ET.
+/// Anomalistic period [s] at ET, perihelion to perihelion: 2 pi over Table 1's mean
+/// motion of M = L - varpi. Earth's is 365.25965 days, against the sidereal 365.25636.
 pub fn orbital_period_seconds(id: BodyId, et: f64) -> f64 {
     (2.0 * PI) / planet_elements(id, et).n
 }
@@ -128,30 +134,37 @@ const MOON_SHARE: f64 = 1.0 / (1.0 + EMRAT);
 /// loads it before simulating, because a silent fallback would let the preview and a
 /// server disagree. Outside coverage the planets come from Table 1 and the Moon panics.
 /// `Earth` stays the Earth-Moon barycentre; `earth_centre` and the Moon split it with the
-/// pack's EMRAT.
+/// pack's EMRAT. `flatten` is private and the Table 1 fallback is built from it, so the
+/// two can never disagree about z (D6).
 #[derive(Debug, Clone)]
 pub struct RailEphemeris {
     pub pack: RailPack,
-    pub flatten: bool,
-    pub table1: Table1Ephemeris,
+    flatten: bool,
+}
+
+/// Panics for a NaN or infinite ET, which no decade holds: past this the Sun would answer
+/// the origin and Table 1 an all-NaN state.
+fn finite(et: f64, what: impl core::fmt::Display) {
+    assert!(
+        et.is_finite(),
+        "the rails ephemeris was asked for {what} at a non-finite ET ({et})"
+    );
 }
 
 impl RailEphemeris {
     pub fn new(pack: RailPack, flatten: bool) -> RailEphemeris {
-        RailEphemeris {
-            pack,
-            flatten,
-            table1: Table1Ephemeris { flatten },
+        RailEphemeris { pack, flatten }
+    }
+
+    fn table1(&self) -> Table1Ephemeris {
+        Table1Ephemeris {
+            flatten: self.flatten,
         }
     }
 
-    /// The rails' state of `body`, None outside coverage. Panics for NaN, and inside
-    /// coverage when the decade is not loaded.
+    /// The rails' state of `body`, None outside coverage. Panics inside coverage when the
+    /// decade is not loaded.
     fn rail(&self, body: RailBody, et: f64) -> Option<State> {
-        assert!(
-            !et.is_nan(),
-            "the rails ephemeris was asked for {body:?} at a NaN ET"
-        );
         let year = RailPack::decade_year(et)?;
         let state = self.pack.state(body, et);
         Some(
@@ -165,7 +178,7 @@ impl RailEphemeris {
         let (Some(emb), Some(moon)) = (self.rail(RailBody::Emb, et), self.rail(RailBody::Moon, et))
         else {
             panic!(
-                "no Moon rail at ET {et}: the pack covers {:?}",
+                "ET {et} is outside the rails' coverage {:?}, the only source of the Moon and Earth's centre",
                 self.pack.coverage()
             );
         };
@@ -182,6 +195,7 @@ impl RailEphemeris {
 
     /// Heliocentric state of Earth's centre, inside coverage only.
     pub fn earth_centre(&self, et: f64) -> State {
+        finite(et, "Earth's centre");
         self.shaped(self.earth_and_moon(et).0)
     }
 }
@@ -196,6 +210,7 @@ impl Ephemeris for RailEphemeris {
     }
 
     fn state(&self, id: BodyId, et: f64) -> State {
+        finite(et, id);
         let s = match (id, RailBody::of_planet(id)) {
             (BodyId::Sun, _) => return ORIGIN,
             (BodyId::Moon, _) => {
@@ -207,7 +222,7 @@ impl Ephemeris for RailEphemeris {
             }
             (_, Some(body)) => match self.rail(body, et) {
                 Some(s) => s,
-                None => return self.table1.state(id, et),
+                None => return self.table1().state(id, et),
             },
             (_, None) => panic!("the rails ephemeris has no {id}"),
         };
@@ -215,8 +230,9 @@ impl Ephemeris for RailEphemeris {
     }
 
     /// Table 1's semi-major axis for every source, so a sphere of influence does not
-    /// depend on where the positions come from. The Moon has none until PR20.
+    /// depend on where the positions come from. The Moon has none until PR20, so asking
+    /// for it panics.
     fn soi_km(&self, id: BodyId, et: f64) -> f64 {
-        self.table1.soi_km(id, et)
+        self.table1().soi_km(id, et)
     }
 }
