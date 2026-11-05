@@ -36,8 +36,20 @@ const ISO = [
   "2017-01-01T00:00:00Z", "2024-02-29T12:00:00-0800", "2049-12-31T23:59:59Z", "2050-01-01",
 ];
 
+// The 28 UTC days from 1972 on that begin with a new TAI - UTC, from IERS Bulletin C
+// (https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat), written as dates rather than
+// copied from time.ts. A leap second moved by a day or a second, or a wrong count, in
+// either language's table then no longer matches the fixture.
+const LEAP_DATES = [
+  "1972-01-01", "1972-07-01", "1973-01-01", "1974-01-01", "1975-01-01", "1976-01-01", "1977-01-01",
+  "1978-01-01", "1979-01-01", "1980-01-01", "1981-07-01", "1982-07-01", "1983-07-01", "1985-07-01",
+  "1988-01-01", "1990-01-01", "1991-01-01", "1992-07-01", "1993-07-01", "1994-07-01", "1996-01-01",
+  "1997-07-01", "1999-01-01", "2006-01-01", "2009-01-01", "2012-07-01", "2015-07-01", "2017-01-01",
+];
+
 // 200 UTC times to the millisecond from 1800 to 2050, from a fixed-seed mulberry32, so
-// etFromDate's operation order is checked off the round midnights and ISO texts too.
+// etFromDate's operation order is checked off the round midnights and ISO texts too. Then
+// each leap-second instant and the millisecond before it.
 function unixTimes(): number[] {
   let seed = 0x5eed;
   const next = () => {
@@ -47,7 +59,8 @@ function unixTimes(): number[] {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
   const [first, last] = [Date.UTC(1800, 0, 1), Date.UTC(2050, 0, 1)];
-  return Array.from({ length: 200 }, () => first + Math.floor(next() * (last - first)));
+  const seeded = Array.from({ length: 200 }, () => first + Math.floor(next() * (last - first)));
+  return [...seeded, ...LEAP_DATES.flatMap((day) => [Date.parse(day) - 1, Date.parse(day)])];
 }
 
 function table1Json(): string {
@@ -94,11 +107,12 @@ function table1Json(): string {
 }
 
 describe("Table 1 conformance fixture", () => {
-  it("lists 40 dates, 20 ISO texts and 200 UTC times", () => {
+  it("lists 40 dates, 20 ISO texts and 256 UTC times", () => {
     expect(FIXTURE_JD.length + DATES.length).toBe(40);
     expect(new Set(DATES).size).toBe(35);
     expect(ISO.length).toBe(20);
-    expect(new Set(unixTimes()).size).toBe(200);
+    expect(new Set(LEAP_DATES).size).toBe(28);
+    expect(new Set(unixTimes()).size).toBe(256);
   });
   it(WRITE ? "writes fixtures/conformance/table1.json" : "equals fixtures/conformance/table1.json exactly", () => {
     const text = table1Json();

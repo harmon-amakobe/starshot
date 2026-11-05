@@ -259,6 +259,11 @@ fn malformed_files_are_refused_never_read() {
         with(16, &(span.0 + 1.0).to_le_bytes()),
         Err(PackError::NotADecade(span.0 + 1.0, span.1))
     );
+    // A moved end, which only parse's span check sees: load_decade looks up the start.
+    assert_eq!(
+        with(24, &(span.1 + 1.0).to_le_bytes()),
+        Err(PackError::NotADecade(span.0, span.1 + 1.0))
+    );
     assert_eq!(
         with(6, &u16::MAX.to_le_bytes()),
         Err(PackError::TableOutOfBounds)
@@ -317,4 +322,53 @@ fn malformed_files_are_refused_never_read() {
             let _ = RailPack::new().load_decade(&file);
         }
     }
+}
+
+/// A 2140 decade file holding only the Moon at degree 1: `segments` declared, at most
+/// three written, every axis's c0 and c1 set to `c`.
+fn moon_2140(segments: u32, segment_s: f64, c: (f64, f32)) -> Vec<u8> {
+    let span = [2140, 2150].map(|y| decade_start_et(y).to_le_bytes());
+    let mut file = [&b"SSEP\x01\0\x01\0"[..], &[0; 8], &span[0], &span[1]].concat();
+    file.extend([301u16.to_le_bytes(), 1u16.to_le_bytes()].concat());
+    file.extend(segments.to_le_bytes());
+    file.extend(segment_s.to_le_bytes());
+    // The data offset, just past the header and the one table entry; then reserved 0.
+    file.extend([56u32, 0].map(u32::to_le_bytes).concat());
+    for _ in 0..segments.min(3) {
+        file.extend([c.0; 3].map(f64::to_le_bytes).concat());
+        file.extend([c.1; 3].map(f32::to_le_bytes).concat());
+    }
+    file
+}
+
+#[test]
+fn hand_built_decades_meet_each_guard() {
+    let span = decade_start_et(2150) - decade_start_et(2140);
+    let load =
+        |segments, segment_s, c| RailPack::new().load_decade(&moon_2140(segments, segment_s, c));
+    let zero = (0.0, 0.0);
+    // u32::MAX segments: the file-end check refuses them before a 206 GB allocation.
+    let tiny = span / (f64::from(u32::MAX) - 0.5);
+    assert_eq!(load(u32::MAX, tiny, zero), Err(PackError::DataOffset(301)));
+    assert_eq!(load(1, 0.0, zero), Err(PackError::BadEntry(301)));
+    assert_eq!(
+        load(1, span, (0.0, f32::NAN)),
+        Err(PackError::BadCoefficient(301))
+    );
+    assert_eq!(
+        load(1, span, (f64::INFINITY, 0.0)),
+        Err(PackError::BadCoefficient(301))
+    );
+    // Just under half the decade tiles it in three, but the third starts at its end.
+    let half = (span / 2.0).next_down();
+    assert_eq!(load(3, half, zero), Err(PackError::SegmentCount(301)));
+    // One segment as long as the decade: the pack's last instant is x = 1 in it, so
+    // c0 + c1 = 1.5 on each axis.
+    let mut pack = RailPack::new();
+    pack.load_decade(&moon_2140(1, span, (1.0, 0.5)))
+        .expect("one segment");
+    assert_eq!(
+        pack.position(RailBody::Moon, pack.coverage().1),
+        Some([1.5; 3])
+    );
 }

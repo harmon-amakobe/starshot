@@ -21,6 +21,11 @@ const ORIGIN: State = State {
 };
 
 /// A state for any listed body at any ET (TDB seconds past J2000).
+///
+/// # Panics
+///
+/// An implementation may panic for a body it cannot place, as Table 1 does for the Moon:
+/// asking for one is a programming error, not input.
 pub trait Ephemeris {
     fn bodies(&self) -> &[BodyId];
     /// Whether every orbit is projected onto the ecliptic (z = 0).
@@ -101,7 +106,8 @@ pub fn orbit_path(id: BodyId, et: f64, samples: usize, flatten: bool) -> Vec<Vec
         .collect()
 }
 
-/// Orbital period [s] from the mean motion at ET.
+/// Anomalistic period [s] at ET, perihelion to perihelion: 2 pi over Table 1's mean
+/// motion of M = L - varpi. Earth's is 365.25965 days, against the sidereal 365.25636.
 pub fn orbital_period_seconds(id: BodyId, et: f64) -> f64 {
     (2.0 * PI) / planet_elements(id, et).n
 }

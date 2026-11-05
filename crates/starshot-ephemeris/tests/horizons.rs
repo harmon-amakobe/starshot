@@ -8,7 +8,8 @@ use common::{ARCMIN_BUDGET, num, parse, planet, vec3};
 use core::f64::consts::PI;
 use starshot_ephemeris::vec::{angle_between, norm, sub};
 use starshot_ephemeris::{
-    AU_KM, BodyId, Ephemeris, Table1Ephemeris, et_from_jd_tdb, orbit_path, planet_state,
+    AU_KM, BodyId, Ephemeris, Table1Ephemeris, et_from_jd_tdb, orbit_path, orbital_period_seconds,
+    planet_elements, planet_state,
 };
 
 const FIXTURE: &str = include_str!("../../../fixtures/horizons/horizons.json");
@@ -56,12 +57,23 @@ fn flattening_projects_onto_the_ecliptic_and_keeps_the_sun_at_the_origin() {
         "z is +0, as the TypeScript literal"
     );
     assert_eq!(eph.state(BodyId::Sun, 0.0).r, [0.0; 3]);
+    assert_eq!(eph.state(BodyId::Sun, 0.0).v, [0.0; 3]);
     assert!(eph.flattened() && !Table1Ephemeris::default().flattened());
     let unflat = Table1Ephemeris { flatten: false }.state(BodyId::Mars, 0.0);
     assert_eq!(
         (s.r[0], s.r[1], s.v[0], s.v[1]),
         (unflat.r[0], unflat.r[1], unflat.v[0], unflat.v[1])
     );
+}
+
+#[test]
+fn the_table1_ephemeris_lists_the_sun_then_the_planets_in_order() {
+    use BodyId::*;
+    // Spelled out, not built from PLANET_IDS, so a wrong entry there shows here too.
+    let listed = [
+        Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune,
+    ];
+    assert_eq!(Table1Ephemeris::default().bodies(), listed);
 }
 
 #[test]
@@ -86,6 +98,23 @@ fn earths_orbit_is_drawn_at_about_1_au() {
             .iter()
             .all(|p| p[2].to_bits() == 0)
     );
+    // At ET 1e9 the elements have moved from J2000's, so a path drawn at the wrong ET misses
+    // these radii. Point 0 is perihelion (M = 0) and point 32 aphelion (M = pi).
+    let et = 1e9;
+    let el = planet_elements(BodyId::Earth, et);
+    let path = orbit_path(BodyId::Earth, et, 64, false);
+    let off = |k: usize, r: f64| (norm(path[k]) / r - 1.0).abs();
+    assert!(off(0, el.a * (1.0 - el.e)) < 1e-12, "perihelion first");
+    assert!(off(32, el.a * (1.0 + el.e)) < 1e-12, "aphelion halfway");
+    // Even steps in M make Earth's widest step in angle 0.1015 rad, at perihelion; the last
+    // point closes the loop to the first.
+    for (k, p) in path.iter().enumerate() {
+        let step = angle_between(*p, path[(k + 1) % 64]);
+        assert!(step < 0.11, "step {k}: {step} rad");
+    }
+    // Anomalistic, from Table 1's mean motion of M.
+    let year = orbital_period_seconds(BodyId::Earth, 0.0) / 86400.0;
+    assert!((year - 365.2596).abs() < 1e-3, "{year} days");
 }
 
 #[test]

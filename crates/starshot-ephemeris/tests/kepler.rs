@@ -22,6 +22,20 @@ fn satisfies_m_equals_e_minus_e_sin_e_across_eccentricities() {
 }
 
 #[test]
+fn holds_to_1e_14_densely_in_m_up_to_e_0_999999() {
+    // Beyond the TypeScript test: dense in M at high e, where the start rule and the
+    // iteration cap decide whether Newton's method settles.
+    for e in [0.9, 0.99, 0.999999] {
+        for k in 0..=2000 {
+            let m = -PI + (2.0 * PI * f64::from(k)) / 2000.0;
+            let big_e = solve_kepler(m, e);
+            let residual = (big_e - e * sin(big_e) - wrap_pi(m)).abs();
+            assert!(residual < 1e-14, "e {e}, M {m}: residual {residual}");
+        }
+    }
+}
+
+#[test]
 fn wraps_angles_to_minus_pi_exclusive_to_pi_inclusive() {
     assert_eq!(wrap_pi(PI), PI);
     assert_eq!(wrap_pi(-PI), PI);

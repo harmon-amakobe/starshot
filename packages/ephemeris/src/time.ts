@@ -41,7 +41,11 @@ export function etFromDate(date: Date): number {
 
 /** JavaScript Date (UTC) for an ET value. */
 export function dateFromEt(et: number): Date {
-  // One fixed-point step is exact except within a second of a leap second.
+  // One fixed-point step looks TT - UTC up at UTC plus TT - UTC, not at UTC. In the last
+  // 42.184 to 68.184 s before each leap second (the TT - UTC then in force; 68.184 s
+  // before 2017-01-01) the lookup already sees the new second, so a UTC time taken to ET
+  // and back returns 1000 ms early. dateFromEt and unix_ms_from_et agree; table1.json
+  // records it.
   let unix = (et / SECONDS_PER_DAY + J2000_JD - UNIX_EPOCH_JD) * SECONDS_PER_DAY;
   unix -= ttMinusUtc(unix);
   // Round to the millisecond so exact UTC midnights do not print as 23:59:59.999.

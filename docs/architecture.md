@@ -183,7 +183,9 @@ workspace holds two crates.
       src/time.rs        UTC <-> ET; et_from_iso takes a date or a date-time, else errs
       src/table1.rs      Table 1, copied digit for digit; kepler.rs solves the ellipse
       src/ephemeris.rs   the Ephemeris trait, Table1Ephemeris and RailEphemeris
-      src/rails.rs       reads data/ephem decade files; adds and multiplies only
+      src/rails.rs       reads data/ephem decade files: adds, multiplies and divides;
+                         no transcendental call
+      tests/             rails tests embed data/ephem/de440s-100km/*.bin (include_bytes!)
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
                          horizons/horizons.json (JPL), conformance/*.json (TypeScript)
 ```
