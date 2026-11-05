@@ -6,7 +6,7 @@
 //! through the same branches unless a threshold falls within rounding of a test. The bits
 //! differ: the ephemeris goes through `sin` and `cos`, `next_step` through `pow`, and each
 //! length through `norm`, which is not V8's three-argument `Math.hypot` (deviation row
-//! 79). `tests/conformance_simulate.rs` holds 24 flights to the TypeScript's.
+//! 79). PR12's next part, its conformance flights, holds this port to the TypeScript's.
 
 use crate::dopri5::{Dopri5, State6, StepTolerance};
 use crate::gravity::acceleration;

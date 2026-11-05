@@ -139,7 +139,8 @@ const FLIGHTS: readonly Flight[] = [
   shot("big-game short", "big-game", L["big-game"]!, "2028-12-24", vInfFromAim(181.1, 7)),
   // The sandbox: inner targets on the campaign settings, outer ones on the outer settings.
   shot("sandbox mars", "sandbox", sandbox("mars"), "2026-11-02", [-1.815327, 2.36578, 0]),
-  // Leaves Earth under 1 km/s after the switch-on, where the step cap's speed term binds.
+  // The slowest departure, 0.3 km/s. Inside 5 spheres of influence its speed relative to
+  // Earth stays above 0.886 km/s, 886 times the step cap's 1 m/s floor, so the floor never binds.
   shot("sandbox mars slow departure", "sandbox", sandbox("mars"), "2026-11-01", vInfFromAim(90, 0.3)),
   shot("sandbox saturn", "sandbox", sandbox("saturn"), addDays("2026-11-01", 200), vInfFromAim(75, 12)),
   shot("sandbox neptune past 2050", "sandbox", sandbox("neptune"), "2047-06-01", vInfFromAim(200, 3)),
