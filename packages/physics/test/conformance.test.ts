@@ -4,7 +4,16 @@
 // equal this output exactly. Inputs are stored too, so Rust starts from the same bits.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { AU_KM, BODIES, add, createEphemeris, etFromIso, type BodyId, type Ephemeris } from "@starshot/ephemeris";
+import {
+  AU_KM,
+  BODIES,
+  SECONDS_PER_DAY as DAY,
+  add,
+  createEphemeris,
+  etFromIso,
+  type BodyId,
+  type Ephemeris,
+} from "@starshot/ephemeris";
 import { Dopri5, EARTH_GM, LEO_RADIUS_KM, acceleration, bestDirectTransfer, c3, deltaVFromLeo, hermite, lambert } from "../src/index.js";
 
 const OUT = new URL("../../../fixtures/conformance/physics.json", import.meta.url);
@@ -17,7 +26,6 @@ const bits = (x: number): string => {
   return view.getBigUint64(0).toString(16).padStart(16, "0");
 };
 
-const DAY = 86400;
 const eph3d = createEphemeris();
 const eph2d = createEphemeris({ flatten: true });
 const MU_SUN = BODIES.sun.gm;
@@ -54,6 +62,11 @@ const PROBES: Array<[number, readonly number[]]> = [
   [0, [AU_KM, 0, 0]],
   [0, [0.3 * AU_KM, -0.2 * AU_KM, 0.05 * AU_KM]],
   [T_MARS, [-30 * AU_KM, 12 * AU_KM, -2 * AU_KM]],
+  // Beyond 1,000 au the indirect terms outweigh every direct pull, so their order shows.
+  ...[0, 1, 2, 3, 4, 5].map((k): [number, readonly number[]] => [
+    T_TOUR + 900 * k * DAY,
+    [2000 * AU_KM, -1500 * AU_KM, 300 * AU_KM],
+  ]),
 ];
 const accelerationRows = PROBES.map(([et, r]) => {
   const v3 = [r[0]!, r[1]!, r[2]!] as const;
@@ -92,7 +105,9 @@ const stepRows = STEPS.map(([rtol, atolKm, t, h, push, y0]) => {
   return [rtol, atolKm, atolKm * 1e-6, t, h, push, ...y0, err1, ...y1, err2, ...solver.yNew];
 });
 
-const nextStepRows = [0, 1e-12, 1e-4, 0.01, 0.3, 0.5, 0.97, 1, 1.0001, 2, 7.5, 100, 3000, 1e4, 1e6].map((err) => [
+// NaN and Infinity check the clamp: Math.min and Math.max keep a NaN.
+const ERRORS = [0, 1e-12, 1e-4, 0.01, 0.3, 0.5, 0.97, 1, 1.0001, 2, 7.5, 100, 3000, 1e4, 1e6, NaN, Infinity];
+const nextStepRows = ERRORS.map((err) => [
   3600,
   err,
   Dopri5.nextStep(3600, err),

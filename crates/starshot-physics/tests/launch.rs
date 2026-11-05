@@ -1,6 +1,6 @@
 //! The launch model, as `packages/physics/test/physics.test.ts`.
 
-use starshot_ephemeris::vec::{norm, sub};
+use starshot_ephemeris::vec::{add, norm, sub};
 use starshot_ephemeris::{BodyId, Ephemeris, Table1Ephemeris, et_from_iso};
 use starshot_physics::{LEO_RADIUS_KM, c3, delta_v_from_leo, departure_state};
 
@@ -19,10 +19,15 @@ fn about_3_2_km_per_s_from_leo_to_escape() {
 fn starts_at_earth_moving_at_earths_velocity_plus_the_excess() {
     let eph = Table1Ephemeris { flatten: false };
     let t0 = et_from_iso("2026-11-20").expect("date");
-    let s = departure_state(&eph, t0, [0.0, 3.0, 0.0]);
     let earth = eph.state(BodyId::Earth, t0);
-    assert_eq!(norm(sub(s.r, earth.r)), 0.0);
-    // toBeCloseTo(3, 12): within 5e-13 km/s.
-    let excess = norm(sub(s.v, earth.v));
-    assert!((excess - 3.0).abs() < 5e-13, "excess {excess} km/s");
+    // Today's excess, then one with every component distinct, so a swapped or dropped
+    // component shows.
+    for v_inf in [[0.0, 3.0, 0.0], [0.4, 3.0, -0.3]] {
+        let s = departure_state(&eph, t0, v_inf);
+        assert_eq!(norm(sub(s.r, earth.r)), 0.0);
+        assert_eq!(s.v.map(f64::to_bits), add(earth.v, v_inf).map(f64::to_bits));
+        // toBeCloseTo(3, 12): within 5e-13 km/s.
+        let excess = norm(sub(s.v, earth.v));
+        assert!((excess - norm(v_inf)).abs() < 5e-13, "excess {excess} km/s");
+    }
 }

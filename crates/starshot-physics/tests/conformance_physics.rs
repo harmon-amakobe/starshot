@@ -114,14 +114,21 @@ fn integrator_steps_match_typescript_bit_for_bit() {
 #[test]
 fn next_step_matches_typescript_within_1e_15_relative() {
     let rows = table("next_step", 3);
-    let (mut worst, mut equal) = (0.0_f64, 0);
+    let (mut worst, mut equal, mut nan) = (0.0_f64, 0, 0);
     for r in &rows {
         let next = Dopri5::next_step(r[0], r[1]);
+        // A NaN must stay NaN; its sign bit is the engine's (V8 writes fff8..., Rust 7ff8...),
+        // and f64::max would drop it from `worst`.
+        assert_eq!(next.is_nan(), r[2].is_nan(), "next_step(_, {})", r[1]);
+        if next.is_nan() {
+            nan += 1;
+            continue;
+        }
         worst = worst.max(((next - r[2]) / r[2]).abs());
         equal += usize::from(next.to_bits() == r[2].to_bits());
     }
     let n = rows.len();
-    println!("next_step: worst {worst:e} relative, {equal} of {n} bit for bit");
+    println!("next_step: worst {worst:e} relative, {equal} of {n} bit for bit, {nan} NaN");
     assert!(worst < 1e-15, "next_step differs by {worst} relative");
 }
 
