@@ -143,6 +143,7 @@
     ["parkingState","41c93cfa4a978d50","41c93cfa4a978d50","406c200000000000","40b9ab0000000000","41ca047e6afb65e2","Outside the lunar rail dates"],
     ["departure","41c93cfa4a978d50","41c93cfa4a978d50","406c200000000000","40b7700000000000","41c93cfa4a978d50","Invalid parking orbit"],
     ["departure","41c93cfa4a978d50","41c93cfa4a978d50","406c200000000000","40b9ab0000000000","41ca047e6afb65e2","Outside the lunar rail dates"],
-    ["departure",null,"7ff8000000000000","406c200000000000","40b9ab0000000000","41c93cfa4a978d50","Invalid parking orbit"]
+    ["departure",null,"7ff8000000000000","406c200000000000","40b9ab0000000000","41c93cfa4a978d50","Invalid parking orbit"],
+    ["departure","7ff0000000000000","41c93cfa4a978d50","406c200000000000","40b7700000000000","41c93cfa4a978d50","Outside the lunar rail dates"]
   ]
 }
