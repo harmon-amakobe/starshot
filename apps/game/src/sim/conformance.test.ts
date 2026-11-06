@@ -1,7 +1,7 @@
 // Writes or checks the oracles for the game crate (PR13, PR14): fixtures/conformance/shots.json
 // for its shot model (crates/starshot-game/tests/conformance_shots.rs), lunar-shots.json for
-// its Moon shot (crates/starshot-game/tests/lunar.rs) and levels.json for its levels
-// (crates/starshot-game/tests/levels.rs). Every request comes from the game's
+// its Moon shot (crates/starshot-game/tests/lunar.rs) and levels.json for its levels and
+// their hints (crates/starshot-game/tests/levels.rs). Every request comes from the game's
 // own builders: shotRequestFor at launchEtForDay for the planets, and for the Moon
 // finalRequest on a fresh session, as campaign/lunar.test.ts launches, and lunarRequest.
 // With STARSHOT_WRITE_CONFORMANCE=1 it writes the files; otherwise each must equal this
@@ -15,10 +15,10 @@ import { finalRequest } from "../campaign/contracts.js";
 import { freshSession } from "../campaign/session.js";
 import {
   CAMPAIGN, DEFAULT_PAR_TOLERANCE, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, SANDBOX_TARGETS, captureZoneScaleOf, framingBodies,
-  parToleranceOf, sandboxLevel, shotRequestFor, type Level,
+  hintQueryFor, parToleranceOf, sandboxLevel, shotRequestFor, type Level,
 } from "../levels.js";
 import { MISSION_ORDER, MOONSHOT, missionNumber, nextMission, type MissionId } from "../missions.js";
-import type { KnownShot } from "./hint.js";
+import { findHint, type KnownShot } from "./hint.js";
 import type { LunarShotRequest } from "./flight-request.js";
 import { runLunar } from "./lunar.js";
 import { lunarRequest } from "./lunar-request.js";
@@ -208,6 +208,23 @@ const SANDBOX_DAYS: ReadonlyArray<readonly [PlanetId, string]> = [
 // The Moonshot's physics fields, its burn cap in the speed cap's slot and its six lunar settings as bits.
 const MOONSHOT_COLUMNS = ["id", "windowStartIso", "windowDays", "defaultLaunchIso", "target", "maxFlightDays", "vInfMaxKmS",
   "attractors", "parDeltaVKmS", "parTolerance", "sim"];
+// Each campaign hint at the default budget and at 0, 1 and 2 simulations: the search order
+// and the budget as a count, a band's centre flown one over it included. Every campaign aim
+// hits on its first nudge, so Morning Star also asks for a Jupiter flyby it never makes: no
+// aim succeeds, and the nudge flies its own order up to the budget.
+const HINT_COLUMNS = ["id", "maxSimulations", "day", "launchEt", "angleDeg", "speedKmS", "hits", "closestKm", "source",
+  "simulations", "requiredFlyby"];
+const HINT_CASES: Array<[Level, number | undefined, PlanetId | undefined]> = [
+  ...CAMPAIGN.flatMap((l) => [undefined, 0, 1, 2].map((n): [Level, number | undefined, undefined] => [l, n, undefined])),
+  [MORNING, 2, "jupiter"], [MORNING, 240, "jupiter"],
+];
+const hintRows = () => HINT_CASES.map(([l, maxSimulations, flyby]) => {
+  const q = hintQueryFor(l);
+  const h = findHint(eph, { ...q, shot: { ...q.shot, requiredFlyby: flyby ?? q.shot.requiredFlyby }, maxSimulations })!;
+  const { angleDeg, speedKmS } = h.aim;
+  return [l.id, maxSimulations ?? null, h.day, ...[h.launchEt, angleDeg, speedKmS].map(bits), h.hits, bits(h.closestKm),
+    h.source, h.simulations, flyby ?? null];
+});
 function levelsJson(): string {
   const rows = CAMPAIGN.map(levelRow);
   const sandboxRows = SANDBOX_DAYS.map(([target, iso]) => {
@@ -238,7 +255,11 @@ function levelsJson(): string {
     '  "mission_columns": ["id", "number", "next"],',
     `  "missions": ${JSON.stringify(missions)},`,
     `  "moonshot_columns": ${JSON.stringify(MOONSHOT_COLUMNS)},`,
-    `  "moonshot": ${JSON.stringify(moonshot)}`,
+    `  "moonshot": ${JSON.stringify(moonshot)},`,
+    `  "hint_columns": ${JSON.stringify(HINT_COLUMNS)},`,
+    '  "hints": [',
+    list(hintRows()),
+    "  ]",
     "}",
     "",
   ].join("\n");

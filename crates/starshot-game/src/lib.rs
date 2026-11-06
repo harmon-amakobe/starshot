@@ -2,7 +2,7 @@
 //! (`apps/game/src/sim/shot.ts`) with its aim and launch-day grid, the Moon shot
 //! (`apps/game/src/sim/lunar.ts`), the replay records with their physics version, the
 //! campaign levels, the sandbox and the requests replays fly (`levels.ts`), the missions
-//! (`missions.ts`) and the star rules (`scoring.ts`).
+//! (`missions.ts`), the star rules (`scoring.ts`) and the planetary hint (`hint.ts`).
 //! Units are km, km/s and seconds of ET (TDB past J2000) in the heliocentric ecliptic
 //! J2000 frame; UTC enters only as ISO dates, through `et_from_iso`. The crate reads no
 //! clock and draws no random number, so the same inputs give the same bits on every
@@ -22,7 +22,9 @@ pub mod shot;
 
 pub use aim::{Aim, aim_from_v_inf, normalize_deg, round_aim, v_inf_from_aim};
 pub use days::{add_days_iso, days_between_iso, launch_et_for_day};
-pub use hint::{HintQuery, KnownShot};
+pub use hint::{
+    HINT_MAX_SIMULATIONS, Hint, HintError, HintQuery, HintSource, KnownShot, find_hint,
+};
 pub use levels::{
     CAMPAIGN, DEFAULT_PAR_TOLERANCE, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, LaunchWindow, Level,
     LevelError, LevelId, LunarLevel, MISSION_ORDER, MOONSHOT, Mission, MissionId, Par,

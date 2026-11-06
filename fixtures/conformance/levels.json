@@ -30,5 +30,26 @@
   "mission_columns": ["id", "number", "next"],
   "missions": [["moonshot",1,"first-light"],["first-light",2,"morning-star"],["morning-star",3,"big-game"],["big-game",4,"grand-tour"],["grand-tour",5,null],["sandbox",0,null]],
   "moonshot_columns": ["id","windowStartIso","windowDays","defaultLaunchIso","target","maxFlightDays","vInfMaxKmS","attractors","parDeltaVKmS","parTolerance","sim"],
-  "moonshot": ["moonshot","2026-11-02",27,"2026-11-02","moon","401c000000000000","400c666666666666",["earth"],"4009eb851eb851ec","3ff199999999999a",["3ddb7cdfd9d7bdbb","3f847ae147ae147b","3e45798ee2308c3a","409c200000000000","40d3880000000000","3f9eb851eb851eb8"]]
+  "moonshot": ["moonshot","2026-11-02",27,"2026-11-02","moon","401c000000000000","400c666666666666",["earth"],"4009eb851eb851ec","3ff199999999999a",["3ddb7cdfd9d7bdbb","3f847ae147ae147b","3e45798ee2308c3a","409c200000000000","40d3880000000000","3f9eb851eb851eb8"]],
+  "hint_columns": ["id","maxSimulations","day","launchEt","angleDeg","speedKmS","hits","closestKm","source","simulations","requiredFlyby"],
+  "hints": [
+    ["first-light",null,18,"41c93cf342978d50","4060233333333333","4007db22d0e56042",true,"4122cb705f49e2c4","lambert",61,null],
+    ["first-light",0,18,"41c93cf342978d50","4060233333333333","4007db22d0e56042",true,"4122cb705f49e2c4","lambert",1,null],
+    ["first-light",1,18,"41c93cf342978d50","4060233333333333","4007db22d0e56042",true,"4122cb705f49e2c4","lambert",1,null],
+    ["first-light",2,18,"41c93cf342978d50","406024cccccccccd","4007db22d0e56042",true,"4122e6da0effe249","lambert",3,null],
+    ["morning-star",null,45,"41ca7f4a02978d50","4052570a3d70a3d7","4004395810624dd3",true,"41057d4a8498937d","lambert",61,null],
+    ["morning-star",0,45,"41ca7f4a02978d50","4052570a3d70a3d7","4004395810624dd3",true,"41057d4a8498937d","lambert",1,null],
+    ["morning-star",1,45,"41ca7f4a02978d50","4052570a3d70a3d7","4004395810624dd3",true,"41057d4a8498937d","lambert",1,null],
+    ["morning-star",2,45,"41ca7f4a02978d50","40525a3d70a3d70a","4004395810624dd3",true,"4106039a1583f6e4","lambert",3,null],
+    ["big-game",null,35,"41cb41bf42978d50","4066efae147ae148","402162d0e5604189",true,"4112e068b102848c","lambert",61,null],
+    ["big-game",0,35,"41cb41bf42978d50","4066efae147ae148","402162d0e5604189",true,"4112e068b102848c","lambert",1,null],
+    ["big-game",1,35,"41cb41bf42978d50","4066efae147ae148","402162d0e5604189",true,"4112e068b102848c","lambert",1,null],
+    ["big-game",2,35,"41cb41bf42978d50","4066f147ae147ae1","402162d0e5604189",true,"4112c6cb14ad6e4e","lambert",3,null],
+    ["grand-tour",null,10,"c1c5092b07e872b0","4052fb851eb851ec","402399999999999a",true,"4180793d11992c47","curated",1,null],
+    ["grand-tour",0,10,"c1c5092b07e872b0","4052fb851eb851ec","402399999999999a",true,"4180793d11992c47","curated",1,null],
+    ["grand-tour",1,10,"c1c5092b07e872b0","4052fb851eb851ec","402399999999999a",true,"4180793d11992c47","curated",1,null],
+    ["grand-tour",2,10,"c1c5092b07e872b0","4052fb851eb851ec","402399999999999a",true,"4180793d11992c47","curated",1,null],
+    ["morning-star",2,45,"41ca7f4a02978d50","4052570a3d70a3d7","4004395810624dd3",false,"41057d4a8498937d","lambert",2,"jupiter"],
+    ["morning-star",240,45,"41ca7f4a02978d50","405300a3d70a3d71","4004395810624dd3",false,"4058360261a3494f","lambert",240,"jupiter"]
+  ]
 }

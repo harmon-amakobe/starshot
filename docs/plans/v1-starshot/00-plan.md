@@ -256,7 +256,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR14 levels | PR14 | `codex/v1-pr14-levels` | `codex/v1-pr13-lunar-shots` | B3 |
 | PR14 scoring | PR14 | `codex/v1-pr14-scoring` | `codex/v1-pr14-levels` | B3 |
 | PR14 sandbox and replays | PR14 | `codex/v1-pr14-sandbox` | `codex/v1-pr14-scoring` | B3 |
-| PR14 hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-sandbox` | B3 |
+| PR14 planetary hints | PR14 | `codex/v1-pr14-planetary-hints` | `codex/v1-pr14-sandbox` | B3 |
+| PR14 lunar hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-planetary-hints` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-hints` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
 | PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
@@ -1142,7 +1143,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-scoring`, `codex/v1-pr14-sandbox` and `codex/v1-pr14-hints` (four parts in the PR groups table, :256-259).
+- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-scoring`, `codex/v1-pr14-sandbox`, `codex/v1-pr14-planetary-hints` and `codex/v1-pr14-hints` (five parts in the PR groups table, :256-260).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.

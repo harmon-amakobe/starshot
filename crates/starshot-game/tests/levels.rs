@@ -3,8 +3,8 @@
 //! zone is three spheres wide, and the Grand Tour really needs Jupiter. Every level,
 //! sandbox and mission number is tied to `levels.ts` and `missions.ts` through
 //! `fixtures/conformance/levels.json` (D6); `tests/sandbox.rs` holds the sandbox's own
-//! cases. The hint cases join with the hint search; the cached-ephemeris case has no
-//! counterpart, since the core keeps no cache.
+//! cases. Each hint is held to the TypeScript's at several budgets through the same file;
+//! the cached-ephemeris case runs the search twice, since the core keeps no cache.
 
 use serde_json::{Value, json};
 use starshot_ephemeris::BodyId::{self, Earth, Jupiter, Mars, Saturn};
@@ -13,11 +13,12 @@ use starshot_ephemeris::vec::norm;
 use starshot_ephemeris::{Ephemeris, PLANET_IDS, Table1Ephemeris, Vec3};
 use starshot_game::LevelId::{self, BigGame, FirstLight, GrandTour, MorningStar, Sandbox};
 use starshot_game::{
-    Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HintQuery, KnownShot, Level, LunarLevel,
-    MISSION_ORDER, MOONSHOT, MissionId, SANDBOX_TARGETS, SIM_SETTINGS, ScoringRules, ShotAnalysis,
-    ShotError, ShotFacts, ShotRequest, analyze_shot, days_between_iso, framing_bodies,
-    hint_query_for, launch_et_for_day, mission_number, next_mission, sandbox_level, score_shot,
-    shot_request_for, shot_template, simulate_shot, v_inf_from_aim,
+    Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HINT_MAX_SIMULATIONS, HINT_STAR_CAP,
+    HintQuery, KnownShot, Level, LunarLevel, MISSION_ORDER, MOONSHOT, MissionId, SANDBOX_TARGETS,
+    SIM_SETTINGS, ScoringRules, ShotAnalysis, ShotError, ShotFacts, ShotRequest, analyze_shot,
+    days_between_iso, find_hint, framing_bodies, hint_query_for, launch_et_for_day, mission_number,
+    next_mission, sandbox_level, score_shot, shot_request_for, shot_template, simulate_shot,
+    v_inf_from_aim,
 };
 use starshot_physics::{LEO_RADIUS_KM, best_direct_transfer, delta_v_from_leo};
 
@@ -268,6 +269,107 @@ fn requests_and_hint_queries_carry_the_level() {
         assert_eq!(hint_query_for(level), query);
     }
     assert_eq!(by_id(GrandTour).hint, Some(GRAND_TOUR_HINT));
+}
+
+#[test]
+fn every_hint_is_on_the_grid_deterministic_and_reaches_its_target() {
+    for level in &CAMPAIGN {
+        let query = hint_query_for(level);
+        let hint = find_hint(&EPH, &query).expect("a valid query");
+        let hint = hint.expect("a hint");
+        assert!(hint.hits && hint.simulations <= HINT_MAX_SIMULATIONS + 1);
+        // Exactly what the label shows and "Use hint" applies: 0.01 degree, 0.001 km/s,
+        // from 0 to under 360 (positive, where `f64::round` is `Math.round`).
+        let Aim {
+            angle_deg,
+            speed_km_s,
+        } = hint.aim;
+        assert_eq!((angle_deg * 100.0).round() / 100.0, angle_deg);
+        assert_eq!((speed_km_s * 1000.0).round() / 1000.0, speed_km_s);
+        assert!((0.0..360.0).contains(&angle_deg) && speed_km_s <= level.v_inf_max_km_s);
+        let a = fly(&shot_request_for(
+            level,
+            hint.launch_et,
+            v_inf_from_aim(hint.aim),
+        ));
+        assert!(a.hit && (level.required_flyby.is_none() || a.required_flyby_done));
+        // Flown with the hint, the shot keeps at most the cap, and says when it bit.
+        let score = score_shot(&rules(level), &ShotFacts::from_analysis(&a, true));
+        let capped = score.uncapped_stars > HINT_STAR_CAP;
+        assert!(score.stars <= HINT_STAR_CAP && score.hint_capped == capped);
+        // Same level, same hint: no clock is involved.
+        assert_eq!(find_hint(&EPH, &query), Ok(Some(hint)), "{:?}", level.id);
+    }
+}
+
+#[test]
+fn the_hint_budget_is_a_simulation_count() {
+    // With none, the rounded Lambert aim itself comes back, checked by one flight.
+    let level = by_id(MorningStar);
+    let query = HintQuery {
+        max_simulations: Some(0),
+        ..hint_query_for(level)
+    };
+    let hint = find_hint(&EPH, &query).expect("valid").expect("a transfer");
+    assert_eq!(hint.simulations, 1);
+    let a = fly(&shot_request_for(
+        level,
+        hint.launch_et,
+        v_inf_from_aim(hint.aim),
+    ));
+    assert_eq!(hint.hits, a.hit);
+}
+
+#[test]
+fn every_hint_equals_the_typescript_hint_at_each_budget() {
+    let file: Value = serde_json::from_str(LEVELS).expect("valid JSON");
+    let rows = file["hints"].as_array().expect("hint rows");
+    assert_eq!(rows.len(), 18);
+    let mut worst = 0.0_f64;
+    for row in rows {
+        let level = CAMPAIGN.iter().find(|l| row[0] == l.id.as_str());
+        let level = level.expect("a campaign level");
+        let max_simulations = row[1].as_u64().map(|n| u32::try_from(n).expect("a count"));
+        let mut query = HintQuery {
+            max_simulations,
+            ..hint_query_for(level)
+        };
+        // A flyby the level never makes, so the nudge runs its whole order to the budget.
+        if let Some(flyby) = row[10].as_str() {
+            let planet = PLANET_IDS.into_iter().find(|&b| name(b) == flyby);
+            query.shot.required_flyby = Some(planet.expect("a planet"));
+        }
+        let h = find_hint(&EPH, &query).expect("valid").expect("a hint");
+        let (a, s) = (h.aim.angle_deg, h.aim.speed_km_s);
+        let bits = [h.launch_et, a, s].map(hex);
+        let got = json!([
+            row[0],
+            row[1],
+            h.day,
+            bits,
+            h.hits,
+            h.source.as_str(),
+            h.simulations
+        ]);
+        let want = json!([
+            row[0],
+            row[1],
+            row[2],
+            [row[3], row[4], row[5]],
+            row[6],
+            row[8],
+            row[9]
+        ]);
+        assert_eq!(got, want);
+        let closest = row[7].as_str().expect("bits");
+        let closest = f64::from_bits(u64::from_str_radix(closest, 16).expect("hex"));
+        // `f64::max` would drop a NaN gap; `<` fails it.
+        let gap = (h.closest_km - closest).abs();
+        assert!(gap < 1e-3, "{row}: {gap} km");
+        worst = worst.max(gap);
+    }
+    // Measured: 6.6e-6 km at most, from `norm` and the ephemeris's `sin` and `cos`.
+    println!("widest closest-approach gap {worst:e} km");
 }
 
 #[test]
