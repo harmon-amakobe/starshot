@@ -13,7 +13,8 @@ use common::{analysis, bits, body, with_moved_numbers};
 use serde_json::Value;
 use starshot_ephemeris::Table1Ephemeris;
 use starshot_game::{
-    ShotAnalysis, ShotRequest, SimSettings, analyze_shot, launch_et_for_day, simulate_shot,
+    CAMPAIGN, ShotAnalysis, ShotRequest, SimSettings, analyze_shot, launch_et_for_day,
+    shot_request_for, simulate_shot,
 };
 
 const SHOTS: &str = include_str!("../../../fixtures/conformance/shots.json");
@@ -108,6 +109,11 @@ fn shots_match_typescript() {
             "{name}: launch day"
         );
         let shot = request(c);
+        // The level's builder must give the request the game built (D6), attractor order too.
+        if let Some(level) = CAMPAIGN.iter().find(|l| l.id.as_str() == row[1]) {
+            let mine = shot_request_for(level, launch, shot.v_inf);
+            assert_eq!(mine, shot, "{name}: level request");
+        }
         let result = simulate_shot(&EPH, &shot).expect("the fixture's scale flies");
         let got = analyze_shot(&EPH, &shot, &result);
         let want = analysis(row[5].as_array().expect("an analysis"));

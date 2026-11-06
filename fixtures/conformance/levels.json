@@ -1,0 +1,12 @@
+{
+  "schema": "starshot.conformance-levels/1",
+  "generator": "STARSHOT_WRITE_CONFORMANCE=1 npx vitest run apps/game/src/sim/conformance.test.ts",
+  "grand_tour_par_shot": ["1977-09-02",["400ac39713ad5bee","4020ece9813879c4","0000000000000000"]],
+  "level_columns": ["id","windowStartIso","windowDays","defaultLaunchIso","target","maxFlightDays","vInfMaxKmS","attractors","requiredFlyby","parDeltaVKmS","parTolerance","captureZoneScale","sim","hint","sandbox"],
+  "levels": [
+    ["first-light","2026-10-15",90,"2026-11-05","mars","4079000000000000","4018000000000000",["earth","mars","jupiter"],null,"400cf5c28f5c28f6","3ff199999999999a","4008000000000000",["3ddb7cdfd9d7bdbb","3ff0000000000000","4105180000000000",20000],null,false],
+    ["morning-star","2028-01-20",90,"2028-02-01","venus","4072c00000000000","4014000000000000",["mercury","venus","earth"],null,"400c147ae147ae14","3ff199999999999a","3ff0000000000000",["3ddb7cdfd9d7bdbb","3ff0000000000000","4105180000000000",20000],null,false],
+    ["big-game","2028-11-20",90,"2028-12-01","jupiter","4094500000000000","4028000000000000",["earth","mars","jupiter","saturn"],null,"4018f5c28f5c28f6","3ff199999999999a","3ff0000000000000",["3ddb7cdfd9d7bdbb","3ff0000000000000","4105180000000000",20000],null,false],
+    ["grand-tour","1977-08-10",30,"1977-08-20","saturn","409a900000000000","4025000000000000",["earth","jupiter","saturn"],"jupiter","401a000000000000","3ff0cccccccccccd","3ff0000000000000",["3ddb7cdfd9d7bdbb","3ff0000000000000","4105180000000000",20000],["1977-08-20",["40031046f5a787fc","402303015be3d96d","0000000000000000"]],false]
+  ]
+}
