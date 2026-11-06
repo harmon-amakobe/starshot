@@ -211,19 +211,22 @@ const MOONSHOT_COLUMNS = ["id", "windowStartIso", "windowDays", "defaultLaunchIs
 // Each campaign hint at the default budget and at 0, 1 and 2 simulations: the search order
 // and the budget as a count, a band's centre flown one over it included. Every campaign aim
 // hits on its first nudge, so Morning Star also asks for a Jupiter flyby it never makes: no
-// aim succeeds, and the nudge flies its own order up to the budget.
+// aim succeeds, and the nudge flies its own order up to the budget. First Light under a
+// speed cap of 2.9505 km/s, off the 0.001 grid, has its 2.982 km/s aim capped and floored.
 const HINT_COLUMNS = ["id", "maxSimulations", "day", "launchEt", "angleDeg", "speedKmS", "hits", "closestKm", "source",
-  "simulations", "requiredFlyby"];
-const HINT_CASES: Array<[Level, number | undefined, PlanetId | undefined]> = [
-  ...CAMPAIGN.flatMap((l) => [undefined, 0, 1, 2].map((n): [Level, number | undefined, undefined] => [l, n, undefined])),
-  [MORNING, 2, "jupiter"], [MORNING, 240, "jupiter"],
+  "simulations", "requiredFlyby", "vInfMaxKmS"];
+type HintCase = [Level, number | undefined, PlanetId | undefined, number | undefined];
+const HINT_CASES: HintCase[] = [
+  ...CAMPAIGN.flatMap((l) => [undefined, 0, 1, 2].map((n): HintCase => [l, n, undefined, undefined])),
+  [MORNING, 2, "jupiter", undefined], [MORNING, 240, "jupiter", undefined], [FIRST, 2, undefined, 2.9505],
 ];
-const hintRows = () => HINT_CASES.map(([l, maxSimulations, flyby]) => {
+const hintRows = () => HINT_CASES.map(([l, maxSimulations, flyby, cap]) => {
   const q = hintQueryFor(l);
-  const h = findHint(eph, { ...q, shot: { ...q.shot, requiredFlyby: flyby ?? q.shot.requiredFlyby }, maxSimulations })!;
+  const shot = { ...q.shot, requiredFlyby: flyby ?? q.shot.requiredFlyby };
+  const h = findHint(eph, { ...q, shot, vInfMaxKmS: cap ?? q.vInfMaxKmS, maxSimulations })!;
   const { angleDeg, speedKmS } = h.aim;
   return [l.id, maxSimulations ?? null, h.day, ...[h.launchEt, angleDeg, speedKmS].map(bits), h.hits, bits(h.closestKm),
-    h.source, h.simulations, flyby ?? null];
+    h.source, h.simulations, flyby ?? null, cap === undefined ? null : bits(cap)];
 });
 function levelsJson(): string {
   const rows = CAMPAIGN.map(levelRow);

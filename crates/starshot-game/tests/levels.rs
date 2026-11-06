@@ -8,17 +8,17 @@
 
 use serde_json::{Value, json};
 use starshot_ephemeris::BodyId::{self, Earth, Jupiter, Mars, Saturn};
-use starshot_ephemeris::time::SECONDS_PER_DAY as DAY;
+use starshot_ephemeris::time::{SECONDS_PER_DAY as DAY, TimeError};
 use starshot_ephemeris::vec::norm;
 use starshot_ephemeris::{Ephemeris, PLANET_IDS, Table1Ephemeris, Vec3};
 use starshot_game::LevelId::{self, BigGame, FirstLight, GrandTour, MorningStar, Sandbox};
 use starshot_game::{
     Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HINT_MAX_SIMULATIONS, HINT_STAR_CAP,
-    HintQuery, KnownShot, Level, LunarLevel, MISSION_ORDER, MOONSHOT, MissionId, SANDBOX_TARGETS,
-    SIM_SETTINGS, ScoringRules, ShotAnalysis, ShotError, ShotFacts, ShotRequest, analyze_shot,
-    days_between_iso, find_hint, framing_bodies, hint_query_for, launch_et_for_day, mission_number,
-    next_mission, sandbox_level, score_shot, shot_request_for, shot_template, simulate_shot,
-    v_inf_from_aim,
+    HintError, HintQuery, KnownShot, Level, LunarLevel, MISSION_ORDER, MOONSHOT, MissionId,
+    SANDBOX_TARGETS, SIM_SETTINGS, ScoringRules, ShotAnalysis, ShotError, ShotFacts, ShotRequest,
+    analyze_shot, days_between_iso, find_hint, framing_bodies, hint_query_for, launch_et_for_day,
+    mission_number, next_mission, sandbox_level, score_shot, shot_request_for, shot_template,
+    simulate_shot, v_inf_from_aim,
 };
 use starshot_physics::{LEO_RADIUS_KM, best_direct_transfer, delta_v_from_leo};
 
@@ -100,6 +100,10 @@ fn flight_times(level: &Level, step: u32) -> Vec<f64> {
 
 fn hex(x: f64) -> String {
     format!("{:016x}", x.to_bits())
+}
+
+fn from_hex(v: &Value) -> f64 {
+    f64::from_bits(u64::from_str_radix(v.as_str().expect("bits"), 16).expect("hex"))
 }
 
 fn name(body: BodyId) -> String {
@@ -321,10 +325,29 @@ fn the_hint_budget_is_a_simulation_count() {
 }
 
 #[test]
+fn a_hint_needs_a_transfer_and_a_curated_day_in_the_window() {
+    // Under 40 days of flight the Lambert grid has no flight time, so there is no hint.
+    let mut query = hint_query_for(by_id(FirstLight));
+    query.shot.max_flight_days = 30.0;
+    assert_eq!(find_hint(&EPH, &query), Ok(None));
+    // A curated launch before the window opens is no day of it, not day 0.
+    let early = KnownShot {
+        launch_iso: "1900-01-01",
+        ..GRAND_TOUR_HINT
+    };
+    let query = HintQuery {
+        curated: Some(early),
+        ..hint_query_for(by_id(GrandTour))
+    };
+    let refused = Err(HintError::Date(TimeError::Range));
+    assert_eq!(find_hint(&EPH, &query), refused);
+}
+
+#[test]
 fn every_hint_equals_the_typescript_hint_at_each_budget() {
     let file: Value = serde_json::from_str(LEVELS).expect("valid JSON");
     let rows = file["hints"].as_array().expect("hint rows");
-    assert_eq!(rows.len(), 18);
+    assert_eq!(rows.len(), 19);
     let mut worst = 0.0_f64;
     for row in rows {
         let level = CAMPAIGN.iter().find(|l| row[0] == l.id.as_str());
@@ -338,6 +361,10 @@ fn every_hint_equals_the_typescript_hint_at_each_budget() {
         if let Some(flyby) = row[10].as_str() {
             let planet = PLANET_IDS.into_iter().find(|&b| name(b) == flyby);
             query.shot.required_flyby = Some(planet.expect("a planet"));
+        }
+        // A speed cap off the 0.001 grid, so a capped aim is floored onto it.
+        if !row[11].is_null() {
+            query.v_inf_max_km_s = from_hex(&row[11]);
         }
         let h = find_hint(&EPH, &query).expect("valid").expect("a hint");
         let (a, s) = (h.aim.angle_deg, h.aim.speed_km_s);
@@ -361,8 +388,7 @@ fn every_hint_equals_the_typescript_hint_at_each_budget() {
             row[9]
         ]);
         assert_eq!(got, want);
-        let closest = row[7].as_str().expect("bits");
-        let closest = f64::from_bits(u64::from_str_radix(closest, 16).expect("hex"));
+        let closest = from_hex(&row[7]);
         // `f64::max` would drop a NaN gap; `<` fails it.
         let gap = (h.closest_km - closest).abs();
         assert!(gap < 1e-3, "{row}: {gap} km");
