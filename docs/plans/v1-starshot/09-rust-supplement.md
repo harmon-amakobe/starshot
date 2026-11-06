@@ -4,7 +4,7 @@ This file adds the lunar and current-path content that the Band B specs lack. It
 [the Band B specs](00-plan.md#band-b-the-rust-core-turnkey) and
 [the Rust proof boundaries](06-resumption.md#rust-and-later-proof-boundaries). It cites their criteria and proof
 commands by line and lists only what it adds. The specs predate D33 and D38, so their requests and file maps are
-planetary and TypeScript-only (00-plan.md:781-788). Citations were drafted at fdd6810 and re-read at daa1d8c, the PR7
+planetary and TypeScript-only (00-plan.md:782-789). Citations were drafted at fdd6810 and re-read at daa1d8c, the PR7
 group's tip, with this checkpoint's edits to `AGENTS.md`, `docs/README.md` and `06-resumption.md`; re-locate each by
 symbol before building. Where a spec row and this file
 disagree on lunar or current-path content, this file applies once the plan approves its row. That includes the `hermite`
@@ -31,8 +31,8 @@ Other prototype paths are written in full.
   `starshot-ephemeris`, `starshot-physics`, `starshot-game` or wasm crate, `packages/core-wasm/` or
   `fixtures/conformance/` exists yet (`ls`); PR9 to PR15 add them in order (G1).
 - The TypeScript oracle is `npx vitest run packages apps/game apps/prototype/src/lunar/flight.test.ts`
-  (06-resumption.md:121). It stays green until PR17's last commit deletes the package tests (00-plan.md:1686). After it,
-  the oracle is the frozen `fixtures/conformance/*.json` that the Rust tests read (00-plan.md:1261), with
+  (06-resumption.md:121). It stays green until PR17's last commit deletes the package tests (00-plan.md:1687). After it,
+  the oracle is the frozen `fixtures/conformance/*.json` that the Rust tests read (00-plan.md:1262), with
   `npx vitest run` on the core.
 - Each Rust row below lists every assertion in its cited range, with the same bound or a tighter one.
   `toBeCloseTo(x, d)` passes when the difference is under 10^-d / 2.
@@ -47,25 +47,25 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
 
 | TypeScript today | Rust home | PR |
 |---|---|---|
-| `packages/physics/src/hermite.ts:3-36` `Knot`, `hermite` | `starshot-ephemeris/src/hermite.rs`. PR11's `starshot-physics/src/hermite.rs` (00-plan.md:1066) re-exports it; no second copy (G6) | PR10 |
+| `packages/physics/src/hermite.ts:3-36` `Knot`, `hermite` | `starshot-ephemeris/src/hermite.rs`. PR11's `starshot-physics/src/hermite.rs` (00-plan.md:1067) re-exports it; no second copy (G6) | PR10 |
 | `model.ts:6-7`, `:13`, the constants `LunarModel` reads | `starshot_ephemeris::lunar`: `EARTH_GM` = 398600.43550702266, `MOON_GM` = 4902.8001184575496, `LAUNCH_ET` = 846853269.184 | PR10 |
 | `model.ts:15-51` `RailData`, `Basis`, `LunarModel` | `starshot_ephemeris::lunar`: `Basis`, `RailError`, `LunarModel::new(knots: &[f64]) -> Result<LunarModel, RailError>`, `relative`, `bodies`, `basis` | PR10 |
 | `model.ts:4`, `:8-12`, the other constants | `starshot_physics::lunar` in `lunar/mod.rs`: `DAY`, `EARTH_RADIUS` = 6371, `MOON_RADIUS`, `FUEL_BUDGET` = 3.55, and `MOON_SOI_KM` as `f64::from_bits(0x40f0286ec632c31c)`, 66182.9233882543 km (node at fdd6810), since `starshot_math::pow` is a plain `pub fn` (`crates/starshot-math/src/lib.rs:26`, `:61`); `LunarError` | PR11 |
 | `parking.ts:5-24` | `starshot_physics::lunar::parking`: `ParkingOrbit { frame_et: Option<f64>, epoch_et, phase_deg, radius_km }`, `parking_period`, `parking_phase`, `parking_state` | PR11 |
-| `flight.ts:7-33` | `starshot_physics::lunar::flight`: `LunarSettings`, `SETTINGS` (`flight.ts:8`; the PR3a row's `LUNAR_SIM_SETTINGS` at 00-plan.md:602 is stale), `LunarRequest` (the game's alias, `sim/flight-request.ts:2`), `request_for` | PR12 |
+| `flight.ts:7-33` | `starshot_physics::lunar::flight`: `LunarSettings`, `SETTINGS` (`flight.ts:8`; the PR3a row's `LUNAR_SIM_SETTINGS` at 00-plan.md:603 is stale), `LunarRequest` (the game's alias, `sim/flight-request.ts:2`), `request_for` | PR12 |
 | `flight.ts:34-142` | Same module: `LunarFlight`, `LunarImpact { Earth, Moon }`, `sample_flight`, `simulate_lunar -> Result<LunarFlight, LunarError>` | PR12 |
 | `sim/flight-request.ts:7-27`, `sim/lunar-request.ts:6-11`, `sim/lunar.ts:9-30` | `starshot_game::lunar`: `LunarShotRequest`, `FlightRequest { Planetary, Lunar }`, `LunarResult`, `LunarHintQuery`, `lunar_request`, `run_lunar`, `lunar_hint` | PR13 |
 | `sim/lunar-hint.ts:14-116` | `starshot_game::lunar_hint`: `Route`, `LUNAR_SEARCH_BUDGET` = 240, `LUNAR_GRID` = `moon-grid/1`, `by_cost`, `seeds_of`, `refinement_of`, `LunarSearch` (one flight per step, G12), `find_lunar_hint` | PR14 |
-| `apps/game/src/missions.ts:5-29`, physics fields only | `starshot_game::levels`: `MissionId`, `LunarLevel` with window, default launch, target, maximum flight days, burn cap, attractors, settings and par burn; mission order; `next_mission`. Number, title, blurb and par source text stay in TypeScript (00-plan.md:1147-1148) | PR14 |
+| `apps/game/src/missions.ts:5-29`, physics fields only | `starshot_game::levels`: `MissionId`, `LunarLevel` with window, default launch, target, maximum flight days, burn cap, attractors, settings and par burn; mission order; `next_mission`. Number, title, blurb and par source text stay in TypeScript (00-plan.md:1148-1149) | PR14 |
 | `packages/ephemeris/data/moon-rail.json` | Stays in place until PR17's first commit moves it to `packages/core-wasm/data/moon-rail.json` (G4, D43) | PR17 |
 
 - `LunarModel` owns a `Table1Ephemeris { flatten: false }`, as `model.ts:19` does. The game worker's planetary ephemeris
-  is flattened (`sim/sim.worker.ts:11`), so `Core::new_table1(flatten)` (00-plan.md:1178) never selects the lunar mode.
+  is flattened (`sim/sim.worker.ts:11`), so `Core::new_table1(flatten)` (00-plan.md:1179) never selects the lunar mode.
 - At run time the core takes the rail as its flat knot array, 7 numbers per knot (`model.ts:23-29`), from the lazy
   loader. The wasm never embeds the rail, which stays out of the entry graph (docs/README.md:70); PR15 forbids serde in
-  the wasm (00-plan.md:1206).
-- Rust tests read the rail with `include_str!` and the dev-only `serde_json` (00-plan.md:1003) from its home, not from
-  `fixtures/` (00-plan.md:799-800): the game ships it, and a copy would be a second source. Log it (G8).
+  the wasm (00-plan.md:1207).
+- Rust tests read the rail with `include_str!` and the dev-only `serde_json` (00-plan.md:1004) from its home, not from
+  `fixtures/` (00-plan.md:800-801): the game ships it, and a copy would be a second source. Log it (G8).
 - Errors keep their text and class. `RailError::OutsideDates` is "Outside the lunar rail dates" (`model.ts:25`).
   `LunarError` carries the `RangeError` text at `parking.ts:19` and the `Error` texts at `flight.ts:49`, `:98` and
   `:128`.
@@ -91,25 +91,25 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
 - The captured state is the whole `LunarShotRequest`: launch ET, parking orbit, burn speed and angle, duration, approach
   radius, scope, settings and the stop flag (`flight.ts:10-18`, `sim/flight-request.ts:7-12`). Every field crosses the
   ABI as f64 bits; nothing is rebuilt from a day or a phase. Golden files store t and all six r and v components as
-  16-hex-digit bits, as the PR15 replays do (00-plan.md:1180).
+  16-hex-digit bits, as the PR15 replays do (00-plan.md:1181).
 - A lunar launch is any f64 ET. The game flies `LAUNCH_ET + 8.004` s and `+ 321` s (`campaign/lunar.test.ts:115`,
   `:124`), so lunar Rust types carry `launch_et: f64`. UTC enters through `et_from_iso` and leaves through
-  `unix_ms_from_et` (00-plan.md:999). The lunar replay carries the launch ET as exact bits (D43).
+  `unix_ms_from_et` (00-plan.md:1000). The lunar replay carries the launch ET as exact bits (D43).
 
 ### Pack budget and lunar probes
 
 - AC4 (00-plan.md:113) and D17 (docs/decisions.md:446) set the pack's 150 km budget, the geocentric Moon included. The
-  last decade file, `2140.bin`, ends 2150-01-01 TDB (00-plan.md:924-925, :961). The lunar path reads `moon-rail.json`
-  through PR17 (the ownership map row at :60); PR10 validates the pack's Moon and does not fly it (00-plan.md:1052). PR8's
+  last decade file, `2140.bin`, ends 2150-01-01 TDB (00-plan.md:925-926, :962). The lunar path reads `moon-rail.json`
+  through PR17 (the ownership map row at :60); PR10 validates the pack's Moon and does not fly it (00-plan.md:1053). PR8's
   reports pass, the largest Mars at 86.606 km and the Moon at 56.810 km (`data/ephem/de440s-100km/VALIDATION.md:12-20`).
   They bound position at sampled points only; the PR10 edge cases list what they miss.
 - Rust checks its reader against Horizons only at the five fixture epochs, JD 2443375.5 to 2469807.5, that is 1977-08-20
   to 2050-01-01 TDB (`horizons.json`), and `dense_table1` checks planet directions only up to 2050-01-01
-  (00-plan.md:1039). No Rust test reads the pack after that instant, or its Moon between fixture dates. PR10 adds
+  (00-plan.md:1040). No Rust test reads the pack after that instant, or its Moon between fixture dates. PR10 adds
   `fixtures/conformance/rails.json` (proposed), written by a `tools/ephem` command through `pack.read` and
-  `chebyshev.evaluate` (00-plan.md:949, :952). It holds all 9 bodies at every 73rd epoch of the 5-day grid, at each
+  `chebyshev.evaluate` (00-plan.md:950, :953). It holds all 9 bodies at every 73rd epoch of the 5-day grid, at each
   decade file's first instant and at the pack's last, plus the Moon every 5 days over the 2020 file. Each point follows
-  PR10's later-segment rule (00-plan.md:1043-1044). `tests/rails.rs` holds the Rust reader within 1 m of it.
+  PR10's later-segment rule (00-plan.md:1044-1045). `tests/rails.rs` holds the Rust reader within 1 m of it.
 - The rail, measured with node at fdd6810, has 713 knots from 2026-11-01T23:59:59Z to 2027-08-31T17:09:35.780Z UTC
   (about 3601 s before `LAUNCH_ET` to 302.673 days after) and 5 probes, in 95,110 bytes. Probes hold position under
   0.1 km and velocity under 1.1e-5 km/s (`lunar.test.ts:14-18`, `flight.test.ts:21-27`). The barycentre identity holds
@@ -125,7 +125,7 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
   aarch64 host, but no step checks it. `rust-arm64` starts with the step `test "$(uname -m)" = aarch64` and `checks`
   with `test "$(uname -m)" = x86_64`, so a wrong runner fails (proposed).
 - Bit identity is Rust against Rust across the four. Rust matches TypeScript bits only on arithmetic-only paths
-  (00-plan.md:795-797). The lunar path calls `Math.hypot` through `norm` (`vec.ts:8`), `Math.sin`, `Math.cos` and `**`
+  (00-plan.md:796-798). The lunar path calls `Math.hypot` through `norm` (`vec.ts:8`), `Math.sin`, `Math.cos` and `**`
   (`model.ts:11`, `:47-48`; `flight.ts:21-29`, `:53`, `:62`, `:67`; `parking.ts:12`). Those fields take the bounds
   stated with each golden table (G10).
 - A TypeScript `toEqual` or `toBe` on one engine becomes equal bits on each of the four. Lunar captured states join the
@@ -147,17 +147,17 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
 
 These are estimates, not measurements: the Rust lines are taken as twice the TypeScript each PR ports (`wc -l` at
 daa1d8c), plus tests. The cap is about 400 contentful lines per member spec (`.claude/rubrics/pr-review.md:56-58`); the
-600-line threshold is PR14's (00-plan.md:1144-1145).
+600-line threshold is PR14's (00-plan.md:1145-1146).
 
 | PR | Spec size | Lunar TypeScript ported | Estimate added | Past 600 added lines |
 |---|---|---|---|---|
-| PR10 | about 430 (00-plan.md:1028) | `packages/physics/src/hermite.ts` 36, `model.ts` 51 | about 250 | PR10b on top: `hermite.rs`, `lunar.rs`, `tests/lunar.rs`, the lunar generator |
-| PR11 | about 450 (00-plan.md:1057) | `parking.ts` 24 | about 120 | `parking.rs` and its cases move to PR12b |
-| PR12 | about 460 (00-plan.md:1089) | `flight.ts` 142 | about 450 | PR12b on top: `flight.rs`, its tests and `lunar.json` flight cases |
-| PR13 | about 430 (00-plan.md:1118) | `sim/lunar.ts` 30, `sim/lunar-request.ts` 11, `sim/flight-request.ts` 27 | about 250 | PR13b on top: game `lunar.rs`, its tests, `lunar-shots.json` |
-| PR14 | about 560 (00-plan.md:1143) | `sim/lunar-hint.ts` 116, `apps/game/src/missions.ts` 32 | about 450 | `lunar_hint.rs` and its tests join the spec's PR14b, or form a PR14c past 600. A group holds one to four specs (D30), so a fifth member moves to a group of its own in the table (00-plan.md:252-256), logged |
-| PR15 | about 520 (00-plan.md:1170) | none; lunar ABI slots and `Core` methods | about 250 | PR15b on top: the lunar slots, methods and replays |
-| PR16 | about 520 (00-plan.md:1214) | `sim/lunar-model.ts` 6, `sim/load-lunar-model.ts` 43, `campaign/lunar-readiness.ts` 74, `apps/prototype/src/lunar/worker.ts` 11 | about 200 | PR16b on top: the prototype and the PR16 seams |
+| PR10 | about 430 (00-plan.md:1029) | `packages/physics/src/hermite.ts` 36, `model.ts` 51 | about 250 | PR10b on top: `hermite.rs`, `lunar.rs`, `tests/lunar.rs`, the lunar generator |
+| PR11 | about 450 (00-plan.md:1058) | `parking.ts` 24 | about 120 | `parking.rs` and its cases move to PR12b |
+| PR12 | about 460 (00-plan.md:1090) | `flight.ts` 142 | about 450 | PR12b on top: `flight.rs`, its tests and `lunar.json` flight cases |
+| PR13 | about 430 (00-plan.md:1119) | `sim/lunar.ts` 30, `sim/lunar-request.ts` 11, `sim/flight-request.ts` 27 | about 250 | PR13b on top: game `lunar.rs`, its tests, `lunar-shots.json` |
+| PR14 | about 560 (00-plan.md:1144) | `sim/lunar-hint.ts` 116, `apps/game/src/missions.ts` 32 | about 450 | `lunar_hint.rs` and its tests join the spec's PR14b, or form a PR14c past 600. A group holds one to four specs (D30), so a fifth member moves to a group of its own in the table (00-plan.md:252-257), logged |
+| PR15 | about 520 (00-plan.md:1171) | none; lunar ABI slots and `Core` methods | about 250 | PR15b on top: the lunar slots, methods and replays |
+| PR16 | about 520 (00-plan.md:1215) | `sim/lunar-model.ts` 6, `sim/load-lunar-model.ts` 43, `campaign/lunar-readiness.ts` 74, `apps/prototype/src/lunar/worker.ts` 11 | about 200 | PR16b on top: the prototype and the PR16 seams |
 
 ### Readiness check in the issue
 
@@ -176,12 +176,12 @@ for PR9 (00-plan.md:166); the group base governs.
 ### Files and types
 
 - PR10 adds `src/hermite.rs` and `src/lunar.rs` from the map, wired in `src/lib.rs`. The crate still depends on
-  `starshot-math` alone (00-plan.md:1019).
+  `starshot-math` alone (00-plan.md:1020).
 - Each Earth constant keeps its digits in its own place: `EARTH_ONLY_GM` = 398600.435507
-  (`packages/physics/src/launch.ts:4`, 00-plan.md:1000); `lunar::EARTH_GM` = 398600.43550702266 (`model.ts:6`); the
+  (`packages/physics/src/launch.ts:4`, 00-plan.md:1001); `lunar::EARTH_GM` = 398600.43550702266 (`model.ts:6`); the
   Earth-Moon GM 403503.235502 and radius 6371.0084 in `BodyInfo` (`bodies.ts:28`); `lunar::EARTH_RADIUS` = 6371
   (`model.ts:8`). The ledger keeps the study digits apart (06-resumption.md:108).
-- Two Earth-Moon splits coexist. `RailEphemeris::earth_centre` uses the pack's EMRAT (00-plan.md:1037);
+- Two Earth-Moon splits coexist. `RailEphemeris::earth_centre` uses the pack's EMRAT (00-plan.md:1038);
   `LunarModel::bodies` uses `MOON_GM / (EARTH_GM + MOON_GM)` with the study digits (`model.ts:36`). Neither replaces the
   other in Band B.
 - Proposed: `vec::norm` is the square root of `x*x + y*y + z*z`, in that order, in place of `Math.hypot` (`vec.ts:8`).
@@ -190,7 +190,7 @@ for PR9 (00-plan.md:166); the group base governs.
 ### Lunar golden cases
 
 Fixture: `moon-rail.json`, plus `fixtures/conformance/lunar.json` from a new write-or-compare generator,
-`packages/physics/test/conformance-lunar.test.ts` (proposed; PR9's pattern and write flag, 00-plan.md:1009). PR10 writes
+`packages/physics/test/conformance-lunar.test.ts` (proposed; PR9's pattern and write flag, 00-plan.md:1010). PR10 writes
 model cases at `LAUNCH_ET`, `+ 321`, `+ 27 * DAY` and each probe ET. Fixed-frame and closure cases need `parking_state`,
 so they belong to PR11.
 
@@ -199,7 +199,7 @@ so they belong to PR11.
 | Probes | `lunar.test.ts:14-18`, `flight.test.ts:21-27` | All 5 probes: position under 0.1 km, velocity under 1.1e-5 km/s |
 | Barycentre | `lunar.test.ts:20-24`, `flight.test.ts:28-32` | At `LAUNCH_ET`, `+ 27 * DAY` and 101 ETs over 7 days: under 1e-6 km and 1e-12 km/s |
 | Relative state, sub-day | `lunar.test.ts:37`, `model.ts:22-31` | `relative` bits equal `lunar.json`: the search and Hermite are arithmetic only (`packages/physics/src/hermite.ts:10-36`) |
-| Bodies | `model.ts:32-42` | Within PR9's Table 1 bounds of `lunar.json`, 1 m and 1 mm/s (00-plan.md:1008), since the barycentre comes through Table 1 |
+| Bodies | `model.ts:32-42` | Within PR9's Table 1 bounds of `lunar.json`, 1 m and 1 mm/s (00-plan.md:1009), since the barycentre comes through Table 1 |
 | Fixed basis | `model.ts:43-50` | `basis(LAUNCH_ET, 225.0)` matches `lunar.json`, each unit-vector component within 1e-15 (proposed); the defaults are exactly `LAUNCH_ET` and 225 |
 | Moon moves with the date | `lunar.test.ts:42` | Relative position moves over 100,000 km in 8 days |
 | Rail edge | `lunar.test.ts:54-57`, `flight.test.ts:33` | Before the first knot or after the last: `RailError::OutsideDates` |
@@ -209,16 +209,16 @@ so they belong to PR11.
 - `etFromIso` appends Z unless the text contains z or Z, ends in a `+` or `-` offset written `hh:mm` or `hhmm`, or has
   10 characters or fewer (`time.ts:55-56`). In node at fdd6810 it reads `2026-11-02T01:00:00` and `2026-11-02T01:00` as
   UTC, takes both offset forms, and parses `Nov 2 2026`, which `Date` reads per engine and time zone. PR9 names two
-  forms (00-plan.md:999) yet asks for exactly the forms `etFromIso` accepts (:1013). The two disagree (G17).
+  forms (00-plan.md:1000) yet asks for exactly the forms `etFromIso` accepts (:1014). The two disagree (G17).
 - `dateFromEt` uses `Math.round`, ties toward plus infinity (`time.ts:48`). Port it as `floor(x)`, plus one when
   `x - floor(x) >= 0.5`: `f64::round` sends -2.5 to -3, and `floor(x + 0.5)` sends 0.49999999999999994 to 1. Pre-1970
-  milliseconds are negative, and the time test starts at 1800 (00-plan.md:1006).
+  milliseconds are negative, and the time test starts at 1800 (00-plan.md:1007).
 - `relative` throws only below the first knot or above the last (`model.ts:25`), so NaN passes in TypeScript. Rust
   rejects NaN; log it. An interior knot ET takes the later segment (`model.ts:26`), as PR10's boundary rule does
-  (00-plan.md:1043-1044).
+  (00-plan.md:1044-1045).
 - `LunarModel::new` rejects a length that is not a multiple of 7, fewer than 2 knots, a non-finite value or a
   non-increasing t. TypeScript checks none of these (`model.ts:21`); log it. The lunar model never reads the pack, whose
-  Moon panics outside coverage (00-plan.md:1037).
+  Moon panics outside coverage (00-plan.md:1038).
 - PR8's reports bound position at sampled points, and nothing bounds velocity (PR8 physics audit, 06-resumption.md:227).
   Segment edges jump up to 96.8 km (Jupiter) and 36.7 km (Moon); the Moon reaches 60.24 km on a 1-minute grid against
   56.81 km reported; differentiated fit errors reach 6.36e-3 km/s for the Moon. PR10 sets a velocity budget for the
@@ -232,7 +232,7 @@ The group builds on `codex/v1-pr10-lunar-model` in five declared parts and a rec
 ### Files and types
 
 - Planetary details the spec leaves open: Stumpff helpers are private (`packages/physics/src/lambert.ts:3`, `:9`);
-  `bestDirectTransfer` returns null when nothing solves (`lambert.ts:92`); the "0.02 d" cap (00-plan.md:1105) is
+  `bestDirectTransfer` returns null when nothing solves (`lambert.ts:92`); the "0.02 d" cap (00-plan.md:1106) is
   `0.02 * d / max(speed, 1e-3)` (`packages/physics/src/simulate.ts:159`).
 - One `StepTolerance { rtol, atol_pos, atol_vel }` (`packages/physics/src/dopri5.ts:18-25`) serves both paths: planetary
   steps derive it from `atolKm` (`simulate.ts:120`), lunar settings set it (`flight.ts:7-9`).
@@ -247,10 +247,10 @@ The group builds on `codex/v1-pr10-lunar-model` in five declared parts and a rec
 
 Fixture: `fixtures/conformance/lunar.json`. PR11 adds parking and departure cases; PR12 adds flights with `entryEt`,
 `impact`, `closestKm`, `closestEt`, `endEt`, `steps`, sample 0 and the last sample. Bounds against the file (proposed):
-parking and departure states within PR9's Table 1 bounds, 1 m and 1 mm/s (00-plan.md:1008), since Earth's centre comes
-through Table 1. Flights keep `impact`, whether `entryEt` is null, and `steps` equal (00-plan.md:1110-1111). They hold
+parking and departure states within PR9's Table 1 bounds, 1 m and 1 mm/s (00-plan.md:1009), since Earth's centre comes
+through Table 1. Flights keep `impact`, whether `entryEt` is null, and `steps` equal (00-plan.md:1111-1112). They hold
 `entryEt`, `closestEt` and `endEt` within 0.01 s (as `flight.test.ts:53` does), and `closestKm` and the last position
-within 1 km (00-plan.md:1099).
+within 1 km (00-plan.md:1100).
 
 | Case | TypeScript source | Rust assertion |
 |---|---|---|
@@ -279,20 +279,20 @@ within 1 km (00-plan.md:1099).
 - The check at `launchEt + durationSeconds` (`flight.ts:51`) and the parking state at launch bound every later rail
   read.
 - A flight on the pack crosses segment edges that jump up to 96.8 km (PR10 edge cases). PR12 decided that the
-  integrator does not stop at segment edges (deviation row 105); Band B flies no pack (00-plan.md:1052), so the rule binds PR18.
+  integrator does not stop at segment edges (deviation row 105); Band B flies no pack (00-plan.md:1053), so the rule binds PR18.
 
 ## PR13 and PR14: game crate with the lunar variant
 
-The group builds on `codex/v1-pr12-records` in five declared parts (00-plan.md:252-256, deviation row 116).
+The group builds on `codex/v1-pr12-records` in six declared parts (00-plan.md:252-257, deviation row 116).
 
 ### Files and types
 
-- Planetary files as specified (00-plan.md:1124-1131, :1152-1157). PR13 adds `starshot-game/src/lunar.rs`; PR14 adds
+- Planetary files as specified (00-plan.md:1125-1132, :1153-1158). PR13 adds `starshot-game/src/lunar.rs`; PR14 adds
   `src/lunar_hint.rs` and the mission rows in `levels.rs`.
 - `LevelId` omits Moonshot (`apps/game/src/levels.ts:18`) and `MissionId` adds it (`apps/game/src/missions.ts:12`). Rust
-  keeps both; the PR3a line "LevelId gains moonshot" (00-plan.md:607) is stale.
+  keeps both; the PR3a line "LevelId gains moonshot" (00-plan.md:608) is stale.
 - `settings.rs` adds `pub mod lunar { pub use starshot_physics::lunar::flight::SETTINGS; }` beside `SIM_SETTINGS` and
-  `OUTER_SIM_SETTINGS` (00-plan.md:1124). Frozen settings then come from one module (D6) under their TypeScript names.
+  `OUTER_SIM_SETTINGS` (00-plan.md:1125). Frozen settings then come from one module (D6) under their TypeScript names.
   The value stays in physics, as in TypeScript (`flight.ts:8-9`, `apps/game/src/missions.ts:21`).
 - `run_lunar` fills `ShotAnalysis` as `sim/lunar.ts:9-23` does: a hit is SOI entry, closest is the two-body periapsis
   about the Moon, bullseye is a periapsis under 10 Moon radii (`:22`), and `delta_v_kms` is the raw burn (`:23`).
@@ -303,7 +303,7 @@ The group builds on `codex/v1-pr12-records` in five declared parts (00-plan.md:2
 ### Lunar golden cases
 
 Fixture: `fixtures/conformance/lunar-shots.json`, from a lunar section (proposed) in PR13's generator
-`apps/game/src/sim/conformance.test.ts` (00-plan.md:1131). Each entry stores its request and analysis as bits, plus the
+`apps/game/src/sim/conformance.test.ts` (00-plan.md:1132). Each entry stores its request and analysis as bits, plus the
 bits of sample 0 and the final sample. Request fields are copies, exact arithmetic or the pinned `MOON_SOI_KM`, so they
 match bit for bit; only a local shot's `durationSeconds` comes through `sqrt` and `**` (`flight.ts:29`) and holds within
 1e-9 relative, with `scope` equal. Analysis flags are equal; times and distances take PR12's flight bounds.
@@ -340,20 +340,20 @@ match bit for bit; only a local shot's `durationSeconds` comes through `sqrt` an
 
 ## PR15 to PR17: core-wasm, cut-over and retirement
 
-PR15 builds on `codex/v1-pr14-hints`; PR16 and PR17 build on `codex/v1-pr15-core-wasm` (00-plan.md:257-258).
+PR15 builds on `codex/v1-pr14-hints`; PR16 and PR17 build on `codex/v1-pr15-core-wasm` (00-plan.md:258-259).
 
 ### Files and types
 
 - PR15: `abi.rs` and `abi.ts` gain a slot for each field of `flight.ts:10-18` and `sim/flight-request.ts:7-27`. `Core`
   gains `load_moon_rail(knots: &[f64])`, `simulate_lunar`, `lunar_search_new`, `lunar_search_step`, `lunar_bodies`,
   `parking_state` and `lunar_basis`; the scene draws with the basis (`campaign/world.ts:23`). All proposed.
-- PR15: the root `package.json` row (00-plan.md:1189) also makes `build:prototype` and `dev:prototype`
+- PR15: the root `package.json` row (00-plan.md:1190) also makes `build:prototype` and `dev:prototype`
   (`package.json:27-28`) build `@starshot/core-wasm` first.
 - PR16: the game worker keeps its protocol and lazy imports (`sim/worker-handler.ts:36`, `:44`). The search steps one
   flight per macrotask through `LunarSearch` (`sim/worker-handler.ts:17-30`, `:47-50`).
 - PR16: `sim/lunar-model.ts` stays the one rail importer and the Moon chunk facade (`apps/game/vite.config.ts:10-19`)
   and hands the knots to the core; the guard at `sim/lunar-request.test.ts:70-71` follows the new call. The scene draws
-  through the core (`campaign/world.ts:18-26`) in place of the `ui/GameScreen.tsx` row (00-plan.md:1226).
+  through the core (`campaign/world.ts:18-26`) in place of the `ui/GameScreen.tsx` row (00-plan.md:1227).
 - PR16 seams (proposed). `LunarModel` stays a TypeScript class over the core: `relative`, the barycentre, `basis` and
   `parkingState` come from the core, and `bodies` keeps its arithmetic on `this.relative`. The subclass at
   `campaign/lunar.test.ts:220-226` then still moves the drawn Moon, and frames still take `null` (`:258-274`).
@@ -363,9 +363,9 @@ PR15 builds on `codex/v1-pr14-hints`; PR16 and PR17 build on `codex/v1-pr15-core
   (`apps/prototype/src/lunar/worker.ts:4-11`) move to the core. The worker keeps its `{ id, flight }` or `{ id, error }`
   reply (`apps/prototype/src/use-flight.ts:28-29`) (G14).
 - PR16: `apps/game/release-build.ts:22-23` precaches every output file but `.map`, `sw.js` and `release.json`, so the
-  `.wasm` may need no `sw.js` edit (00-plan.md:1232 asks for one); confirm on a build and log it.
+  `.wasm` may need no `sw.js` edit (00-plan.md:1233 asks for one); confirm on a build and log it.
 - PR17: the first commit moves the rail to `packages/core-wasm/data/moon-rail.json` (G4, D43). It updates the 15 files outside `docs/` that name the
-  rail (`git grep -l moon-rail`) and the Rust `include_str!` paths. The table at 00-plan.md:1679-1699 gains two rows:
+  rail (`git grep -l moon-rail`) and the Rust `include_str!` paths. The table at 00-plan.md:1680-1700 gains two rows:
   `packages/physics/src/lunar/` to the crates, and the rail to its new home.
 - PR17: the files to update are the output of
   `git grep -l -e packages/ephemeris -e packages/physics -e @starshot/ephemeris -e @starshot/physics -- apps crates packages scripts tools`
@@ -377,19 +377,19 @@ PR15 builds on `codex/v1-pr14-hints`; PR16 and PR17 build on `codex/v1-pr15-core
   `LAUNCH_ET + 8.004`; a re-dated day-27 flight with `frameEt` `LAUNCH_ET` and `epochEt` its launch ET, as
   `sim/lunar-hint.ts:87` flies; the reference guide and the study zone hit. Each holds the request bits, `entryEt`,
   `impact`, `steps`, and the bits of sample 0 (the parking position and the post-burn velocity) and of the last sample.
-- `golden_replays.rs`, `bits.test.ts`, `bits-jsc.mjs` and the `rust-arm64` job read them (00-plan.md:1181, :1186-1187,
-  :1182). PR15 adds no new expectation; it proves the four runtimes agree on the cases PR10 to PR14 own.
+- `golden_replays.rs`, `bits.test.ts`, `bits-jsc.mjs` and the `rust-arm64` job read them (00-plan.md:1182, :1187-1188,
+  :1183). PR15 adds no new expectation; it proves the four runtimes agree on the cases PR10 to PR14 own.
 
 ### Edge cases
 
-- The ABI carries no strings beyond the catalogue and the version (00-plan.md:1197-1198). Lunar errors cross as codes,
+- The ABI carries no strings beyond the catalogue and the version (00-plan.md:1198-1199). Lunar errors cross as codes,
   and `abi.ts` maps each to its TypeScript class and text. Direct callers still get a `RangeError` where tests expect
   one (`sim/lunar-request.test.ts:91-92`, `sim/lunar-hint.test.ts:164`, `parking.ts:19`) and an `Error` elsewhere
   (`flight.ts:49`). The worker's error reply is unchanged (`sim/worker-handler.ts:64`).
 - A Moon request before the rail loads keeps today's answers: the prototype replies "Moon data is not ready"
   (`apps/prototype/src/lunar/worker.ts:8`), and the game holds the scene on its readiness reason
   (`campaign/lunar-readiness.ts:21-23`).
-- The rail never enters the wasm; the 64 KB gzip budget includes the lunar code (00-plan.md:1188). The PR16 settings
+- The rail never enters the wasm; the 64 KB gzip budget includes the lunar code (00-plan.md:1189). The PR16 settings
   grep needs scoping first (G16).
 
 ## Proof additions and readiness
@@ -398,30 +398,30 @@ Each row adds to its specs' proof lines, and is the readiness list the orchestra
 
 | Group | Adds to the spec proofs | Ready when |
 |---|---|---|
-| PR9, PR10 | To 00-plan.md:1016-1018 and :1046-1048: `cargo test -p starshot-ephemeris --locked --test lunar` (`tests/lunar.rs`, proposed), the `rails.json` check in `--test rails`, and the lunar generator in compare mode under `npx vitest run packages/ephemeris packages/physics` | Held at daa1d8c: `Cargo.toml` and `data/ephem/de440s-100km/pack.json` exist, and `horizons.json` has `geocentric.moon` and `heliocentric_extra.earth` (G9). The plan approves the PR10 map rows, `rails.json` and the PR10b rule (G6, G7). G8, G10 and G17 have answers. The plan states PR10's velocity budget, or that it has none (PR10 edge cases). The owner has ruled on G5, or the plan records that PR10 leaves the probes to the knot rail. Each PR10 case names its Rust test |
-| PR11, PR12 | To 00-plan.md:1078-1080 and :1107-1109: `--test lunar --test conformance_lunar` (proposed) and `npx vitest run apps/prototype/src/lunar/flight.test.ts` | The base has `starshot_ephemeris::lunar` and `hermite`; G10 and G11 have answers. The plan approves the PR11 and PR12 map rows, the flight bounds and the PR12b rule, and records whether the integrator stops at segment edges (PR12 edge cases). Each case names its Rust test and its `lunar.json` entry |
-| PR13, PR14 | To 00-plan.md:1133-1134 and :1159-1161: `--test lunar` for PR13 and `--test lunar_hint` for PR14 (proposed), with the generator in compare mode | The base has `LunarFlight` and `LunarError`; the owner has ruled on G2 and G3, or the lunar replay is deferred with a logged entry. The plan approves the PR13 and PR14 map rows, `LunarSearch` (G12), the `lunar-shots.json` case list and the split rules. Each case names its Rust test |
+| PR9, PR10 | To 00-plan.md:1017-1019 and :1047-1049: `cargo test -p starshot-ephemeris --locked --test lunar` (`tests/lunar.rs`, proposed), the `rails.json` check in `--test rails`, and the lunar generator in compare mode under `npx vitest run packages/ephemeris packages/physics` | Held at daa1d8c: `Cargo.toml` and `data/ephem/de440s-100km/pack.json` exist, and `horizons.json` has `geocentric.moon` and `heliocentric_extra.earth` (G9). The plan approves the PR10 map rows, `rails.json` and the PR10b rule (G6, G7). G8, G10 and G17 have answers. The plan states PR10's velocity budget, or that it has none (PR10 edge cases). The owner has ruled on G5, or the plan records that PR10 leaves the probes to the knot rail. Each PR10 case names its Rust test |
+| PR11, PR12 | To 00-plan.md:1079-1081 and :1108-1110: `--test lunar --test conformance_lunar` (proposed) and `npx vitest run apps/prototype/src/lunar/flight.test.ts` | The base has `starshot_ephemeris::lunar` and `hermite`; G10 and G11 have answers. The plan approves the PR11 and PR12 map rows, the flight bounds and the PR12b rule, and records whether the integrator stops at segment edges (PR12 edge cases). Each case names its Rust test and its `lunar.json` entry |
+| PR13, PR14 | To 00-plan.md:1134-1135 and :1160-1162: `--test lunar` for PR13 and `--test lunar_hint` for PR14 (proposed), with the generator in compare mode | The base has `LunarFlight` and `LunarError`; the owner has ruled on G2 and G3, or the lunar replay is deferred with a logged entry. The plan approves the PR13 and PR14 map rows, `LunarSearch` (G12), the `lunar-shots.json` case list and the split rules. Each case names its Rust test |
 | PR15 | The AC6 and AC9 commands (00-plan.md:115, :118) on x86_64 and in `rust-arm64`. Through PR17's last commit: the oracle, `npm run build`, `npm run build:prototype` and `node scripts/verify-lunar-loading.mjs --dist apps/game/dist` | Each lunar golden case has a Rust test in the base. Every field of `LunarShotRequest`, `ParkingOrbit`, `LunarSettings` and `LunarResult` has an ABI slot. The plan approves the lunar `Core` methods and the PR15b rule. G2, G3 and G12 are closed |
-| PR16, PR17 | To 00-plan.md:1239-1244 and :1269-1271, on the cut-over build: the four checks the PR15 row runs through PR17; `npx vitest run apps/prototype`; the three verifier runs at `.github/workflows/ci.yml:164-166`; and `node scripts/verify-game.mjs --steps scripts/verify-steps/lunar-<name>.mjs` for `flight`, `worker`, `loading`, `offline` and `evidence`, at the root and with `--base /starshot/`. CI's runs pass no `--steps` (`ci.yml:164-165`), and `scripts/verify-web-release.mjs` names no Moon, lunar or wasm (`grep -c`, 0) | The PR15 row holds. The plan approves the PR16 seams and the PR16b rule. G4 and G13 to G16 are closed |
+| PR16, PR17 | To 00-plan.md:1240-1245 and :1270-1272, on the cut-over build: the four checks the PR15 row runs through PR17; `npx vitest run apps/prototype`; the three verifier runs at `.github/workflows/ci.yml:164-166`; and `node scripts/verify-game.mjs --steps scripts/verify-steps/lunar-<name>.mjs` for `flight`, `worker`, `loading`, `offline` and `evidence`, at the root and with `--base /starshot/`. CI's runs pass no `--steps` (`ci.yml:164-165`), and `scripts/verify-web-release.mjs` names no Moon, lunar or wasm (`grep -c`, 0) | The PR15 row holds. The plan approves the PR16 seams and the PR16b rule. G4 and G13 to G16 are closed |
 
 ## Open gaps
 
 | # | Gap | Blocks |
 |---|---|---|
-| G1 | Narrowed. PR6 (00-plan.md:802), PR7 (:860) and PR8 (:900) are built in the stack (#100 to #102): the workspace, `starshot-math`, `tools/ephem`, the pack and both native Rust jobs exist (Starting point). Still open: no CI step checks the runner's architecture (Four-runtime bit identity, proposed) | PR15 |
-| G2 | D16 puts a launch day in replays (docs/decisions.md:422-423); `Replay.launch_day: u32` (00-plan.md:1128) cannot hold `LAUNCH_ET + 8.004` (`campaign/lunar.test.ts:115`). Only the owner can rule; a proposed shape is a lunar replay with `launch_et_bits: u64`. Answered by the owner (D43): a lunar replay with `launch_et_bits: u64` | PR13 lunar replay, PR15 lunar ABI, PR32 |
-| G3 | `physics_version` hashes `SimSettings` bytes and names `table1` or a pack (00-plan.md:1128). `LunarSettings` has six fields (`flight.ts:7`) and the rail is neither source. Proposed: hash `LunarSettings` and name `moon-rail/<sourceSha256>`. Ruled with G2. Answered by the owner (D43): as proposed | PR13, PR15 |
-| G4 | PR17 deletes `packages/ephemeris` (00-plan.md:1261), which holds and exports the rail (`packages/ephemeris/package.json:11`). D33 placed it there (docs/decisions.md:842) and D38 moves it "into packages" (:1023), so any home after PR17 departs from D33's wording: the owner rules. `data/ephem/` would not fit, since its README names `de440s.bsp` (00-plan.md:962) and the rail comes from the Horizons API (its `source` field). Proposed: `packages/core-wasm/data/moon-rail.json`, exported as `@starshot/core-wasm/moon-rail.json`. Answered by the owner (D43): as proposed | PR17 |
+| G1 | Narrowed. PR6 (00-plan.md:803), PR7 (:861) and PR8 (:901) are built in the stack (#100 to #102): the workspace, `starshot-math`, `tools/ephem`, the pack and both native Rust jobs exist (Starting point). Still open: no CI step checks the runner's architecture (Four-runtime bit identity, proposed) | PR15 |
+| G2 | D16 puts a launch day in replays (docs/decisions.md:422-423); `Replay.launch_day: u32` (00-plan.md:1129) cannot hold `LAUNCH_ET + 8.004` (`campaign/lunar.test.ts:115`). Only the owner can rule; a proposed shape is a lunar replay with `launch_et_bits: u64`. Answered by the owner (D43): a lunar replay with `launch_et_bits: u64` | PR13 lunar replay, PR15 lunar ABI, PR32 |
+| G3 | `physics_version` hashes `SimSettings` bytes and names `table1` or a pack (00-plan.md:1129). `LunarSettings` has six fields (`flight.ts:7`) and the rail is neither source. Proposed: hash `LunarSettings` and name `moon-rail/<sourceSha256>`. Ruled with G2. Answered by the owner (D43): as proposed | PR13, PR15 |
+| G4 | PR17 deletes `packages/ephemeris` (00-plan.md:1262), which holds and exports the rail (`packages/ephemeris/package.json:11`). D33 placed it there (docs/decisions.md:842) and D38 moves it "into packages" (:1023), so any home after PR17 departs from D33's wording: the owner rules. `data/ephem/` would not fit, since its README names `de440s.bsp` (00-plan.md:963) and the rail comes from the Horizons API (its `source` field). Proposed: `packages/core-wasm/data/moon-rail.json`, exported as `@starshot/core-wasm/moon-rail.json`. Answered by the owner (D43): as proposed | PR17 |
 | G5 | A 100 km Moon tier (docs/decisions.md:446) cannot pass the 0.1 km probes (`lunar.test.ts:17-18`), yet D33 says the rails replace the rail and keep its probes (docs/decisions.md:843). PR8's physics audit measured the pack's Moon (32-day segments, degree 15) at 1.412 to 44.126 km and 8.15e-5 to 8.68e-4 km/s from the five probes, against 0.1 km and 1.1e-5 km/s. Over 2026 to 2028 a 16-day degree-15 tier gives 0.028 km and 7.7e-6 km/s, and an 8-day degree-12 tier 0.017 km and 2.2e-7 km/s, about 76,776 bytes per decade for the Moon block. A finer tier, or keeping the knot rail, is the owner's decision (06-resumption.md:226). Until then PR10 leaves the probes to the knot rail: `LunarModel` reads `moon-rail.json`, and the pack's Moon is held to 150 km and 1e-2 km/s (deviation row 96). Answered by the owner (D43): an 8-day, degree-12 tier, built with PR18 (deviation row 115) | PR10 if the ruling changes the pack's Moon; PR18 otherwise |
-| G6 | PR11 defines `hermite` in physics (00-plan.md:1066), but PR10's `LunarModel::relative` needs it and the ephemeris crate cannot depend on physics (00-plan.md:1019). Answered: PR10 owns it in `starshot-ephemeris`, PR11 re-exports (deviation row 98) | PR11 |
+| G6 | PR11 defines `hermite` in physics (00-plan.md:1067), but PR10's `LunarModel::relative` needs it and the ephemeris crate cannot depend on physics (00-plan.md:1020). Answered: PR10 owns it in `starshot-ephemeris`, PR11 re-exports (deviation row 98) | PR11 |
 | G7 | No spec file table lists a lunar module. The ownership map is a proposal until the plan approves it. Answered for PR9 and PR10: the map's rows as built, with the additions in deviation row 99. Answered for PR11 and PR12: the map's rows as built, with the additions in deviation rows 102 and 108. Answered for PR13 and PR14: the map's rows as written (deviation row 117) | PR11 to PR16 |
-| G8 | Only `PackError::MixedBuilds` is named (00-plan.md:1035); FNV-1a 64 has no fixed test vector (:931), though the committed `pack.json` `build` value, which `pack.read` checks (`tools/ephem/src/ephem/pack.py:217-219`), can serve as one; the `include_bytes!` path to `data/ephem/de440s-100km/` and the rail's `include_str!` path are unstated while the rule names `fixtures/` (:799, :961). Answered in deviation rows 91 and 92 | None |
-| G9 | Closed at daa1d8c. PR7 added `geocentric.moon` (from 399) and `heliocentric_extra.earth` (from the Sun) at the five epochs (00-plan.md:875; `horizons.json:4-8`, `:562-563`, `:631-632`) | None |
-| G10 | Narrowed. The spec's golden `pow` exponents were -0.2, 0.4, 1.5 and 2/3 (00-plan.md:843); PR6 added 2 and 3 (05-deviation-log.md:74), 445 cases each in `fixtures/math/golden.json`, which the lunar path raises to (`flight.ts:23`, `:25`, `:29`, `:53`, `:62`, `:67`; `parking.ts:12`). `norm` is a three-argument `Math.hypot` (`vec.ts:8`) with no `libm` twin (06-resumption.md:223). Decide `pow(x, 3.0)` or `x * x * x`, and the `norm` formula; extend the golden set for `norm`. PR9 answered `norm`, and needs no golden entry since its operations are correctly rounded (deviation row 79). Answered for PR11 and PR12: `x ** 2` ports as `x * x`, and every other power goes through `starshot_math::pow`, held to a bound (deviation row 103) | PR11, PR12 |
+| G8 | Only `PackError::MixedBuilds` is named (00-plan.md:1036); FNV-1a 64 has no fixed test vector (:932), though the committed `pack.json` `build` value, which `pack.read` checks (`tools/ephem/src/ephem/pack.py:217-219`), can serve as one; the `include_bytes!` path to `data/ephem/de440s-100km/` and the rail's `include_str!` path are unstated while the rule names `fixtures/` (:800, :962). Answered in deviation rows 91 and 92 | None |
+| G9 | Closed at daa1d8c. PR7 added `geocentric.moon` (from 399) and `heliocentric_extra.earth` (from the Sun) at the five epochs (00-plan.md:876; `horizons.json:4-8`, `:562-563`, `:631-632`) | None |
+| G10 | Narrowed. The spec's golden `pow` exponents were -0.2, 0.4, 1.5 and 2/3 (00-plan.md:844); PR6 added 2 and 3 (05-deviation-log.md:74), 445 cases each in `fixtures/math/golden.json`, which the lunar path raises to (`flight.ts:23`, `:25`, `:29`, `:53`, `:62`, `:67`; `parking.ts:12`). `norm` is a three-argument `Math.hypot` (`vec.ts:8`) with no `libm` twin (06-resumption.md:223). Decide `pow(x, 3.0)` or `x * x * x`, and the `norm` formula; extend the golden set for `norm`. PR9 answered `norm`, and needs no golden entry since its operations are correctly rounded (deviation row 79). Answered for PR11 and PR12: `x ** 2` ports as `x * x`, and every other power goes through `starshot_math::pow`, held to a bound (deviation row 103) | PR11, PR12 |
 | G11 | No TypeScript test asserts a post-burn departure vector or a physics-level sub-day launch (`flight.ts:54-58`). The generator's case list must be fixed. Answered: the lunar golden-case table is the generator's case list (deviation row 104) | PR11, PR12 |
 | G12 | The worker yields between search flights (`sim/sim.worker.ts:14-17`) with a `MessageChannel` post since PR3b (`sim/worker-handler.ts:17-30`, `:47-50`). A full 236-flight search took 1,401 to 1,782 ms in headless Chromium, against 2,667 to 3,099 ms with the zero-delay timer (06-resumption.md:190, findings row 5). Wasm flight time is unmeasured, and one blocking call would hold the worker for all of it. Proposed `LunarSearch` stepper. Answered for PR14: the stepper as proposed (deviation row 117); its wasm timing stays with PR15 and PR16 | PR14, PR15, PR16 |
-| G13 | `git grep -l -E "@starshot/(ephemeris\|physics)"` finds 31 non-test files in `apps/game/src` (18 in `campaign/`, 10 in `sim/`), 14 in `apps/prototype`, and 63 in `apps` with tests. With `packages/(ephemeris\|physics)` paths too, 12 files under `scripts/`, `tools/` and `apps/prototype/tools/` match, 4 of them in `tools/ephem`. Helpers such as `BODIES`, `PLANET_IDS`, `dateFromEt`, `orbitPath`, `hermite`, `LAUNCH_ET` and `DAY` have no `Core` slot (00-plan.md:1178) | PR16, PR17 |
+| G13 | `git grep -l -E "@starshot/(ephemeris\|physics)"` finds 31 non-test files in `apps/game/src` (18 in `campaign/`, 10 in `sim/`), 14 in `apps/prototype`, and 63 in `apps` with tests. With `packages/(ephemeris\|physics)` paths too, 12 files under `scripts/`, `tools/` and `apps/prototype/tools/` match, 4 of them in `tools/ephem`. Helpers such as `BODIES`, `PLANET_IDS`, `dateFromEt`, `orbitPath`, `hermite`, `LAUNCH_ET` and `DAY` have no `Core` slot (00-plan.md:1179) | PR16, PR17 |
 | G14 | No spec line moves `apps/prototype` onto the core (`apps/prototype/src/lunar/worker.ts:4-11`, `apps/prototype/src/use-flight.ts:34-38`). Proposed in the PR16 rows above | PR16 |
-| G15 | PR16 maps `App.tsx`, `ui/GameScreen.tsx`, `ui/screen/` and `ui/TitleScreen.tsx` (00-plan.md:1226-1230), none of which exist: `apps/game/src/main.tsx:3` mounts `CampaignApp` (`campaign/CampaignApp.tsx:35`). The `LEVEL_COPY` split (00-plan.md:1224) has no campaign owner named | PR16 |
-| G16 | The PR16 check `git grep -n 'rtol:' -- apps` (00-plan.md:1246) prints 6 lines today, including the kept type field `apps/game/src/sim/shot.ts:35` and two tests (`apps/game/src/sim/preview.test.ts:32`, `flight.test.ts:52`), so "prints nothing" cannot hold as written | PR16 |
-| G17 | `et_from_iso` forms: 00-plan.md:999 names two, and :1013 asks for exactly what `etFromIso` accepts, which includes text `Date` parses per engine. Answered as proposed (deviation row 78) | None |
+| G15 | PR16 maps `App.tsx`, `ui/GameScreen.tsx`, `ui/screen/` and `ui/TitleScreen.tsx` (00-plan.md:1227-1231), none of which exist: `apps/game/src/main.tsx:3` mounts `CampaignApp` (`campaign/CampaignApp.tsx:35`). The `LEVEL_COPY` split (00-plan.md:1225) has no campaign owner named | PR16 |
+| G16 | The PR16 check `git grep -n 'rtol:' -- apps` (00-plan.md:1247) prints 6 lines today, including the kept type field `apps/game/src/sim/shot.ts:35` and two tests (`apps/game/src/sim/preview.test.ts:32`, `flight.test.ts:52`), so "prints nothing" cannot hold as written | PR16 |
+| G17 | `et_from_iso` forms: 00-plan.md:1000 names two, and :1014 asks for exactly what `etFromIso` accepts, which includes text `Date` parses per engine. Answered as proposed (deviation row 78) | None |

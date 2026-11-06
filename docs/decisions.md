@@ -1290,3 +1290,8 @@ package the game reads the core from. The 100 km Moon tier misses the probes by 
 **Consequences.** PR13 adds the lunar replay and its physics version. PR17 moves the rail.
 The new Moon tier is built where the pack is next rebuilt, with Band C's PR18, which first
 flies the pack; Band B keeps flying the knot rail (deviation row 115).
+
+**Note (2026-11-06): the owner's addition.** A lunar replay also stores the parking orbit's
+epoch ET and phase as exact bits. Pausing a Moon shot re-dates both, and the departure
+depends on them, so without them a paused shot could not be replayed. The format name stays
+`starshot.lunar-replay/1`, since no replay has shipped.
