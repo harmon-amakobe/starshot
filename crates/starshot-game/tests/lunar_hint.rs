@@ -354,3 +354,23 @@ fn sorts_seeds_and_refines_as_the_typescript_lists() {
     let want = burns.map(|burn| [-2500, -2000, -1500].map(|angle| r(5, burn, angle)));
     assert_eq!(refinement_of(r(5, 3240, -2000)), want.concat());
 }
+
+#[test]
+fn neither_strategy_flies_again_once_done() {
+    // The reference is done after its one flight, a search of two after its second; any
+    // later step must return the same answer without a flight, or the runner panics.
+    let model = model();
+    let real = |s: &LunarShotRequest| run_lunar(&model, s).map(|(_, a)| a);
+    let refused = |_: &LunarShotRequest| -> Result<ShotAnalysis, LunarError> {
+        panic!("a finished search flew")
+    };
+    for (q, flights) in [(query(None, None), 1), (search(Some(2.0)), 2)] {
+        let mut stepper = LunarSearch::new(&q).expect("valid");
+        for _ in 0..flights {
+            assert_eq!(stepper.step(real), Ok(LunarStep::Flew));
+        }
+        let done = stepper.step(refused).expect("done");
+        assert!(matches!(done, LunarStep::Done(Some(_))));
+        assert_eq!(stepper.step(refused), Ok(done));
+    }
+}
