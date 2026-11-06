@@ -359,7 +359,7 @@ epics:
           Canonical inputs carry exact bits (D16).
           Readiness, checked 2026-11-06 against the supplement's PR13 and PR14 row: the base has
           LunarFlight and LunarError (#113), G2 and G3 are answered (D43), and the lunar rows for
-          PR13 are approved (deviation row 117). Built as two declared parts (row 116).
+          PR13 are approved (deviation row 117). Built as three declared parts (row 116).
       - id: v1-game-levels
         title: "PR14: port levels, scoring and the hint search with every known solution"
         labels: [kind:level, area:levels, priority:p1, status:ready, agent-ready]

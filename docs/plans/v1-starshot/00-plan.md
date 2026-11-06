@@ -250,7 +250,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate-conformance` | B2 |
 | PR12 records | PR12 | `codex/v1-pr12-records` | `codex/v1-pr12-lunar-flight` | B2 |
 | PR13 shots | PR13 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-records` | B3 |
-| PR13 lunar shots | PR13 | `codex/v1-pr13-lunar-shots` | `codex/v1-pr13-game-crate` | B3 |
+| PR13 aim and replays | PR13 | `codex/v1-pr13-replays` | `codex/v1-pr13-game-crate` | B3 |
+| PR13 lunar shots | PR13 | `codex/v1-pr13-lunar-shots` | `codex/v1-pr13-replays` | B3 |
 | PR14 levels and scoring | PR14 | `codex/v1-pr14-levels` | `codex/v1-pr13-lunar-shots` | B3 |
 | PR14 hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-levels` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-hints` | B3 |
@@ -1113,7 +1114,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR13: Game crate, shots and replays
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records`, then `codex/v1-pr13-lunar-shots` (two parts in the PR groups table, :252-253).
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records`, then `codex/v1-pr13-replays` and `codex/v1-pr13-lunar-shots` (three parts in the PR groups table, :252-254).
   **Issue** `v1-game-shot`. **Decisions** D16, D6. **Size** about 430 lines, 11 files.
 - **Goal.** Port the shot model of `apps/game/src/sim/shot.ts` and add the replay format
   with canonical inputs and a physics version.
@@ -1138,7 +1139,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-hints` (two parts in the PR groups table, :254-255).
+- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-hints` (two parts in the PR groups table, :255-256).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.
