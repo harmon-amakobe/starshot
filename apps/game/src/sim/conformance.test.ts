@@ -1,12 +1,21 @@
-// Writes or checks the oracle for the game crate (PR13): fixtures/conformance/shots.json for
-// its shot model (crates/starshot-game/tests/conformance_shots.rs). Every request comes from
-// the game's own builders, shotRequestFor at launchEtForDay. With
-// STARSHOT_WRITE_CONFORMANCE=1 it writes the file; otherwise the file must equal this output
-// exactly.
+// Writes or checks the oracles for the game crate (PR13): fixtures/conformance/shots.json for
+// its shot model (crates/starshot-game/tests/conformance_shots.rs) and lunar-shots.json for
+// its Moon shot (crates/starshot-game/tests/lunar.rs). Every request comes from the game's
+// own builders: shotRequestFor at launchEtForDay for the planets, and for the Moon
+// finalRequest on a fresh session, as campaign/lunar.test.ts launches, and lunarRequest.
+// With STARSHOT_WRITE_CONFORMANCE=1 it writes the files; otherwise each must equal this
+// output exactly.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createEphemeris, type PlanetId, type Vec3 } from "@starshot/ephemeris";
+import rail from "@starshot/ephemeris/moon-rail.json";
+import { LAUNCH_ET, type ParkingOrbit } from "@starshot/physics/lunar";
+import { finalRequest } from "../campaign/contracts.js";
+import { freshSession } from "../campaign/session.js";
 import { CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, sandboxLevel, shotRequestFor, type Level } from "../levels.js";
+import type { LunarShotRequest } from "./flight-request.js";
+import { runLunar } from "./lunar.js";
+import { lunarRequest } from "./lunar-request.js";
 import { analyzeShot, daysBetweenIso, launchEtForDay, simulateShot, vInfFromAim, type ShotAnalysis } from "./shot.js";
 
 const WRITE = process.env.STARSHOT_WRITE_CONFORMANCE === "1";
@@ -108,8 +117,70 @@ function shotsJson(): string {
   ].join("\n");
 }
 
+// The Moon: the golden cases of 09-rust-supplement.md for PR13, launched as the campaign
+// launches (campaign/lunar.test.ts:29-34): a fresh Moonshot session at its default orbit,
+// moved on and paused for the sub-day cases.
+const LUNAR_SHOTS: ReadonlyArray<readonly [string, number, number]> = [
+  ["hit", 0, 0], ["miss", 20, 0], ["Earth impact", -20, 0], ["real-SOI graze", 17.33167459468716, 0],
+  ["sub-day launch", 0, 8.004], ["sub-day request", 0, 321],
+];
+const orbitBits = (o: ParkingOrbit) => [o.frameEt === undefined ? null : bits(o.frameEt), ...[o.epochEt, o.phaseDeg, o.radiusKm].map(bits)];
+// lunar.json's request columns, so both lunar fixtures read alike.
+const requestBits = (q: LunarShotRequest) => [
+  ...[q.launchEt, q.parkingRadiusKm, q.parkingPhaseDeg, q.deltaVKmS, q.burnAngleDeg, q.durationSeconds, q.approachRadiusKm].map(bits),
+  q.scope,
+  ...[q.settings.rtol, q.settings.atolPos, q.settings.atolVel, q.settings.maxStep, q.settings.maxSteps, q.settings.nearBodyFraction].map(bits),
+  orbitBits(q.parking),
+  q.stopAtEntry,
+];
+// lunarRequest's guard, which finalRequest's clamp keeps every player from reaching.
+const PARKING: ParkingOrbit = { frameEt: LAUNCH_ET, epochEt: LAUNCH_ET, phaseDeg: 225, radiusKm: 6571 };
+const ANGLES = [-35.001, -35, 35, 35.001, NaN];
+
+function lunarShotsJson(): string {
+  const rows = LUNAR_SHOTS.map(([name, angleDeg, after]) => {
+    const save = freshSession();
+    save.et += after;
+    save.paused = after > 0;
+    save.aim = { angleDeg, speedKmS: 3.24 };
+    const { aim, shot } = finalRequest(save);
+    if (!("kind" in shot)) throw new Error("expected the Moonshot");
+    const { result, analysis } = runLunar(shot);
+    const knot = (k: { t: number; r: readonly number[]; v: readonly number[] }) => [k.t, ...k.r, ...k.v].map(bits);
+    const inputs = [bits(shot.launchEt), bits(aim.angleDeg), bits(aim.speedKmS), orbitBits(shot.parking)];
+    return [name, ...inputs, requestBits(shot), analysisBits(analysis), result.steps, knot(result.samples[0]!), knot(result.samples.at(-1)!)];
+  });
+  const refusals = ANGLES.map((angleDeg) => {
+    try {
+      return [bits(angleDeg), requestBits(lunarRequest(LAUNCH_ET, { angleDeg, speedKmS: 3.24 }, PARKING)), null];
+    } catch (e) {
+      return [bits(angleDeg), null, (e as Error).message];
+    }
+  });
+  const list = (r: unknown[]) => r.map((row) => `    ${JSON.stringify(row)}`).join(",\n");
+  return [
+    "{",
+    '  "schema": "starshot.conformance-lunar-shots/1",',
+    `  "generator": "${GENERATOR}",`,
+    `  "rail": ${JSON.stringify({ sourceSha256: rail.sourceSha256 })},`,
+    '  "request_columns": ["launchEt", "parkingRadiusKm", "parkingPhaseDeg", "deltaVKmS", "burnAngleDeg", "durationSeconds",' +
+      ' "approachRadiusKm", "scope", "rtol", "atolPos", "atolVel", "maxStep", "maxSteps", "nearBodyFraction", "parking", "stopAtEntry"],',
+    `  "analysis_columns": ${JSON.stringify(ANALYSIS)},`,
+    '  "shot_columns": ["case", "launchEt", "angleDeg", "speedKmS", "parking", "request", "analysis", "steps", "first", "last"],',
+    '  "shots": [',
+    list(rows),
+    "  ],",
+    '  "refusal_columns": ["angleDeg", "request", "message"],',
+    '  "refusals": [',
+    list(refusals),
+    "  ]",
+    "}",
+    "",
+  ].join("\n");
+}
+
 describe("game shot conformance fixtures", () => {
-  const files: Array<[string, () => string]> = [["shots.json", shotsJson]];
+  const files: Array<[string, () => string]> = [["shots.json", shotsJson], ["lunar-shots.json", lunarShotsJson]];
   for (const [file, text] of files) {
     const out = new URL(`../../../../fixtures/conformance/${file}`, import.meta.url);
     it(WRITE ? `writes fixtures/conformance/${file}` : `equals fixtures/conformance/${file} exactly`, () => {
