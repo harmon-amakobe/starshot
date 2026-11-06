@@ -1,8 +1,9 @@
 //! The shot model against the TypeScript game's, through `fixtures/conformance/shots.json`
 //! (written by `apps/game/src/sim/conformance.test.ts`): 30 shots that the game's own
 //! builders made on every campaign level and the sandbox. Each request is read back from
-//! its bits and flown through `simulate_shot`, so a request setting the port dropped
-//! changes the flight. Every `ShotAnalysis` field is compared, and the step count: exactly,
+//! its bits and flown through `simulate_shot`, so a dropped `rtol`, `atol_km`, `max_step`
+//! or `stop_at_soi_of` changes the flight; every shot uses the default `max_steps`, which
+//! `tests/shot.rs` pins. Every `ShotAnalysis` field is compared, and the step count: exactly,
 //! except the numbers a flight moves and those through `pow` and `norm`, within the bounds
 //! below.
 
