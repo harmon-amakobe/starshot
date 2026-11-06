@@ -1,5 +1,7 @@
 //! The player's aim and the grid the controls set it on, as the aim section of
-//! `apps/game/src/sim/shot.ts`. Every trigonometric call goes through `starshot-math`.
+//! `apps/game/src/sim/shot.ts`. Every trigonometric call goes through `starshot-math`, so
+//! the results are libm's bits, up to 2 ulp from V8's: engines exchange an excess
+//! velocity's bits, never an aim (01-research.md:82-85).
 
 use starshot_ephemeris::Vec3;
 use starshot_math::{DEG, atan2, cos, hypot, sin};

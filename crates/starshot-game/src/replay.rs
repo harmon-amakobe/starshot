@@ -29,8 +29,10 @@ pub struct Replay {
 impl Replay {
     pub const FORMAT: &'static str = "starshot.replay/1";
 
-    /// Records `v_inf`'s x and y bits; its z is dropped, being 0 in the flat world (D6).
+    /// Records `v_inf`'s x and y bits. Panics on a nonzero z, which the flat world (D6) never
+    /// has, rather than drop it.
     pub fn new(level_id: &str, launch_day: u32, v_inf: Vec3, physics_version: String) -> Self {
+        assert!(v_inf[2] == 0.0, "a replay's excess velocity has z = 0");
         Replay {
             level_id: level_id.to_owned(),
             launch_day,
@@ -50,7 +52,7 @@ impl Replay {
 }
 
 /// A Moon shot as D43 replays it. A lunar launch is any ET, so the ET itself is stored:
-/// rebuilt from ISO text it would move by up to 112 ulp.
+/// rebuilt from ISO text it would move by up to 171 ulp (findings row 61).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LunarReplay {
     pub mission_id: String,

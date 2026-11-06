@@ -1,5 +1,6 @@
 //! The aim, its grid and the launch-day grid. Each expected value is what the TypeScript
-//! (`apps/game/src/sim/shot.ts`) returns on Node 22.
+//! (`apps/game/src/sim/shot.ts`) returns on Node 22, but for the refusals: Rust refuses
+//! dates that do not exist, partial dates and years outside 0 to 9999, which V8 rolls over.
 
 use starshot_ephemeris::time::{TimeError, et_from_iso};
 use starshot_game::{
@@ -68,6 +69,7 @@ fn aims_round_trip_through_the_excess_velocity() {
             let v = v_inf_from_aim(a);
             assert_eq!(v[2].to_bits(), 0);
             let back = aim_from_v_inf(v);
+            assert!((0.0..360.0).contains(&back.angle_deg), "{back:?}");
             assert_eq!(round_aim(back), a, "{a:?} came back as {back:?}");
             let turn = (back.angle_deg - a.angle_deg + 180.0).rem_euclid(360.0) - 180.0;
             assert!(
@@ -97,6 +99,8 @@ fn whole_days_are_counted_in_utc() {
     }
     assert_eq!(add_days_iso("2026-02-30", 0), Err(TimeError::Range));
     assert_eq!(add_days_iso("9999-12-31", 1), Err(TimeError::Range));
+    assert_eq!(add_days_iso("0001-01-01", -1), Ok("0000-12-31".to_owned()));
+    assert_eq!(add_days_iso("0000-01-01", -1), Err(TimeError::Range));
     assert_eq!(add_days_iso("2026-11", 0), Err(TimeError::Format));
     assert_eq!(add_days_iso("2026-11-05", i64::MAX), Err(TimeError::Range));
 
