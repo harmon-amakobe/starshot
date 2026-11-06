@@ -1,21 +1,23 @@
 //! The campaign levels, as `apps/game/src/levels.test.ts`: each level is solvable with the
 //! game's exact simulator settings, its par is real and reachable, First Light's training
-//! zone is three spheres wide, and the Grand Tour really needs Jupiter. Every level number
-//! is tied to `levels.ts` through `fixtures/conformance/levels.json` (D6). The hint cases
-//! join with the hint search; the cached-ephemeris case has no counterpart, since the core
-//! keeps no cache.
+//! zone is three spheres wide, and the Grand Tour really needs Jupiter. Every level,
+//! sandbox and mission number is tied to `levels.ts` and `missions.ts` through
+//! `fixtures/conformance/levels.json` (D6); `tests/sandbox.rs` holds the sandbox's own
+//! cases. The hint cases join with the hint search; the cached-ephemeris case has no
+//! counterpart, since the core keeps no cache.
 
 use serde_json::{Value, json};
 use starshot_ephemeris::BodyId::{self, Earth, Jupiter, Mars, Saturn};
 use starshot_ephemeris::time::SECONDS_PER_DAY as DAY;
 use starshot_ephemeris::vec::norm;
-use starshot_ephemeris::{Ephemeris, Table1Ephemeris, Vec3};
-use starshot_game::LevelId::{self, BigGame, FirstLight, GrandTour, MorningStar};
+use starshot_ephemeris::{Ephemeris, PLANET_IDS, Table1Ephemeris, Vec3};
+use starshot_game::LevelId::{self, BigGame, FirstLight, GrandTour, MorningStar, Sandbox};
 use starshot_game::{
-    Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HintQuery, KnownShot, Level, SIM_SETTINGS,
-    ScoringRules, ShotAnalysis, ShotError, ShotFacts, ShotRequest, analyze_shot, days_between_iso,
-    hint_query_for, launch_et_for_day, score_shot, shot_request_for, shot_template, simulate_shot,
-    v_inf_from_aim,
+    Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HintQuery, KnownShot, Level, LunarLevel,
+    MISSION_ORDER, MOONSHOT, MissionId, SANDBOX_TARGETS, SIM_SETTINGS, ScoringRules, ShotAnalysis,
+    ShotError, ShotFacts, ShotRequest, analyze_shot, days_between_iso, framing_bodies,
+    hint_query_for, launch_et_for_day, mission_number, next_mission, sandbox_level, score_shot,
+    shot_request_for, shot_template, simulate_shot, v_inf_from_aim,
 };
 use starshot_physics::{LEO_RADIUS_KM, best_direct_transfer, delta_v_from_leo};
 
@@ -144,6 +146,62 @@ fn every_level_number_equals_the_typescript_levels() {
     let got: Vec<Value> = CAMPAIGN.iter().map(level_row).collect();
     assert_eq!(Some(&got), file["levels"].as_array());
     assert_eq!(known_row(&GRAND_TOUR_PAR_SHOT), file["grand_tour_par_shot"]);
+}
+
+fn names(bodies: &[BodyId]) -> Vec<String> {
+    bodies.iter().map(|&b| name(b)).collect()
+}
+
+/// The Moonshot as the generator writes it, in its `moonshot_columns` order.
+fn moonshot_row(m: &LunarLevel) -> Value {
+    let s = m.sim;
+    let sim = [
+        s.rtol,
+        s.atol_pos,
+        s.atol_vel,
+        s.max_step,
+        f64::from(s.max_steps),
+        s.near_body_fraction,
+    ];
+    json!([
+        MissionId::Moonshot.as_str(),
+        m.window.start_iso,
+        m.window.days,
+        m.default_launch_iso,
+        name(m.target),
+        hex(m.max_flight_days),
+        hex(m.burn_cap_km_s),
+        names(m.attractors),
+        hex(m.par.delta_v_km_s),
+        hex(m.par_tolerance),
+        sim.map(hex),
+    ])
+}
+
+#[test]
+fn the_sandbox_missions_and_framing_equal_the_typescript() {
+    let file: Value = serde_json::from_str(LEVELS).expect("valid JSON");
+    assert_eq!(json!(names(&SANDBOX_TARGETS)), file["sandbox_targets"]);
+    let framing: Vec<Vec<String>> = CAMPAIGN.iter().map(|l| names(&framing_bodies(l))).collect();
+    assert_eq!(json!(framing), file["campaign_framing"]);
+    // Every planet on one day, Earth too, and each side of both clamps.
+    let rows = file["sandbox"].as_array().expect("sandbox rows");
+    assert_eq!(rows.len(), 13);
+    for row in rows {
+        let today = row[0].as_str().expect("a day");
+        let target = PLANET_IDS.into_iter().find(|&b| row[1][4] == name(b));
+        let level = sandbox_level(target.expect("a planet"), today).expect("a planet on a day");
+        assert_eq!(level_row(&level), row[1], "{today}");
+        assert_eq!(json!(names(&framing_bodies(&level))), row[2], "{today}");
+    }
+    let sandbox = MissionId::Level(Sandbox);
+    let missions = MISSION_ORDER.iter().chain([&sandbox]).map(|&id| {
+        let next = next_mission(id).map(|m| m.id().as_str());
+        json!([id.as_str(), mission_number(id), next])
+    });
+    let missions: Vec<Value> = missions.collect();
+    assert_eq!(Some(&missions), file["missions"].as_array());
+    assert_eq!(moonshot_row(&MOONSHOT), file["moonshot"]);
 }
 
 #[test]

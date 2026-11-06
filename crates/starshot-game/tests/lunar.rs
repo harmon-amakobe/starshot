@@ -13,7 +13,10 @@ use serde_json::{Value, json};
 use starshot_ephemeris::BodyId;
 use starshot_ephemeris::vec::{norm, sub};
 use starshot_game::settings::lunar::SETTINGS;
-use starshot_game::{Aim, LunarResult, LunarShotRequest, ShotAnalysis, lunar_request, run_lunar};
+use starshot_game::{
+    Aim, LunarReplay, LunarResult, LunarShotRequest, ShotAnalysis, lunar_physics_version,
+    lunar_replay_request, lunar_request, run_lunar,
+};
 use starshot_physics::Termination;
 use starshot_physics::lunar::{
     DAY, LAUNCH_ET, LunarModel, LunarRequest, LunarScope, MOON_RADIUS, MOON_SOI_KM, ParkingOrbit,
@@ -273,5 +276,21 @@ fn burns_beyond_35_degrees_are_refused_with_the_typescript_text() {
             }
             (got, want) => panic!("{angle_deg}: {got:?}, expected {want:?}"),
         }
+    }
+}
+
+#[test]
+fn every_moon_shot_replays_to_the_typescript_request() {
+    // A replay keeps the launch ET, the aim and the orbit's epoch and phase (D43); the plane
+    // and the radius it rebuilds must be the ones the game's sessions fly.
+    let version = lunar_physics_version(&SETTINGS);
+    for row in section("shots") {
+        let o = row[4].as_array().expect("an orbit");
+        let (launch, angle, speed) = (bits(&row[1]), bits(&row[2]), bits(&row[3]));
+        let (epoch, phase) = (bits(&o[1]), bits(&o[2]));
+        let v = version.clone();
+        let replay = LunarReplay::new("moonshot", launch, speed, angle, epoch, phase, v);
+        let shot = lunar_replay_request(&replay).expect("the Moonshot");
+        assert_eq!(encode_request(shot.request()), row[5], "{}", row[0]);
     }
 }

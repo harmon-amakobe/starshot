@@ -8,14 +8,16 @@
 // output exactly.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createEphemeris, type PlanetId, type Vec3 } from "@starshot/ephemeris";
+import { PLANET_IDS, createEphemeris, type PlanetId, type Vec3 } from "@starshot/ephemeris";
 import rail from "@starshot/ephemeris/moon-rail.json";
 import { LAUNCH_ET, type ParkingOrbit } from "@starshot/physics/lunar";
 import { finalRequest } from "../campaign/contracts.js";
 import { freshSession } from "../campaign/session.js";
 import {
-  CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, captureZoneScaleOf, parToleranceOf, sandboxLevel, shotRequestFor, type Level,
+  CAMPAIGN, DEFAULT_PAR_TOLERANCE, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, SANDBOX_TARGETS, captureZoneScaleOf, framingBodies,
+  parToleranceOf, sandboxLevel, shotRequestFor, type Level,
 } from "../levels.js";
+import { MISSION_ORDER, MOONSHOT, missionNumber, nextMission, type MissionId } from "../missions.js";
 import type { KnownShot } from "./hint.js";
 import type { LunarShotRequest } from "./flight-request.js";
 import { runLunar } from "./lunar.js";
@@ -45,6 +47,8 @@ const ANALYSIS = [
   "flybys", "requiredFlybyDone", "vInfKmS", "deltaVKmS", "c3", "beyondEphemerisRange",
 ] as const satisfies ReadonlyArray<keyof ShotAnalysis>;
 const analysisBits = (a: ShotAnalysis) => ANALYSIS.map((key) => encode(a[key]));
+// A fixture section's rows, one per line.
+const list = (r: unknown[]) => r.map((row) => `    ${JSON.stringify(row)}`).join(",\n");
 
 // The planets: 30 shots over every campaign level and the sandbox, hits and misses, a
 // training-zone hit, bullseyes, Jupiter flybys with and without a hit, an escape and a
@@ -164,7 +168,6 @@ function lunarShotsJson(): string {
       return [bits(angleDeg), null, (e as Error).message];
     }
   });
-  const list = (r: unknown[]) => r.map((row) => `    ${JSON.stringify(row)}`).join(",\n");
   return [
     "{",
     '  "schema": "starshot.conformance-lunar-shots/1",',
@@ -187,17 +190,36 @@ function lunarShotsJson(): string {
 }
 
 // The levels' physics fields with levels.ts's defaults filled in, as the Rust levels carry
-// them, so a number changed on one side alone fails the Rust tie (D6).
+// them, so a number changed on one side alone fails the Rust tie (D6). The sandbox rows
+// cover every planet on one day and each side of both date clamps, each with its framing.
 const LEVEL_COLUMNS = ["id", "windowStartIso", "windowDays", "defaultLaunchIso", "target", "maxFlightDays", "vInfMaxKmS",
   "attractors", "requiredFlyby", "parDeltaVKmS", "parTolerance", "captureZoneScale", "sim", "hint", "sandbox"];
 const knownBits = (k: KnownShot) => [k.launchIso, k.vInf.map(bits)];
+const levelRow = (l: Level) => [
+  l.id, l.window.startIso, l.window.days, l.defaultLaunchIso, l.target, bits(l.maxFlightDays), bits(l.vInfMaxKmS),
+  l.attractors, l.requiredFlyby ?? null, l.par ? bits(l.par.deltaVKmS) : null, bits(parToleranceOf(l)),
+  bits(captureZoneScaleOf(l)), [bits(l.sim.rtol), bits(l.sim.atolKm), bits(l.sim.maxStep), l.sim.maxSteps],
+  l.hint ? knownBits(l.hint) : null, l.sandbox ?? false,
+];
+const SANDBOX_DAYS: ReadonlyArray<readonly [PlanetId, string]> = [
+  ...PLANET_IDS.map((t) => [t, TODAY] as const),
+  ["mars", "2048-01-01"], ["mars", "2048-01-02"], ["mars", "2077-01-01"], ["neptune", "1800-01-01"], ["neptune", "1799-12-31"],
+];
+// The Moonshot's physics fields, its burn cap in the speed cap's slot and its six lunar settings as bits.
+const MOONSHOT_COLUMNS = ["id", "windowStartIso", "windowDays", "defaultLaunchIso", "target", "maxFlightDays", "vInfMaxKmS",
+  "attractors", "parDeltaVKmS", "parTolerance", "sim"];
 function levelsJson(): string {
-  const rows = CAMPAIGN.map((l) => [
-    l.id, l.window.startIso, l.window.days, l.defaultLaunchIso, l.target, bits(l.maxFlightDays), bits(l.vInfMaxKmS),
-    l.attractors, l.requiredFlyby ?? null, l.par ? bits(l.par.deltaVKmS) : null, bits(parToleranceOf(l)),
-    bits(captureZoneScaleOf(l)), [bits(l.sim.rtol), bits(l.sim.atolKm), bits(l.sim.maxStep), l.sim.maxSteps],
-    l.hint ? knownBits(l.hint) : null, l.sandbox ?? false,
-  ]);
+  const rows = CAMPAIGN.map(levelRow);
+  const sandboxRows = SANDBOX_DAYS.map(([target, iso]) => {
+    const l = sandbox(target, iso);
+    return [iso, levelRow(l), framingBodies(l)];
+  });
+  const ids: MissionId[] = [...MISSION_ORDER, "sandbox"];
+  const missions = ids.map((id) => [id, missionNumber(id), nextMission(id)?.id ?? null]);
+  const m = MOONSHOT, s = MOONSHOT.sim;
+  const moonshot = [m.id, m.window.startIso, m.window.days, m.defaultLaunchIso, m.target, bits(m.maxFlightDays),
+    bits(m.vInfMaxKmS), m.attractors, m.par ? bits(m.par.deltaVKmS) : null, bits(m.parTolerance ?? DEFAULT_PAR_TOLERANCE),
+    [s.rtol, s.atolPos, s.atolVel, s.maxStep, s.maxSteps, s.nearBodyFraction].map(bits)];
   return [
     "{",
     '  "schema": "starshot.conformance-levels/1",',
@@ -205,8 +227,18 @@ function levelsJson(): string {
     `  "grand_tour_par_shot": ${JSON.stringify(knownBits(GRAND_TOUR_PAR_SHOT))},`,
     `  "level_columns": ${JSON.stringify(LEVEL_COLUMNS)},`,
     '  "levels": [',
-    rows.map((row) => `    ${JSON.stringify(row)}`).join(",\n"),
-    "  ]",
+    list(rows),
+    "  ],",
+    `  "campaign_framing": ${JSON.stringify(CAMPAIGN.map(framingBodies))},`,
+    `  "sandbox_targets": ${JSON.stringify(SANDBOX_TARGETS)},`,
+    '  "sandbox_columns": ["today", "level", "framing"],',
+    '  "sandbox": [',
+    list(sandboxRows),
+    "  ],",
+    '  "mission_columns": ["id", "number", "next"],',
+    `  "missions": ${JSON.stringify(missions)},`,
+    `  "moonshot_columns": ${JSON.stringify(MOONSHOT_COLUMNS)},`,
+    `  "moonshot": ${JSON.stringify(moonshot)}`,
     "}",
     "",
   ].join("\n");
