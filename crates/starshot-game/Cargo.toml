@@ -1,0 +1,20 @@
+[package]
+name = "starshot-game"
+description = "Game rules: the shot model and its frozen settings (D16, D6)"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+starshot-ephemeris = { path = "../starshot-ephemeris" }
+starshot-math = { path = "../starshot-math" }
+starshot-physics = { path = "../starshot-physics" }
+
+# The tests read fixtures/conformance/simulate.json, which ties the frozen settings to the
+# TypeScript game's (D6).
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true
