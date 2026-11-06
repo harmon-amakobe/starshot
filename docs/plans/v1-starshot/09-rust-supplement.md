@@ -340,7 +340,7 @@ match bit for bit; only a local shot's `durationSeconds` comes through `sqrt` an
 
 ## PR15 to PR17: core-wasm, cut-over and retirement
 
-PR15 builds on `codex/v1-pr14-hints`; PR16 and PR17 build on `codex/v1-pr15-core-wasm` (00-plan.md:262-263).
+PR15 builds on `codex/v1-pr14-records`; PR16 and PR17 build on `codex/v1-pr15-core-wasm` (00-plan.md:262-263).
 
 ### Files and types
 
