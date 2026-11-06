@@ -2,11 +2,12 @@
 //! `lunar.ts`: the request the game builds from constants alone, and the flight it flies
 //! and scores. A Moon shot leaves from the game's parking orbit and stops at the first
 //! entry into the Moon's real sphere of influence, which is the hit.
-//!
-//! The reference guide (`lunarHint`) and its query wait for the hint part (PR14), which
-//! owns the `Hint` they return.
+//! The Moon guide's query and its measured reference (`lunarHint`) live here too; the
+//! bounded search is `lunar_hint.rs`.
 
 use crate::aim::Aim;
+use crate::hint::Hint;
+use crate::lunar_hint::{LunarHintError, reference_hint};
 use crate::settings::lunar::SETTINGS;
 use crate::shot::{BULLSEYE_RADII, ShotAnalysis, ShotRequest, periapsis_km};
 use core::fmt;
@@ -168,4 +169,23 @@ pub fn run_lunar(
         terminated_by,
     };
     Ok((result, analysis))
+}
+
+/// A Moon guide request, as `LunarHintQuery`: no strategy means the measured reference,
+/// and no budget 240 simulations. The fields hold a message's values as sent, so
+/// `LunarSearch::new` refuses a malformed one before any flight instead of a type
+/// dropping it.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct LunarHintQuery<'a> {
+    /// `reference` or `search`.
+    pub strategy: Option<&'a str>,
+    /// An integer from 0 to 240.
+    pub budget: Option<f64>,
+}
+
+/// The study's measured reference, re-flown at the same control precision on every
+/// request, as `lunarHint`: day 0 at `LAUNCH_ET`, 3.24 km/s prograde from phase 225
+/// degrees, a curated guide after one flight.
+pub fn lunar_hint(model: &LunarModel) -> Result<Hint, LunarHintError> {
+    reference_hint(|shot| run_lunar(model, shot).map(|(_, a)| a))
 }
