@@ -17,7 +17,7 @@ pub fn bits(v: &Value) -> f64 {
 /// A body by its TypeScript name, which is lower case; null is none.
 pub fn body(v: &Value) -> Option<BodyId> {
     let name = v.as_str()?;
-    let mut all = PLANET_IDS.into_iter().chain([BodyId::Sun]);
+    let mut all = PLANET_IDS.into_iter().chain([BodyId::Sun, BodyId::Moon]);
     let found = all.find(|b| b.name().eq_ignore_ascii_case(name));
     Some(found.unwrap_or_else(|| panic!("no body is called {name}")))
 }

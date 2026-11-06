@@ -1,6 +1,6 @@
 [package]
 name = "starshot-game"
-description = "Game rules: the shot model, its frozen settings, aim, launch days and replays (D16, D6, D43)"
+description = "Game rules: the shot model, its frozen settings, aim, launch days, the Moon shot and replays (D16, D6, D43)"
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
