@@ -476,9 +476,10 @@ pub fn next_mission(id: MissionId) -> Option<Mission> {
 }
 
 /// The request a planetary replay flies on `level` (D16): its launch day's ET and its
-/// aim's exact bits. Another level's replay and a day past the window are refused, so a
-/// replay never flies a launch its level does not offer. A sandbox replay stores neither
-/// target nor start, so the caller rebuilds the sandbox level it names.
+/// aim's exact bits. Another level's replay and a day past the window are refused; the
+/// aim's cap and finiteness, which `campaign/session.ts` checks in saves, are not yet
+/// (findings table, for PR32). A sandbox replay stores neither target nor start, so it
+/// cannot say which sandbox flight it was; the caller must know.
 pub fn replay_request(level: &Level, replay: &Replay) -> Result<ShotRequest, LevelError> {
     if replay.level_id != level.id.as_str() {
         return Err(LevelError::OtherLevel {
@@ -502,7 +503,8 @@ pub fn replay_request(level: &Level, replay: &Replay) -> Result<ShotRequest, Lev
 /// orbit's epoch and phase, each from exact bits, through `lunar_request`. The plane is
 /// the one fixed at `LAUNCH_ET` and the radius the game's 200 km orbit, since a save with
 /// any other is refused. A mission other than the Moonshot is refused, and so is a burn
-/// more than 35 degrees from prograde.
+/// more than 35 degrees from prograde; the launch window, fuel budget, phase range and
+/// finiteness that `session.ts` checks are not yet (findings table, for PR32).
 pub fn lunar_replay_request(replay: &LunarReplay) -> Result<LunarShotRequest, LevelError> {
     if replay.mission_id != MissionId::Moonshot.as_str() {
         return Err(LevelError::UnknownMission(replay.mission_id.clone()));
