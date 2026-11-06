@@ -1257,3 +1257,41 @@ allow up to two parallel builders. The Moon flight plan's parts rule and accepta
 commands follow this entry. Never loosening a tolerance, test, safety boundary or budget
 still holds (non-negotiable 2): the change is to what each part runs, not to what any
 test asserts.
+
+## D43. Band B's lunar gaps: a lunar replay with exact launch bits, the rail's new home and a finer Moon tier
+
+*Date:* 2026-11-06. *Source:* the owner's answers to gaps G2 to G5 of the
+[Rust core supplement](plans/v1-starshot/09-rust-supplement.md), each the option the
+supplement proposed or, for G5, one of the two finer tiers it measured. G4 departs from
+D33's wording, which placed the rail in `packages/ephemeris`.
+
+**Decision.**
+
+- **Lunar replays (G2).** A Moon shot replays from its own record, not from `Replay`. It
+  carries the mission id, the launch ET as exact bits (`launch_et_bits: u64`), the aim as
+  exact bits and a physics version. Planetary replays keep D16's launch day. The launch ET
+  is never rebuilt from ISO text, since that moves it by up to 112 ulp (findings row 61).
+- **Lunar physics version (G3).** It hashes the little-endian bytes of the lunar settings,
+  as the planetary version hashes `SimSettings`, and names its source
+  `moon-rail/<sourceSha256>`, the rail file's own source hash.
+- **The rail's home (G4).** When PR17 deletes `packages/ephemeris`, the knot rail moves to
+  `packages/core-wasm/data/moon-rail.json`, exported as `@starshot/core-wasm/moon-rail.json`.
+- **The pack's Moon (G5).** The DE440 pack gains an 8-day, degree-12 Moon tier, which
+  measured 0.017 km and 2.2e-7 km/s against the five probes over 2026 to 2028, inside
+  their 0.1 km and 1.1e-5 km/s budgets. Flights move from the knot rail to the pack's Moon
+  only once it passes those probes, and the knot rail then stays as a cross-check.
+
+**Why.** A lunar launch is any ET, so a launch day cannot replay it. Hashing the settings
+the flight used, and naming the data it read, is the rule D16 already applies to planetary
+replays. The rail must outlive `packages/ephemeris`, and `packages/core-wasm` is the
+package the game reads the core from. The 100 km Moon tier misses the probes by 1.4 to
+44 km; the 8-day tier is the more accurate of the two the PR8 audit measured.
+
+**Consequences.** PR13 adds the lunar replay and its physics version. PR17 moves the rail.
+The new Moon tier is built where the pack is next rebuilt, with Band C's PR18, which first
+flies the pack; Band B keeps flying the knot rail (deviation row 115).
+
+**Note (2026-11-06): the owner's addition.** A lunar replay also stores the parking orbit's
+epoch ET and phase as exact bits. Pausing a Moon shot re-dates both, and the departure
+depends on them, so without them a paused shot could not be replayed. The format name stays
+`starshot.lunar-replay/1`, since no replay has shipped.

@@ -248,8 +248,14 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR12 simulate | PR12 | `codex/v1-pr12-simulate` | `codex/v1-pr11-lambert-parking` | B2 |
 | PR12 simulate conformance | PR12 | `codex/v1-pr12-simulate-conformance` | `codex/v1-pr12-simulate` | B2 |
 | PR12 lunar flight | PR12 | `codex/v1-pr12-lunar-flight` | `codex/v1-pr12-simulate-conformance` | B2 |
-| PR13 | PR13, PR14 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-lunar-flight` | B3 |
-| PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr13-game-crate` | B3 |
+| PR12 records | PR12 | `codex/v1-pr12-records` | `codex/v1-pr12-lunar-flight` | B2 |
+| PR13 shots | PR13 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-records` | B3 |
+| PR13 aim and replays | PR13 | `codex/v1-pr13-replays` | `codex/v1-pr13-game-crate` | B3 |
+| PR13 shot conformance | PR13 | `codex/v1-pr13-conformance` | `codex/v1-pr13-replays` | B3 |
+| PR13 lunar shots | PR13 | `codex/v1-pr13-lunar-shots` | `codex/v1-pr13-conformance` | B3 |
+| PR14 levels and scoring | PR14 | `codex/v1-pr14-levels` | `codex/v1-pr13-lunar-shots` | B3 |
+| PR14 hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-levels` | B3 |
+| PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-hints` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
 | PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
 | PR20 | PR20, PR21 | `codex/v1-pr20-capture-cues` | `codex/v1-pr18-rails-fuel` | C1 |
@@ -1048,7 +1054,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR11: Physics crate, integrator and Lambert
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
+- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model`, then `codex/v1-pr11-lambert-parking` (two parts in the PR groups table, :246-247).
   **Issue** `v1-physics-core`. **Decisions** D16, D11. **Size** about 450 lines, 13 files.
 - **Goal.** Port `dopri5`, `gravity`, `hermite`, `launch` and `lambert` from
   `packages/physics/src/` to `crates/starshot-physics`, with today's tests and a
@@ -1080,7 +1086,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR12: Physics crate, simulate
 
-- **Branch** `codex/v1-pr11-physics-crate`, based on `codex/v1-pr10-lunar-model` (group PR11).
+- **Branch** `codex/v1-pr12-simulate`, based on `codex/v1-pr11-lambert-parking`, then `codex/v1-pr12-simulate-conformance`, `codex/v1-pr12-lunar-flight` and the group's records in `codex/v1-pr12-records` (four parts in the PR groups table, :248-251).
   **Issue** `v1-physics-simulate`. **Decisions** D16, D6, D11. **Size** about 460 lines,
   6 files; warns.
 - **Goal.** Port `simulate` with encounter detection, the energy-consistent switch-on of
@@ -1091,7 +1097,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 |---|---|
 | `crates/starshot-physics/src/simulate.rs` | `SimulationConfig` (today's fields; `ephemeris: &dyn Ephemeris`), `Encounter`, `Termination` (`Duration`, `Impact`, `Sun`, `Escape`, `SoiReached`, `MaxSteps`), `SimulationResult` (`samples: Vec<Knot>`, `encounters`, `closest` as one `Option<Encounter>` per body, `termination`, `terminated_by`, `end_time`, `steps`), `simulate(&cfg)`, `sample_at(&result, t)`, the private `relative` and `refine_minimum` (golden section, 40 iterations, 1 s) with today's order |
 | `tests/simulate.rs` | Today's tests: the circular orbit closes within 10 km; sampling between samples is smooth; the Mars 2026 Lambert aim, found on today's grid (20 launches every 3 days from 2026-10-15, flights of 150 + 8k days), passes within 1.25 Mars spheres of influence (D11); Earth's gravity switches on energy-consistently exactly once; a Jupiter flyby is detected with its energy gain; aiming at a planet stops on impact; a 3-year preview takes under 400 ms (`std::time::Instant`, test profile optimised) |
-| `tests/conformance_simulate.rs` | Against `fixtures/conformance/simulate.json`: for each of 24 flights (the campaign's known solutions and par shots, misses, an impact, an escape and two outer-sandbox flights), the same termination and terminating body, the same step count, end position within 1 km, and closest approach per body within 1 km |
+| `tests/conformance_simulate.rs` | Against `fixtures/conformance/simulate.json`: for each of 24 flights (the campaign's known solutions and par shots, misses, an impact, an escape and two outer-sandbox flights), the same termination and terminating body, the same step count, end position and closest approach per body within 1 m, closest-approach time within 1 s, relative speed and last velocity within 1 m/s, and end time within 1 ms (deviation row 109) |
 | `packages/physics/test/conformance-simulate.test.ts` | New, write-or-compare; stores each flight's inputs with the excess-speed vector as exact bits (16 hex digits per component) and the outputs |
 | `fixtures/conformance/simulate.json` | Generated |
 | `CHANGELOG.md` | `[Unreleased]` |
@@ -1109,7 +1115,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR13: Game crate, shots and replays
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records`, then `codex/v1-pr13-replays`, `codex/v1-pr13-conformance` and `codex/v1-pr13-lunar-shots` (four parts in the PR groups table, :252-255).
   **Issue** `v1-game-shot`. **Decisions** D16, D6. **Size** about 430 lines, 11 files.
 - **Goal.** Port the shot model of `apps/game/src/sim/shot.ts` and add the replay format
   with canonical inputs and a physics version.
@@ -1120,7 +1126,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 | `src/shot.rs` | `ShotRequest` (today's fields), `simulate_shot`, `stop_at_capture_zone`, `analyze_shot` returning `ShotAnalysis` (today's fields), `periapsis_km`, `BULLSEYE_RADII = 10.0`, the 2050 validity ET; a capture-zone scale below 1 returns `ShotError::CaptureZoneScale` |
 | `src/aim.rs` | `Aim { angle_deg, speed_kms }`, `normalize_deg`, `v_inf_from_aim` (`cos` and `sin` from `starshot-math`), `aim_from_v_inf`, `round_aim` (integer hundredths of a degree and thousandths of a km/s, divided once) |
 | `src/days.rs` | `add_days_iso`, `days_between_iso`, `launch_et_for_day(start_iso, day)` through `et_from_iso` |
-| `src/replay.rs` | `Replay { level_id: String, launch_day: u32, v_inf_x_bits: u64, v_inf_y_bits: u64, physics_version: String }` (format name `starshot.replay/1`; `z` is 0 in the flat world); `physics_version(settings, source_id) -> String` as `"<crate version>+<FNV-1a 64 of the settings' little-endian bytes, 16 hex digits>+<source id>"`, where the source id is `table1` or `de440s-100km/<pack build in hex>` |
+| `src/replay.rs` | `Replay { level_id: String, launch_day: u32, v_inf_x_bits: u64, v_inf_y_bits: u64, physics_version: String }` (format name `starshot.replay/1`; `z` is 0 in the flat world), and for the Moon `LunarReplay { mission_id: String, launch_et_bits: u64, speed_bits: u64, angle_bits: u64, parking_epoch_et_bits: u64, parking_phase_bits: u64, physics_version: String }` (format name `starshot.lunar-replay/1`, D43), whose version hashes the lunar settings and names `moon-rail/<sourceSha256>`; `physics_version(settings, source_id) -> String` as `"<crate version>+<FNV-1a 64 of the settings' little-endian bytes, 16 hex digits>+<source id>"`, where the source id is `table1` or `de440s-100km/<pack build in hex>` |
 | `tests/shot.rs`, `tests/aim.rs`, `tests/replay.rs` | `round_aim` on the controls' grid; aim round trips; `physics_version(&SIM_SETTINGS, "table1")` equals a stored string; a capture-zone scale of 0.5 is refused |
 | `tests/conformance_shots.rs` | Against `fixtures/conformance/shots.json` (30 shots: full requests and analyses): `hit`, `bullseye`, flybys and termination equal; `closest_km` within 1 km; `flight_days` within 1e-6; `launch_et_for_day` bit-equal |
 | `apps/game/src/sim/conformance.test.ts`, `fixtures/conformance/shots.json` | Write-or-compare generator and its output |
@@ -1134,7 +1140,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr11-physics-crate` (group PR13).
+- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-hints` (two parts in the PR groups table, :256-257).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.
@@ -1161,7 +1167,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR15: core-wasm package and bit identity
 
-- **Branch** `codex/v1-pr15-core-wasm`, based on `codex/v1-pr13-game-crate` (group PR15).
+- **Branch** `codex/v1-pr15-core-wasm`, based on `codex/v1-pr14-hints` (group PR15).
   **Issue** `v1-core-wasm`. **Decisions** D16. **Size** about 520 lines, 19 files;
   warns.
 - **Goal.** Compile the core to wasm, wrap it in a typed TypeScript package, and prove

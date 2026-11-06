@@ -193,10 +193,14 @@ workspace holds three crates.
       src/gravity.rs     the Sun and planets, with each planet's indirect term
       src/launch.rs      the patched-conic departure and delta-v from low Earth orbit
       src/hermite.rs     re-exports starshot-ephemeris's Hermite (one copy)
+      src/lambert.rs     universal-variable Lambert and the best direct transfer
+      src/simulate.rs    flights with encounters, impacts and sphere-of-influence stops
+      src/lunar/         the parking orbit, the departure and the lunar flight
       tests/conformance_physics.rs  against the TypeScript: arithmetic paths bit for bit
+      tests/conformance_simulate.rs 24 TypeScript flights within 1 m and 1 s
   fixtures/              data the Rust tests read with include_str!: math/golden.json,
                          horizons/horizons.json (JPL), conformance/table1.json,
-                         lunar.json and physics.json (TypeScript), conformance/rails.json
+                         lunar.json, physics.json and simulate.json (TypeScript), conformance/rails.json
                          (tools/ephem)
 ```
 

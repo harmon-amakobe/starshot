@@ -322,7 +322,7 @@ epics:
           Each lunar case names its test in tests/lunar.rs. Built as three declared parts (row 77).
       - id: v1-physics-core
         title: "PR11: port the integrator, gravity, Hermite, launch and Lambert to starshot-physics"
-        labels: [kind:physics, area:physics, priority:p1, status:blocked]
+        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
         actor: Agent
@@ -330,19 +330,26 @@ epics:
         depends_on: [v1-ephemeris-crate]
         body: |
           All transcendental maths through starshot-math.
+          Readiness, checked 2026-11-05 against the supplement's PR11 and PR12 row: G10 is answered
+          (deviation row 103), so every power but a square goes through starshot-math and is held
+          to a bound against the TypeScript. Built as two declared parts (row 106).
       - id: v1-physics-simulate
         title: "PR12: port simulate with energy, timing and conformance tests"
-        labels: [kind:physics, area:physics, priority:p1, status:blocked]
+        labels: [kind:physics, area:physics, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
         actor: Agent
         spec: docs/plans/v1-starshot/00-plan.md#pr12-physics-crate-simulate
         depends_on: [v1-physics-core]
         body: |
-          Matches the TypeScript flights within 1 km over 14 years.
+          Matches the TypeScript flights within 1 m over 14 years.
+          Readiness, checked 2026-11-05 against the supplement's PR11 and PR12 row: G11 is answered
+          (deviation row 104), and Band B's integrator does not stop at rail segment edges (row 105).
+          Built as three declared parts with the group's records (row 106); the conformance holds
+          1 m (row 109) and the lunar flight its rows 101 and 102.
       - id: v1-game-shot
         title: "PR13: port the shot model and add the replay format with a physics version"
-        labels: [kind:feature, area:game, priority:p1, status:blocked]
+        labels: [kind:feature, area:game, priority:p1, status:ready, agent-ready]
         size: M
         priority: p1
         actor: Agent
@@ -350,9 +357,12 @@ epics:
         depends_on: [v1-physics-simulate]
         body: |
           Canonical inputs carry exact bits (D16).
+          Readiness, checked 2026-11-06 against the supplement's PR13 and PR14 row: the base has
+          LunarFlight and LunarError (#113), G2 and G3 are answered (D43), and the lunar rows for
+          PR13 are approved (deviation row 117). Built as four declared parts (row 116).
       - id: v1-game-levels
         title: "PR14: port levels, scoring and the hint search with every known solution"
-        labels: [kind:level, area:levels, priority:p1, status:blocked]
+        labels: [kind:level, area:levels, priority:p1, status:ready, agent-ready]
         size: L
         priority: p1
         actor: Agent
@@ -360,6 +370,9 @@ epics:
         depends_on: [v1-game-shot]
         body: |
           Every level test of today passes in Rust with the same numbers.
+          Readiness, checked 2026-11-06 against the supplement's PR13 and PR14 row: the lunar hint
+          rows and the LunarSearch stepper (G12) are approved for PR14 (deviation row 117). Built
+          as two declared parts (row 116).
       - id: v1-core-wasm
         title: "PR15: build the wasm core and prove identical bits in V8, JavaScriptCore and native"
         labels: [kind:feature, area:physics, priority:p1, status:blocked]
