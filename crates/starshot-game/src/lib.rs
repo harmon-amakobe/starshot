@@ -1,7 +1,7 @@
 //! Game rules in the Rust core (D16): the port of the game's shot model
 //! (`apps/game/src/sim/shot.ts`) with its aim and launch-day grid, the Moon shot
-//! (`apps/game/src/sim/lunar.ts`), the replay records with their physics version, and the
-//! campaign levels (`levels.ts`).
+//! (`apps/game/src/sim/lunar.ts`), the replay records with their physics version, the
+//! campaign levels (`levels.ts`) and the star rules (`scoring.ts`).
 //! Units are km, km/s and seconds of ET (TDB past J2000) in the heliocentric ecliptic
 //! J2000 frame; UTC enters only as ISO dates, through `et_from_iso`. The crate reads no
 //! clock and draws no random number, so the same inputs give the same bits on every
@@ -15,6 +15,7 @@ pub mod hint;
 pub mod levels;
 pub mod lunar;
 pub mod replay;
+pub mod scoring;
 pub mod settings;
 pub mod shot;
 
@@ -30,6 +31,10 @@ pub use lunar::{
     lunar_request, run_lunar,
 };
 pub use replay::{LunarReplay, Replay, lunar_physics_version, physics_version};
+pub use scoring::{
+    HINT_STAR_CAP, PAR_TOLERANCE, Score, ScoringRules, ShotFacts, max_stars, par_limit_km_s,
+    score_shot,
+};
 pub use settings::{OUTER_SIM_SETTINGS, SIM_SETTINGS, SimSettings};
 pub use shot::{
     BULLSEYE_RADII, EPHEMERIS_VALID_UNTIL_ET, Flyby, ShotAnalysis, ShotError, ShotRequest,
