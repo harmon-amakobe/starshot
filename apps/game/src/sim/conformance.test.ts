@@ -119,10 +119,12 @@ function shotsJson(): string {
 
 // The Moon: the golden cases of 09-rust-supplement.md for PR13, launched as the campaign
 // launches (campaign/lunar.test.ts:29-34): a fresh Moonshot session at its default orbit,
-// moved on and paused for the sub-day cases.
+// moved on and paused for the sub-day cases. The two bullseye cases pin its radius from
+// both sides: periapses of about 9.6 and 10.6 Moon radii against the bound of 10.
 const LUNAR_SHOTS: ReadonlyArray<readonly [string, number, number]> = [
   ["hit", 0, 0], ["miss", 20, 0], ["Earth impact", -20, 0], ["real-SOI graze", 17.33167459468716, 0],
   ["sub-day launch", 0, 8.004], ["sub-day request", 0, 321],
+  ["bullseye inside", -2.5, 0], ["bullseye outside", -3, 0],
 ];
 const orbitBits = (o: ParkingOrbit) => [o.frameEt === undefined ? null : bits(o.frameEt), ...[o.epochEt, o.phaseDeg, o.radiusKm].map(bits)];
 // lunar.json's request columns, so both lunar fixtures read alike.
@@ -133,8 +135,9 @@ const requestBits = (q: LunarShotRequest) => [
   orbitBits(q.parking),
   q.stopAtEntry,
 ];
-// lunarRequest's guard, which finalRequest's clamp keeps every player from reaching.
-const PARKING: ParkingOrbit = { frameEt: LAUNCH_ET, epochEt: LAUNCH_ET, phaseDeg: 225, radiusKm: 6571 };
+// lunarRequest's guard, which finalRequest's clamp keeps every player from reaching. The
+// orbit is not the default, so the rows show that the request copies its radius and phase.
+const PARKING: ParkingOrbit = { frameEt: LAUNCH_ET, epochEt: LAUNCH_ET + 8.004, phaseDeg: 226.5, radiusKm: 6600 };
 const ANGLES = [-35.001, -35, 35, 35.001, NaN];
 
 function lunarShotsJson(): string {

@@ -31,6 +31,15 @@ const PARKING: ParkingOrbit = ParkingOrbit {
     radius_km: 6571.0,
 };
 
+/// The refusals' orbit, the generator's `PARKING`: not the default, so the rows show that
+/// a request copies the orbit's radius and phase rather than `request_for`'s.
+const MOVED: ParkingOrbit = ParkingOrbit {
+    frame_et: Some(LAUNCH_ET),
+    epoch_et: LAUNCH_ET + 8.004,
+    phase_deg: 226.5,
+    radius_km: 6600.0,
+};
+
 fn model() -> LunarModel {
     let rail: Value = serde_json::from_str(RAIL).expect("the rail is valid JSON");
     let knots: Vec<f64> = serde_json::from_value(rail["knots"].clone()).expect("knots");
@@ -79,7 +88,7 @@ fn encode_request(q: &LunarRequest) -> Value {
 }
 
 /// One case: `lunar_request` on the TypeScript's inputs, held to its request bit for bit
-/// (all six are seven-day burns, so the duration is exact too), then flown.
+/// (all eight are seven-day burns, so the duration is exact too), then flown.
 fn fly(model: &LunarModel, row: &[Value]) -> (LunarShotRequest, LunarResult, ShotAnalysis) {
     let name = row[0].as_str().expect("a case");
     let aim = Aim {
@@ -111,11 +120,12 @@ fn case(model: &LunarModel, name: &str) -> (LunarShotRequest, LunarResult, ShotA
 /// and the last position within 0.1 km (row 101). A hit's closest distance is its
 /// periapsis, held to the same bound, and its arrival speed within 1e-8 km/s, which no
 /// flight bound covers. Measured: 2.8 ms (the graze), 0.78 s (the miss), 2.6e-4 km (the
-/// impact's closest; periapses 5.3e-5 km), 0.084 km (the graze) and 2.6e-9 km/s.
+/// impact's closest; periapses 5.3e-5 km), 0.084 km (the graze) and 2.6e-9 km/s. Every gap
+/// must be finite, and the result's ending must be the analysis's.
 #[test]
 fn flights_match_typescript() {
     let (model, rows) = (model(), section("shots"));
-    assert_eq!(rows.len(), 6);
+    assert_eq!(rows.len(), 8);
     let mut worst = [0.0_f64; 5];
     for row in &rows {
         let name = row[0].as_str().expect("a case");
@@ -124,6 +134,16 @@ fn flights_match_typescript() {
         // Debug prints every f64 so that it reads back to the same bits.
         let same = with_moved_numbers(&want, &got);
         assert_eq!(format!("{got:?}"), format!("{same:?}"), "{name}");
+        // The result ends as the analysis does, whose ending the line above holds exactly.
+        assert_eq!(
+            (
+                result.termination,
+                result.terminated_by,
+                result.end_time.to_bits()
+            ),
+            (got.termination, got.terminated_by, got.end_et.to_bits()),
+            "{name}: the result's ending"
+        );
         assert_eq!(
             u64::from(result.steps),
             row[7].as_u64().expect("steps"),
@@ -143,22 +163,24 @@ fn flights_match_typescript() {
             got.end_et - want.end_et,
             end.t - want.end_et,
             end.t - last[0],
+            (got.flight_days - want.flight_days) * DAY,
         ];
-        let days = (got.flight_days - want.flight_days) * DAY;
+        let closest = [
+            got.closest_km - want.closest_km,
+            opt(got.periapsis_km, want.periapsis_km),
+        ];
+        let widest = |g: &[f64]| g.iter().map(|x| x.abs()).fold(0.0, f64::max);
         let gaps = [
-            end_gaps
-                .into_iter()
-                .chain([days])
-                .map(f64::abs)
-                .fold(0.0, f64::max),
+            widest(&end_gaps),
             (got.closest_et - want.closest_et).abs(),
-            (got.closest_km - want.closest_km)
-                .abs()
-                .max(opt(got.periapsis_km, want.periapsis_km)),
+            widest(&closest),
             norm(sub(end.r, [last[1], last[2], last[3]])),
             opt(got.arrival_speed_km_s, want.arrival_speed_km_s),
         ];
         println!("{name:16} {:4} steps, gaps {gaps:?}", result.steps);
+        // `f64::max` drops a NaN, so every gap must be finite before it folds.
+        let parts = [&end_gaps[..], &closest, &gaps].concat();
+        assert!(parts.iter().all(|g| g.is_finite()), "{name}: {parts:?}");
         worst = [0, 1, 2, 3, 4].map(|i| worst[i].max(gaps[i]));
     }
     println!("worst: end, closest time [s]; closest, last [km]; arrival [km/s] {worst:?}");
@@ -239,7 +261,7 @@ fn burns_beyond_35_degrees_are_refused_with_the_typescript_text() {
             angle_deg,
             speed_km_s: 3.24,
         };
-        match (lunar_request(LAUNCH_ET, aim, PARKING), row[2].as_str()) {
+        match (lunar_request(LAUNCH_ET, aim, MOVED), row[2].as_str()) {
             (Err(e), Some(text)) => {
                 assert_eq!(e.to_string(), text);
                 assert_eq!(e.0.to_bits(), angle_deg.to_bits());
