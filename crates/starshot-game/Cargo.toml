@@ -1,6 +1,6 @@
 [package]
 name = "starshot-game"
-description = "Game rules: the shot model and its frozen settings (D16, D6)"
+description = "Game rules: the shot model, its frozen settings, aim, launch days and replays (D16, D6, D43)"
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
@@ -12,7 +12,7 @@ starshot-math = { path = "../starshot-math" }
 starshot-physics = { path = "../starshot-physics" }
 
 # The tests read fixtures/conformance/simulate.json, which ties the frozen settings to the
-# TypeScript game's (D6).
+# TypeScript game's (D6), and the Moon rail's source hash (D43).
 [dev-dependencies]
 serde_json.workspace = true
 
