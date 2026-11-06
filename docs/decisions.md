@@ -820,9 +820,6 @@ and sound composition remain adjustable during iteration.
 
 ## D33. Earth to Moon is the first mission, built on today's engine before the Rust core
 
-**Superseded in part by [D43](#d43-band-bs-lunar-gaps-a-lunar-replay-with-exact-launch-bits-the-rails-new-home-and-a-finer-moon-tier) (2026-11-06, the owner's call): the rail moves to
-`packages/core-wasm/data/` when PR17 deletes `packages/ephemeris`.**
-
 *Date:* 2026-11-02. *Source:* owner's ruling on when (directly after the PR2 group, on
 the current TypeScript engine, with the Rust core required to match it); the flight
 details (judgment) follow the approved lunar study. Amends the group order of D30's table
