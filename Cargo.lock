@@ -89,6 +89,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "starshot-game"
+version = "0.0.0"
+dependencies = [
+ "serde_json",
+ "starshot-ephemeris",
+ "starshot-math",
+ "starshot-physics",
+]
+
+[[package]]
 name = "starshot-math"
 version = "0.0.0"
 dependencies = [
