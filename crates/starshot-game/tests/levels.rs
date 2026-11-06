@@ -1,9 +1,9 @@
 //! The campaign levels, as `apps/game/src/levels.test.ts`: each level is solvable with the
 //! game's exact simulator settings, its par is real and reachable, First Light's training
 //! zone is three spheres wide, and the Grand Tour really needs Jupiter. Every level number
-//! is tied to `levels.ts` through `fixtures/conformance/levels.json` (D6). The star cases
-//! join with the scoring and the hint cases with the hint search; the cached-ephemeris case
-//! has no counterpart, since the core keeps no cache.
+//! is tied to `levels.ts` through `fixtures/conformance/levels.json` (D6). The hint cases
+//! join with the hint search; the cached-ephemeris case has no counterpart, since the core
+//! keeps no cache.
 
 use serde_json::{Value, json};
 use starshot_ephemeris::BodyId::{self, Earth, Jupiter, Mars, Saturn};
@@ -13,8 +13,9 @@ use starshot_ephemeris::{Ephemeris, Table1Ephemeris, Vec3};
 use starshot_game::LevelId::{self, BigGame, FirstLight, GrandTour, MorningStar};
 use starshot_game::{
     Aim, CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, HintQuery, KnownShot, Level, SIM_SETTINGS,
-    ShotAnalysis, ShotError, ShotRequest, analyze_shot, days_between_iso, hint_query_for,
-    launch_et_for_day, shot_request_for, shot_template, simulate_shot, v_inf_from_aim,
+    ScoringRules, ShotAnalysis, ShotError, ShotFacts, ShotRequest, analyze_shot, days_between_iso,
+    hint_query_for, launch_et_for_day, score_shot, shot_request_for, shot_template, simulate_shot,
+    v_inf_from_aim,
 };
 use starshot_physics::{LEO_RADIUS_KM, best_direct_transfer, delta_v_from_leo};
 
@@ -77,6 +78,15 @@ fn fly(shot: &ShotRequest) -> ShotAnalysis {
 
 fn delta_v(v_inf_km_s: f64) -> f64 {
     delta_v_from_leo(v_inf_km_s, LEO_RADIUS_KM)
+}
+
+/// The level's scoring rules, as `campaign/use-result.ts` builds them.
+fn rules(level: &Level) -> ScoringRules {
+    ScoringRules {
+        par_delta_v_km_s: level.par.map(|p| p.delta_v_km_s),
+        par_tolerance: Some(level.par_tolerance),
+        required_flyby: level.required_flyby,
+    }
 }
 
 /// Flight times of 40 days and on in steps of `step` days, up to the level's limit [s].
@@ -239,6 +249,8 @@ fn first_light_counts_a_pass_inside_three_spheres_as_a_hit() {
     let mars = EPH.state(Mars, end.t).r;
     let ratio = starshot_math::hypot(end.r[0] - mars[0], end.r[1] - mars[1]) / a.capture_zone_km;
     assert!((ratio - 1.0).abs() < 5e-5, "{ratio}");
+    let facts = ShotFacts::from_analysis(&a, false);
+    assert!(score_shot(&rules(level), &facts).hit);
 
     // A zone smaller than the real sphere is refused, not mis-scored.
     for capture_zone_scale in [0.5, 0.0, f64::NAN] {
@@ -259,7 +271,7 @@ fn first_light_counts_a_pass_inside_three_spheres_as_a_hit() {
 }
 
 #[test]
-fn the_grand_tour_par_shot_is_a_jupiter_assisted_hit_at_par() {
+fn the_grand_tour_par_shot_is_a_jupiter_assisted_hit_worth_three_stars() {
     let tour = by_id(GrandTour);
     let shot = shot_for(
         tour,
@@ -270,6 +282,28 @@ fn the_grand_tour_par_shot_is_a_jupiter_assisted_hit_at_par() {
     assert!(a.hit && a.required_flyby_done && a.flight_days <= tour.max_flight_days);
     let par = tour.par.expect("a par").delta_v_km_s;
     assert_eq!((a.delta_v_km_s * 100.0).round() / 100.0, par);
+    let score = score_shot(&rules(tour), &ShotFacts::from_analysis(&a, false));
+    assert_eq!(score.stars, 3);
+}
+
+#[test]
+fn the_grand_tour_efficiency_star_is_earned_not_automatic_under_the_cap() {
+    let tour = by_id(GrandTour);
+    assert_eq!(tour.par_tolerance, 1.05);
+    let efficient = |v_inf_km_s: f64| {
+        let pull = ShotFacts {
+            hit: true,
+            delta_v_km_s: delta_v(v_inf_km_s),
+            bullseye: false,
+            required_flyby_done: true,
+            hint_used: false,
+        };
+        score_shot(&rules(tour), &pull).efficient
+    };
+    assert!(!efficient(tour.v_inf_max_km_s));
+    // The known 9.60 km/s solution is just inside; the curated 9.80 km/s hint is not.
+    assert!(efficient(9.6));
+    assert!(!efficient(9.8));
 }
 
 #[test]
