@@ -372,7 +372,7 @@ epics:
           Every level test of today passes in Rust with the same numbers.
           Readiness, checked 2026-11-06 against the supplement's PR13 and PR14 row: the lunar hint
           rows and the LunarSearch stepper (G12) are approved for PR14 (deviation row 117). Built
-          as two declared parts (row 116).
+          as five declared parts (row 116).
       - id: v1-core-wasm
         title: "PR15: build the wasm core and prove identical bits in V8, JavaScriptCore and native"
         labels: [kind:feature, area:physics, priority:p1, status:blocked]

@@ -258,7 +258,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR14 sandbox and replays | PR14 | `codex/v1-pr14-sandbox` | `codex/v1-pr14-scoring` | B3 |
 | PR14 planetary hints | PR14 | `codex/v1-pr14-planetary-hints` | `codex/v1-pr14-sandbox` | B3 |
 | PR14 lunar hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-planetary-hints` | B3 |
-| PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-hints` | B3 |
+| PR14 records | PR14 | `codex/v1-pr14-records` | `codex/v1-pr14-hints` | B3 |
+| PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-records` | B3 |
 | PR16 | PR16, PR17 | `codex/v1-pr16-cutover` | `codex/v1-pr15-core-wasm` | B3 |
 | PR18 | PR18, PR19 | `codex/v1-pr18-rails-fuel` | `codex/v1-pr16-cutover` | C1 |
 | PR20 | PR20, PR21 | `codex/v1-pr20-capture-cues` | `codex/v1-pr18-rails-fuel` | C1 |
@@ -1170,7 +1171,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR15: core-wasm package and bit identity
 
-- **Branch** `codex/v1-pr15-core-wasm`, based on `codex/v1-pr14-hints` (group PR15).
+- **Branch** `codex/v1-pr15-core-wasm`, based on `codex/v1-pr14-records` (group PR15).
   **Issue** `v1-core-wasm`. **Decisions** D16. **Size** about 520 lines, 19 files;
   warns.
 - **Goal.** Compile the core to wasm, wrap it in a typed TypeScript package, and prove
