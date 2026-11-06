@@ -251,7 +251,8 @@ All spec dispositions are in [the resumption ledger](06-resumption.md#every-impl
 | PR12 records | PR12 | `codex/v1-pr12-records` | `codex/v1-pr12-lunar-flight` | B2 |
 | PR13 shots | PR13 | `codex/v1-pr13-game-crate` | `codex/v1-pr12-records` | B3 |
 | PR13 aim and replays | PR13 | `codex/v1-pr13-replays` | `codex/v1-pr13-game-crate` | B3 |
-| PR13 lunar shots | PR13 | `codex/v1-pr13-lunar-shots` | `codex/v1-pr13-replays` | B3 |
+| PR13 shot conformance | PR13 | `codex/v1-pr13-conformance` | `codex/v1-pr13-replays` | B3 |
+| PR13 lunar shots | PR13 | `codex/v1-pr13-lunar-shots` | `codex/v1-pr13-conformance` | B3 |
 | PR14 levels and scoring | PR14 | `codex/v1-pr14-levels` | `codex/v1-pr13-lunar-shots` | B3 |
 | PR14 hints | PR14 | `codex/v1-pr14-hints` | `codex/v1-pr14-levels` | B3 |
 | PR15 | PR15 | `codex/v1-pr15-core-wasm` | `codex/v1-pr14-hints` | B3 |
@@ -1114,7 +1115,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR13: Game crate, shots and replays
 
-- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records`, then `codex/v1-pr13-replays` and `codex/v1-pr13-lunar-shots` (three parts in the PR groups table, :252-254).
+- **Branch** `codex/v1-pr13-game-crate`, based on `codex/v1-pr12-records`, then `codex/v1-pr13-replays`, `codex/v1-pr13-conformance` and `codex/v1-pr13-lunar-shots` (four parts in the PR groups table, :252-255).
   **Issue** `v1-game-shot`. **Decisions** D16, D6. **Size** about 430 lines, 11 files.
 - **Goal.** Port the shot model of `apps/game/src/sim/shot.ts` and add the replay format
   with canonical inputs and a physics version.
@@ -1125,7 +1126,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 | `src/shot.rs` | `ShotRequest` (today's fields), `simulate_shot`, `stop_at_capture_zone`, `analyze_shot` returning `ShotAnalysis` (today's fields), `periapsis_km`, `BULLSEYE_RADII = 10.0`, the 2050 validity ET; a capture-zone scale below 1 returns `ShotError::CaptureZoneScale` |
 | `src/aim.rs` | `Aim { angle_deg, speed_kms }`, `normalize_deg`, `v_inf_from_aim` (`cos` and `sin` from `starshot-math`), `aim_from_v_inf`, `round_aim` (integer hundredths of a degree and thousandths of a km/s, divided once) |
 | `src/days.rs` | `add_days_iso`, `days_between_iso`, `launch_et_for_day(start_iso, day)` through `et_from_iso` |
-| `src/replay.rs` | `Replay { level_id: String, launch_day: u32, v_inf_x_bits: u64, v_inf_y_bits: u64, physics_version: String }` (format name `starshot.replay/1`; `z` is 0 in the flat world), and for the Moon `LunarReplay { mission_id: String, launch_et_bits: u64, speed_bits: u64, angle_bits: u64, physics_version: String }` (format name `starshot.lunar-replay/1`, D43), whose version hashes the lunar settings and names `moon-rail/<sourceSha256>`; `physics_version(settings, source_id) -> String` as `"<crate version>+<FNV-1a 64 of the settings' little-endian bytes, 16 hex digits>+<source id>"`, where the source id is `table1` or `de440s-100km/<pack build in hex>` |
+| `src/replay.rs` | `Replay { level_id: String, launch_day: u32, v_inf_x_bits: u64, v_inf_y_bits: u64, physics_version: String }` (format name `starshot.replay/1`; `z` is 0 in the flat world), and for the Moon `LunarReplay { mission_id: String, launch_et_bits: u64, speed_bits: u64, angle_bits: u64, parking_epoch_et_bits: u64, parking_phase_bits: u64, physics_version: String }` (format name `starshot.lunar-replay/1`, D43), whose version hashes the lunar settings and names `moon-rail/<sourceSha256>`; `physics_version(settings, source_id) -> String` as `"<crate version>+<FNV-1a 64 of the settings' little-endian bytes, 16 hex digits>+<source id>"`, where the source id is `table1` or `de440s-100km/<pack build in hex>` |
 | `tests/shot.rs`, `tests/aim.rs`, `tests/replay.rs` | `round_aim` on the controls' grid; aim round trips; `physics_version(&SIM_SETTINGS, "table1")` equals a stored string; a capture-zone scale of 0.5 is refused |
 | `tests/conformance_shots.rs` | Against `fixtures/conformance/shots.json` (30 shots: full requests and analyses): `hit`, `bullseye`, flybys and termination equal; `closest_km` within 1 km; `flight_days` within 1e-6; `launch_et_for_day` bit-equal |
 | `apps/game/src/sim/conformance.test.ts`, `fixtures/conformance/shots.json` | Write-or-compare generator and its output |
@@ -1139,7 +1140,7 @@ repository's GMs (398600.435507 for Earth alone in `packages/physics/src/launch.
 
 ### PR14: Game crate, levels, scoring and hints
 
-- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-hints` (two parts in the PR groups table, :255-256).
+- **Branch** `codex/v1-pr14-levels`, based on `codex/v1-pr13-lunar-shots`, then `codex/v1-pr14-hints` (two parts in the PR groups table, :256-257).
   **Issue** `v1-game-levels`. **Decisions** D16, D6, D11. **Size** about 560 lines (about
   220 of tests), 8 files; warns. If the diff passes 600 added lines, move `hint.rs` and
   its tests into a PR14b on top and log the split.
