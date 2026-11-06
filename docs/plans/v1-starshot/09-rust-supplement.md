@@ -57,7 +57,7 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
 | `sim/flight-request.ts:7-27`, `sim/lunar-request.ts:6-11`, `sim/lunar.ts:9-30` | `starshot_game::lunar`: `LunarShotRequest`, `FlightRequest { Planetary, Lunar }`, `LunarResult`, `LunarHintQuery`, `lunar_request`, `run_lunar`, `lunar_hint` | PR13 |
 | `sim/lunar-hint.ts:14-116` | `starshot_game::lunar_hint`: `Route`, `LUNAR_SEARCH_BUDGET` = 240, `LUNAR_GRID` = `moon-grid/1`, `by_cost`, `seeds_of`, `refinement_of`, `LunarSearch` (one flight per step, G12), `find_lunar_hint` | PR14 |
 | `apps/game/src/missions.ts:5-29`, physics fields only | `starshot_game::levels`: `MissionId`, `LunarLevel` with window, default launch, target, maximum flight days, burn cap, attractors, settings and par burn; mission order; `next_mission`. Number, title, blurb and par source text stay in TypeScript (00-plan.md:1143-1144) | PR14 |
-| `packages/ephemeris/data/moon-rail.json` | Stays in place until PR17's first commit moves it to the home the owner rules (G4) | PR17 |
+| `packages/ephemeris/data/moon-rail.json` | Stays in place until PR17's first commit moves it to `packages/core-wasm/data/moon-rail.json` (G4, D43) | PR17 |
 
 - `LunarModel` owns a `Table1Ephemeris { flatten: false }`, as `model.ts:19` does. The game worker's planetary ephemeris
   is flattened (`sim/sim.worker.ts:11`), so `Core::new_table1(flatten)` (00-plan.md:1174) never selects the lunar mode.
@@ -94,7 +94,7 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
   16-hex-digit bits, as the PR15 replays do (00-plan.md:1176).
 - A lunar launch is any f64 ET. The game flies `LAUNCH_ET + 8.004` s and `+ 321` s (`campaign/lunar.test.ts:115`,
   `:124`), so lunar Rust types carry `launch_et: f64`. UTC enters through `et_from_iso` and leaves through
-  `unix_ms_from_et` (00-plan.md:995). The lunar replay format waits for the owner (G2).
+  `unix_ms_from_et` (00-plan.md:995). The lunar replay carries the launch ET as exact bits (D43).
 
 ### Pack budget and lunar probes
 
@@ -114,7 +114,7 @@ Earth/Moon derivation (06-resumption.md:139-140). `starshot_physics::lunar` re-e
   (about 3601 s before `LAUNCH_ET` to 302.673 days after) and 5 probes, in 95,110 bytes. Probes hold position under
   0.1 km and velocity under 1.1e-5 km/s (`lunar.test.ts:14-18`, `flight.test.ts:21-27`). The barycentre identity holds
   under 1e-6 km and 1e-12 km/s (`lunar.test.ts:20-24`, `flight.test.ts:28-32`). Rust asserts these from PR10 on; no
-  lunar test reads the 150 km figure. The pack's Moon misses the probes, so its replacement waits for the owner (G5).
+  lunar test reads the 150 km figure. The pack's Moon misses the probes; D43 adds an 8-day, degree-12 tier, built with PR18.
 
 ### Four-runtime bit identity
 
@@ -364,7 +364,7 @@ PR15 builds on `codex/v1-pr13-game-crate`; PR16 and PR17 build on `codex/v1-pr15
   reply (`apps/prototype/src/use-flight.ts:28-29`) (G14).
 - PR16: `apps/game/release-build.ts:22-23` precaches every output file but `.map`, `sw.js` and `release.json`, so the
   `.wasm` may need no `sw.js` edit (00-plan.md:1228 asks for one); confirm on a build and log it.
-- PR17: the first commit moves the rail to its ruled home (G4). It updates the 15 files outside `docs/` that name the
+- PR17: the first commit moves the rail to `packages/core-wasm/data/moon-rail.json` (G4, D43). It updates the 15 files outside `docs/` that name the
   rail (`git grep -l moon-rail`) and the Rust `include_str!` paths. The table at 00-plan.md:1675-1695 gains two rows:
   `packages/physics/src/lunar/` to the crates, and the rail to its new home.
 - PR17: the files to update are the output of
@@ -409,10 +409,10 @@ Each row adds to its specs' proof lines, and is the readiness list the orchestra
 | # | Gap | Blocks |
 |---|---|---|
 | G1 | Narrowed. PR6 (00-plan.md:798), PR7 (:851) and PR8 (:891) are built in the stack (#100 to #102): the workspace, `starshot-math`, `tools/ephem`, the pack and both native Rust jobs exist (Starting point). Still open: no CI step checks the runner's architecture (Four-runtime bit identity, proposed) | PR15 |
-| G2 | D16 puts a launch day in replays (docs/decisions.md:422-423); `Replay.launch_day: u32` (00-plan.md:1124) cannot hold `LAUNCH_ET + 8.004` (`campaign/lunar.test.ts:115`). Only the owner can rule; a proposed shape is a lunar replay with `launch_et_bits: u64` | PR13 lunar replay, PR15 lunar ABI, PR32 |
-| G3 | `physics_version` hashes `SimSettings` bytes and names `table1` or a pack (00-plan.md:1124). `LunarSettings` has six fields (`flight.ts:7`) and the rail is neither source. Proposed: hash `LunarSettings` and name `moon-rail/<sourceSha256>`. Ruled with G2 | PR13, PR15 |
-| G4 | PR17 deletes `packages/ephemeris` (00-plan.md:1257), which holds and exports the rail (`packages/ephemeris/package.json:11`). D33 placed it there (docs/decisions.md:842) and D38 moves it "into packages" (:1023), so any home after PR17 departs from D33's wording: the owner rules. `data/ephem/` would not fit, since its README names `de440s.bsp` (00-plan.md:958) and the rail comes from the Horizons API (its `source` field). Proposed: `packages/core-wasm/data/moon-rail.json`, exported as `@starshot/core-wasm/moon-rail.json` | PR17 |
-| G5 | A 100 km Moon tier (docs/decisions.md:446) cannot pass the 0.1 km probes (`lunar.test.ts:17-18`), yet D33 says the rails replace the rail and keep its probes (docs/decisions.md:843). PR8's physics audit measured the pack's Moon (32-day segments, degree 15) at 1.412 to 44.126 km and 8.15e-5 to 8.68e-4 km/s from the five probes, against 0.1 km and 1.1e-5 km/s. Over 2026 to 2028 a 16-day degree-15 tier gives 0.028 km and 7.7e-6 km/s, and an 8-day degree-12 tier 0.017 km and 2.2e-7 km/s, about 76,776 bytes per decade for the Moon block. A finer tier, or keeping the knot rail, is the owner's decision (06-resumption.md:226). Until then PR10 leaves the probes to the knot rail: `LunarModel` reads `moon-rail.json`, and the pack's Moon is held to 150 km and 1e-2 km/s (deviation row 96) | PR10 if the ruling changes the pack's Moon; PR18 otherwise |
+| G2 | D16 puts a launch day in replays (docs/decisions.md:422-423); `Replay.launch_day: u32` (00-plan.md:1124) cannot hold `LAUNCH_ET + 8.004` (`campaign/lunar.test.ts:115`). Only the owner can rule; a proposed shape is a lunar replay with `launch_et_bits: u64`. Answered by the owner (D43): a lunar replay with `launch_et_bits: u64` | PR13 lunar replay, PR15 lunar ABI, PR32 |
+| G3 | `physics_version` hashes `SimSettings` bytes and names `table1` or a pack (00-plan.md:1124). `LunarSettings` has six fields (`flight.ts:7`) and the rail is neither source. Proposed: hash `LunarSettings` and name `moon-rail/<sourceSha256>`. Ruled with G2. Answered by the owner (D43): as proposed | PR13, PR15 |
+| G4 | PR17 deletes `packages/ephemeris` (00-plan.md:1257), which holds and exports the rail (`packages/ephemeris/package.json:11`). D33 placed it there (docs/decisions.md:842) and D38 moves it "into packages" (:1023), so any home after PR17 departs from D33's wording: the owner rules. `data/ephem/` would not fit, since its README names `de440s.bsp` (00-plan.md:958) and the rail comes from the Horizons API (its `source` field). Proposed: `packages/core-wasm/data/moon-rail.json`, exported as `@starshot/core-wasm/moon-rail.json`. Answered by the owner (D43): as proposed | PR17 |
+| G5 | A 100 km Moon tier (docs/decisions.md:446) cannot pass the 0.1 km probes (`lunar.test.ts:17-18`), yet D33 says the rails replace the rail and keep its probes (docs/decisions.md:843). PR8's physics audit measured the pack's Moon (32-day segments, degree 15) at 1.412 to 44.126 km and 8.15e-5 to 8.68e-4 km/s from the five probes, against 0.1 km and 1.1e-5 km/s. Over 2026 to 2028 a 16-day degree-15 tier gives 0.028 km and 7.7e-6 km/s, and an 8-day degree-12 tier 0.017 km and 2.2e-7 km/s, about 76,776 bytes per decade for the Moon block. A finer tier, or keeping the knot rail, is the owner's decision (06-resumption.md:226). Until then PR10 leaves the probes to the knot rail: `LunarModel` reads `moon-rail.json`, and the pack's Moon is held to 150 km and 1e-2 km/s (deviation row 96). Answered by the owner (D43): an 8-day, degree-12 tier, built with PR18 (deviation row 115) | PR10 if the ruling changes the pack's Moon; PR18 otherwise |
 | G6 | PR11 defines `hermite` in physics (00-plan.md:1062), but PR10's `LunarModel::relative` needs it and the ephemeris crate cannot depend on physics (00-plan.md:1015). Answered: PR10 owns it in `starshot-ephemeris`, PR11 re-exports (deviation row 98) | PR11 |
 | G7 | No spec file table lists a lunar module. The ownership map is a proposal until the plan approves it. Answered for PR9 and PR10: the map's rows as built, with the additions in deviation row 99. Answered for PR11 and PR12: the map's rows as built, with the additions in deviation rows 102 and 108 | PR11 to PR16 |
 | G8 | Only `PackError::MixedBuilds` is named (00-plan.md:1031); FNV-1a 64 has no fixed test vector (:922), though the committed `pack.json` `build` value, which `pack.read` checks (`tools/ephem/src/ephem/pack.py:217-219`), can serve as one; the `include_bytes!` path to `data/ephem/de440s-100km/` and the rail's `include_str!` path are unstated while the rule names `fixtures/` (:790, :952). Answered in deviation rows 91 and 92 | None |
