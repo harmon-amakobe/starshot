@@ -87,7 +87,7 @@ pub struct Level<'a> {
 
 /// A Voyager-2-like Grand Tour shot, 75.93 degrees at 9.800 km/s on 1977-08-20, as the
 /// hint label shows it: a Jupiter flyby on 1979-07-03 and Saturn's capture zone on
-/// 1981-06-26 in the flat world. The vector is `levels.ts`'s, digit for digit.
+/// 1981-07-01 in the flat world, as both engines fly it (levels.ts still says 06-26). The vector is `levels.ts`'s, digit for digit.
 pub const GRAND_TOUR_HINT: KnownShot = KnownShot {
     launch_iso: "1977-08-20",
     v_inf: [2.3829478446723424, 9.50586974293102, 0.0],
