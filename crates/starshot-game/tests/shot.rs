@@ -3,7 +3,8 @@
 //! Light and sandbox shots are those of `apps/game/src/levels.test.ts`.
 
 use serde_json::Value;
-use starshot_ephemeris::time::et_from_iso;
+use starshot_ephemeris::time::{SECONDS_PER_DAY, et_from_iso};
+use starshot_ephemeris::vec::{norm, sub};
 use starshot_ephemeris::{BodyId, Ephemeris, Table1Ephemeris, Vec3};
 use starshot_game::settings::{OUTER_SIM_SETTINGS, SIM_SETTINGS, SimSettings, lunar};
 use starshot_game::{
@@ -11,7 +12,9 @@ use starshot_game::{
     simulate_shot, stop_at_capture_zone,
 };
 use starshot_physics::simulate::BODY_COUNT;
-use starshot_physics::{Encounter, Knot, SimulationResult, Termination};
+use starshot_physics::{
+    Encounter, Knot, LEO_RADIUS_KM, SimulationResult, Termination, delta_v_from_leo,
+};
 
 const SIMULATE: &str = include_str!("../../../fixtures/conformance/simulate.json");
 const EPH: Table1Ephemeris = Table1Ephemeris { flatten: true };
@@ -79,6 +82,12 @@ fn first_light(v_inf: Vec3, capture_zone_scale: f64) -> ShotRequest {
 
 /// 129.60 degrees, 2.982 km/s: passes Mars at 1.11 spheres of influence.
 const NEAR_MISS: Vec3 = [-1.900798, 2.29767, 0.0];
+/// The level's known solution, a hit.
+const KNOWN: Vec3 = [-1.815327, 2.36578, 0.0];
+
+fn mars_km(k: &Knot) -> f64 {
+    norm(sub(k.r, EPH.state(BodyId::Mars, k.t).r))
+}
 
 #[test]
 fn a_pass_inside_the_training_zone_is_a_hit_cut_where_it_enters() {
@@ -94,16 +103,30 @@ fn a_pass_inside_the_training_zone_is_a_hit_cut_where_it_enters() {
     let end = cut.samples[cut.samples.len() - 1];
     let mars = EPH.state(BodyId::Mars, end.t).r;
     let ratio = starshot_math::hypot(end.r[0] - mars[0], end.r[1] - mars[1]) / a.capture_zone_km;
-    assert!((ratio - 1.0).abs() < 5e-5, "ends at {ratio} zone radii");
+    // Just inside: the 1 ms bisection resolves the radius to about 1.5e-9 of itself.
+    assert!(ratio < 1.0 && ratio > 1.0 - 1e-8, "{ratio}");
 
     // Up to the cut, the flight is the real-zone flight, step for step.
     let real = first_light(NEAR_MISS, 1.0);
     let full = simulate_shot(&EPH, &real).expect("scale 1 flies");
+    // The TypeScript's step count for this aim (fixtures/conformance/simulate.json), so
+    // the request's settings reach the integrator.
+    assert_eq!(full.steps, 447);
     let n = cut.samples.len() - 1;
     assert_eq!(cut.samples[..n], full.samples[..n]);
     assert_eq!(cut.steps, full.steps);
     let b = analyze_shot(&EPH, &real, &full);
     assert!(!b.hit && b.closest_km / b.target_soi_km > 1.0 && b.closest_km / b.target_soi_km < 3.0);
+    let c = full.closest[BodyId::Mars as usize].expect("a Mars pass");
+    assert_eq!((b.closest_km, b.closest_et), (c.distance_km, c.t));
+    // A zone 1 km wider than the pass holds no sample, so only the refined closest
+    // approach finds the dip; the cut still ends just inside. It closes at 4.7 m/s
+    // there, so the 1 ms bisection resolves about 5e-6 km.
+    let dip = c.distance_km + 1.0;
+    assert!(full.samples.iter().all(|k| mars_km(k) > dip));
+    let cut = stop_at_capture_zone(&EPH, full.clone(), BodyId::Mars, dip);
+    let d = mars_km(&cut.samples[cut.samples.len() - 1]);
+    assert!(cut.termination == Termination::SoiReached && d < dip && d > dip - 1e-5);
     // A zone the flight never crosses changes nothing.
     assert_eq!(
         stop_at_capture_zone(&EPH, full.clone(), BodyId::Mars, 1.0),
@@ -124,6 +147,44 @@ fn a_zone_smaller_than_the_real_sphere_is_refused() {
             .starts_with("captureZoneScale must be at least 1 (got 0.5): ")
     );
     assert!(simulate_shot(&EPH, &first_light(NEAR_MISS, 1.0)).is_ok());
+}
+
+#[test]
+fn the_request_settings_reach_the_integrator() {
+    let fly = |sim: SimSettings| {
+        let shot = ShotRequest {
+            sim,
+            ..first_light(KNOWN, 1.0)
+        };
+        simulate_shot(&EPH, &shot).expect("flies")
+    };
+    // The known solution stops at the real sphere after the TypeScript's 273 steps.
+    let hit = fly(SIM_SETTINGS);
+    assert_eq!(
+        (hit.termination, hit.terminated_by, hit.steps),
+        (Termination::SoiReached, Some(BodyId::Mars), 273)
+    );
+    let capped = fly(SimSettings {
+        max_steps: 50,
+        ..SIM_SETTINGS
+    });
+    assert_eq!(
+        (capped.termination, capped.steps),
+        (Termination::MaxSteps, 50)
+    );
+    // At the frozen 1 km atol, rtol leaves this flight's samples unchanged from 1e-10 to
+    // 1e-6, so it shows only under a tighter atol: 380 steps at 1e-12 against 275 at 1e-10.
+    let tight = SimSettings {
+        rtol: 1e-12,
+        atol_km: 1e-6,
+        ..SIM_SETTINGS
+    };
+    let base = fly(SimSettings {
+        rtol: 1e-10,
+        ..tight
+    })
+    .steps;
+    assert!(fly(tight).steps > base + 50);
 }
 
 #[test]
@@ -149,9 +210,11 @@ fn flights_past_2050_are_flagged_not_refused() {
         sim: OUTER_SIM_SETTINGS,
         capture_zone_scale: 1.0,
     };
-    let a = analyze_shot(&EPH, &late, &simulate_shot(&EPH, &late).expect("flies"));
+    let flown = simulate_shot(&EPH, &late).expect("flies");
+    assert_eq!(flown.steps, 546, "the TypeScript's count");
+    let a = analyze_shot(&EPH, &late, &flown);
     assert!(a.end_et > EPHEMERIS_VALID_UNTIL_ET && a.beyond_ephemeris_range);
-    let known = first_light([-1.815327, 2.36578, 0.0], 3.0);
+    let known = first_light(KNOWN, 3.0);
     let a = analyze_shot(&EPH, &known, &simulate_shot(&EPH, &known).expect("flies"));
     assert!(a.hit && !a.beyond_ephemeris_range);
     // The flag starts strictly after the limit.
@@ -202,7 +265,7 @@ fn at_periapsis(t: f64, rp: f64) -> (Vec3, Vec3) {
 fn the_bullseye_is_a_hit_under_ten_target_radii() {
     assert_eq!(BULLSEYE_RADII, 10.0);
     let shot = first_light(NEAR_MISS, 1.0);
-    let t = shot.launch_et + 300.0 * 86400.0;
+    let t = shot.launch_et + 300.0 * SECONDS_PER_DAY;
     let radius = BodyId::Mars.info().radius_km;
     for (radii, bullseye) in [(9.9, true), (10.1, false)] {
         let (r, v) = at_periapsis(t, radii * radius);
@@ -219,10 +282,19 @@ fn the_bullseye_is_a_hit_under_ten_target_radii() {
             (a.bullseye, a.periapsis_km, a.closest_et),
             (bullseye, Some(a.closest_km), t)
         );
+        // Relative to Mars, the probe passes at 1.5 times the escape speed.
+        let escape = starshot_math::sqrt(2.0 * BodyId::Mars.info().gm / (radii * radius));
+        assert!((a.arrival_speed_km_s.expect("a hit") / escape - 1.5).abs() < 1e-12);
     }
     let (r, v) = at_periapsis(t, 2.0 * radius);
     let impact = analyze_shot(&EPH, &shot, &flight(t, r, v, Termination::Impact, vec![]));
     assert!(impact.hit && impact.bullseye && impact.periapsis_km == Some(0.0));
+    // The same impact on another planet is no hit on the target.
+    let elsewhere = SimulationResult {
+        terminated_by: Some(BodyId::Earth),
+        ..flight(t, r, v, Termination::Impact, vec![])
+    };
+    assert!(!analyze_shot(&EPH, &shot, &elsewhere).hit);
     // Inside ten radii without reaching the zone is a miss, and no bullseye.
     let miss = analyze_shot(&EPH, &shot, &flight(t, r, v, Termination::Duration, vec![]));
     assert!(!miss.hit && !miss.bullseye && miss.periapsis_km.is_none());
@@ -261,7 +333,11 @@ fn flybys_count_other_planets_inside_their_spheres_before_the_end() {
     );
     assert!(a.required_flyby_done);
     assert_eq!((a.v_inf_km_s, a.c3), (5.0, 25.0));
-    assert_eq!(a.flight_days, (t - shot.launch_et) / 86400.0);
+    assert_eq!(a.delta_v_km_s, delta_v_from_leo(5.0, LEO_RADIUS_KM));
+    assert_eq!(
+        (a.launch_et, a.flight_days),
+        (shot.launch_et, (t - shot.launch_et) / SECONDS_PER_DAY)
+    );
     shot.required_flyby = Some(BodyId::Venus);
     assert!(!analyze_shot(&EPH, &shot, &result).required_flyby_done);
 }

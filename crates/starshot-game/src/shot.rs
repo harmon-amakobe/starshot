@@ -285,10 +285,12 @@ pub fn analyze_shot(
         (km, et, None, None)
     };
 
+    // `!(e.t > end_et)` is shot.ts's test: it keeps a NaN time, where `<=` would drop it.
+    #[allow(clippy::neg_cmp_op_on_partial_ord)]
     let flybys: Vec<Flyby> = result
         .encounters
         .iter()
-        .filter(|e| e.inside_soi && e.body != target && e.body != BodyId::Sun && e.t <= end_et)
+        .filter(|e| e.inside_soi && e.body != target && e.body != BodyId::Sun && !(e.t > end_et))
         .map(|e| Flyby {
             body: e.body,
             t: e.t,
