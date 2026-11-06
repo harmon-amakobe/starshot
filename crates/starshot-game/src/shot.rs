@@ -48,6 +48,34 @@ pub struct ShotRequest {
     pub capture_zone_scale: f64,
 }
 
+/// A level's shot without its launch time and aim, as `ShotTemplate`: the preview, the
+/// launch, the hint search and the level tests all build their requests from one (D6).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ShotTemplate {
+    pub target: BodyId,
+    pub attractors: Vec<BodyId>,
+    pub max_flight_days: f64,
+    pub required_flyby: Option<BodyId>,
+    pub sim: SimSettings,
+    pub capture_zone_scale: f64,
+}
+
+impl ShotTemplate {
+    /// The request for one launch time [s ET] and excess velocity [km/s].
+    pub fn request(&self, launch_et: f64, v_inf: Vec3) -> ShotRequest {
+        ShotRequest {
+            target: self.target,
+            attractors: self.attractors.clone(),
+            launch_et,
+            v_inf,
+            max_flight_days: self.max_flight_days,
+            required_flyby: self.required_flyby,
+            sim: self.sim,
+            capture_zone_scale: self.capture_zone_scale,
+        }
+    }
+}
+
 /// Why `simulate_shot` refused a request before flying it.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ShotError {

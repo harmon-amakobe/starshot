@@ -1,6 +1,7 @@
-// Writes or checks the oracles for the game crate (PR13): fixtures/conformance/shots.json for
-// its shot model (crates/starshot-game/tests/conformance_shots.rs) and lunar-shots.json for
-// its Moon shot (crates/starshot-game/tests/lunar.rs). Every request comes from the game's
+// Writes or checks the oracles for the game crate (PR13, PR14): fixtures/conformance/shots.json
+// for its shot model (crates/starshot-game/tests/conformance_shots.rs), lunar-shots.json for
+// its Moon shot (crates/starshot-game/tests/lunar.rs) and levels.json for its levels
+// (crates/starshot-game/tests/levels.rs). Every request comes from the game's
 // own builders: shotRequestFor at launchEtForDay for the planets, and for the Moon
 // finalRequest on a fresh session, as campaign/lunar.test.ts launches, and lunarRequest.
 // With STARSHOT_WRITE_CONFORMANCE=1 it writes the files; otherwise each must equal this
@@ -12,7 +13,10 @@ import rail from "@starshot/ephemeris/moon-rail.json";
 import { LAUNCH_ET, type ParkingOrbit } from "@starshot/physics/lunar";
 import { finalRequest } from "../campaign/contracts.js";
 import { freshSession } from "../campaign/session.js";
-import { CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, sandboxLevel, shotRequestFor, type Level } from "../levels.js";
+import {
+  CAMPAIGN, GRAND_TOUR_HINT, GRAND_TOUR_PAR_SHOT, captureZoneScaleOf, parToleranceOf, sandboxLevel, shotRequestFor, type Level,
+} from "../levels.js";
+import type { KnownShot } from "./hint.js";
 import type { LunarShotRequest } from "./flight-request.js";
 import { runLunar } from "./lunar.js";
 import { lunarRequest } from "./lunar-request.js";
@@ -182,8 +186,36 @@ function lunarShotsJson(): string {
   ].join("\n");
 }
 
+// The levels' physics fields with levels.ts's defaults filled in, as the Rust levels carry
+// them, so a number changed on one side alone fails the Rust tie (D6).
+const LEVEL_COLUMNS = ["id", "windowStartIso", "windowDays", "defaultLaunchIso", "target", "maxFlightDays", "vInfMaxKmS",
+  "attractors", "requiredFlyby", "parDeltaVKmS", "parTolerance", "captureZoneScale", "sim", "hint", "sandbox"];
+const knownBits = (k: KnownShot) => [k.launchIso, k.vInf.map(bits)];
+function levelsJson(): string {
+  const rows = CAMPAIGN.map((l) => [
+    l.id, l.window.startIso, l.window.days, l.defaultLaunchIso, l.target, bits(l.maxFlightDays), bits(l.vInfMaxKmS),
+    l.attractors, l.requiredFlyby ?? null, l.par ? bits(l.par.deltaVKmS) : null, bits(parToleranceOf(l)),
+    bits(captureZoneScaleOf(l)), [bits(l.sim.rtol), bits(l.sim.atolKm), bits(l.sim.maxStep), l.sim.maxSteps],
+    l.hint ? knownBits(l.hint) : null, l.sandbox ?? false,
+  ]);
+  return [
+    "{",
+    '  "schema": "starshot.conformance-levels/1",',
+    `  "generator": "${GENERATOR}",`,
+    `  "grand_tour_par_shot": ${JSON.stringify(knownBits(GRAND_TOUR_PAR_SHOT))},`,
+    `  "level_columns": ${JSON.stringify(LEVEL_COLUMNS)},`,
+    '  "levels": [',
+    rows.map((row) => `    ${JSON.stringify(row)}`).join(",\n"),
+    "  ]",
+    "}",
+    "",
+  ].join("\n");
+}
+
 describe("game shot conformance fixtures", () => {
-  const files: Array<[string, () => string]> = [["shots.json", shotsJson], ["lunar-shots.json", lunarShotsJson]];
+  const files: Array<[string, () => string]> = [
+    ["shots.json", shotsJson], ["lunar-shots.json", lunarShotsJson], ["levels.json", levelsJson],
+  ];
   for (const [file, text] of files) {
     const out = new URL(`../../../../fixtures/conformance/${file}`, import.meta.url);
     it(WRITE ? `writes fixtures/conformance/${file}` : `equals fixtures/conformance/${file} exactly`, () => {
