@@ -1,6 +1,7 @@
 //! The shot model against the TypeScript game's, through `fixtures/conformance/shots.json`
 //! (written by `apps/game/src/sim/conformance.test.ts`): 30 shots that the game's own
-//! builders made on every campaign level and the sandbox. Each request is read back from
+//! builders made on every campaign level and the sandbox. Each request equals the one the
+//! Rust level, or the sandbox for its target and start, builds; it is read back from
 //! its bits and flown through `simulate_shot`, so a dropped `rtol`, `atol_km`, `max_step`
 //! or `stop_at_soi_of` changes the flight; every shot uses the default `max_steps`, which
 //! `tests/shot.rs` pins. Every `ShotAnalysis` field is compared, and the step count: exactly,
@@ -14,7 +15,7 @@ use serde_json::Value;
 use starshot_ephemeris::Table1Ephemeris;
 use starshot_game::{
     CAMPAIGN, ShotAnalysis, ShotRequest, SimSettings, analyze_shot, launch_et_for_day,
-    shot_request_for, simulate_shot,
+    sandbox_level, shot_request_for, simulate_shot,
 };
 
 const SHOTS: &str = include_str!("../../../fixtures/conformance/shots.json");
@@ -110,10 +111,13 @@ fn shots_match_typescript() {
         );
         let shot = request(c);
         // The level's builder must give the request the game built (D6), attractor order too.
-        if let Some(level) = CAMPAIGN.iter().find(|l| l.id.as_str() == row[1]) {
-            let mine = shot_request_for(level, launch, shot.v_inf);
-            assert_eq!(mine, shot, "{name}: level request");
-        }
+        let level = match CAMPAIGN.iter().find(|l| l.id.as_str() == row[1]) {
+            Some(level) => *level,
+            None => sandbox_level(shot.target, start).expect("a sandbox target and start"),
+        };
+        assert_eq!(level.id.as_str(), row[1], "{name}: level");
+        let mine = shot_request_for(&level, launch, shot.v_inf);
+        assert_eq!(mine, shot, "{name}: level request");
         let result = simulate_shot(&EPH, &shot).expect("the fixture's scale flies");
         let got = analyze_shot(&EPH, &shot, &result);
         let want = analysis(row[5].as_array().expect("an analysis"));
