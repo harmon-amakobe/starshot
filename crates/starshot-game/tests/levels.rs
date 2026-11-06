@@ -284,6 +284,22 @@ fn the_grand_tour_par_shot_is_a_jupiter_assisted_hit_worth_three_stars() {
     assert_eq!((a.delta_v_km_s * 100.0).round() / 100.0, par);
     let score = score_shot(&rules(tour), &ShotFacts::from_analysis(&a, false));
     assert_eq!(score.stars, 3);
+    let facts = ShotFacts::from_analysis(&a, true);
+    let want = (
+        a.hit,
+        a.delta_v_km_s,
+        a.bullseye,
+        a.required_flyby_done,
+        true,
+    );
+    let got = (
+        facts.hit,
+        facts.delta_v_km_s,
+        facts.bullseye,
+        facts.required_flyby_done,
+        facts.hint_used,
+    );
+    assert_eq!(got, want);
 }
 
 #[test]

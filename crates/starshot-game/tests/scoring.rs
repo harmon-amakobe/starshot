@@ -45,6 +45,13 @@ fn a_miss_scores_zero_whatever_else_happened() {
         ..facts
     };
     assert_eq!(score_shot(&tour, &flown).uncapped_stars, 0);
+    assert!(!score_shot(&tour, &flown).flyby);
+    // Nor does a flyby count on a level that requires none.
+    let stray = ShotFacts {
+        required_flyby_done: true,
+        ..BASE
+    };
+    assert!(!score_shot(&MARS, &stray).flyby);
 }
 
 #[test]
@@ -61,6 +68,16 @@ fn one_star_for_a_hit_and_a_second_within_110_percent_of_par() {
     assert_eq!(at(4.5), 1);
     assert_eq!(at(3.66 * 1.1), 2);
     assert_eq!(at(3.66 * 1.1 + 0.001), 1);
+    // The 1e-9 km/s slack is absolute and its edge counts, as scoring.ts has it.
+    assert_eq!(at(3.66 * 1.1 + 1e-9), 2);
+    assert_eq!(at(3.66 * 1.1 + 2e-9), 1);
+    // A NaN delta-v or tolerance earns no efficiency star.
+    assert_eq!(at(f64::NAN), 1);
+    let nan = ScoringRules {
+        par_tolerance: Some(f64::NAN),
+        ..MARS
+    };
+    assert!(!score_shot(&nan, &BASE).efficient);
     assert_eq!(par_limit_km_s(&MARS), Some(3.66 * 1.1));
 }
 
