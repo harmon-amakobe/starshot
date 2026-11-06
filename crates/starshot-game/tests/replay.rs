@@ -127,11 +127,14 @@ fn replays_round_trip_exact_bits() {
             assert_eq!(r.clone(), r);
         }
     }
-    // A sub-day launch, as the Moonshot allows (D43).
+    // A sub-day launch from a paused, re-dated parking orbit, as the Moonshot allows (D43).
     let version = lunar_physics_version(&lunar::SETTINGS);
     for x in AWKWARD {
         let launch = LAUNCH_ET + 8.004;
-        let r = LunarReplay::new("moonshot", launch, x, -x, version.clone());
+        let (epoch, phase) = (launch - 1234.5, 3.0 * x);
+        let r = LunarReplay::new("moonshot", launch, x, -x, epoch, phase, version.clone());
+        assert_eq!(r.parking_epoch_et().to_bits(), epoch.to_bits());
+        assert_eq!(r.parking_phase_deg().to_bits(), phase.to_bits());
         assert_eq!(r.launch_et().to_bits(), launch.to_bits());
         assert_eq!(r.speed_km_s().to_bits(), x.to_bits());
         assert_eq!(r.angle_deg().to_bits(), (-x).to_bits());

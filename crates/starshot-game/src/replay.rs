@@ -52,7 +52,9 @@ impl Replay {
 }
 
 /// A Moon shot as D43 replays it. A lunar launch is any ET, so the ET itself is stored:
-/// rebuilt from ISO text it would move by up to 171 ulp (findings row 61).
+/// rebuilt from ISO text it would move by up to 171 ulp (findings row 61). Pausing a shot
+/// re-dates the parking orbit, and the departure depends on its epoch and phase, so both are
+/// stored too (D43's note).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LunarReplay {
     pub mission_id: String,
@@ -61,6 +63,9 @@ pub struct LunarReplay {
     pub speed_bits: u64,
     /// The burn angle from prograde [degrees].
     pub angle_bits: u64,
+    /// The parking orbit's epoch [s ET] and phase [degrees] at that epoch.
+    pub parking_epoch_et_bits: u64,
+    pub parking_phase_bits: u64,
     pub physics_version: String,
 }
 
@@ -72,6 +77,8 @@ impl LunarReplay {
         launch_et: f64,
         speed_km_s: f64,
         angle_deg: f64,
+        parking_epoch_et: f64,
+        parking_phase_deg: f64,
         physics_version: String,
     ) -> Self {
         LunarReplay {
@@ -79,6 +86,8 @@ impl LunarReplay {
             launch_et_bits: launch_et.to_bits(),
             speed_bits: speed_km_s.to_bits(),
             angle_bits: angle_deg.to_bits(),
+            parking_epoch_et_bits: parking_epoch_et.to_bits(),
+            parking_phase_bits: parking_phase_deg.to_bits(),
             physics_version,
         }
     }
@@ -93,6 +102,14 @@ impl LunarReplay {
 
     pub fn angle_deg(&self) -> f64 {
         f64::from_bits(self.angle_bits)
+    }
+
+    pub fn parking_epoch_et(&self) -> f64 {
+        f64::from_bits(self.parking_epoch_et_bits)
+    }
+
+    pub fn parking_phase_deg(&self) -> f64 {
+        f64::from_bits(self.parking_phase_bits)
     }
 }
 
